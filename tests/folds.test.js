@@ -14,18 +14,18 @@ const boxfold=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy'),I('watch','grey',{metal:'silver'})];
-      settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.scoreOpen=HOOK.listOpen=false;show('today')});
+      HOOK.settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.scoreOpen=HOOK.listOpen=false;HOOK.show('today')});
     let cdp=null;try{cdp=await ctx.newCDPSession(p);await cdp.send('Performance.enable')}catch{cdp=null}   // the layout count is Chromium's (CDP); on WebKit (npm run test:webkit) it isn't counted
     const lay=async()=>cdp?(await cdp.send('Performance.getMetrics')).metrics.find(m=>m.name==='LayoutCount').value:0;
     const laid=n=>cdp?`${n} times`:'(not counted on WebKit)';
     for(const [name,id,toggle,items] of [['score','#sbox','toggleScore','#spanel .sli'],['pieces list','#ibox','toggleList','#ipanel .list>*']]){
       await p.evaluate(()=>scrollTo(0,0));await settle(p,300);
       const l0=await lay();
-      const u=await p.evaluate(([id,toggle])=>{(toggle in HOOK?HOOK:window)[toggle]();const b=$(id);return {clip:b.getAnimations({subtree:true}).some(a=>a.effect.target.closest('.fedge'))&&!b.getAnimations().some(a=>a.effect.getKeyframes()[0].clipPath),trans:getComputedStyle(b.querySelector('.mpanel')).transitionDuration}},[id,toggle]);
-      await p.waitForFunction(id=>!$(id).getAnimations({subtree:true}).some(a=>a.playState==='running'&&a.effect.getComputedTiming().endTime!==Infinity),id,{timeout:3000});await settle(p,800);
+      const u=await p.evaluate(([id,toggle])=>{(toggle in HOOK?HOOK:window)[toggle]();const b=HOOK.$(id);return {clip:b.getAnimations({subtree:true}).some(a=>a.effect.target.closest('.fedge'))&&!b.getAnimations().some(a=>a.effect.getKeyframes()[0].clipPath),trans:getComputedStyle(b.querySelector('.mpanel')).transitionDuration}},[id,toggle]);
+      await p.waitForFunction(id=>!HOOK.$(id).getAnimations({subtree:true}).some(a=>a.playState==='running'&&a.effect.getComputedTiming().endTime!==Infinity),id,{timeout:3000});await settle(p,800);
       const layouts=await lay()-l0;
       ok(u.clip&&u.trans==='0s'&&layouts<=8,`the ${name} unfolds with its edge sliding down (a strip, not a clip-path), its height not animated, the page laid out ${laid(layouts)}`);
-      const f=await p.evaluate(([id,toggle,items])=>new Promise(res=>{const b=$(id),its=[...b.querySelectorAll(items)];(toggle in HOOK?HOOK:window)[toggle]();
+      const f=await p.evaluate(([id,toggle,items])=>new Promise(res=>{const b=HOOK.$(id),its=[...b.querySelectorAll(items)];(toggle in HOOK?HOOK:window)[toggle]();
         const cs=its.map(e=>getComputedStyle(e)),lift={name:cs[0].animationName,d0:parseFloat(cs[0].animationDelay),dn:parseFloat(cs[cs.length-1].animationDelay),n:its.length},chev=b.classList.contains('bshut');
         const tops=[];const f=()=>{tops.push(Math.round(b.getBoundingClientRect().top));if(b.getAnimations({subtree:true}).some(a=>a.playState==='running'&&a.effect.getComputedTiming().endTime!==Infinity)||tops.length<5)requestAnimationFrame(f);else res({lift,chev,tops,open:b.classList.contains('open'),h:b.querySelector('.mpanel').offsetHeight})};requestAnimationFrame(f)}),[id,toggle,items]);
       let jump=0;for(let i=1;i<f.tops.length;i++)jump=Math.max(jump,Math.abs(f.tops[i]-f.tops[i-1]));
@@ -34,9 +34,9 @@ const boxfold=async({ok,chromium,url,settle})=>{
     }
     // a tap in the middle of a fold finishes it and opens again cleanly
     const mid=await p.evaluate(async()=>{HOOK.toggleList();await new Promise(r=>setTimeout(r,500));HOOK.toggleList();await new Promise(r=>setTimeout(r,120));HOOK.toggleList();await new Promise(r=>setTimeout(r,60));
-      const b=$('#ibox');return {open:b.classList.contains('open'),lift:b.classList.contains('blift')}});
-    await p.waitForFunction(()=>!$('#ibox').getAnimations({subtree:true}).some(a=>a.playState==='running'&&a.effect.getComputedTiming().endTime!==Infinity),null,{timeout:3000});
-    ok(mid.open&&!mid.lift&&await p.evaluate(()=>getComputedStyle($('#ibox')).clipPath==='none'&&!document.querySelector('#ibox .fedge')),'opening the list in the middle of its fold stops the fold and opens it fully');
+      const b=HOOK.$('#ibox');return {open:b.classList.contains('open'),lift:b.classList.contains('blift')}});
+    await p.waitForFunction(()=>!HOOK.$('#ibox').getAnimations({subtree:true}).some(a=>a.playState==='running'&&a.effect.getComputedTiming().endTime!==Infinity),null,{timeout:3000});
+    ok(mid.open&&!mid.lift&&await p.evaluate(()=>getComputedStyle(HOOK.$('#ibox')).clipPath==='none'&&!document.querySelector('#ibox .fedge')),'opening the list in the middle of its fold stops the fold and opens it fully');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
   }finally{await browser.close()}
@@ -57,7 +57,7 @@ const picfold=async({ok,chromium,url,settle})=>{
       let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       HOOK.items=[I('suit','navy',{photo}),I('suit','charcoal',{photo}),I('shirt','white',{photo}),I('shirt','lightblue',{photo}),I('tie','burgundy',{photo}),I('tie','navy',{pattern:'stripe',secondaryColor:'white',photo}),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy'),I('watch','grey',{metal:'silver'})];
-      settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.scoreOpen=HOOK.listOpen=false;HOOK.openRow=null;HOOK.belowOpen=null;show('today')});
+      HOOK.settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.scoreOpen=HOOK.listOpen=false;HOOK.openRow=null;HOOK.belowOpen=null;HOOK.show('today')});
     let cdp=null;try{cdp=await ctx.newCDPSession(p);await cdp.send('Performance.enable')}catch{cdp=null}   // the layout count is Chromium's (CDP); on WebKit (npm run test:webkit) it isn't counted
     const lay=async()=>cdp?(await cdp.send('Performance.getMetrics')).metrics.find(m=>m.name==='LayoutCount').value:0;
     const laid=n=>cdp?`${n} times`:'(not counted on WebKit)';
@@ -65,7 +65,7 @@ const picfold=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>HOOK.toggleList());await quiet();await settle(p,400);
     // a row's photo opens: clipped open, the card grows with it, the rows below slide, the photo drops in with a bounce
     const l0=await lay();
-    const o=await p.evaluate(async()=>{const el=$('#ri-shirt'),seen=new Set(),hs=[];HOOK.toggleRow('shirt');
+    const o=await p.evaluate(async()=>{const el=HOOK.$('#ri-shirt'),seen=new Set(),hs=[];HOOK.toggleRow('shirt');
       const t0=performance.now();while(performance.now()-t0<700){for(const a of document.getAnimations()){const k=a.effect.getKeyframes()[0],t=a.effect.target;
           const eg=t.closest('.fedge');if(eg&&eg.parentElement===el)seen.add('row edge');if(eg&&eg.parentElement.id==='ibox')seen.add('card edge');if(k.clipPath)seen.add('a clip-path');if(/translateY\(-/.test(k.transform||'')&&t.matches('.ritem')&&t!==el)seen.add('rows below slide');
           if(t.classList.contains('rpanel-in')&&/cubic-bezier\(0\.34, 1\.56/.test(a.effect.getTiming().easing))seen.add('photo bounce')}
@@ -77,14 +77,14 @@ const picfold=async({ok,chromium,url,settle})=>{
     ok(o.open&&o.img>0&&o.last>o.first+100&&o.late===1&&o.clip==='none',`the photo was decoded before it opened: its height (${o.last}px) is right at once and doesn't change after (no late jump)`);
     ok(layouts<=10,`opening it lays the page out ${laid(layouts)} (an animated height did it every frame)`);
     // another row while one above is open: the tapped row stays under the finger
-    const keep=await p.evaluate(async()=>{const t=$('#ri-tie').getBoundingClientRect().top;HOOK.toggleRow('tie');   // read right after the tap: the photo's own reveal scroll starts after it
+    const keep=await p.evaluate(async()=>{const t=HOOK.$('#ri-tie').getBoundingClientRect().top;HOOK.toggleRow('tie');   // read right after the tap: the photo's own reveal scroll starts after it
       
-      return {before:Math.round(t),after:Math.round($('#ri-tie').getBoundingClientRect().top),shirt:$('#ri-shirt').classList.contains('open')}});
+      return {before:Math.round(t),after:Math.round(HOOK.$('#ri-tie').getBoundingClientRect().top),shirt:HOOK.$('#ri-shirt').classList.contains('open')}});
     await quiet();
     ok(!keep.shirt&&Math.abs(keep.after-keep.before)<=2,`opening the tie's photo shuts the shirt's above it and the tie's row stays where it was under the finger (${keep.before} → ${keep.after}px)`);
     // shutting: the photo lifts out with a dip, then the space closes; it ends shut, nothing jumps
-    const s=await p.evaluate(()=>new Promise(res=>{const el=$('#ri-tie');HOOK.toggleRow('tie');const an=document.getAnimations(),pin=an.find(a=>a.effect.target.classList.contains('rpanel-in')),clip=an.find(a=>{const eg=a.effect.target.closest('.fedge');return eg&&eg.parentElement===el});
-      const r={dip:!!pin&&/cubic-bezier\(0\.36, 0, 0\.66, -0\.56\)/.test(pin.effect.getTiming().easing),clipDelay:clip?clip.effect.getTiming().delay:-1},tops=[];const ib=$('#ibox');
+    const s=await p.evaluate(()=>new Promise(res=>{const el=HOOK.$('#ri-tie');HOOK.toggleRow('tie');const an=document.getAnimations(),pin=an.find(a=>a.effect.target.classList.contains('rpanel-in')),clip=an.find(a=>{const eg=a.effect.target.closest('.fedge');return eg&&eg.parentElement===el});
+      const r={dip:!!pin&&/cubic-bezier\(0\.36, 0, 0\.66, -0\.56\)/.test(pin.effect.getTiming().easing),clipDelay:clip?clip.effect.getTiming().delay:-1},tops=[];const ib=HOOK.$('#ibox');
       const vis=b=>{const e=[...b.querySelectorAll(':scope>.fedge>i')][0];return e?e.getBoundingClientRect().top+parseFloat(e.style.getPropertyValue('--fh')):b.getBoundingClientRect().bottom};
       const f=()=>{tops.push(Math.round(vis(ib)));if(document.getAnimations().some(a=>a.playState==='running'&&a.effect.getComputedTiming().endTime!==Infinity)||tops.length<5)requestAnimationFrame(f);
         else res({...r,tops,open:el.classList.contains('open'),h:el.querySelector('.rpanel').offsetHeight})};requestAnimationFrame(f)}));
@@ -93,14 +93,14 @@ const picfold=async({ok,chromium,url,settle})=>{
     ok(jump<90,`the card's edge closes up smoothly, no jump at the end (largest step ${jump}px: ${s.tops.join(' ')})`);
     // a tile's photo: the cards under the stage slide; another tile swaps the photo; it shuts again
     await p.evaluate(()=>{HOOK.toggleList();scrollTo(0,0)});await quiet();await settle(p,300);
-    const t=await p.evaluate(async()=>{const el=$('#bbox');HOOK.pickPiece('shoes');await new Promise(r=>setTimeout(r,40));
+    const t=await p.evaluate(async()=>{const el=HOOK.$('#bbox');HOOK.pickPiece('shoes');await new Promise(r=>setTimeout(r,40));
       const an=document.getAnimations(),r={clip:an.some(a=>{const eg=a.effect.target.closest('.fedge');return eg&&eg.parentElement===el}),side:an.some(a=>a.effect.target.classList.contains('side')&&/translateY\(-/.test(a.effect.getKeyframes()[0].transform||''))};
       await new Promise(r=>setTimeout(r,700));HOOK.pickPiece('belt');r.swap=el.classList.contains('open')&&HOOK.belowOpen==='belt'&&/belt/i.test(el.querySelector('.rpanel-in').innerHTML);
       await new Promise(r=>setTimeout(r,300));HOOK.pickPiece('belt');await new Promise(r=>setTimeout(r,900));r.shut=!el.classList.contains('open')&&HOOK.belowOpen===null;return r});
     ok(t.clip&&t.side&&t.swap&&t.shut,`a tile's photo opens by a clip with the cards below sliding; another tile swaps the photo in place; tapping it again shuts it (${JSON.stringify(t)})`);
     // reduced motion: no animation
     await p.emulateMedia({reducedMotion:'reduce'});
-    const rm=await p.evaluate(()=>{HOOK.toggleList();const own=()=>document.getAnimations().filter(x=>!(x instanceof CSSTransition)&&!(x instanceof CSSAnimation)).length;HOOK.toggleRow('top');const a=own();HOOK.toggleRow('top');return {a,b:own(),shut:!$('#ri-top').classList.contains('open')}});
+    const rm=await p.evaluate(()=>{HOOK.toggleList();const own=()=>document.getAnimations().filter(x=>!(x instanceof CSSTransition)&&!(x instanceof CSSAnimation)).length;HOOK.toggleRow('top');const a=own();HOOK.toggleRow('top');return {a,b:own(),shut:!HOOK.$('#ri-top').classList.contains('open')}});
     ok(rm.b===0&&rm.shut,'with reduced motion a photo opens and shuts at once');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
@@ -118,8 +118,8 @@ const foldtap=async({ok,chromium,url,settle})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const setup=(x={})=>p.evaluate(async x=>{let k=0;const I=(type,primaryColor,y={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...y});
       HOOK.items=[I('suit','deeptaupe'),I('suit','navy'),I('shirt','lightblue'),I('shirt','white'),I('tie','brown'),I('tie','burgundy'),I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','brown'),I('watch','silver',{metal:'silver'})];
-      settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};
-      HOOK.listOpen=!!x.list;HOOK.monthOpen=!!x.month;HOOK.scoreOpen=!!x.score;HOOK.belowOpen=null;HOOK.openRow=null;show('today');scrollTo(0,0);await new Promise(r=>setTimeout(r,200))},x);
+      HOOK.settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};
+      HOOK.listOpen=!!x.list;HOOK.monthOpen=!!x.month;HOOK.scoreOpen=!!x.score;HOOK.belowOpen=null;HOOK.openRow=null;HOOK.show('today');scrollTo(0,0);await new Promise(r=>setTimeout(r,200))},x);
     const into=s=>p.evaluate(s=>{const e=document.querySelector(s);scrollBy(0,e.getBoundingClientRect().top-100)},s);
     const open=s=>p.evaluate(s=>document.querySelector(s).classList.contains('open'),s);
     // pieces list: open a piece's photo, tap the photo: it folds, the list stays open
@@ -132,8 +132,8 @@ const foldtap=async({ok,chromium,url,settle})=>{
     await setup({list:true});await into('#ri-tie');await p.tap('#ri-tie .rowtap');await settle(p,500);
     ok(await open('#ibox')&&await open('#ri-tie'),'tapping the item itself still opens its photo, not folding the list');
     await p.tap('#ri-tie .swap');await settle(p,400);
-    ok(await open('#ibox')&&await p.evaluate(()=>!!picker),'⇄ still opens the picker, not folding the list');
-    await p.evaluate(()=>closePicker());
+    ok(await open('#ibox')&&await p.evaluate(()=>!!HOOK.picker),'⇄ still opens the picker, not folding the list');
+    await p.evaluate(()=>HOOK.closePicker());
     // a tile's photo folds when tapped
     await setup();await into('.below');await p.tap('.below .tile');await settle(p,600);const b1=await open('#bbox');
     await p.tap('#bbox .rpanel-in');await settle(p,600);
@@ -141,7 +141,7 @@ const foldtap=async({ok,chromium,url,settle})=>{
     // score: a tap on the breakdown folds it
     await setup();await into('#sbox');await p.tap('#sbox .month-link');await settle(p,900);const s1=await open('#sbox');
     await p.tap('#sbox .sdl >> nth=1');await settle(p,700);
-    ok(s1&&!(await open('#sbox'))&&await p.evaluate(()=>!scoreOpen&&document.querySelector('#sbox .month-link').getAttribute('aria-expanded')==='false'),'tapping the open score breakdown folds it');
+    ok(s1&&!(await open('#sbox'))&&await p.evaluate(()=>!HOOK.scoreOpen&&document.querySelector('#sbox .month-link').getAttribute('aria-expanded')==='false'),'tapping the open score breakdown folds it');
     // month: a full-width fold bar along its bottom
     await setup({month:true});await into('#mbox');
     const fb=await p.evaluate(()=>{const b=document.querySelector('#mbox .foldbar'),r=b.getBoundingClientRect(),box=document.querySelector('#mbox').getBoundingClientRect(),cells=[...document.querySelectorAll('#mbox .mc')].map(c=>c.getBoundingClientRect().bottom);
@@ -152,7 +152,7 @@ const foldtap=async({ok,chromium,url,settle})=>{
     await setup({month:true,list:true,score:true});await p.evaluate(()=>{const b=document.querySelector('#mbox .foldbar');scrollBy(0,b.getBoundingClientRect().bottom-380)});
     const topBefore=await p.evaluate(()=>Math.round(document.querySelector('#mbox').getBoundingClientRect().top));
     await p.tap('#mbox .foldbar');await settle(p,900);
-    const after=await p.evaluate(()=>({open:monthOpen,cls:document.querySelector('#mbox').classList.contains('open'),top:Math.round(document.querySelector('#mbox').getBoundingClientRect().top)}));
+    const after=await p.evaluate(()=>({open:HOOK.monthOpen,cls:document.querySelector('#mbox').classList.contains('open'),top:Math.round(document.querySelector('#mbox').getBoundingClientRect().top)}));
     ok(!after.open&&!after.cls&&topBefore<0&&after.top>=0&&after.top<=480-78-60,`the fold bar folds the month, and the card comes back into view (top ${topBefore} → ${after.top}px)`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();
@@ -171,9 +171,9 @@ const reveal=async({ok,chromium,url,settle})=>{
     const setup=()=>p.evaluate(async()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
       HOOK.items=[I('suit','deeptaupe'),I('suit','navy'),I('shirt','lightblue'),I('shirt','white'),I('tie','brown',{pattern:'stripe',secondaryColor:'cream'}),I('tie','burgundy'),
         I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','brown'),I('watch','silver',{metal:'silver'})];
-      settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.listOpen=false;HOOK.monthOpen=false;HOOK.belowOpen=null;HOOK.scoreOpen=false;
-      const o=planFor()[key(sel)];HOOK.renderTried.add(comboKey(o));renders[comboKey(o)]={sig:'x',img:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#5f5449"/></svg>'),model:'x',t:1};
-      show('today');scrollTo(0,0);await new Promise(r=>setTimeout(r,300))});
+      HOOK.settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.listOpen=false;HOOK.monthOpen=false;HOOK.belowOpen=null;HOOK.scoreOpen=false;
+      const o=HOOK.planFor()[HOOK.key(HOOK.sel)];HOOK.renderTried.add(HOOK.comboKey(o));HOOK.renders[HOOK.comboKey(o)]={sig:'x',img:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#5f5449"/></svg>'),model:'x',t:1};
+      HOOK.show('today');scrollTo(0,0);await new Promise(r=>setTimeout(r,300))});
     const navTop=()=>p.evaluate(()=>document.querySelector('body>nav').getBoundingClientRect().top);
     const at=s=>p.evaluate(s=>{const b=document.querySelector(s).getBoundingClientRect();return {top:Math.round(b.top),bottom:Math.round(b.bottom)}},s);
     const scrollY=()=>p.evaluate(()=>Math.round(scrollY));
@@ -187,7 +187,7 @@ const reveal=async({ok,chromium,url,settle})=>{
       ok(fits?after.bottom<=nt-11&&after.top>=7:Math.abs(after.top-8)<=2,`${name}: unfolds and scrolls until its top reaches the top of the screen (top ${before.top} → ${after.top}px)`);
     }
     // a small reveal: a row in the open pieces list only scrolls as much as its photo needs, not to the top
-    await setup();await p.evaluate(()=>{HOOK.listOpen=true;renderToday()});
+    await setup();await p.evaluate(()=>{HOOK.listOpen=true;HOOK.renderToday()});
     await p.evaluate(()=>{const r=document.querySelector('#ibox').getBoundingClientRect();scrollBy(0,r.top-60)});
     const row=await p.evaluate(()=>{const rows=[...document.querySelectorAll('#ibox .ritem')];const nav=document.querySelector('body>nav').getBoundingClientRect().top;
       const r=rows.find(x=>{const b=x.getBoundingClientRect();return b.top>nav-160&&b.bottom<nav&&x.querySelector('.rowtap')});return r&&r.id});
@@ -228,19 +228,19 @@ const pagescroll=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('tie','green'),
         I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.scoreOpen=HOOK.listOpen=HOOK.monthOpen=false;show('today');scrollTo(0,0)});
-    await p.waitForFunction(()=>{const el=$('#mpanel-in');return el&&el.querySelectorAll('.mc[data-k]').length>=28},null,{timeout:5000});await settle(p,300);
+      HOOK.settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.scoreOpen=HOOK.listOpen=HOOK.monthOpen=false;HOOK.show('today');scrollTo(0,0)});
+    await p.waitForFunction(()=>{const el=HOOK.$('#mpanel-in');return el&&el.querySelectorAll('.mc[data-k]').length>=28},null,{timeout:5000});await settle(p,300);
     const quiet=()=>p.waitForFunction(()=>!document.getAnimations().some(a=>a.playState==='running'&&a.effect&&a.effect.getComputedTiming().endTime!==Infinity),null,{timeout:4000});
     // watch one tap: how often the page is scrolled, whether Today slides, and the card's top on screen every frame
     const watch=(tap,el)=>p.evaluate(({tap,el})=>new Promise(res=>{let scrolls=0;const on=()=>scrolls++;addEventListener('scroll',on);
-      const y0=scrollY;new Function(tap)();const slide=($('#today').getAnimations()[0]||null);const tr=slide?slide.effect.getKeyframes()[0].transform:'';const tops=[];
-      const f=()=>{tops.push(Math.round($(el).getBoundingClientRect().top));if(document.getAnimations().some(a=>a.playState==='running'&&a.effect.getComputedTiming().endTime!==Infinity)||tops.length<5)requestAnimationFrame(f);
-        else setTimeout(()=>{removeEventListener('scroll',on);res({scrolls,tr,tops,moved:scrollY-y0,left:getComputedStyle($('#today')).transform})},50)};requestAnimationFrame(f)}),{tap,el});
+      const y0=scrollY;new Function(tap)();const slide=(HOOK.$('#today').getAnimations()[0]||null);const tr=slide?slide.effect.getKeyframes()[0].transform:'';const tops=[];
+      const f=()=>{tops.push(Math.round(HOOK.$(el).getBoundingClientRect().top));if(document.getAnimations().some(a=>a.playState==='running'&&a.effect.getComputedTiming().endTime!==Infinity)||tops.length<5)requestAnimationFrame(f);
+        else setTimeout(()=>{removeEventListener('scroll',on);res({scrolls,tr,tops,moved:scrollY-y0,left:getComputedStyle(HOOK.$('#today')).transform})},50)};requestAnimationFrame(f)}),{tap,el});
     const smooth=w=>{let jump=0,moving=0;for(let i=1;i<w.tops.length;i++){const d=Math.abs(w.tops[i]-w.tops[i-1]);jump=Math.max(jump,d);if(d>2)moving++}
       const way=Math.abs(w.tops[w.tops.length-1]-w.tops[0]);return {jump,moving,way,ok:way<4||(jump<=Math.max(way*.4,40)&&moving>=5)}};
-    for(const [name,tap,el] of [['calendar','toggleMonth()','#mbox'],['pieces list','HOOK.toggleList()','#ibox'],['score','toggleScore()','#sbox']]){
+    for(const [name,tap,el] of [['calendar','HOOK.toggleMonth()','#mbox'],['pieces list','HOOK.toggleList()','#ibox'],['score','HOOK.toggleScore()','#sbox']]){
       // the card's head near the bottom of the screen, so unfolding has to scroll to show it
-      await p.evaluate(el=>{const b=$(el);scrollTo(0,0);scrollBy(0,b.getBoundingClientRect().top-innerHeight+200)},el);await settle(p,200);
+      await p.evaluate(el=>{const b=HOOK.$(el);scrollTo(0,0);scrollBy(0,b.getBoundingClientRect().top-innerHeight+200)},el);await settle(p,200);
       const u=await watch(tap,el),su=smooth(u);
       ok(u.moved>40&&u.scrolls<=2&&/translateY\(\d/.test(u.tr)&&u.left==='none',`unfolding the ${name} scrolls the page once (${u.scrolls} scroll events for ${u.moved}px) and slides Today back by it (${u.tr}), nothing left over`);
       ok(su.ok,`and the ${name} card moves smoothly on screen (largest step ${su.jump} of ${su.way}px over ${su.moving} frames: ${u.tops.join(' ')})`);
@@ -252,9 +252,9 @@ const pagescroll=async({ok,chromium,url,settle})=>{
       await quiet();await settle(p,100);
     }
     // a second tap while the first still runs: the page carries on from where it is drawn, no jump
-    await p.evaluate(()=>{const b=$('#mbox');scrollTo(0,0);scrollBy(0,b.getBoundingClientRect().top-innerHeight+200)});await settle(p,200);
-    const twice=await p.evaluate(()=>new Promise(res=>{toggleMonth();setTimeout(()=>{const before=Math.round($('#mbox').getBoundingClientRect().top);toggleMonth();const after=Math.round($('#mbox').getBoundingClientRect().top);
-      setTimeout(()=>res({before,after,left:getComputedStyle($('#today')).transform,open:$('#mbox').classList.contains('open')}),1400)},150)}));
+    await p.evaluate(()=>{const b=HOOK.$('#mbox');scrollTo(0,0);scrollBy(0,b.getBoundingClientRect().top-innerHeight+200)});await settle(p,200);
+    const twice=await p.evaluate(()=>new Promise(res=>{HOOK.toggleMonth();setTimeout(()=>{const before=Math.round(HOOK.$('#mbox').getBoundingClientRect().top);HOOK.toggleMonth();const after=Math.round(HOOK.$('#mbox').getBoundingClientRect().top);
+      setTimeout(()=>res({before,after,left:getComputedStyle(HOOK.$('#today')).transform,open:HOOK.$('#mbox').classList.contains('open')}),1400)},150)}));
     ok(Math.abs(twice.after-twice.before)<=3&&twice.left==='none'&&!twice.open,`folding again halfway through the unfold starts from where the card is (${twice.before} → ${twice.after}px) and ends shut, nothing left over`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();

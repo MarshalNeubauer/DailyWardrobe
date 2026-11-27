@@ -45,14 +45,14 @@ const motif=async({ok,chromium,url,ROOT})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
     await p.goto(url);await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t')});await p.reload();await p.waitForFunction(()=>window.appReady);
     const m=await p.evaluate(async spec=>{const ld=async s=>{const im=new Image();im.src=s;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);return c};
-      const ph=await ld('tests/fixtures/tie-neat.jpg'),tx=await ld('tests/fixtures/tie-neat-closeup.jpg'),L=h=>rgbLab(...hexRgb(h));
+      const ph=await ld('tests/fixtures/tie-neat.jpg'),tx=await ld('tests/fixtures/tie-neat-closeup.jpg'),L=h=>HOOK.rgbLab(...HOOK.hexRgb(h));
       const s=HOOK.motifFromSpec(spec,{tex:tx,full:ph,box:{x:340,y:150,w:240,h:550},type:'tie'}),noBox=HOOK.motifFromSpec(spec,{tex:tx,full:ph,type:'tie'});
       const mm=s.motif,lab={ground:L(mm.ground),purple:L(mm.figs[0].cols[0]),navy:L(mm.figs[0].cols[1]),white:L(mm.figs[1].cols[0]),centre:L(mm.figs[1].centre)};
       const it={id:'t1',type:'tie',primaryColor:'purple',secondaryColor:'navy',tertiaryColor:'white',pattern:'foulard',sett:s};
       const def=HOOK.fabricDef('q',it,'tie'),fig=HOOK.fabricDef('q',it,'tie','fig');
       const o={suitDay:true,top:{id:'s',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:{id:'h',type:'shirt',primaryColor:'white',pattern:'solid'},tie:it};
-      const key1=comboKey(o),key2=comboKey({...o,tie:{...it,sett:{...s,motif:{...mm,ground:'#000000'}}}});
-      return {s,lab,noBoxGround:L(noBox.motif.ground)[0],def,fig,key1,key2,sum:settSummary(s)}},spec);
+      const key1=HOOK.comboKey(o),key2=HOOK.comboKey({...o,tie:{...it,sett:{...s,motif:{...mm,ground:'#000000'}}}});
+      return {s,lab,noBoxGround:L(noBox.motif.ground)[0],def,fig,key1,key2,sum:HOOK.settSummary(s)}},spec);
     const l=m.lab,hue=x=>Math.atan2(x[2],x[1])*180/Math.PI;
     ok(m.s.v===3&&m.s.src==='claude+pixels'&&m.s.a===45&&m.s.cr===15&&m.s.tr===9,'the tie\'s motif is kept with its diagonal grid and its scale (cells in the close-up and across the tie)');
     ok(l.white[0]>85&&l.white[0]>l.purple[0]&&l.purple[0]>l.navy[0]&&l.navy[0]>l.ground[0]&&l.ground[0]<30,
@@ -69,26 +69,26 @@ const motif=async({ok,chromium,url,ROOT})=>{
 
     // an older band reading of the same tie is ignored: no plaid drawn
     const old=await p.evaluate(()=>{const it={id:'t2',type:'tie',primaryColor:'purple',secondaryColor:'navy',tertiaryColor:'white',pattern:'foulard',sett:{v:2,a:-45,bands:[['#6c5584',.5],['#463a64',.5]],cross:null,cr:3,tr:4,src:'claude+pixels'}};
-      HOOK.items=[it];return {use:usableSett(it),def:HOOK.fabricDef('q',it,'tie'),sum:patSummary(it),stripe:usableSett({...it,pattern:'stripe'})}});
+      HOOK.items=[it];return {use:HOOK.usableSett(it),def:HOOK.fabricDef('q',it,'tie'),sum:HOOK.patSummary(it),stripe:HOOK.usableSett({...it,pattern:'stripe'})}});
     ok(old.use===null&&!old.def.includes('#6c5584')&&/older reading drew these foulard figures as stripes/.test(old.sum)&&old.stripe,'an older band reading of a foulard is ignored (drawn generic, not described), and the editor says to read it again; a striped tie keeps its bands');
 
     // the Add card: the tagger says foulard; once the close-up is in, Claude reads the motif
-    await p.evaluate(async()=>{HOOK.items=[];show('add');const b=await (await fetch('tests/fixtures/tie-neat.jpg')).blob();await addFiles([new File([b],'t.jpg',{type:'image/jpeg'})])});
-    await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/tie-neat-closeup.jpg')).blob();await addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
-    await p.waitForFunction(()=>queue[0].sett&&queue[0].sett.motif,null,{timeout:20000});
+    await p.evaluate(async()=>{HOOK.items=[];HOOK.show('add');const b=await (await fetch('tests/fixtures/tie-neat.jpg')).blob();await HOOK.addFiles([new File([b],'t.jpg',{type:'image/jpeg'})])});
+    await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/tie-neat-closeup.jpg')).blob();await HOOK.addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
+    await p.waitForFunction(()=>HOOK.queue[0].sett&&HOOK.queue[0].sett.motif,null,{timeout:20000});
     const card=await p.evaluate(()=>document.querySelector('#queue').textContent);
     ok(calls.length===1&&calls[0].closeup&&calls[0].type==='tie'&&/2 figures on a diagonal grid, read by Claude/.test(card),'a foulard tie\'s close-up asks Claude for the pattern, and the card shows the motif');
-    await p.evaluate(()=>save(0));
-    const sv=await p.evaluate(async()=>{const it=items[0];return {motif:!!(it.sett&&it.sett.motif),spec:!!it.patternSpec}});
+    await p.evaluate(()=>HOOK.save(0));
+    const sv=await p.evaluate(async()=>{const it=HOOK.items[0];return {motif:!!(it.sett&&it.sett.motif),spec:!!it.patternSpec}});
     ok(sv.motif&&sv.spec,'the saved tie keeps the motif and Claude\'s reading');
     // a foulard without Claude: no band reading (it would be a plaid); the generic foulard is drawn
     await p.evaluate(()=>localStorage.removeItem('worker_url'));
-    const q2=await p.evaluate(async()=>{const q={type:'tie',pattern:'foulard',raw:{full:document.createElement('canvas'),tex:document.createElement('canvas')},weave:{layout:'check'}};return readSett(q)});
+    const q2=await p.evaluate(async()=>{const q={type:'tie',pattern:'foulard',raw:{full:document.createElement('canvas'),tex:document.createElement('canvas')},weave:{layout:'check'}};return HOOK.readSett(q)});
     ok(q2===null,'without Claude\'s reading a foulard gets no band reading');
     // the Wardrobe editor reads a foulard with Claude even without a close-up
     await p.evaluate(()=>localStorage.setItem('worker_url','https://w.test/'));
-    const before=calls.length;await p.evaluate(async()=>{const it=items[0];delete it.sett;delete it.texture;delete it.pbox;await rereadSett(it.id)});
-    ok(calls.length===before+1&&await p.evaluate(()=>!!(items[0].sett&&items[0].sett.motif)),'"Read pattern from photo" asks Claude for a foulard\'s motif and keeps it');
+    const before=calls.length;await p.evaluate(async()=>{const it=HOOK.items[0];delete it.sett;delete it.texture;delete it.pbox;await HOOK.rereadSett(it.id)});
+    ok(calls.length===before+1&&await p.evaluate(()=>!!(HOOK.items[0].sett&&HOOK.items[0].sett.motif)),'"Read pattern from photo" asks Claude for a foulard\'s motif and keeps it');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };
@@ -132,13 +132,13 @@ const figuremotif=async({ok,chromium,url,ROOT})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t')});await p.reload();await p.waitForFunction(()=>window.appReady);
     const m=await p.evaluate(async spec=>{const im=new Image();im.src='tests/fixtures/shirt-chevron-closeup.png';await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);
-      const s=HOOK.specSett(spec,{tex:c,type:'shirt'}),L=h=>rgbLab(...hexRgb(h))[0],it={id:'sh',type:'shirt',primaryColor:'white',secondaryColor:'grey',pattern:'dobby',sett:s};
+      const s=HOOK.specSett(spec,{tex:c,type:'shirt'}),L=h=>HOOK.rgbLab(...HOOK.hexRgb(h))[0],it={id:'sh',type:'shirt',primaryColor:'white',secondaryColor:'grey',pattern:'dobby',sett:s};
       const def=HOOK.fabricDef('q',it,'shirt'),W=+def.match(/width="([\d.]+)"/)[1],H=+def.match(/height="([\d.]+)"/)[1];
       const off=HOOK.fabricDef('q',{...it,sett:{...s,motif:{...s.motif,off:1}}},'shirt');
       const o={suitDay:true,top:{id:'t',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:it,tie:{id:'x',type:'tie',primaryColor:'burgundy',pattern:'solid'}};
       return {s,ground:L(s.motif.ground),fig:L(s.motif.figs[0].cols[0]),rects:(def.match(/<rect /g)||[]).length,ratio:H/W,figCol:def.includes(s.motif.figs[0].cols[0]),
-        offDiff:off!==def,usable:!!usableSett(it),band:usableSett({...it,sett:{v:2,bands:[['#fff',.5],['#888',.5]]}}),patterned:HOOK.shirtPatterned(it),
-        key:comboKey(o)!==comboKey({...o,shirt:{...it,sett:null}})}},spec);
+        offDiff:off!==def,usable:!!HOOK.usableSett(it),band:HOOK.usableSett({...it,sett:{v:2,bands:[['#fff',.5],['#888',.5]]}}),patterned:HOOK.shirtPatterned(it),
+        key:HOOK.comboKey(o)!==HOOK.comboKey({...o,shirt:{...it,sett:null}})}},spec);
     ok(m.s.v===3&&m.s.motif.figs[0].bmp.join()===CHEV.join()&&m.s.motif.aspect===.82&&m.s.cr===8&&m.s.tr===40,'the reading keeps the figure\'s bitmap, the cell shape and the scale');
     ok(m.ground>85&&m.fig>35&&m.fig<65,`colors come from the close-up, at full contrast: white ground L* ${m.ground.toFixed(0)}, gray figures L* ${m.fig.toFixed(0)}`);
     ok(m.figCol&&m.rects>=1+4*CHEV.length&&Math.abs(m.ratio-.82)<.01,`the swatch draws the chevrons row by row (${m.rects} rects) on cells 0.82 as tall as wide`);
@@ -146,12 +146,12 @@ const figuremotif=async({ok,chromium,url,ROOT})=>{
     ok(m.usable&&m.band===null,'a dobby shirt takes the figure reading (a band reading still does not apply)');
     ok(m.patterned&&m.key,'the figured shirt counts as patterned: its own photo key');
     // the Add card: a dobby shirt's close-up asks Claude, and the reading is saved
-    await p.evaluate(async()=>{HOOK.items=[];show('add');const b=await (await fetch('tests/fixtures/shirt-chevron-closeup.png')).blob();await addFiles([new File([b],'s.png',{type:'image/png'})])});
-    await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/shirt-chevron-closeup.png')).blob();await addTexture(0,new File([b],'c.png',{type:'image/png'}))});
-    await p.waitForFunction(()=>queue[0]&&queue[0].sett&&queue[0].sett.motif,null,{timeout:20000});
+    await p.evaluate(async()=>{HOOK.items=[];HOOK.show('add');const b=await (await fetch('tests/fixtures/shirt-chevron-closeup.png')).blob();await HOOK.addFiles([new File([b],'s.png',{type:'image/png'})])});
+    await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/shirt-chevron-closeup.png')).blob();await HOOK.addTexture(0,new File([b],'c.png',{type:'image/png'}))});
+    await p.waitForFunction(()=>HOOK.queue[0]&&HOOK.queue[0].sett&&HOOK.queue[0].sett.motif,null,{timeout:20000});
     ok(calls.length===1&&calls[0].type==='shirt'&&/read by Claude/.test(await p.textContent('#queue')),'a dobby shirt\'s close-up asks Claude for the pattern on the Add card');
-    await p.evaluate(()=>save(0));
-    const sv=await p.evaluate(async()=>{const it=items[0];
+    await p.evaluate(()=>HOOK.save(0));
+    const sv=await p.evaluate(async()=>{const it=HOOK.items[0];
       return {motif:!!(it.sett&&it.sett.motif),pool:HOOK.asmCmGaps().filter(x=>x.i.id===it.id).length}});
     ok(sv.motif&&sv.pool===0,'saved with its reading; Settings → Painted plain doesn\'t list it to read again');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

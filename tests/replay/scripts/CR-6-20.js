@@ -36,15 +36,18 @@ async function connect(app, worker, tag, name, src) {
   const P = await openPhone({ profile: `cr620-${tag}`, fresh: true, time: TIME });
   try {
     await P.page.goto(info.inviteLink); await P.ready(); await sleep(3000);
-    await P.page.evaluate(() => { try { localStorage.setItem('tour_seen', '1') } catch {} settings.workdays = [0, 1, 2, 3, 4]; settings.location = { name: 'Kuwait City, KW', lat: 29.37, lon: 47.98 }; openSettings('calendar') });
+    await P.page.evaluate(() => { try { localStorage.setItem('tour_seen', '1') } catch {}
+      // A and B run the older app (40dbc2c), which has no HOOK: its settings and openSettings are the page's globals there (READS_KEPT)
+      const s = typeof HOOK === 'undefined' ? settings : HOOK.settings, open = typeof HOOK === 'undefined' ? openSettings : HOOK.openSettings;
+      s.workdays = [0, 1, 2, 3, 4]; s.location = { name: 'Kuwait City, KW', lat: 29.37, lon: 47.98 }; open('calendar') });
     await P.page.waitForSelector('#cal-link', { timeout: 15000 });
     const w0 = (await mock('log')).kvPut;
     await P.page.fill('#cal-link', href.replace('https://', 'webcal://')); await P.tap('#cal-connect');
-    await P.page.waitForFunction(() => /^Connected|couldn|didn|no longer/.test(($('#cal-msg') || {}).textContent || ''), null, { timeout: 90000 });
+    await P.page.waitForFunction(() => /^Connected|couldn|didn|no longer/.test((document.querySelector('#cal-msg') || {}).textContent || ''), null, { timeout: 90000 });
     await sleep(1500);
     const s = await P.page.evaluate(() => { const l = JSON.parse(localStorage.getItem('cal_last') || '{}');
-      return { events: JSON.stringify(l.events || []), n: (l.events || []).length, from: l.from, to: l.to, msg: $('#cal-msg').textContent, rows: [...document.querySelectorAll('#cal-review .cal-row')].map(r => r.querySelector('b').textContent + ' → ' + r.querySelector('.cal-to').textContent).join(' | '),
-        status: $('#cal-status').textContent.replace(/^Last read [^·]+·/, 'Last read <time> ·'), summary: $('#sum-calendar').textContent } });
+      return { events: JSON.stringify(l.events || []), n: (l.events || []).length, from: l.from, to: l.to, msg: document.querySelector('#cal-msg').textContent, rows: [...document.querySelectorAll('#cal-review .cal-row')].map(r => r.querySelector('b').textContent + ' → ' + r.querySelector('.cal-to').textContent).join(' | '),
+        status: document.querySelector('#cal-status').textContent.replace(/^Last read [^·]+·/, 'Last read <time> ·'), summary: document.querySelector('#sum-calendar').textContent } });
     const log = await mock('log');
     s.requests = log.recent.filter(l => / \/calendar/.test(l)).map(l => l.replace(/^\S+ /, '')); s.kvPuts = log.kvPut - w0;
     s.errors = P.errors.filter(e => !/open-meteo|nager|Failed to load/i.test(e)).slice(0, 3);

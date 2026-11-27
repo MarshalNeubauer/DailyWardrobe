@@ -7,7 +7,7 @@ async function measure(big) {
   await V.start(big ? 'w2-14-02-big' : 'w2-14-02', { big });
   await V.mock('next-tag', { type: 'suit', primaryColor: 'navy', secondaryColor: 'none', thirdColor: 'none', pattern: 'solid', material: 'wool', texture: 'smooth', formality: 'business', season: 'all' });
   await V.ph.tap('#n-wardrobe'); await V.sleep(400); await V.ph.tap('#ward-add'); await V.sleep(600);
-  await V.ph.page.evaluate(() => { if (typeof CK_OPEN !== 'undefined') CK_OPEN['*'] = true });   // #497: the card's color button is in a folded section
+  await V.ph.page.evaluate(() => { if ('CK_OPEN' in HOOK) HOOK.CK_OPEN['*'] = true });   // #497: the card's color button is in a folded section
   await V.ph.page.setInputFiles('#add-one input[type=file]', RP.SAMPLES_A + '/c35c0d6d866b9ebe6.jpg');
   await V.ph.page.waitForSelector('#add .colbtn[data-k=primaryColor]', { timeout: 30000 }); await V.sleep(1500);
   await V.ph.tap('#add .colbtn[data-k=primaryColor]'); await V.sleep(1200);

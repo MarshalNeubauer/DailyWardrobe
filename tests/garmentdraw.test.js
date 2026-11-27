@@ -14,7 +14,7 @@ const garmentdraw=async({ok,chromium,url,ROOT})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(()=>{const I=(type,x)=>({id:'g-'+type,type,primaryColor:'navy',pattern:'solid',...x}),T=['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore'];
       const th={};for(const t of T)th[t]=HOOK.itemThumb(I(t));
-      const pat=t=>['solid','stripe','heather','cable'].filter(p=>(PATS_BY[t]||[]).includes(p)).map(p=>HOOK.fabricDef('x',I(t,{pattern:p,secondaryColor:'white'}),'shirt'));
+      const pat=t=>['solid','stripe','heather','cable'].filter(p=>(HOOK.PATS_BY[t]||[]).includes(p)).map(p=>HOOK.fabricDef('x',I(t,{pattern:p,secondaryColor:'white'}),'shirt'));
       const sw=HOOK.swatchSVG(I('tee',{pattern:'stripe',secondaryColor:'white'}),true),swPlain=HOOK.swatchSVG(I('tee'),true);
       const cargo=HOOK.itemThumb({id:'c',type:'pants',primaryColor:'olive',pattern:'solid',trouserKind:'cargo'}),chinos=HOOK.itemThumb({id:'d',type:'pants',primaryColor:'olive',pattern:'solid',trouserKind:'chinos'});
       const dark=HOOK.itemThumb(I('tee',{primaryColor:'black'}));

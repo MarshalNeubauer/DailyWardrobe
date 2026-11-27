@@ -11,19 +11,19 @@ module.exports=async({ok,chromium,url})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
 
     // ---- 1. the card's verdicts with mocked Claude answers (a navy-tagged suit whose close-up measures charcoal)
-    const r=await p.evaluate(()=>{const keep=items;const S=(id,c,lab)=>({id,type:'suit',primaryColor:c,pattern:'solid',meas:{lab,ref:true,src:'closeup'}});
-      HOOK.items=[S('n1','navy',[20,3,-22]),S('n2','navy',[21,3,-21]),S('c1','charcoal',[28,0,-2]),S('c2','charcoal',[27,0,-3])];show('add');
+    const r=await p.evaluate(()=>{const keep=HOOK.items;const S=(id,c,lab)=>({id,type:'suit',primaryColor:c,pattern:'solid',meas:{lab,ref:true,src:'closeup'}});
+      HOOK.items=[S('n1','navy',[20,3,-22]),S('n2','navy',[21,3,-21]),S('c1','charcoal',[28,0,-2]),S('c2','charcoal',[27,0,-3])];HOOK.show('add');
       // sharp/spread/ref set the measurement's confidence: (.3,2,no ref) about 0.6, (.25,10,no ref) about 0.45, (.5,2,no ref) about 0.8
-      const mk=(ai,{sharp=.3,spread=2,ref=false}={})=>{queue.length=0;HOOK.addManual();const q=queue[0];q.manual=false;
+      const mk=(ai,{sharp=.3,spread=2,ref=false}={})=>{HOOK.queue.length=0;HOOK.addManual();const q=HOOK.queue[0];q.manual=false;
         Object.assign(q,{type:'suit',primaryColor:'navy',pattern:'solid',meas:{lab:[27.5,0,-2.5],hex:'#3f4143',ref,src:'closeup',sharp,spread}});
-        q.tagAI=ai?aiSignals({type:'suit',primaryColor:ai.col||'navy',pattern:'solid',conf:{type:'high',primaryColor:ai.c,pattern:'high'},altColor:ai.alt||null,altPattern:null},true):null;
-        q.measV=colourVerdicts(q);HOOK.applyMeasured(q);renderAdd();
+        q.tagAI=ai?HOOK.aiSignals({type:'suit',primaryColor:ai.col||'navy',pattern:'solid',conf:{type:'high',primaryColor:ai.c,pattern:'high'},altColor:ai.alt||null,altPattern:null},true):null;
+        q.measV=HOOK.colourVerdicts(q);HOOK.applyMeasured(q);HOOK.renderAdd();
         const card=document.querySelector('#nps-q .card');return {q,col:q.primaryColor,conf:q.measV[0].conf,mode:q.measV[0].mode,
           auto:card.querySelector('.measauto')?card.querySelector('.measauto').textContent:null,flag:card.querySelector('.measalt')?card.querySelector('.measalt').textContent:null}};
       const pick=({q,...o})=>o,out={};
       out.none=pick(mk(null));                                         // no signals: the measurement alone (0.6: asks)
       let c=mk({c:'low',alt:'charcoal'});out.low=pick(c);               // unsure, runner-up = measured: changed
-      c.q&&document.querySelector('#nps-q .measauto button').click();const u=queue[0];out.undo={col:u.primaryColor,edited:!!(u.edited&&u.edited.primaryColor)};
+      c.q&&document.querySelector('#nps-q .measauto button').click();const u=HOOK.queue[0];out.undo={col:u.primaryColor,edited:!!(u.edited&&u.edited.primaryColor)};
       HOOK.applyMeasured(u);out.undo.again=u.primaryColor;
       out.lowOther=pick(mk({c:'low',alt:'black'}));                     // unsure, but its runner-up is a third colour: only asks
       out.medium=pick(mk({c:'medium',alt:'charcoal'}));                 // medium: as before
@@ -34,10 +34,10 @@ module.exports=async({ok,chromium,url})=>{
       out.noneStrong=pick(mk(null,{sharp:.5}));                         //   (the measurement alone changed it)
       out.highRef=pick(mk({c:'high'},{sharp:.5,ref:true}));             // sure, but a white reference in the close-up: the measurement decides
       out.stale=pick(mk({c:'low',alt:'charcoal',col:'blue'}));          // the field no longer holds Claude's answer: its signals don't count
-      const h=mk({c:'low',alt:'charcoal'});queue.length=0;HOOK.addManual();const hq=queue[0];hq.manual=false;
+      const h=mk({c:'low',alt:'charcoal'});HOOK.queue.length=0;HOOK.addManual();const hq=HOOK.queue[0];hq.manual=false;
       Object.assign(hq,{type:'suit',primaryColor:'navy',pattern:'solid',edited:{primaryColor:true},tagAI:h.q.tagAI,meas:{lab:[27.5,0,-2.5],hex:'#3f4143',ref:false,src:'closeup',sharp:.3,spread:2}});
-      hq.measV=colourVerdicts(hq);HOOK.applyMeasured(hq);renderAdd();out.hand={col:hq.primaryColor,notes:!!document.querySelector('#nps-q .measauto,#nps-q .measalt')};
-      out.k={AI_LOW_AUTO:HOOK.AI_LOW_AUTO,AI_HIGH_FLAG:HOOK.AI_HIGH_FLAG,MEAS_AUTO:HOOK.MEAS_AUTO};queue.length=0;HOOK.items=keep;renderAdd();return out});
+      hq.measV=HOOK.colourVerdicts(hq);HOOK.applyMeasured(hq);HOOK.renderAdd();out.hand={col:hq.primaryColor,notes:!!document.querySelector('#nps-q .measauto,#nps-q .measalt')};
+      out.k={AI_LOW_AUTO:HOOK.AI_LOW_AUTO,AI_HIGH_FLAG:HOOK.AI_HIGH_FLAG,MEAS_AUTO:HOOK.MEAS_AUTO};HOOK.queue.length=0;HOOK.items=keep;HOOK.renderAdd();return out});
     ok(r.none.mode==='flag'&&r.none.col==='navy'&&r.none.conf>=r.k.AI_LOW_AUTO&&r.none.conf<r.k.MEAS_AUTO,`without Claude's signals a ${r.none.conf} measurement only asks, as before`);
     ok(r.low.col==='charcoal'&&/Changed navy → charcoal \(measured from your close-up; Claude wasn’t sure\)Undo/.test(r.low.auto),`Claude unsure of navy, its runner-up charcoal = measured: changed by itself: "${r.low.auto}"`);
     ok(r.undo.col==='navy'&&r.undo.edited&&r.undo.again==='navy','Undo puts navy back, and it is not changed again');
@@ -53,9 +53,9 @@ module.exports=async({ok,chromium,url})=>{
     const sv=await p.evaluate(async()=>{const was=window.fetch,wu=localStorage.getItem('worker_url');localStorage.setItem('worker_url','https://v.test/');   // (the real ask, its request answered here)
       window.fetch=async(u,o)=>!String(u).startsWith('https://v.test/')?was(u,o):String(u)==='https://v.test/'&&o&&o.method==='POST'?new Response(JSON.stringify({type:'suit',primaryColor:'navy',secondaryColor:'none',tertiaryColor:'none',pattern:'solid',confidence:{type:'high',primaryColor:'low',pattern:'medium'},altColor:'charcoal',altPattern:'twill',newColor:null,newPattern:null,clothBox:null,model:'m'}),{status:200}):new Response('{}',{status:500});
       const c=document.createElement('canvas');c.width=c.height=200;const x=c.getContext('2d');x.fillStyle='#283050';x.fillRect(0,0,200,200);
-      const b=await new Promise(r=>c.toBlob(r,'image/png'));show('add');await addFiles([new File([b],'s.png',{type:'image/png'})]);window.fetch=was;if(wu==null)localStorage.removeItem('worker_url');else localStorage.setItem('worker_url',wu);
-      const card=queue[0]&&queue[0].tagAI;await save(0);const it=items.find(i=>i.tagAI);
-      const multi=aiSignals({...normTag({type:'tie',primaryColor:'navy',pattern:'stripe'},'m'),confidence:'medium'},false);
+      const b=await new Promise(r=>c.toBlob(r,'image/png'));HOOK.show('add');await HOOK.addFiles([new File([b],'s.png',{type:'image/png'})]);window.fetch=was;if(wu==null)localStorage.removeItem('worker_url');else localStorage.setItem('worker_url',wu);
+      const card=HOOK.queue[0]&&HOOK.queue[0].tagAI;await HOOK.save(0);const it=HOOK.items.find(i=>i.tagAI);
+      const multi=HOOK.aiSignals({...HOOK.normTag({type:'tie',primaryColor:'navy',pattern:'stripe'},'m'),confidence:'medium'},false);
       return {card,saved:it&&it.tagAI,multi}});
     ok(sv.card&&sv.card.col==='navy'&&sv.card.conf.primaryColor==='low'&&sv.card.alt==='charcoal'&&sv.card.altPat==='twill'&&sv.card.seen===false,`the card keeps Claude's colour, confidence and runner-ups from the same answer: ${JSON.stringify(sv.card)}`);
     ok(sv.saved&&sv.saved.conf.primaryColor==='low'&&sv.saved.alt==='charcoal','the saved item carries them (item.tagAI), to calibrate the verdict later');

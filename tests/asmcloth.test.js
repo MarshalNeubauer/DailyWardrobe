@@ -18,7 +18,7 @@ module.exports=async({ok,chromium,url})=>{
       for(let t=-440;t<440;t+=40*Math.SQRT2){g.beginPath();g.moveTo(t,0);g.lineTo(t+220,220);g.stroke()}const close=cl.toDataURL('image/png');   // stripes 40px apart: 5.5 across
       const n=HOOK.asmStripeCount(await HOOK.asmData(close));
       const tie={id:'st',type:'tie',primaryColor:'navy',secondaryColor:'pink',pattern:'stripe',texture:close,sett:{v:2,a:-45,bands:[['#16151d',.85],['#e090a0',.15]],cross:null,cr:2.75,tr:1.8,src:'claude+pixels'}};
-      const T=await HOOK.asmTieFor(tie),P=await HOOK.asmTieFor({id:'pl',type:'tie',primaryColor:'burgundy',pattern:'solid'});return {n:+n.toFixed(2),across:T.across,tile:!!T.c,plain:!P.c&&P.hex===colOf({type:'tie',primaryColor:'burgundy'})}});
+      const T=await HOOK.asmTieFor(tie),P=await HOOK.asmTieFor({id:'pl',type:'tie',primaryColor:'burgundy',pattern:'solid'});return {n:+n.toFixed(2),across:T.across,tile:!!T.c,plain:!P.c&&P.hex===HOOK.colOf({type:'tie',primaryColor:'burgundy'})}});
     ok(Math.abs(tp.n-5.5)<.6&&Math.abs(tp.across-3.6)<.4&&tp.tile,`the close-up's stripes are counted (${tp.n} across it, 5.5 drawn), and a reading that counted half as many is corrected (${tp.across} across the blade, read 1.8)`);
     ok(tp.plain,'a tie with no reading is its tagged colour, with no tile');
     // a patterned jacket read in bands (the owner's khaki windowpane): Claude's colours, no line under ASM_LINE_PX, the sleeves split into
@@ -27,7 +27,7 @@ module.exports=async({ok,chromium,url})=>{
         along:{bands:[{role:'ground',hex:'#cbb38e',w:.905},{role:'line',hex:'#eeeadf',w:.02},{role:'ground',hex:'#cbb38e',w:.015},{role:'line',hex:'#8eb2d6',w:.025},{role:'ground',hex:'#cbb38e',w:.015},{role:'line',hex:'#eeeadf',w:.02}]},description:'a slubby linen-blend ground'};
       const bands=spec.across.bands.map(b=>[b.role==='ground'?'#baa98e':b.hex==='#eeeadf'?'#e0d9c9':'#97b0c5',b.w]),wp={id:'wp',type:'blazer',primaryColor:'khaki',pattern:'windowpane',patternSpec:spec,
         sett:{v:2,a:0,bands,cross:{d:90,bands:bands.map((b,k)=>[k===0||k===2||k===4?null:b[0],b[1]]),r:1.05},cr:3.8,tr:11,src:'claude+pixels'}};
-      const T=await HOOK.asmSuitTex(wp),px=T.mm*HOOK.ASM_PX_MM,L=HOOK.ASM_LIN,lin=h=>hexRgb(h).map(v=>L[v]);
+      const T=await HOOK.asmSuitTex(wp),px=T.mm*HOOK.ASM_PX_MM,L=HOOK.ASM_LIN,lin=h=>HOOK.hexRgb(h).map(v=>L[v]);
       const blue=lin('#eeeadf')/* the off-white line */,row=Math.floor(T.TH*.4);let run=0,best=0;for(let x=0;x<T.TW;x++){const j=3*(row*T.TW+x),d=Math.hypot(T.c[j]-blue[0],T.c[j+1]-blue[1],T.c[j+2]-blue[2]);run=d<.05?run+1:0;best=Math.max(best,run)}
       // an L-shaped sleeve: an upright upper arm, a level forearm
       const W=512,N=W*W,m=new Uint8Array(N);for(let k=0;k<N;k++){const x=k%W,y=(k/W)|0;if((x>=60&&x<140&&y>=40&&y<300)||(x>=60&&x<420&&y>=300&&y<380))m[k]=1}

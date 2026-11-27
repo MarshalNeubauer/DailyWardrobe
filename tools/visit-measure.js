@@ -41,8 +41,8 @@ const NETS={'4g':{latency:60,downloadThroughput:9e6/8,uploadThroughput:1.5e6/8},
 const PROBE=`(()=>{if(window.__vis)return;const L=window.__vis=[];let last='';
   const st=()=>{const c=document.getElementById('mannequin-container');if(!c)return 'none';const im=c.querySelector(':scope > img');
     if(im)return im.complete&&im.naturalWidth>0?'photo':'photo-loading';return c.querySelector('svg')?'drawing':'empty'};
-  const tick=()=>{const s=st();let d='';try{d=sel.getFullYear()+'-'+(sel.getMonth()+1)+'-'+sel.getDate()}catch{}const k=s+'|'+d;
-    if(k!==last){last=k;let m='';try{if(!window.appReady)throw 0;const o=planFor()[key(sel)],r=o&&asmLive()&&(HOOK.asmFor(o)?'exact':asmStale&&asmStale(o)?'stale':'');m=r||''}catch{}L.push({t:Math.round(performance.now()),s,d,m})}
+  const tick=()=>{const s=st();let d='';try{d=HOOK.sel.getFullYear()+'-'+(HOOK.sel.getMonth()+1)+'-'+HOOK.sel.getDate()}catch{}const k=s+'|'+d;
+    if(k!==last){last=k;let m='';try{if(!window.appReady)throw 0;const o=HOOK.planFor()[HOOK.key(HOOK.sel)],r=o&&HOOK.asmLive()&&(HOOK.asmFor(o)?'exact':asmStale&&asmStale(o)?'stale':'');m=r||''}catch{}L.push({t:Math.round(performance.now()),s,d,m})}
     requestAnimationFrame(tick)};requestAnimationFrame(tick)})()`;
 async function open(ctx,label){
   const page=ctx.pages()[0]||await ctx.newPage();const cdp=await ctx.newCDPSession(page);
@@ -55,31 +55,31 @@ async function open(ctx,label){
   // a trace of the plan Today reads (planFor) and of the calls that change it, for the first 20 s
   await page.evaluate(([TRACED,UNTRACED])=>{window.__pl=[];const note=s=>window.__pl.push(Math.round(performance.now())+' '+s);
     if(UNTRACED.length)note('NOT TRACED (called inside their own module): '+UNTRACED.join(', '));const skip=new Set(UNTRACED.map(x=>x.split(' ')[0]));
-    const sum=()=>{try{const o=planFor()[key(sel)];return `${key(sel)} top=${o&&o.top?o.top.primaryColor:null} shirt=${o&&o.shirt?o.shirt.primaryColor:null} items=${items.length} cacheKeys=${Object.keys(cache).join('/')} snap=${cache.snap} pulled=${typeof pulledYet==='function'?pulledYet():'?'} dress=${JSON.stringify(settings.dress)}`}catch(e){return 'err '+e}};
+    const sum=()=>{try{const o=HOOK.planFor()[HOOK.key(HOOK.sel)];return `${HOOK.key(HOOK.sel)} top=${o&&o.top?o.top.primaryColor:null} shirt=${o&&o.shirt?o.shirt.primaryColor:null} items=${HOOK.items.length} cacheKeys=${Object.keys(HOOK.cache).join('/')} snap=${HOOK.cache.snap} pulled=${'pulledYet' in HOOK?HOOK.pulledYet():'?'} dress=${JSON.stringify(HOOK.settings.dress)}`}catch(e){return 'err '+e}};
     note('ready '+sum());
     for(const n of TRACED){if(skip.has(n))continue;const f=window[n];if(typeof f!=='function'){note('NOT TRACED (not a global): '+n);continue}
       window[n]=function(...a){note('call '+n+' '+sum());const r=f.apply(this,a);Promise.resolve(r).then(()=>note('after '+n+': '+sum())).catch(()=>{});return r}}
     let i=0;const iv=setInterval(()=>{note('tick '+sum());if(++i>20)clearInterval(iv)},1000)},[TRACED,UNTRACED]);
   // (a day off today, as on a Saturday: the first open is measured on the next workday, stepped to as soon as the app is ready)
-  const tReady=await page.evaluate(()=>{if(!isWorkday(sel))stepDay(1);return Math.round(performance.now())});
-  const target=await page.evaluate(()=>sel.getFullYear()+'-'+(sel.getMonth()+1)+'-'+sel.getDate());
+  const tReady=await page.evaluate(()=>{if(!HOOK.isWorkday(HOOK.sel))HOOK.stepDay(1);return Math.round(performance.now())});
+  const target=await page.evaluate(()=>HOOK.sel.getFullYear()+'-'+(HOOK.sel.getMonth()+1)+'-'+HOOK.sel.getDate());
   await page.waitForFunction(d=>window.__vis.some(x=>x.d===d&&x.s==='photo'),target,{timeout:180000,polling:100}).catch(()=>{});
   const first={ready:tReady,day:target,log:(await page.evaluate(()=>window.__vis.slice()))};
   // swipes: one workday on at a time, as the swipe does (stepDay), each measured from the step until its picture shows (or 60 s)
   const swipes=[];
   await page.waitForTimeout(1500);   // a short pause, as a person glances at today
   for(let i=0;i<SWIPES;i++){
-    const r=await page.evaluate(async()=>{const n0=window.__vis.length,t=performance.now();stepDay(1);const d=sel.getFullYear()+'-'+(sel.getMonth()+1)+'-'+sel.getDate();
+    const r=await page.evaluate(async()=>{const n0=window.__vis.length,t=performance.now();HOOK.stepDay(1);const d=HOOK.sel.getFullYear()+'-'+(HOOK.sel.getMonth()+1)+'-'+HOOK.sel.getDate();
       const until=Date.now()+60000;while(Date.now()<until){if(window.__vis.slice(n0).some(x=>x.d===d&&x.s==='photo'))break;await new Promise(r=>setTimeout(r,50))}
       const L=window.__vis.slice(n0).filter(x=>x.d===d).map(x=>({...x,t:Math.round(x.t-t)}));const shown=L.find(x=>x.s==='photo');
-      let st={};try{const o=planFor()[key(sel)],k=HOOK.asmCmKind(o),ok=HOOK.asmOutKey(o),t=x=>x?x.type+':'+x.primaryColor:null;st={o:o?{top:t(o.top),shirt:t(o.shirt),tie:t(o.tie),vest:o.vest,suitDay:o.suitDay}:null,
-        dress:JSON.stringify(settings.dress),items:items.length,masterKinds:Object.keys(HOOK.ASM_CM_KINDS).join(),ready:Object.keys(HOOK.ASM_CM_KINDS).map(x=>x+':'+('asmCmHeld' in HOOK&&HOOK.asmCmHeld(x))).join(),kind:k,held:HOOK.asmCmHeld(k),use:HOOK.asmCmUse(o),list:HOOK.asmList?HOOK.asmList.size:null,key:ok,kept:!!HOOK.asmOut[ok],listed:HOOK.asmList&&ok?HOOK.asmList.has(ok):null,busy:HOOK.asmBusy.size,
-        queue:'asmQ' in HOOK?HOOK.asmQ.length:null,ahead:HOOK.asmAheadOn,shown:!!renderFor(o),pre:ok?HOOK.asmPreGetting.has(ok):null,tried:ok?HOOK.asmTried.has('pre:'+ok):null,retry:ok?HOOK.asmRetryAt.get('pre:'+ok)||0:null}}catch(e){st={err:String(e)}}
+      let st={};try{const o=HOOK.planFor()[HOOK.key(HOOK.sel)],k=HOOK.asmCmKind(o),ok=HOOK.asmOutKey(o),t=x=>x?x.type+':'+x.primaryColor:null;st={o:o?{top:t(o.top),shirt:t(o.shirt),tie:t(o.tie),vest:o.vest,suitDay:o.suitDay}:null,
+        dress:JSON.stringify(HOOK.settings.dress),items:HOOK.items.length,masterKinds:Object.keys(HOOK.ASM_CM_KINDS).join(),ready:Object.keys(HOOK.ASM_CM_KINDS).map(x=>x+':'+('asmCmHeld' in HOOK&&HOOK.asmCmHeld(x))).join(),kind:k,held:HOOK.asmCmHeld(k),use:HOOK.asmCmUse(o),list:HOOK.asmList?HOOK.asmList.size:null,key:ok,kept:!!HOOK.asmOut[ok],listed:HOOK.asmList&&ok?HOOK.asmList.has(ok):null,busy:HOOK.asmBusy.size,
+        queue:'asmQ' in HOOK?HOOK.asmQ.length:null,ahead:HOOK.asmAheadOn,shown:!!HOOK.renderFor(o),pre:ok?HOOK.asmPreGetting.has(ok):null,tried:ok?HOOK.asmTried.has('pre:'+ok):null,retry:ok?HOOK.asmRetryAt.get('pre:'+ok)||0:null}}catch(e){st={err:String(e)}}
       return {d,firstState:(L[0]||{}).s,drew:L.some(x=>x.s==='drawing'),ms:shown?shown.t:null,how:shown?shown.m:'',log:L,st}},null);
     swipes.push(r);await page.waitForTimeout(1200)}
   // what the worker keeps for the days measured: one of the PC builder's old pictures, or painted on the phone?
   const built=await page.evaluate(async days=>{try{await HOOK.asmListGet(true)}catch{}const L=HOOK.asmList;const out={};
-    for(const d of days){const [y,m,dd]=d.split('-').map(Number),o=planOn(new Date(y,m-1,dd));if(!o){out[d]='no outfit';continue}await HOOK.asmCmLook(o);const k=HOOK.asmOutKey(o);out[d]=!k?'no master':L&&L.has(k)?'on server':'painted on the phone'}return out},[first.day,...swipes.map(s=>s.d)].filter(Boolean));
+    for(const d of days){const [y,m,dd]=d.split('-').map(Number),o=HOOK.planOn(new Date(y,m-1,dd));if(!o){out[d]='no outfit';continue}await HOOK.asmCmLook(o);const k=HOOK.asmOutKey(o);out[d]=!k?'no master':L&&L.has(k)?'on server':'painted on the phone'}return out},[first.day,...swipes.map(s=>s.d)].filter(Boolean));
   const trace=await page.evaluate(()=>window.__pl||[]);
   return {label,first,swipes,built,trace,worker:{asks,mb:+(bytes/1048576).toFixed(1)},errs:errs.slice(0,5)}}
 (async()=>{

@@ -157,10 +157,10 @@ module.exports=async({ok,chromium,url})=>{
       // to the shirt; vest = the suit master with the lower part of the shirt's front in the V as the waistcoat; vest-open = the vest master
       // with its tie given to the waistcoat below the waistcoat's top and to the shirt above; shirt-open = the shirt-and-tie master with its
       // tie given to the shirt
-      const S0=512,N0=S0*S0,rd=async(kind,z)=>{const d=(await HOOK.asmData(renders[HOOK.asmCmKey(kind,'mask/'+z)].img,S0)).data,a=new Uint8Array(N0);for(let k=0;k<N0;k++)a[k]=d[4*k];return a};
+      const S0=512,N0=S0*S0,rd=async(kind,z)=>{const d=(await HOOK.asmData(HOOK.renders[HOOK.asmCmKey(kind,'mask/'+z)].img,S0)).data,a=new Uint8Array(N0);for(let k=0;k<N0;k++)a[k]=d[4*k];return a};
       const png=a=>{const c=document.createElement('canvas');c.width=c.height=S0;const x=c.getContext('2d'),d=x.createImageData(S0,S0);for(let k=0;k<N0;k++){d.data[4*k]=d.data[4*k+1]=d.data[4*k+2]=a[k];d.data[4*k+3]=255}x.putImageData(d,0,0);return c.toDataURL('image/png')};
-      const put=(kind,n,img)=>{renders[HOOK.asmCmKey(kind,n)]={img,t:1000,sig:'asm/cm test',model:'colormaster'}};
-      const copy=(from,to)=>{for(const n of ['master','part/sleeveR','part/sleeveL','part/lapelR','part/lapelL'])if(renders[HOOK.asmCmKey(from,n)])put(to,n,renders[HOOK.asmCmKey(from,n)].img)};
+      const put=(kind,n,img)=>{HOOK.renders[HOOK.asmCmKey(kind,n)]={img,t:1000,sig:'asm/cm test',model:'colormaster'}};
+      const copy=(from,to)=>{for(const n of ['master','part/sleeveR','part/sleeveL','part/lapelR','part/lapelL'])if(HOOK.renders[HOOK.asmCmKey(from,n)])put(to,n,HOOK.renders[HOOK.asmCmKey(from,n)].img)};
       const add=(a,b,m)=>a.map((v,k)=>Math.min(255,v+(!m||m[k]?b[k]:0)));
       const sm={},st={};for(const z of HOOK.ASM_CM_KINDS.suit.zones)sm[z]=await rd('suit',z);for(const z of HOOK.ASM_CM_KINDS['shirt-tie'].zones)st[z]=await rd('shirt-tie',z);
       copy('suit','suit-open');for(const z of HOOK.ASM_CM_KINDS['suit-open'].zones)put('suit-open','mask/'+z,png(z==='shirt'?add(sm.shirt,sm.tie):sm[z]));
@@ -179,12 +179,12 @@ module.exports=async({ok,chromium,url})=>{
       x.fillStyle='#fbf8f2';x.fillRect(20,45,125,280);x.fillStyle='#7a5c40';x.fillRect(300,380,212,20);x.fillStyle='#2b2d31';x.fillRect(380,320,95,60);
       const id=x.getImageData(0,0,512,512);let s=7;for(let k=0;k<id.data.length;k+=4){s=(Math.imul(s,1103515245)+12345)>>>0;const v=(s/4294967296-.5)*6;id.data[k]+=v;id.data[k+1]+=v;id.data[k+2]+=v}x.putImageData(id,0,0);
       const b=document.createElement('canvas');b.width=b.height=512;const bx=b.getContext('2d');bx.filter='blur(3px)';bx.drawImage(c,0,0);
-      renders[HOOK.asmCmBgKey()]={img:b.toDataURL('image/png'),t:4242,sig:'asm/cm-bg test'};
-      {const own=[];for(const L of LOOKS)for(const q of L.own||[])if(!own.some(x=>x.key===q.key))own.push(q);if(own.length)applyCustom({patterns:own})}   // (own patterns with a look)
+      HOOK.renders[HOOK.asmCmBgKey()]={img:b.toDataURL('image/png'),t:4242,sig:'asm/cm-bg test'};
+      {const own=[];for(const L of LOOKS)for(const q of L.own||[])if(!own.some(x=>x.key===q.key))own.push(q);if(own.length)HOOK.applyCustom({patterns:own})}   // (own patterns with a look)
       let n=0;const I=(type,c,x={})=>({id:type+(n++),type,primaryColor:c,pattern:'solid',...x}),watch=I('watch','silver',{metal:'silver'});HOOK.items=[watch];
       window.__jobs=[];window.__its=[];for(const L of LOOKS){const it=([t,c,x])=>I(t,c,x||{}),top=L.top?it(L.top):null,bot=L.bot?it(L.bot):null,belt=L.belt?I('belt',L.belt):null;
         const sh=Array.isArray(L.shirt)?I('shirt',L.shirt[0],L.shirt[1]):I('shirt',L.shirt),tie=L.tie==null?null:Array.isArray(L.tie)?I('tie',L.tie[0],L.tie[1]):I('tie',L.tie);
-        items.push(...[top,bot,belt,sh,tie].filter(Boolean));const clip=L.clip?I('tieclip',L.clip,{metal:L.clip}):null;
+        HOOK.items.push(...[top,bot,belt,sh,tie].filter(Boolean));const clip=L.clip?I('tieclip',L.clip,{metal:L.clip}):null;
         const o={shirt:sh,watch,...(top?{top}:{}),...(bot?{bot}:{}),...(belt?{belt}:{}),...(tie?{tie}:{}),...(L.vest?{vest:true}:{}),...(L.suitBot?{suitBot:true}:{}),...(clip?{clip}:{})};
         const j=await HOOK.asmCmJob(o);if(!j)return {err:'no job for '+L.name+' ('+HOOK.asmCmKind(o)+')'};Object.assign(j,L.jx||{});j.diskCache=false;__jobs.push(j);__its.push({sh,tie,bot})}
       // stand-in solved positions at the maps' 2048: the body piece 1, sleeve parts 10+, lapels 40+ (from the master's own parts at 512), each
@@ -225,7 +225,7 @@ module.exports=async({ok,chromium,url})=>{
         const J0=__jobs[i].cloth.jacket||__jobs[i].cloth.trousers,T=J0.suit,C=T&&T.cloth,W=T&&T.wv,has=!T?'':[T.TW>1||T.TH>1?'tile':'',T.k!=null?'k':'',C?C.kind+(C.cw?'-cols':''):'',C&&(C.yarn||C.float||C.grain||C.mottle||C.pbrk)?'hbx':'',
           T.tweed?'tweed':'',W?'wv-'+W.kind:'',(C&&C.c2)||(T.tweed&&T.c2)||(W&&W.c2)?'c2':''].filter(Boolean).join(',');
         // (stage 4) the tie's and shirt's tiles
-        const it=__its[i],cl=__jobs[i].cloth,ts=it.tie?usableSett(it.tie):null,ss=usableSett(it.sh),how=it.tie?HOOK.asmCmRoute(it.tie,'tie').how:'',TI=cl.tie&&cl.tie.tie,SH=cl.shirt.tile;
+        const it=__its[i],cl=__jobs[i].cloth,ts=it.tie?HOOK.usableSett(it.tie):null,ss=HOOK.usableSett(it.sh),how=it.tie?HOOK.asmCmRoute(it.tie,'tie').how:'',TI=cl.tie&&cl.tie.tie,SH=cl.shirt.tile;
         // (stage 5) the master and what it has
         const cm=__jobs[i].cm,P=(await HOOK.asmCmSetup(__jobs[i])).P;
         const has2=[has,TI?(how==='tie'?(ts.bands?'tie-bands':ts.motif?'tie-motif':'tie-tex-'+ts.tex.kind):'tie-'+how):'',TI&&TI.across===HOOK.ASM_TIE_TEX_MAX?'texmax':'',__jobs[i].bar?'clip':'',
@@ -239,11 +239,11 @@ module.exports=async({ok,chromium,url})=>{
         ok(r.max<=2&&r.mean<.1,`${L.name}: GL and CPU agree (largest difference ${r.max}, mean ${r.mean.toFixed(4)}, pixels over 2: ${r.over}; CPU ${r.cms} ms, GL ${r.gms} ms at ${SIZE}; tiles ${r.tkb} KB; textures ${r.mb} MB, ${r.cm})`)}
       else ok(r.gl===false&&L.why.test(r.why)&&r.max===0,`${L.name}: not covered (${r.why}): painted on the CPU either way, the same picture`)}
     // an own pattern's look in the look's key: changing an item to it, or re-describing it, gives a new key (phones and the PC repaint)
-    const ks=await p.evaluate(async()=>{const w=items[0],sh={id:'k1',type:'shirt',primaryColor:'white',pattern:'solid'},tie={id:'k2',type:'tie',primaryColor:'navy',pattern:'solid'},top={id:'k3',type:'blazer',primaryColor:'navy',pattern:'nailhead'};
+    const ks=await p.evaluate(async()=>{const w=HOOK.items[0],sh={id:'k1',type:'shirt',primaryColor:'white',pattern:'solid'},tie={id:'k2',type:'tie',primaryColor:'navy',pattern:'solid'},top={id:'k3',type:'blazer',primaryColor:'navy',pattern:'nailhead'};
       const o=()=>({top,shirt:sh,tie,watch:w}),k0=HOOK.asmCmSig(o());top.pattern='own-hopsack';const k1=HOOK.asmCmSig(o()),route=HOOK.asmCmRoute(top,'jacket').how,j=await HOOK.asmCmJob(o()),T=j.cloth.jacket.suit;
       let lo=1,hi=0;for(let k=0;k<T.t.length;k+=3){lo=Math.min(lo,T.t[k]);hi=Math.max(hi,T.t[k])}
-      const all=Object.values(CUSTOM_PAT),was=CUSTOM_PAT['own-hopsack'];applyCustom({patterns:all.map(q=>q.key==='own-hopsack'?{...q,look:{...q.look,tr:40}}:q)});const k2=HOOK.asmCmSig(o()),mm2=(await HOOK.asmCmJob(o())).cloth.jacket.suit.mm;
-      applyCustom({patterns:all.map(q=>q.key==='own-hopsack'?was:q)});return {k0,k1,k2,route,tw:T.TW,swing:(hi-lo)/T.c[0],mm:T.mm,mm2,lk:/\/lk1l/.test(k1)}});
+      const all=Object.values(HOOK.CUSTOM_PAT),was=HOOK.CUSTOM_PAT['own-hopsack'];HOOK.applyCustom({patterns:all.map(q=>q.key==='own-hopsack'?{...q,look:{...q.look,tr:40}}:q)});const k2=HOOK.asmCmSig(o()),mm2=(await HOOK.asmCmJob(o())).cloth.jacket.suit.mm;
+      HOOK.applyCustom({patterns:all.map(q=>q.key==='own-hopsack'?was:q)});return {k0,k1,k2,route,tw:T.TW,swing:(hi-lo)/T.c[0],mm:T.mm,mm2,lk:/\/lk1l/.test(k1)}});
     ok(ks.k0!==ks.k1&&ks.k1!==ks.k2&&ks.lk,'an item changed to an own pattern, and the pattern re-described, each give the look a new key (/lk…)');
     ok(ks.route==='look'&&ks.tw===48&&ks.swing>.08&&ks.swing<.2&&Math.abs(ks.mm-550/70)<.01&&Math.abs(ks.mm2-550/40)<.01,`the jacket is painted from the look's weave map: one 4x4 repeat, 550 mm / its repeats across (${ks.mm.toFixed(2)} mm, swing ${ks.swing.toFixed(3)} of its colour)`);
     // fallbacks: no WebGL2 at all, then a lost context, then the retry
@@ -261,7 +261,7 @@ module.exports=async({ok,chromium,url})=>{
     ok(fb.lost===false&&fb.lostPx&&fb.waiting,'a lost context: that look is painted on the CPU (a whole picture), and the graphics chip waits ASM_GL_RETRY_MS');
     ok(fb.again===true,'after the wait a new context paints on the graphics chip again');
     // the routing: the job carries this phone's switch; the page paints a covered look only when the worker has no WebGL2; the real worker
-    const rt=await p.evaluate(async()=>{const it=items,o={top:it[1],shirt:it[2],tie:it[3],watch:it[0]},out={};
+    const rt=await p.evaluate(async()=>{const it=HOOK.items,o={top:it[1],shirt:it[2],tie:it[3],watch:it[0]},out={};
       out.on=(await HOOK.asmCmJob(o)).gl;localStorage.setItem('asm_gl','0');out.off=(await HOOK.asmCmJob(o)).gl;localStorage.removeItem('asm_gl');
       const cov=__jobs[0],unc=__jobs[__jobs.length-1];
       out.page=[HOOK.asmGlOnPage(cov,{ok:true,gl:false}),HOOK.asmGlOnPage(cov,{ok:true,gl:true}),HOOK.asmGlOnPage(unc,{ok:true,gl:false}),HOOK.asmGlOnPage({...cov,gl:false},{ok:true,gl:false})];

@@ -13,15 +13,15 @@ module.exports=async({ok,chromium,url})=>{
       const BANDS={v:2,a:0,bands:[['#22252b',.9],['#cfd2d6',.1]],tr:20,cr:5,src:'claude+pixels'},
         MOTIF={v:3,a:0,motif:{grid:'square',ground:'#22252b',figs:[{shape:'dot',place:'centre',size:.3,cols:['#cfd2d6']}]},tr:10,cr:10,src:'claude+pixels'},
         TEX={v:4,tex:{kind:'dobby',grid:[[1,0],[0,1]],lighter:true,contrast:.3,rel:.05},cr:20,tr:60,src:'claude+pixels'};
-      const zone=HOOK.ASM_CM_ZONE,out={missing:tagged.filter(t=>!Object.values(PATS_BY).some(l=>l.includes(t))),bad:[],afterRead:[],painter:[],reading:[]};
-      for(const [type,pats] of Object.entries(PATS_BY)){const z=zone[type];if(!z)continue;
+      const zone=HOOK.ASM_CM_ZONE,out={missing:tagged.filter(t=>!Object.values(HOOK.PATS_BY).some(l=>l.includes(t))),bad:[],afterRead:[],painter:[],reading:[]};
+      for(const [type,pats] of Object.entries(HOOK.PATS_BY)){const z=zone[type];if(!z)continue;
         for(const pat of pats){const it={id:'x',type,primaryColor:'navy',pattern:pat},rt=HOOK.asmCmRoute(it,z),key=`${type}/${pat}`;
           if(rt.gap==='painter'){if(!HOOK.ASM_NO_PAINTER[z==='waistcoat'?'jacket':z].includes(pat))out.bad.push(key+': '+rt.why);out.painter.push(key)}
-          else if(rt.gap==='reading'){if(!readable(type,pat,null))out.bad.push(key+' waits for a reading it can never get');out.reading.push(key)}
+          else if(rt.gap==='reading'){if(!HOOK.readable(type,pat,null))out.bad.push(key+' waits for a reading it can never get');out.reading.push(key)}
           else if(rt.how==='plain')out.bad.push(key+' plain with no reason');
           if(rt.gap&&!rt.why)out.bad.push(key+' gives no reason');
           // read: what the reader would give it
-          if(readable(type,pat,null)){const s=HOOK.motifPat(pat)?MOTIF:(texPat(type,pat)||tieWeave(type,pat))?TEX:BANDS,rr=HOOK.asmCmRoute({...it,sett:s},z);
+          if(HOOK.readable(type,pat,null)){const s=HOOK.motifPat(pat)?MOTIF:(HOOK.texPat(type,pat)||HOOK.tieWeave(type,pat))?TEX:BANDS,rr=HOOK.asmCmRoute({...it,sett:s},z);
             if(rr.gap)out.afterRead.push(`${key}: ${rr.why}`)}}}
       return out},tagged);
     ok(tagged.length>20&&!r.missing.length,`every pattern the tagger can answer is listed for some item type (${tagged.length}; missing: ${r.missing.join(', ')||'none'})`);
@@ -41,8 +41,8 @@ module.exports=async({ok,chromium,url})=>{
     ok(mk.join()==='houndstooth,sharkskin,birdseye,nailhead,houndstooth,knit,paisley,houndstooth,32,true',`houndstooth, sharkskin, birdseye and nailhead jackets and trousers, knit and paisley ties are painted (${mk})`);
     // the item sheet says so, and Settings lists it with one tap to read
     const ui=await p.evaluate(()=>{HOOK.items=[{id:'g1',type:'suit',primaryColor:'navy',pattern:'pinstripe'},{id:'g2',type:'blazer',primaryColor:'navy',pattern:'other'},{id:'g3',type:'suit',primaryColor:'navy',pattern:'solid'}];
-      const note=HOOK.asmGapNote(items[0]),none=HOOK.asmGapNote(items[2]),gaps=HOOK.asmCmGaps().map(x=>x.i.id+':'+x.r.gap);
-      const host=document.createElement('div');host.id='asm-group';document.body.appendChild(host);HOOK.asmCmUI();const html=$('#cm-gaps').innerHTML;host.remove();
+      const note=HOOK.asmGapNote(HOOK.items[0]),none=HOOK.asmGapNote(HOOK.items[2]),gaps=HOOK.asmCmGaps().map(x=>x.i.id+':'+x.r.gap);
+      const host=document.createElement('div');host.id='asm-group';document.body.appendChild(host);HOOK.asmCmUI();const html=HOOK.$('#cm-gaps').innerHTML;host.remove();
       return {note,none,gaps,list:/Painted plain \(2\)/.test(html),btn:/Read 1 pattern/.test(html)}});
     ok(/Read pattern from photo/.test(ui.note)&&ui.none===''&&ui.gaps.join()==='g1:reading,g2:painter',`the item sheet says why a piece is painted plain ("${ui.note.replace(/<[^>]+>/g,'')}"), and only for such a piece`);
     ok(ui.list&&ui.btn,'Settings lists the pieces painted plain, with one button to read the readable ones');

@@ -35,7 +35,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // a phone: the master downloaded, its setup worked out once and kept; read back afterwards instead of worked out again
     renderGets=[];blobGets=0;
     const r=await A.p.evaluate(async()=>{HOOK.asmCmSrcSig();let prep=0;const p0=HOOK.asmCmPrep;HOOK.asmCmPrep=async(...a)=>{prep++;return p0(...a)};   // (fingerprinted first: a wrapped asmCmPrep is other source)
-      const got=await HOOK.asmCmGet('suit'),m=renders[HOOK.asmCmKey('suit','master')],job=HOOK.asmCmBaseJob('suit');
+      const got=await HOOK.asmCmGet('suit'),m=HOOK.renders[HOOK.asmCmKey('suit','master')],job=HOOK.asmCmBaseJob('suit');
       await HOOK.asmCmSetup(job);for(let i=0;i<100&&!(await HOOK.asmCmDiskGet(HOOK.asmCmDiskKey(job)));i++)await new Promise(ok=>setTimeout(ok,50));   // (saved while the picture is painted)
       const kept=!!(await HOOK.asmCmDiskGet(HOOK.asmCmDiskKey(job)));const prep1=prep;
       HOOK.asmCmMem=null;const hit=await HOOK.asmCmSetup(job);HOOK.asmCmPrep=p0;

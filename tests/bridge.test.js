@@ -606,6 +606,10 @@ const BARE_READS_CHECK=false;
 /* the files that read a bridged name on an older build (tests/replay R.old(sha), which has no HOOK), and the names: they stay bare
    there. The groups fill this in for the uses that really run on an old build; every other use is rewritten */
 const READS_KEPT={
+  // S6t1: phones A and B run the app of 40dbc2c (module bridge, no HOOK) to connect the calendar; C runs today's through HOOK
+  'tests/replay/scripts/CR-6-20.js':['openSettings','settings'],
+  // S6t1: buildLegacy's phone runs c4a549b (classic scripts, no HOOK) until the update; openItemByName runs only there
+  'tests/replay/scripts/_verify3-lib.js':['items','kitEdited','settings'],
   'tests/garmentpaint.test.js':['ASM_CM_BTN','ASM_CM_KINDS','SLOTS','asmCmCodeSig','asmCmMf','asmCmSig','asmCmSrcSig','dayClimate','dayRecs','di',
     'hasVest','inRotation','isWorkday','items','key','occOf','settings','todayDate'],   // S6t2: the page of #511's base (before HOOK) gets a HOOK of its own from its globals, for keysOf and the fixed plan
   'tests/replay/scripts/W1-1-02.js':['appVersion'],   // S6t2: the first open after the update runs the old cached app (12 Nov, no HOOK)
@@ -613,6 +617,15 @@ const READS_KEPT={
   'tools/fill-material.js':['itemFields'],   // S6t2: not the page's: the string handed to Function declares itemFields (core.js's text) and returns it
   /* S6t3: its old phone runs 26cd8b1, 7a28f96 and c4a549b (RP.old), which have no HOOK; today's phone reads them through HOOK */
   'tests/replay/scripts/CR-6-12.js':['items','syncNow','syncRun'],
+  /* S6t4: phone P runs the 15 Nov c4a549b app (no HOOK) and Q today's: sync() and rules() read HOOK when the page has one, else
+     these globals; P's Add steps and setLaundry run on the old app alone */
+  'tests/replay/scripts/W1-4-01.js':['PLAN_RULES','items','metaGet','openSettings','queue','settings','syncNow','syncRun','syncing'],
+  /* S6t4: oldAddCards runs on the 14 Nov 7a28f96 app (no HOOK); reopenNew reads PLAN_RULES bare only while the page is still that app */
+  'tests/replay/scripts/_verify2-lib.js':['PLAN_RULES','items','queue','settings'],
+  /* S6t4: the 14 Nov import's result is read on that app (7a28f96, no HOOK), before the update */
+  'tests/replay/scripts/W1-2-01.js':['items'],
+  /* S6t4: origin/main's draw.js run in a scope of its own (new Function): the two names are that source's own declarations, not the page's */
+  'tests/garmentdraw.test.js':['itemThumb','swatchSVG'],
 };
 /* the names a test also uses on an older build, which has no HOOK (T2 phase 3): they stay globals there, so --to-hook leaves them */
 const OLD_BUILD=new Set(['syncing','kitEdited','asmCmMf','asmCmCodeSig','asmCmSig','asmCmSrcSig']);

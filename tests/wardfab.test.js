@@ -12,7 +12,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     for(const [w,h] of [[390,844],[690,960],[1280,900]]){const tag=`${w}×${h}`;
       const ctx=await browser.newContext({viewport:{width:w,height:h},hasTouch:true,...(WK?{}:{isMobile:true})});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
       await p.goto(url);await p.waitForFunction(()=>window.appReady);
-      await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};HOOK.flt='all';show('wardrobe')})()`);
+      await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};HOOK.flt='all';HOOK.show('wardrobe')})()`);
       await settle(p,600);
       const fab=()=>p.evaluate(()=>{const b=document.querySelector('#ward-add'),r=b.getBoundingClientRect(),cs=getComputedStyle(b),nav=document.querySelector('body>nav').getBoundingClientRect(),m=document.querySelector('main').getBoundingClientRect();
         return {shown:cs.display!=='none'&&r.width>0,x:r.left,y:r.top,w:r.width,h:r.height,right:r.right,bottom:r.bottom,pos:cs.position,rad:cs.borderRadius,navTop:nav.top,mainRight:m.right,vw:innerWidth,
@@ -43,7 +43,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
       await p.evaluate(()=>document.activeElement.blur());
       // an Undo on the Wardrobe is a round button above the + with a gold ring running down (2026-11-17, the owner's pick); a plain toast
       // sits above the + too; on Today an Undo stays the toast above the tab bar
-      const und=()=>p.evaluate(async()=>{window.__u=0;toast('Deleted Navy suit',8000,{label:'Undo',fn:()=>{window.__u++}});await new Promise(r=>setTimeout(r,350));const u=document.querySelector('#undo-fab'),r=u.getBoundingClientRect(),b=document.querySelector('#ward-add').getBoundingClientRect(),cs=getComputedStyle(u),ring=getComputedStyle(u.querySelector('.ufc'));
+      const und=()=>p.evaluate(async()=>{window.__u=0;HOOK.toast('Deleted Navy suit',8000,{label:'Undo',fn:()=>{window.__u++}});await new Promise(r=>setTimeout(r,350));const u=document.querySelector('#undo-fab'),r=u.getBoundingClientRect(),b=document.querySelector('#ward-add').getBoundingClientRect(),cs=getComputedStyle(u),ring=getComputedStyle(u.querySelector('.ufc'));
         return {shown:cs.display!=='none'&&r.width>0,w:r.width,h:r.height,rad:cs.borderRadius,ub:r.bottom,ux:r.left+r.width/2,bx:b.left+b.width/2,bt:b.top,label:u.getAttribute('aria-label'),toastOn:document.querySelector('#toast').classList.contains('on'),anim:ring.animationName,dur:ring.animationDuration,txt:u.textContent.trim()}});
       let u=await und();
       ok(u.shown&&u.w===56&&u.h===56&&u.rad==='50%'&&u.txt==='Undo'&&!u.toastOn,`  an Undo is a round 56px "Undo" button, not the toast (${u.w}×${u.h}, toast ${u.toastOn?'on':'off'})`);
@@ -52,25 +52,25 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
       if(WK)await p.click('#undo-fab');else{const c=await ctx.newCDPSession(p);await c.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:u.ux,y:u.ub-28}]});await c.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]})}
       await settle(p,300);
       ok(await p.evaluate(()=>window.__u===1&&getComputedStyle(document.querySelector('#undo-fab')).display==='none'),'  a tap undoes once and the button goes');
-      await p.evaluate(()=>{toast('Deleted Navy suit',300,{label:'Undo',fn:()=>{}})});await p.waitForTimeout(8400);
+      await p.evaluate(()=>{HOOK.toast('Deleted Navy suit',300,{label:'Undo',fn:()=>{}})});await p.waitForTimeout(8400);
       ok(await p.evaluate(()=>getComputedStyle(document.querySelector('#undo-fab')).display==='none'),'  left alone, it goes after 8 seconds, leaving the +');
-      const ts=await p.evaluate(()=>{toast('Saved.');const t=document.querySelector('#toast').getBoundingClientRect(),b=document.querySelector('#ward-add').getBoundingClientRect();return {tb:t.bottom,ft:b.top}});
+      const ts=await p.evaluate(()=>{HOOK.toast('Saved.');const t=document.querySelector('#toast').getBoundingClientRect(),b=document.querySelector('#ward-add').getBoundingClientRect();return {tb:t.bottom,ft:b.top}});
       ok(ts.tb<=ts.ft-8,`  a plain toast sits above the + (toast bottom ${Math.round(ts.tb)}, button top ${Math.round(ts.ft)})`);
       await p.click('#n-today');await settle(p,400);
-      const td=await p.evaluate(()=>{toast('Deleted Navy suit',8000,{label:'Undo',fn:()=>{}});const t=document.querySelector('#toast'),nav=document.querySelector('body>nav').getBoundingClientRect();return {on:t.classList.contains('on'),btn:!!t.querySelector('button'),gap:nav.top-t.getBoundingClientRect().bottom,fab:getComputedStyle(document.querySelector('#undo-fab')).display}});
+      const td=await p.evaluate(()=>{HOOK.toast('Deleted Navy suit',8000,{label:'Undo',fn:()=>{}});const t=document.querySelector('#toast'),nav=document.querySelector('body>nav').getBoundingClientRect();return {on:t.classList.contains('on'),btn:!!t.querySelector('button'),gap:nav.top-t.getBoundingClientRect().bottom,fab:getComputedStyle(document.querySelector('#undo-fab')).display}});
       ok(td.on&&td.btn&&td.gap<=20&&td.fab==='none',`  on Today an Undo is the toast above the tab bar, as before (${Math.round(td.gap)}px above)`);
-      await p.evaluate(()=>{toastDrop();document.querySelector('#toast').classList.remove('on')});await p.click('#n-wardrobe');await settle(p,400);
+      await p.evaluate(()=>{HOOK.toastDrop();document.querySelector('#toast').classList.remove('on')});await p.click('#n-wardrobe');await settle(p,400);
       // hidden under the item sheet, Settings and What to buy
-      await p.evaluate(()=>openItem(items[3].id));await settle(p,600);
+      await p.evaluate(()=>HOOK.openItem(HOOK.items[3].id));await settle(p,600);
       ok(!(await fab()).shown,'  hidden while the item sheet is open');
       await p.evaluate(()=>HOOK.closeItem());await settle(p,600);
       ok((await fab()).shown,'  back when it closes');
-      await p.evaluate(()=>openSettings());await settle(p,300);
+      await p.evaluate(()=>HOOK.openSettings());await settle(p,300);
       ok(!(await fab()).shown,'  hidden under Settings');
-      await p.evaluate(()=>closeSettings());await settle(p,300);
-      await p.evaluate(()=>openPicker&&openPicker('tie'));await settle(p,500);
+      await p.evaluate(()=>HOOK.closeSettings());await settle(p,300);
+      await p.evaluate(()=>HOOK.openPicker&&HOOK.openPicker('tie'));await settle(p,500);
       const pk=await p.evaluate(()=>!!document.querySelector('#pick-sheet.on'));
-      if(pk){ok(!(await fab()).shown,'  hidden under the picker sheet');await p.evaluate(()=>closePicker());await settle(p,500)}
+      if(pk){ok(!(await fab()).shown,'  hidden under the picker sheet');await p.evaluate(()=>HOOK.closePicker());await settle(p,500)}
       // Today and Insights: none
       await p.click('#n-today');await settle(p,500);
       ok(!(await fab()).shown,'  not on Today');
@@ -95,7 +95,7 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     // reduced motion: no pop-in
     for(const rm of ['no-preference','reduce']){const ctx=await browser.newContext({viewport:{width:390,height:844},reducedMotion:rm});const p=await ctx.newPage();
       await p.goto(url);await p.waitForFunction(()=>window.appReady);
-      await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.cache={};show('wardrobe')})()`);
+      await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.cache={};HOOK.show('wardrobe')})()`);
       const an=await p.evaluate(()=>getComputedStyle(document.querySelector('#ward-add')).animationName);
       ok(rm==='reduce'?an==='none':an==='fabIn',`reduced motion ${rm}: ${rm==='reduce'?'the button appears at once':'the button pops in'} (${an})`);
       await ctx.close()}

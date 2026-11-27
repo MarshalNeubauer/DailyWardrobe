@@ -39,9 +39,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const sp=await p.evaluate(async SPEC=>{const ld=async s=>{const im=new Image();im.src=s;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);return c};
       const ph=await ld('tests/fixtures/blazer-windowpane.jpg'),tx=await ld('tests/fixtures/blazer-windowpane-closeup.jpg');
       const spec={...SPEC,across:{bands:SPEC.across.bands.map(b=>({...b,w:b.widthPct/100}))},along:{bands:SPEC.along.bands.map(b=>({...b,w:b.widthPct/100}))}};
-      const s=settFromSpec(spec,{full:ph,box:{x:220,y:420,w:180,h:280},tex:tx,type:'blazer'}),L=h=>rgbLab(...hexRgb(h)),C=l=>Math.hypot(l[1],l[2]);
-      const plainClose=settFromSpec(spec,{tex:tx,type:'blazer'}),gl=L(s.bands[0][0]),gc=L(plainClose.bands[0][0]),blue=L(s.bands[3][0]),white=L(s.bands[1][0]);
-      const tie=settFromSpec({...spec,stripeDirection:'upper-left to lower-right'},{tex:tx,type:'tie'});
+      const s=HOOK.settFromSpec(spec,{full:ph,box:{x:220,y:420,w:180,h:280},tex:tx,type:'blazer'}),L=h=>HOOK.rgbLab(...HOOK.hexRgb(h)),C=l=>Math.hypot(l[1],l[2]);
+      const plainClose=HOOK.settFromSpec(spec,{tex:tx,type:'blazer'}),gl=L(s.bands[0][0]),gc=L(plainClose.bands[0][0]),blue=L(s.bands[3][0]),white=L(s.bands[1][0]);
+      const tie=HOOK.settFromSpec({...spec,stripeDirection:'upper-left to lower-right'},{tex:tx,type:'tie'});
       return {s,ground:gl,groundClose:gc,blue,blueC:C(blue),white,tieA:tie.a}},SPEC);
     ok(sp.s.src==='claude+pixels'&&sp.s.bands.length===6&&sp.s.cross&&sp.s.cross.bands.filter(b=>b[0]).length===3&&sp.s.cross.r===1.1&&sp.s.cr===3.5&&sp.s.tr===9,'the windowpane is drawn from Claude\'s bands: the white-blue-white group both ways, the pane shape, 3.5 panes in the close-up and 9 across the jacket');
     ok(Math.abs(sp.ground[0]-71)<4&&sp.ground[0]>sp.groundClose[0]+5,`the close-up's exposure is matched to the jacket photo's (ground L* ${sp.ground[0].toFixed(0)}, the close-up alone ${sp.groundClose[0].toFixed(0)})`);
@@ -50,38 +50,38 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(sp.tieA===-45,'a tie\'s stripes take Claude\'s direction');
     // the user's navy pinstripe suit: no pattern box saved, and the item photo is mostly wall and the next jackets
     const ps=await p.evaluate(async()=>{const ld=async s=>{const im=new Image();im.src=s;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);return c};
-      const ph=await ld('tests/fixtures/suit-pinstripe.jpg'),tx=await ld('tests/fixtures/suit-pinstripe-closeup.jpg'),nv='#2b365a',ln='#a3aecb',L=h=>rgbLab(...hexRgb(h));
+      const ph=await ld('tests/fixtures/suit-pinstripe.jpg'),tx=await ld('tests/fixtures/suit-pinstripe-closeup.jpg'),nv='#2b365a',ln='#a3aecb',L=h=>HOOK.rgbLab(...HOOK.hexRgb(h));
       const spec={layout:'stripes',across:{bands:[{role:'ground',name:'navy',hex:nv,w:.47},{role:'line',name:'pale blue-grey',hex:ln,w:.06},{role:'ground',name:'navy',hex:nv,w:.47}]},along:null,stripeDirection:'vertical',repeatsInCloseup:7,repeatsAcrossItem:40,paneAspect:1};
-      const d=s=>dE00(L(s.bands[0][0]),L(nv)),noBox=settFromSpec(spec,{full:ph,tex:tx,type:'suit'}),wall=settFromSpec(spec,{full:ph,box:{x:0,y:250,w:270,h:110},tex:tx,type:'suit'});
+      const d=s=>HOOK.dE00(L(s.bands[0][0]),L(nv)),noBox=HOOK.settFromSpec(spec,{full:ph,tex:tx,type:'suit'}),wall=HOOK.settFromSpec(spec,{full:ph,box:{x:0,y:250,w:270,h:110},tex:tx,type:'suit'});
       return {noBox:d(noBox),wall:d(wall),line:L(noBox.bands[1][0])[0],ground:L(noBox.bands[0][0])[0]}});
     ok(ps.noBox<10&&ps.ground<35,`without a pattern box the close-up keeps its own exposure: the pinstripe suit stays navy (ΔE00 ${ps.noBox.toFixed(1)} from Claude's navy, L* ${ps.ground.toFixed(0)})`);
     ok(ps.wall<15&&ps.line>ps.ground+20,`a box over the wall can't lift the navy past 15 ΔE00 (${ps.wall.toFixed(1)}); the stripe stays light`);
     const mig=await p.evaluate(async()=>{const tex=await (await fetch('tests/fixtures/suit-pinstripe-closeup.jpg')).blob(),url=await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(tex)});
       const spec={layout:'stripes',across:{bands:[{role:'ground',name:'navy',hex:'#2b365a',w:.47},{role:'line',name:'pale blue-grey',hex:'#a3aecb',w:.06},{role:'ground',name:'navy',hex:'#2b365a',w:.47}]},along:null,stripeDirection:'vertical',repeatsInCloseup:7,repeatsAcrossItem:40,paneAspect:1};
       const it={id:'pinsuit',type:'suit',primaryColor:'navy',pattern:'pinstripe',texture:url,patternSpec:spec,sett:{v:2,a:0,bands:[['#63657d',.47],['#b1b6ce',.06],['#63657d',.47]],cross:null,cr:7,tr:40,src:'claude+pixels'}};
-      items.push(it);await put(it);localStorage.removeItem('spec_recolour');const n=await recolourSpecSetts(),again=await recolourSpecSetts();
-      const L=rgbLab(...hexRgb(it.sett.bands[0][0]));items.splice(items.indexOf(it),1);return {n,again,L:L[0],d:dE00(L,rgbLab(...hexRgb('#2b365a'))),flag:localStorage.getItem('spec_recolour')}});
+      HOOK.items.push(it);await HOOK.put(it);localStorage.removeItem('spec_recolour');const n=await HOOK.recolourSpecSetts(),again=await HOOK.recolourSpecSetts();
+      const L=HOOK.rgbLab(...HOOK.hexRgb(it.sett.bands[0][0]));HOOK.items.splice(HOOK.items.indexOf(it),1);return {n,again,L:L[0],d:HOOK.dE00(L,HOOK.rgbLab(...HOOK.hexRgb('#2b365a'))),flag:localStorage.getItem('spec_recolour')}});
     ok(mig.n===1&&mig.again===0&&mig.d<10&&mig.L<35&&mig.flag==='3',`a saved lavender pinstripe is recoloured once on start from its saved reading (L* ${mig.L.toFixed(0)}, ΔE00 ${mig.d.toFixed(1)} from navy)`);
     // a reading with a pattern box is recoloured too, from the box in the item photo (it was skipped, and kept its dull lines)
     const bx=await p.evaluate(async SPEC=>{const du=async u=>{const b=await (await fetch(u)).blob();return await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b)})};
       const spec={...SPEC,across:{bands:SPEC.across.bands.map(b=>({...b,w:b.widthPct/100}))},along:{bands:SPEC.along.bands.map(b=>({...b,w:b.widthPct/100}))}};
       const it={id:'wpbox',type:'blazer',primaryColor:'khaki',pattern:'windowpane',photo:await du('tests/fixtures/blazer-windowpane.jpg'),texture:await du('tests/fixtures/blazer-windowpane-closeup.jpg'),pbox:{x:220,y:420,w:180,h:280},patternSpec:spec,
         sett:{v:2,a:0,bands:spec.across.bands.map(b=>['#808080',b.w]),cross:{d:90,bands:spec.along.bands.map(b=>[b.role==='ground'?null:'#808080',b.w]),r:1.1},cr:3.5,tr:9,src:'claude+pixels'}};
-      items.push(it);await put(it);localStorage.removeItem('spec_recolour');const n=await recolourSpecSetts();items.splice(items.indexOf(it),1);
+      HOOK.items.push(it);await HOOK.put(it);localStorage.removeItem('spec_recolour');const n=await HOOK.recolourSpecSetts();HOOK.items.splice(HOOK.items.indexOf(it),1);
       return {n,grey:it.sett.bands.filter(b=>b[0]==='#808080').length}},SPEC);
     ok(bx.n===1&&bx.grey===0,`a reading with a pattern box is recoloured once too (${bx.n} recoloured, ${bx.grey} bands left gray)`);
     // a tie of equal navy and blue stripes, and one with thin white edging beside a grey band (the owner's, 2026-11-12): the ground
     // is measured from the pixels nearest Claude's ground (the whole close-up's median landed between navy and blue), a tie's
     // stripes get none of the ground mixed in, and a thin line's colour comes from its pixels furthest from the ground
-    const eq=await p.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=300;const g=c.getContext('2d'),L=h=>rgbLab(...hexRgb(h));
+    const eq=await p.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=300;const g=c.getContext('2d'),L=h=>HOOK.rgbLab(...HOOK.hexRgb(h));
       for(let x=-300;x<600;x+=60){g.fillStyle='#24243e';g.beginPath();g.moveTo(x,0);g.lineTo(x+30,0);g.lineTo(x+330,300);g.lineTo(x+300,300);g.fill();g.fillStyle='#5387c2';g.beginPath();g.moveTo(x+30,0);g.lineTo(x+60,0);g.lineTo(x+360,300);g.lineTo(x+330,300);g.fill()}
       const spec={layout:'stripes',across:{bands:[{role:'ground',name:'navy',hex:'#1e2347',w:.5},{role:'line',name:'blue',hex:'#5b8fd0',w:.5}]},along:null,stripeDirection:'upper-left to lower-right',repeatsInCloseup:5,repeatsAcrossItem:2.5,paneAspect:1};
-      const s=settFromSpec(spec,{tex:c,type:'tie'});
+      const s=HOOK.settFromSpec(spec,{tex:c,type:'tie'});
       const w=document.createElement('canvas');w.width=w.height=300;const h=w.getContext('2d');h.fillStyle='#141e33';h.fillRect(0,0,300,300);h.filter='blur(1px)';
       for(let x=0;x<300;x+=75){h.fillStyle='#e8e8e6';h.fillRect(x,0,3,300);h.fillStyle='#8b8d93';h.fillRect(x+3,0,17,300);h.fillStyle='#e8e8e6';h.fillRect(x+20,0,3,300)}
       const spec2={layout:'stripes',across:{bands:[{role:'ground',name:'navy',hex:'#1f2d4e',w:.69},{role:'line',name:'white',hex:'#e4e4e2',w:.04},{role:'line',name:'grey',hex:'#9a9ea7',w:.23},{role:'line',name:'white',hex:'#e4e4e2',w:.04}]},along:null,stripeDirection:'vertical',repeatsInCloseup:4,repeatsAcrossItem:2.5,paneAspect:1};
-      const s2=settFromSpec(spec2,{tex:w,type:'tie'});
-      return {navy:dE00(L(s.bands[0][0]),L('#24243e')),blue:dE00(L(s.bands[1][0]),L('#5387c2')),white:L(s2.bands[1][0])[0],grey:L(s2.bands[2][0])[0]}});
+      const s2=HOOK.settFromSpec(spec2,{tex:w,type:'tie'});
+      return {navy:HOOK.dE00(L(s.bands[0][0]),L('#24243e')),blue:HOOK.dE00(L(s.bands[1][0]),L('#5387c2')),white:L(s2.bands[1][0])[0],grey:L(s2.bands[2][0])[0]}});
     ok(eq.navy<2&&eq.blue<2,`a half-navy, half-blue tie keeps both colors (ΔE00 ${eq.navy.toFixed(1)} and ${eq.blue.toFixed(1)} from the cloth)`);
     ok(eq.white>82&&eq.grey>62&&eq.white>eq.grey+12,`a tie's thin white edging stays lighter than the gray band it borders (L* ${eq.white.toFixed(0)} against ${eq.grey.toFixed(0)})`);
     // a tie's read stripes and figures are drawn without the faint white sheen line: turned with the pattern it showed as light bands
@@ -90,33 +90,33 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       return [HOOK.fabricDef('x1',band,'tie'),HOOK.fabricDef('x2',mot,'tie'),HOOK.fabricDef('x3',band,'tie','fig')].map(d=>/stroke="#fff"/.test(d))});
     ok(sh.every(v=>!v),`a tie's stripes and figures have no white sheen line across them (${sh.join(', ')})`);
     // the Add card: after the close-up, Claude reads the pattern
-    await p.evaluate(async()=>{show('add');const b=await (await fetch('tests/fixtures/blazer-windowpane.jpg')).blob();await addFiles([new File([b],'b.jpg',{type:'image/jpeg'})])});
-    await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
-    await p.waitForFunction(()=>queue[0].sett&&queue[0].sett.src==='claude+pixels',null,{timeout:20000});
+    await p.evaluate(async()=>{HOOK.show('add');const b=await (await fetch('tests/fixtures/blazer-windowpane.jpg')).blob();await HOOK.addFiles([new File([b],'b.jpg',{type:'image/jpeg'})])});
+    await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await HOOK.addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
+    await p.waitForFunction(()=>HOOK.queue[0].sett&&HOOK.queue[0].sett.src==='claude+pixels',null,{timeout:20000});
     const card=await p.evaluate(()=>({txt:document.querySelector('#queue').textContent}));
     ok(calls.length===1&&calls[0].closeup&&calls[0].type==='blazer'&&/read by Claude with the colors from the photo/.test(card.txt),'adding the close-up asks Claude for the pattern, and the card says so');
-    await p.evaluate(()=>save(0));
-    const sv=await p.evaluate(()=>({spec:!!items[0].patternSpec,text:items[0].patternText}));
+    await p.evaluate(()=>HOOK.save(0));
+    const sv=await p.evaluate(()=>({spec:!!HOOK.items[0].patternSpec,text:HOOK.items[0].patternText}));
     ok(sv.spec&&/Large windowpane on sand khaki linen/.test(sv.text),'the item keeps Claude\'s reading and its description');
     // Claude unavailable: the pixel reader
     patternReply=()=>[502,{error:'ai'}];
-    await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane.jpg')).blob();await addFiles([new File([b],'b.jpg',{type:'image/jpeg'})]);
-      const c=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([c],'c.jpg',{type:'image/jpeg'}))});
-    await p.waitForFunction(()=>queue[0]&&!queue[0].patternReading&&queue[0].specFailed,null,{timeout:20000});
-    ok(await p.evaluate(()=>queue[0].sett&&queue[0].sett.src!=='claude+pixels'),'when Claude can\'t read it, the pixel reader\'s pattern is used');
+    await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane.jpg')).blob();await HOOK.addFiles([new File([b],'b.jpg',{type:'image/jpeg'})]);
+      const c=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await HOOK.addTexture(0,new File([c],'c.jpg',{type:'image/jpeg'}))});
+    await p.waitForFunction(()=>HOOK.queue[0]&&!HOOK.queue[0].patternReading&&HOOK.queue[0].specFailed,null,{timeout:20000});
+    ok(await p.evaluate(()=>HOOK.queue[0].sett&&HOOK.queue[0].sett.src!=='claude+pixels'),'when Claude can\'t read it, the pixel reader\'s pattern is used');
     // the Wardrobe editor's "Read pattern from photo" asks Claude too
     patternReply=()=>[200,{...SPEC,across:{bands:dir.bands.map(b=>({...b,w:b.widthPct/100}))},along:{bands:dir.bands.map(b=>({...b,w:b.widthPct/100}))},model:'m'}];
-    const before=calls.length;await p.evaluate(async()=>{HOOK.queue=[];const it=items[0];delete it.sett;delete it.patternSpec;await rereadSett(it.id)});
-    ok(calls.length===before+1&&calls.at(-1).closeup&&await p.evaluate(()=>items[0].sett.src==='claude+pixels'&&!!items[0].patternSpec),'"Read pattern from photo" in the Wardrobe asks Claude and keeps its reading');
+    const before=calls.length;await p.evaluate(async()=>{HOOK.queue=[];const it=HOOK.items[0];delete it.sett;delete it.patternSpec;await HOOK.rereadSett(it.id)});
+    ok(calls.length===before+1&&calls.at(-1).closeup&&await p.evaluate(()=>HOOK.items[0].sett.src==='claude+pixels'&&!!HOOK.items[0].patternSpec),'"Read pattern from photo" in the Wardrobe asks Claude and keeps its reading');
     // (the 2026-11-24 review's R1 N1, pattern-read.js) the reading lands a moment later: Settings opened meanwhile (the sheet closed, the
     // gear tapped) stays open, and the Wardrobe is drawn once it closes; with the item's sheet still open the sheet shows the new reading
     patternDelay=900;
-    const rs=await p.evaluate(async()=>{const it=items[0];delete it.sett;show('wardrobe');openItem(it.id);const run=rereadSett(it.id);
-      await new Promise(r=>setTimeout(r,200));HOOK.closeItem();openSettings();const before=settingsOpen();await run;await new Promise(r=>setTimeout(r,300));
-      const still=settingsOpen(),read=!!items[0].sett;closeSettings();return {before,still,read}});
+    const rs=await p.evaluate(async()=>{const it=HOOK.items[0];delete it.sett;HOOK.show('wardrobe');HOOK.openItem(it.id);const run=HOOK.rereadSett(it.id);
+      await new Promise(r=>setTimeout(r,200));HOOK.closeItem();HOOK.openSettings();const before=HOOK.settingsOpen();await run;await new Promise(r=>setTimeout(r,300));
+      const still=HOOK.settingsOpen(),read=!!HOOK.items[0].sett;HOOK.closeSettings();return {before,still,read}});
     ok(rs.before&&rs.still&&rs.read,`a pattern reading that lands while Settings is open leaves Settings open (${JSON.stringify(rs)})`);
-    const rs2=await p.evaluate(async()=>{const it=items[0];delete it.sett;show('wardrobe');openItem(it.id);document.querySelector('#ivbody').firstElementChild.dataset.mark='1';
-      await rereadSett(it.id);await new Promise(r=>setTimeout(r,300));const r={redrawn:!document.querySelector('#ivbody [data-mark="1"]'),open:editing===it.id,read:!!items[0].sett};HOOK.closeItem();return r});
+    const rs2=await p.evaluate(async()=>{const it=HOOK.items[0];delete it.sett;HOOK.show('wardrobe');HOOK.openItem(it.id);document.querySelector('#ivbody').firstElementChild.dataset.mark='1';
+      await HOOK.rereadSett(it.id);await new Promise(r=>setTimeout(r,300));const r={redrawn:!document.querySelector('#ivbody [data-mark="1"]'),open:HOOK.editing===it.id,read:!!HOOK.items[0].sett};HOOK.closeItem();return r});
     ok(rs2.redrawn&&rs2.open&&rs2.read,`…and with the item's sheet open the sheet is drawn again with the reading (${JSON.stringify(rs2)})`);
     patternDelay=0;
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

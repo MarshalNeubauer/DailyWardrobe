@@ -28,34 +28,34 @@ async function run(eng,browser,{ok,url,settle}){
     if(q.method()==='POST'&&!/\/(?:sync|push|render)\b/.test(u.pathname)){S.tags.push(u.pathname);return route.fulfill({status:200,headers:H,body:JSON.stringify(TAG)})}
     return route.fulfill({status:503,headers:H,body:'{"error":"server"}'})});
   await ctx.addInitScript(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','tok');localStorage.setItem('tour_seen','1')});
-  const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
+  const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{HOOK.CK_OPEN['*']=true});
   await p.evaluate(async()=>{const load=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
     const ci=await load('tests/fixtures/suit-mink-closeup.png'),pi=await load('tests/fixtures/suit-mink.jpg');
     const cv=(im,k)=>{const c=document.createElement('canvas');c.width=im.naturalWidth*k;c.height=im.naturalHeight*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.9)};
-    HOOK.rememberRole({role:'owner'});settings.custom={colors:[],patterns:[]};applyCustom(settings.custom);
+    HOOK.rememberRole({role:'owner'});HOOK.settings.custom={colors:[],patterns:[]};HOOK.applyCustom(HOOK.settings.custom);
     HOOK.items=[{id:'s1',type:'suit',primaryColor:'grey',pattern:'solid',photo:cv(pi,1),texture:cv(ci,3),added:1,name:'Mink suit'},
-      {id:'t1',type:'tie',primaryColor:'red',pattern:'solid',added:2,name:'Bare tie'}];HOOK.flt='all';HOOK.editing=null;show('wardrobe');
+      {id:'t1',type:'tie',primaryColor:'red',pattern:'solid',added:2,name:'Bare tie'}];HOOK.flt='all';HOOK.editing=null;HOOK.show('wardrobe');
     // the order of a tap: document's capture listeners, the control's own function, window's listeners
     window.__o=[];document.addEventListener('click',()=>window.__o.push('document capture'),true);window.addEventListener('click',()=>window.__o.push('window'));
     // (colpick.js is a module: its handlers call these inside it, so each is watched at the handler the markup names)
-    for(const [h,n] of [['colBtnTap','openColPick'],['cpTileTap','colPickSel'],['cpUseTap','useColPick']]){const f=ACTS[h];ACTS[h]=function(...a){window.__o.push(n);return f.apply(this,a)}}});
+    for(const [h,n] of [['colBtnTap','openColPick'],['cpTileTap','colPickSel'],['cpUseTap','useColPick']]){const f=HOOK.ACTS[h];HOOK.ACTS[h]=function(...a){window.__o.push(n);return f.apply(this,a)}}});
   const tap=async sel=>{await p.tap(sel)};
   const order=()=>p.evaluate(()=>{const o=window.__o.join(' > ');window.__o=[];return o});
-  const it=id=>p.evaluate(id=>{const i=items.find(x=>x.id===id);return {c:i.primaryColor,c2:i.secondaryColor||null,p:i.pattern,m:i.material||null,shade:i.shade||0,cols:(settings.custom.colors||[]).map(c=>c.key),pats:(settings.custom.patterns||[]).length}},id);
+  const it=id=>p.evaluate(id=>{const i=HOOK.items.find(x=>x.id===id);return {c:i.primaryColor,c2:i.secondaryColor||null,p:i.pattern,m:i.material||null,shade:i.shade||0,cols:(HOOK.settings.custom.colors||[]).map(c=>c.key),pats:(HOOK.settings.custom.patterns||[]).length}},id);
   const sheet=()=>p.evaluate(()=>{const s=document.querySelector('#col-sheet');return {on:s.classList.contains('on'),title:(s.querySelector('#col-title')||{}).textContent||'',bar:(s.querySelector('.cpbar button')||{}).textContent||'',big:(s.querySelector('.cpbig figcaption')||{}).textContent||'',
-    k:colPick&&colPick.k,src:colPick&&colPick.src,ref:colPick&&colPick.ref,sel:colPick&&colPick.sel,view:colPick&&colPick.view}});
-  const nc=()=>p.evaluate(()=>{const n=colPick&&colPick.newc;return n&&{kind:n.kind,hex:n.hex,h:n.h,s:n.s,v:n.v,name:n.name,desc:n.desc,state:n.state,base:n.base,types:n.types.join(),accent:!!n.accent,closeOn:!!n.closeOn}});
+    k:HOOK.colPick&&HOOK.colPick.k,src:HOOK.colPick&&HOOK.colPick.src,ref:HOOK.colPick&&HOOK.colPick.ref,sel:HOOK.colPick&&HOOK.colPick.sel,view:HOOK.colPick&&HOOK.colPick.view}});
+  const nc=()=>p.evaluate(()=>{const n=HOOK.colPick&&HOOK.colPick.newc;return n&&{kind:n.kind,hex:n.hex,h:n.h,s:n.s,v:n.v,name:n.name,desc:n.desc,state:n.state,base:n.base,types:n.types.join(),accent:!!n.accent,closeOn:!!n.closeOn}});
   const shut=async()=>{await p.waitForFunction(()=>!document.querySelector('#col-sheet.on'));await settle(p,250)};
-  const colIs=(id,c)=>p.waitForFunction(([id,c])=>items.find(x=>x.id===id).primaryColor===c,[id,c],{timeout:5000}).catch(()=>{});
+  const colIs=(id,c)=>p.waitForFunction(([id,c])=>HOOK.items.find(x=>x.id===id).primaryColor===c,[id,c],{timeout:5000}).catch(()=>{});
   const CB='#item-view .colbtn[data-k="primaryColor"]';
   let e,n;
-  await p.evaluate(()=>openItem('s1'));await settle(p,400);await order();
+  await p.evaluate(()=>HOOK.openItem('s1'));await settle(p,400);await order();
 
   // ---- the item sheet's color button, the views, a tile, Use
   await tap(CB);await settle(p,250);e=await sheet();
   ok(e.on&&e.k==='primaryColor'&&e.src==='e'&&e.ref==='s1'&&e.title==='Choose the color'&&e.bar==='Keep Gray',T+`a tap on the item sheet's Color button opens the sheet for that item and field (${JSON.stringify(e)})`);
   ok(await order()==='document capture > openColPick > window',T+'the button\'s handler runs after document\'s capture listeners and before window\'s');
-  await tap('#col-sheet .cpseg button[aria-pressed="false"]');e=await p.evaluate(()=>({view:colPick.view,on:[...document.querySelectorAll('#col-sheet .cpseg button')].filter(b=>b.getAttribute('aria-pressed')==='true').map(b=>b.textContent).join()}));
+  await tap('#col-sheet .cpseg button[aria-pressed="false"]');e=await p.evaluate(()=>({view:HOOK.colPick.view,on:[...document.querySelectorAll('#col-sheet .cpseg button')].filter(b=>b.getAttribute('aria-pressed')==='true').map(b=>b.textContent).join()}));
   ok(e.view==='photo'&&e.on==='Whole photo',T+`a tap on "Whole photo" switches what the color is compared with (${JSON.stringify(e)})`);
   await order();await tap('#col-sheet .cptile[data-c="navy"]');e=await sheet();
   ok(e.sel==='navy'&&e.big==='Navy'&&e.bar==='Use Navy'&&(await it('s1')).c==='grey',T+'a tap on a tile shows that color beside the photo and saves nothing');
@@ -74,7 +74,7 @@ async function run(eng,browser,{ok,url,settle}){
 
   // ---- Ask Claude, Use both colors, Ask again
   await tap(CB);await settle(p,250);await tap('#col-sheet .cpaskbtn');await p.waitForSelector('#col-sheet .cpai .cptile');await settle(p,150);
-  e=await p.evaluate(()=>({all:(document.querySelector('#col-sheet .cpall')||{}).textContent,sel:colPick.sel}));
+  e=await p.evaluate(()=>({all:(document.querySelector('#col-sheet .cpall')||{}).textContent,sel:HOOK.colPick.sel}));
   ok(S.tags.length===1&&e.all==='Use both colors'&&e.sel==='charcoal',T+`a tap on Ask Claude sends one request and shows Claude's colors (${JSON.stringify(e)}, ${S.tags.length} request)`);
   await tap('#col-sheet .cpall');await colIs('s1','charcoal');await shut();e=await it('s1');
   ok(e.c==='charcoal'&&e.c2==='lightblue',T+`"Use both colors" sets them and closes the sheet (${JSON.stringify(e)})`);
@@ -99,7 +99,7 @@ async function run(eng,browser,{ok,url,settle}){
   let box=await clear('#cn-sq');
   ok(await p.evaluate(([x,y])=>!!document.elementFromPoint(x,y).closest('#cn-sq'),[box.x+box.width*.25,box.y+box.height*.75]),T+'the square is in reach');
   await p.mouse.click(box.x+box.width*.25,box.y+box.height*.75);await settle(p,150);n=await nc();
-  ok(Math.abs(n.s-25)<3&&Math.abs(n.v-25)<3&&await p.evaluate(()=>document.querySelector('#cn-hex').value.toLowerCase()===colPick.newc.hex),T+`a press on the square sets saturation and brightness, the hex with it (s ${Math.round(n.s)}, v ${Math.round(n.v)})`);
+  ok(Math.abs(n.s-25)<3&&Math.abs(n.v-25)<3&&await p.evaluate(()=>document.querySelector('#cn-hex').value.toLowerCase()===HOOK.colPick.newc.hex),T+`a press on the square sets saturation and brightness, the hex with it (s ${Math.round(n.s)}, v ${Math.round(n.v)})`);
   box=await clear('#cn-hue');await p.mouse.click(box.x+box.width*.5,box.y+box.height/2);await settle(p,150);n=await nc();
   ok(Math.abs(n.h-180)<4,T+`a press on the hue bar sets the hue (${Math.round(n.h)})`);
   await p.focus('#cn-sq');e=n.v;await p.keyboard.press('ArrowDown');n=await nc();
@@ -113,7 +113,7 @@ async function run(eng,browser,{ok,url,settle}){
   e=n.types;await tap('#col-sheet .cnchip >> nth=0');n=await nc();const off=n.types;await tap('#col-sheet .cnchip >> nth=0');n=await nc();
   ok(off!==e&&n.types.split(',').sort().join()===e.split(',').sort().join(),T+`a tap on an "Offer it for" chip takes the kind out, another puts it back (${e} / ${off})`);
   await tap('#cn-accent');e=(await nc()).accent;await tap('#cn-accent');n=await nc();ok(e===true&&n.accent===false,T+'the "Also for stripes and motifs" switch goes on and off');
-  await tap('#cn-add');await p.waitForFunction(()=>/^own/.test(items.find(x=>x.id==='s1').primaryColor),null,{timeout:5000}).catch(()=>{});await shut();e=await it('s1');
+  await tap('#cn-add');await p.waitForFunction(()=>/^own/.test(HOOK.items.find(x=>x.id==='s1').primaryColor),null,{timeout:5000}).catch(()=>{});await shut();e=await it('s1');
   const own=e.cols[0];
   ok(e.cols.length===1&&e.c===own&&/^own/.test(own||''),T+`"Add Test plum and use it" adds the color to the owner's and sets it (${JSON.stringify(e)})`);
 
@@ -131,7 +131,7 @@ async function run(eng,browser,{ok,url,settle}){
   S.describe=()=>[200,{kind:'pattern',ask:'That sounds like a pattern.'}];await tap(CB);await settle(p,250);await tap('#cn-open');await settle(p,200);await p.fill('#cn-text','herringbone');await tap('#cn-ask');await p.waitForSelector('#cn-kind button');
   await tap('#cn-kind button');await settle(p,250);e=await sheet();n=await nc();
   ok(e.title==='New pattern or texture'&&e.k==='pattern'&&n.kind==='pattern'&&n.desc==='herringbone',T+'"Open patterns" opens the New pattern sheet with the words kept');
-  const have=await p.evaluate(()=>PATS_BY.suit.find(x=>x!=='solid'));
+  const have=await p.evaluate(()=>HOOK.PATS_BY.suit.find(x=>x!=='solid'));
   S.describe=()=>[200,{...RD.pattern,match:'existing',existing:have}];await tap('#cn-ask');await p.waitForSelector('#cn-anyway');
   ok((await nc()).state==='reuse'&&!(await p.$('#pn-details')),T+'a pattern the owner has is offered for use');
   await tap('#cn-anyway');await settle(p,150);ok((await nc()).state==='result'&&!!(await p.$('#pn-details')),T+'"Add a new pattern anyway" shows the details to add it');
@@ -140,20 +140,20 @@ async function run(eng,browser,{ok,url,settle}){
   await tap('#col-sheet .cnback');await settle(p,200);ok((await sheet()).title==='Choose the pattern',T+'‹ goes back to the patterns');
   await tap('#col-sheet .pick-x');await shut();
   // Settings' sheet: the "For" choice
-  await p.evaluate(()=>openCustomNew('colour'));await settle(p,250);await p.selectOption('#cn-for','suit');
-  ok(await p.evaluate(()=>colPick.fake.type==='suit'&&document.querySelector('#cn-for').value==='suit'),T+'the "For" choice of Settings\' New color sheet takes the kind picked');
+  await p.evaluate(()=>HOOK.openCustomNew('colour'));await settle(p,250);await p.selectOption('#cn-for','suit');
+  ok(await p.evaluate(()=>HOOK.colPick.fake.type==='suit'&&document.querySelector('#cn-for').value==='suit'),T+'the "For" choice of Settings\' New color sheet takes the kind picked');
   await tap('#col-sheet .pick-x');await shut();
 
   // ---- the Pictures link (an item with no close-up)
-  await p.evaluate(()=>openItem('t1'));await settle(p,400);await tap(CB);await settle(p,250);
+  await p.evaluate(()=>HOOK.openItem('t1'));await settle(p,400);await tap(CB);await settle(p,250);
   if(await p.$('#col-sheet .cpgopics')){await tap('#col-sheet .cpgopics');await shut();await settle(p,500);
     ok(await p.evaluate(()=>!!document.querySelector('#item-view.on .ivpics.open')),T+'"Pictures, at the bottom" closes the sheet and opens Pictures')}
   else{ok(false,T+'the sheet of an item with no close-up has the Pictures link');await tap('#col-sheet .pick-x');await shut()}
 
   // ---- the reading sheet: Read, Keep, Change, Use, Undo, Use all, the page's Undo, ×, Try again
-  const mat=await p.evaluate(()=>matsFor('suit').find(m=>m!=='wool')),RDM={...RD,pattern:{...RD.pattern,material:{key:mat,confidence:'high',why:'Soft nap.'}}};
+  const mat=await p.evaluate(()=>HOOK.matsFor('suit').find(m=>m!=='wool')),RDM={...RD,pattern:{...RD.pattern,material:{key:mat,confidence:'high',why:'Soft nap.'}}};
   const result=async()=>{await p.waitForSelector('#rd-sheet.on #rd-both');await settle(p,300)},closed=async()=>{await p.waitForFunction(()=>!document.querySelector('#rd-sheet.on'));await settle(p,300)};
-  await p.evaluate(()=>openItem('s1'));await settle(p,400);S.describe=()=>[200,RDM];S.sent=[];
+  await p.evaluate(()=>HOOK.openItem('s1'));await settle(p,400);S.describe=()=>[200,RDM];S.sent=[];
   await tap('#iv-read');await result();
   ok(S.sent.length===1&&S.sent[0].what==='both'&&await p.evaluate(()=>document.querySelector('#rd-both').textContent==='Use all'&&!!document.querySelector('#rd-mat')),T+'a tap on "Read color and texture from close-up" asks once and shows the color, pattern and material cards');
   await tap('#rd-ckeep');await settle(p,200);ok(await p.evaluate(()=>/Kept Wine/.test(document.querySelector('#rd-col').textContent)&&!document.querySelector('#rd-ckeep')),T+'Keep marks the color card kept');
@@ -164,7 +164,7 @@ async function run(eng,browser,{ok,url,settle}){
   ok(e.c==='wine'&&e.cols.length===1&&!!(await p.$('#rd-ckeep')),T+`the card's Undo puts the color back and takes the added one out (${JSON.stringify(e)})`);
   await tap('#rd-both');await closed();e=await it('s1');
   ok(/^own/.test(e.c)&&/^own-/.test(e.p)&&e.m===mat&&e.cols.length===2&&e.pats===1,T+`"Use all" sets the color, the pattern and the material and closes the sheet (${JSON.stringify(e)})`);
-  await tap('#item-view #rd-done #rd-undo');await p.waitForFunction(()=>{const i=items.find(x=>x.id==='s1');return i.primaryColor==='wine'&&i.pattern==='solid'&&!i.material&&!document.querySelector('#rd-done')},null,{timeout:8000}).catch(()=>{});await settle(p,200);e=await it('s1');
+  await tap('#item-view #rd-done #rd-undo');await p.waitForFunction(()=>{const i=HOOK.items.find(x=>x.id==='s1');return i.primaryColor==='wine'&&i.pattern==='solid'&&!i.material&&!document.querySelector('#rd-done')},null,{timeout:8000}).catch(()=>{});await settle(p,200);e=await it('s1');
   ok(e.c==='wine'&&e.p==='solid'&&!e.m&&e.cols.length===1&&!e.pats,T+`the page's Undo puts all three back (${JSON.stringify(e)})`);
   await tap('#iv-read');await result();await tap('#rd-sheet .rdx');await closed();ok((await it('s1')).c==='wine',T+'× closes the reading sheet and nothing changes');
   S.describe=()=>[500,{error:'ai'}];S.sent=[];await tap('#iv-read');await p.waitForSelector('#rd-err button');S.describe=()=>[200,RDM];await tap('#rd-err button');await result();
@@ -172,20 +172,20 @@ async function run(eng,browser,{ok,url,settle}){
   await tap('#rd-sheet .rdx');await closed();
 
   // ---- the Look beta's Shade steps, inside the sheet
-  await p.evaluate(()=>{HOOK.lookSet(true);openItem('s1');openColPick('e','s1','primaryColor')});await settle(p,300);
+  await p.evaluate(()=>{HOOK.lookSet(true);HOOK.openItem('s1');HOOK.openColPick('e','s1','primaryColor')});await settle(p,300);
   await tap('#col-sheet .lkshade button[data-d="1"]');await tap('#col-sheet .lkshade button[data-d="1"]');await tap('#col-sheet .lkshade button[data-d="-1"]');
-  e=await p.evaluate(()=>({shade:colPick.shade,out:document.querySelector('#lk-shade').textContent,bar:document.querySelector('#col-sheet .cpbar button').textContent}));
+  e=await p.evaluate(()=>({shade:HOOK.colPick.shade,out:document.querySelector('#lk-shade').textContent,bar:document.querySelector('#col-sheet .cpbar button').textContent}));
   ok(e.shade===1&&/^Use Wine · /.test(e.bar),T+`two taps on Lighter and one on Darker leave the shade one step lighter (${JSON.stringify(e)})`);
-  await tap('#col-sheet .cpbar button');await p.waitForFunction(()=>items.find(x=>x.id==='s1').shade===1,null,{timeout:5000}).catch(()=>{});await shut();
+  await tap('#col-sheet .cpbar button');await p.waitForFunction(()=>HOOK.items.find(x=>x.id==='s1').shade===1,null,{timeout:5000}).catch(()=>{});await shut();
   ok((await it('s1')).shade===1,T+'Use saves the shade');
   await p.evaluate(()=>{HOOK.lookSet(false);HOOK.closeItem()});await settle(p,300);
 
   // ---- the Add card's color button (a card filled in by hand)
-  await p.evaluate(()=>{openAdd();HOOK.addManual()});await settle(p,500);await order();
-  await tap('#nps-q .colbtn[data-k="primaryColor"]');await settle(p,250);e=await sheet();const qid=await p.evaluate(()=>queue[queue.length-1].id);
+  await p.evaluate(()=>{HOOK.openAdd();HOOK.addManual()});await settle(p,500);await order();
+  await tap('#nps-q .colbtn[data-k="primaryColor"]');await settle(p,250);e=await sheet();const qid=await p.evaluate(()=>HOOK.queue[HOOK.queue.length-1].id);
   ok(e.on&&e.src==='q'&&e.ref===qid&&e.k==='primaryColor',T+`a tap on the Add card's Color button opens the sheet for that card (${JSON.stringify(e)})`);
-  e=await p.evaluate(()=>{const b=[...document.querySelectorAll('#col-sheet .cptile')].find(b=>b.dataset.c!==colPick.cur&&b.dataset.c!=='none'&&!b.id);return b.dataset.c});
+  e=await p.evaluate(()=>{const b=[...document.querySelectorAll('#col-sheet .cptile')].find(b=>b.dataset.c!==HOOK.colPick.cur&&b.dataset.c!=='none'&&!b.id);return b.dataset.c});
   await tap(`#col-sheet .cptile[data-c="${e}"] >> nth=0`);await tap('#col-sheet .cpbar button');await shut();
-  ok(await p.evaluate(([id,c])=>queue.find(q=>q.id===id).primaryColor===c,[qid,e]),T+`a tile and Use set the card's color (${e})`);
+  ok(await p.evaluate(([id,c])=>HOOK.queue.find(q=>q.id===id).primaryColor===c,[qid,e]),T+`a tile and Use set the card's color (${e})`);
   ok(!errs.length,T+'no page errors'+(errs.length?': '+errs.join(' | '):''));
   await ctx.close()}

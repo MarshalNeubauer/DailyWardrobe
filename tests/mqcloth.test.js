@@ -32,10 +32,10 @@ module.exports=async({ok,chromium,url})=>{
     const ks=await p.evaluate(()=>[.004,.008,.0155,.023,.030,.0325,.035,.2].map(y=>+HOOK.figLiftK(y).toFixed(3)));
     ok(ks.join()==='2.6,2.6,2.05,1.5,1.35,1.175,1,1',`the dark-cloth lift k: ${ks.join(', ')} (2.6 at .008, 1.5 at .023, 1.35 at .030, 1 from .035)`);
     // a striped jacket's figure is byte-identical to before (the drawn path, as figureSvg was)
-    const same=await p.evaluate(()=>{const Q=__Q,old=(o,prefix)=>{const label=`Torso wearing ${[o.top&&nm(o.top)+(o.vest?' with matching vest':''),o.shirt&&nm(o.shirt)+(o.top?'':', no jacket')+(o.tie?'':', open collar'),o.tie&&nm(o.tie)].filter(Boolean).join(', ')}`;
-        const clip=o.clip&&!o.vest?{color:colOf(o.clip)}:null,kind=HOOK.figKind(o),top=o.top&&HOOK.figStripeLift(o.top),bot=!o.top&&o.bot&&HOOK.figStripeLift(o.bot),shirt=HOOK.figFabric(o.shirt,'shirt')||HOOK.FIG_NO_SHIRT;
-        const k=i=>{const s=i&&usableSett(i);return s&&s.bands&&s.bands.length>1&&STRIPE_PATS.includes(patBase(i.pattern))?1.6:1};
-        return outfitMannequinSvg({kind,suit:top?HOOK.figFabric(top,'top'):shirt,shirt,tie:HOOK.figFabric(o.tie,'tie'),bot:bot?HOOK.figFabric(bot,'bot'):{color:'#4A4E55'},beltColor:o.belt?colOf(o.belt):'#3A2A22',vest:!!(o.vest&&o.top),clip,shirtColor:o.shirt?colOf(o.shirt):HOOK.FIG_NO_SHIRT.color,bg:HOOK.figBg(),idPrefix:prefix,ariaLabel:label,fab:{suit:k(top),shirt:1,tie:1,bot:k(bot)}})};
+    const same=await p.evaluate(()=>{const Q=__Q,old=(o,prefix)=>{const label=`Torso wearing ${[o.top&&HOOK.nm(o.top)+(o.vest?' with matching vest':''),o.shirt&&HOOK.nm(o.shirt)+(o.top?'':', no jacket')+(o.tie?'':', open collar'),o.tie&&HOOK.nm(o.tie)].filter(Boolean).join(', ')}`;
+        const clip=o.clip&&!o.vest?{color:HOOK.colOf(o.clip)}:null,kind=HOOK.figKind(o),top=o.top&&HOOK.figStripeLift(o.top),bot=!o.top&&o.bot&&HOOK.figStripeLift(o.bot),shirt=HOOK.figFabric(o.shirt,'shirt')||HOOK.FIG_NO_SHIRT;
+        const k=i=>{const s=i&&HOOK.usableSett(i);return s&&s.bands&&s.bands.length>1&&HOOK.STRIPE_PATS.includes(HOOK.patBase(i.pattern))?1.6:1};
+        return outfitMannequinSvg({kind,suit:top?HOOK.figFabric(top,'top'):shirt,shirt,tie:HOOK.figFabric(o.tie,'tie'),bot:bot?HOOK.figFabric(bot,'bot'):{color:'#4A4E55'},beltColor:o.belt?HOOK.colOf(o.belt):'#3A2A22',vest:!!(o.vest&&o.top),clip,shirtColor:o.shirt?HOOK.colOf(o.shirt):HOOK.FIG_NO_SHIRT.color,bg:HOOK.figBg(),idPrefix:prefix,ariaLabel:label,fab:{suit:k(top),shirt:1,tie:1,bot:k(bot)}})};
       const a={suitDay:true,top:Q.pin,bot:Q.pin,shirt:Q.shirt,tie:Q.tie,vest:true},b={suitDay:true,top:Q.plain,bot:Q.plain,shirt:Q.shirt,tie:Q.tie},c={suitDay:false,top:null,bot:Q.plain,shirt:Q.shirt,tie:Q.tie};
       return [a,b,c].map((o,i)=>HOOK.figureSvg(o,'s'+i+'-')===old(o,'s'+i+'-'))});
     ok(same.every(Boolean),`a striped jacket (and a plain cloth with no close-up) draws byte-identical to before (${same.join()})`);
@@ -74,8 +74,8 @@ module.exports=async({ok,chromium,url})=>{
     // Today: drawn first, then swapped in place once the block is made (drawing only: no request at all)
     const reqs=[];
     const td=await p.evaluate(()=>{const Q=__Q;HOOK.items=[Q.brown,Q.shirt,Q.tie,{id:'qshoes',type:'shoes',primaryColor:'black',leather:'calf'},{id:'qbelt',type:'belt',primaryColor:'black',leather:'calf',metal:'silver'},{id:'qsocks',type:'socks',primaryColor:'navy'}];
-      settings.pictures='drawn';settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='never';HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-16T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};
-      HOOK.FIG_CU.clear();show('today');const c=document.querySelector('#mannequin-container'),s=c&&c.querySelector(':scope > svg');return {top:(planFor()[key(sel)]||{}).top&&planFor()[key(sel)].top.id,svg:!!s,cu:!!(s&&s.querySelector('pattern[id$="cuT"]'))}});
+      HOOK.settings.pictures='drawn';HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[];HOOK.settings.vestMode='never';HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-16T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};
+      HOOK.FIG_CU.clear();HOOK.show('today');const c=document.querySelector('#mannequin-container'),s=c&&c.querySelector(':scope > svg');return {top:(HOOK.planFor()[HOOK.key(HOOK.sel)]||{}).top&&HOOK.planFor()[HOOK.key(HOOK.sel)].top.id,svg:!!s,cu:!!(s&&s.querySelector('pattern[id$="cuT"]'))}});
     p.on('request',r=>{if(!/^(data|blob):/.test(r.url()))reqs.push(r.url())});
     await p.waitForFunction(()=>{const s=document.querySelector('#mannequin-container > svg');return s&&s.querySelector('pattern#fig-cuT')},null,{timeout:15000}).catch(()=>{});
     const td2=await p.evaluate(()=>{const s=document.querySelector('#mannequin-container > svg');return {cu:!!(s&&s.querySelector('pattern#fig-cuT image')),one:s?s.querySelectorAll('pattern image').length:0}});
@@ -83,8 +83,8 @@ module.exports=async({ok,chromium,url})=>{
     ok(td2.cu&&td2.one===1,'then the figure is drawn again in place with the painter\'s block, once it is made');
     ok(!reqs.length,`drawing only: making and showing the block asks the network for nothing (${reqs.slice(0,3).join(', ')})`);
     // with Settings open the swap waits for it to close (todayStale)
-    const st=await p.evaluate(async()=>{HOOK.FIG_CU.clear();renderToday();openSettings();const e=[...HOOK.FIG_CU.values()].pop();if(e)await e.p;const s=document.querySelector('#mannequin-container > svg'),was=!!(s&&s.querySelector('pattern#fig-cuT')),stale=HOOK.todayStale;
-      closeSettings();const s2=document.querySelector('#mannequin-container > svg');return {was,stale,after:!!(s2&&s2.querySelector('pattern#fig-cuT'))}});
+    const st=await p.evaluate(async()=>{HOOK.FIG_CU.clear();HOOK.renderToday();HOOK.openSettings();const e=[...HOOK.FIG_CU.values()].pop();if(e)await e.p;const s=document.querySelector('#mannequin-container > svg'),was=!!(s&&s.querySelector('pattern#fig-cuT')),stale=HOOK.todayStale;
+      HOOK.closeSettings();const s2=document.querySelector('#mannequin-container > svg');return {was,stale,after:!!(s2&&s2.querySelector('pattern#fig-cuT'))}});
     ok(!st.was&&st.stale&&st.after,`with Settings open the figure is left alone and drawn with the block when Settings closes (${JSON.stringify(st)})`);
     ok(!errs.length,'no page errors: '+errs.join('; '));
   }finally{await browser.close()}

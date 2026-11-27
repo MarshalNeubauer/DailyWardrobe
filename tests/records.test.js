@@ -32,15 +32,15 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const u=await p.evaluate(([c,PNG])=>{const own={id:crypto.randomUUID(),type:'suit',primaryColor:'navy',secondaryColor:'white',tertiaryColor:null,pattern:'pinstripe',photo:PNG,photoSm:PNG,swatch:PNG,swSrc:'tex',added:1,updated:2,vest:'no',
         name:'Men\'s "best" suit',notes:'Bought in Ra\'s al Khaimah <3',sett:{v:2,a:0,bands:[['#1b2a4a',.95],['#cccccc',.05]],cross:null,cr:3,tr:40,src:'claude+pixels'},tagAI:{col:'navy',conf:{type:'high',primaryColor:'medium',pattern:'low'},alt:null,altPat:null,seen:false},
         meas:{lab:[20,1,-10],ref:false,src:'closeup'},weave:{layout:'bands',description:"a 1/4 inch chalk stripe, it's soft"},shade:-2,arrives:'2026-12-01'};
-      const x=cleanRecord(own),cs=cleanState({items:c,days:[{date:'2026-11-16',ids:{top:'s1\');x(\'',shirt:'ok1'},updated:1},{date:'<b>',updated:1}],tombstones:{ok1:5,'bad"id':5,ok2:'x'}});
-      return {same:JSON.stringify(x)===JSON.stringify(own),again:JSON.stringify(cleanRecord(x))===JSON.stringify(x),ids:cs.items.map(i=>i.id),
+      const x=HOOK.cleanRecord(own),cs=HOOK.cleanState({items:c,days:[{date:'2026-11-16',ids:{top:'s1\');x(\'',shirt:'ok1'},updated:1},{date:'<b>',updated:1}],tombstones:{ok1:5,'bad"id':5,ok2:'x'}});
+      return {same:JSON.stringify(x)===JSON.stringify(own),again:JSON.stringify(HOOK.cleanRecord(x))===JSON.stringify(x),ids:cs.items.map(i=>i.id),
         markup:cs.items.flatMap(i=>Object.entries(i).filter(([k,v])=>{if(['name','notes','brand','material','details'].includes(k))return false;let bad=false;JSON.stringify(v,(kk,x)=>{if(typeof x==='string'&&/[<>"`]/.test(x))bad=true;return x});return bad})).map(([k])=>k),
         lb:cs.items.find(i=>i.id==='set1').primaryColor,band:cs.items.find(i=>i.id==='set1').sett.bands[0][0],ph:'photo' in cs.items.find(i=>i.id==='ph1'),nm:cs.items.find(i=>i.id==='nm1').name,
         days:JSON.stringify(cs.days),tomb:JSON.stringify(cs.tombstones),
-        own:(o=>o.primaryColor+','+o.secondaryColor+','+o.pattern)(cleanRecord({id:'o1',type:'tie',primaryColor:'ownrot1',secondaryColor:'ownbrun',pattern:'own-rot-2'}))}},[crafted(),PNG]);
+        own:(o=>o.primaryColor+','+o.secondaryColor+','+o.pattern)(HOOK.cleanRecord({id:'o1',type:'tie',primaryColor:'ownrot1',secondaryColor:'ownbrun',pattern:'own-rot-2'}))}},[crafted(),PNG]);
     // per-field stamps (Fixer 4's field merge: item.fs, day.fs) come through unchanged
     const fs=await p.evaluate(()=>{const it={id:'f1',type:'suit',primaryColor:'navy',pattern:'solid',added:1,updated:9,fs:{primaryColor:5,pattern:7,name:9,sett:3}},d={date:'2026-11-16',updated:4,ids:{top:'f1'},fs:{top:4,shirt:2,occasion:3}};
-      return {it:JSON.stringify(cleanRecord(it))===JSON.stringify(it),d:JSON.stringify(cleanDay(d))===JSON.stringify(d),bad:JSON.stringify(cleanRecord({...it,fs:{primaryColor:'5" x="'}}).fs)}});
+      return {it:JSON.stringify(HOOK.cleanRecord(it))===JSON.stringify(it),d:JSON.stringify(HOOK.cleanDay(d))===JSON.stringify(d),bad:JSON.stringify(HOOK.cleanRecord({...it,fs:{primaryColor:'5" x="'}}).fs)}});
     ok(fs.it&&fs.d&&fs.bad==='{"primaryColor":"5 x="}','per-field stamps (item.fs, day.fs) are kept as they are; a string in them loses its quotes ('+JSON.stringify(fs)+')');
     ok(u.own==='ownrot1,ownbrun,own-rot-2','own color and pattern keys with digits (and the older letters-only ones) are kept ('+u.own+')');
     ok(u.same&&u.again,'an item the app made comes through cleanRecord unchanged, and a cleaned record is unchanged by a second pass');
@@ -54,17 +54,17 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const file={app:'daily-wardrobe',version:1,items:crafted(),days:[],tombstones:{}};
     const r=await p.evaluate(async f=>{window.__rx=n=>(window.__rxs=window.__rxs||[]).push(n);
       await HOOK.restoreBackup(new File([JSON.stringify(f)],'b.json'));const msg=document.querySelector('#toast').textContent;
-      closeSettings&&closeSettings();show('today');await new Promise(r=>setTimeout(r,300));show('wardrobe');await new Promise(r=>setTimeout(r,300));
-      for(const i of items){openItem(i.id);await new Promise(r=>setTimeout(r,150));HOOK.closeItem()}
-      const st=await tx('readonly',s=>s.getAll());
-      return {msg,n:items.length,marks:document.querySelectorAll('[data-rx],[data-q]').length,hits:window.__rxs||[],stored:st.filter(i=>/[<>"']/.test(i.id)||/[<>"]/.test(String(i.photo||'')+String(i.photoSm||'')+String(i.primaryColor||''))).length}},file);
+      HOOK.closeSettings&&HOOK.closeSettings();HOOK.show('today');await new Promise(r=>setTimeout(r,300));HOOK.show('wardrobe');await new Promise(r=>setTimeout(r,300));
+      for(const i of HOOK.items){HOOK.openItem(i.id);await new Promise(r=>setTimeout(r,150));HOOK.closeItem()}
+      const st=await HOOK.tx('readonly',s=>s.getAll());
+      return {msg,n:HOOK.items.length,marks:document.querySelectorAll('[data-rx],[data-q]').length,hits:window.__rxs||[],stored:st.filter(i=>/[<>"']/.test(i.id)||/[<>"]/.test(String(i.photo||'')+String(i.photoSm||'')+String(i.primaryColor||''))).length}},file);
     ok(/Restored\. Your wardrobe now has 6 items\. 2 items in the file weren’t a Daily Wardrobe item and were left out\./.test(r.msg),'Restore file says how many items were left out ('+r.msg+')');
     ok(r.marks===0&&!r.hits.length&&r.stored===0,`a crafted backup file puts nothing into the page on Today, the Wardrobe or the item sheets, and nothing crafted is stored (marks ${r.marks}, calls ${r.hits.join()}, stored ${r.stored})`);
 
     // ---- the second lock: a crafted record that skipped the check (in memory) is still escaped at the sinks
     const s2=await p.evaluate(async([PNG,B,S])=>{window.__rxs=[];HOOK.items=[{id:'z1'+S,type:'suit',primaryColor:'navy',pattern:'solid',added:1},{id:'z2',type:'shirt',primaryColor:'white',pattern:'solid',photo:PNG+B,photoSm:PNG+B,added:1}];HOOK.cache={};
-      show('wardrobe');await new Promise(r=>setTimeout(r,200));document.querySelector('#wardrobe .giopen').click();await new Promise(r=>setTimeout(r,300));
-      const sheet=!!document.querySelector('#item-view.on, body.iv-on');HOOK.closeItem();openItem('z2');await new Promise(r=>setTimeout(r,200));HOOK.closeItem();
+      HOOK.show('wardrobe');await new Promise(r=>setTimeout(r,200));document.querySelector('#wardrobe .giopen').click();await new Promise(r=>setTimeout(r,300));
+      const sheet=!!document.querySelector('#item-view.on, body.iv-on');HOOK.closeItem();HOOK.openItem('z2');await new Promise(r=>setTimeout(r,200));HOOK.closeItem();
       return {marks:document.querySelectorAll('[data-rx]').length,hits:window.__rxs,sheet}},[PNG,B('sink'),S(7)]);
     ok(s2.marks===0&&!s2.hits.length&&s2.sheet,`ids in inline handlers and photo sources are escaped even for a record that skipped the check, and the item still opens (marks ${s2.marks}, calls ${s2.hits.join()}, opened ${s2.sheet})`);
 
@@ -72,12 +72,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // (the step above put a crafted item straight into memory, skipping the check; the app's week lock can write its id into day records,
     // which the start-up check then rightly sets aside: found by looping this test on WebKit, 1 run in 24. Those days are cleared first,
     // so what follows sees only the records planted here; a real phone never holds an item that skipped the check)
-    await p.evaluate(async()=>{HOOK.items=[];HOOK.cache={};await new Promise(r=>setTimeout(r,800));await txs('days','readwrite',s=>s.clear());HOOK.dayRecs={}});
-    await p.evaluate(async([PNG,B])=>{await putRaw({id:'old1',type:'shirt',primaryColor:'white',pattern:'solid',photo:PNG+B,added:1,updated:5});await putRaw({id:'old2'+B,type:'tie',primaryColor:'navy',pattern:'solid',added:1,updated:5});localStorage.removeItem('rec_clean')},[PNG,B('old')]);
+    await p.evaluate(async()=>{HOOK.items=[];HOOK.cache={};await new Promise(r=>setTimeout(r,800));await HOOK.txs('days','readwrite',s=>s.clear());HOOK.dayRecs={}});
+    await p.evaluate(async([PNG,B])=>{await HOOK.putRaw({id:'old1',type:'shirt',primaryColor:'white',pattern:'solid',photo:PNG+B,added:1,updated:5});await HOOK.putRaw({id:'old2'+B,type:'tie',primaryColor:'navy',pattern:'solid',added:1,updated:5});localStorage.removeItem('rec_clean')},[PNG,B('old')]);
     await p.reload();await p.waitForFunction(()=>window.appReady);await p.waitForTimeout(500);
     await p.waitForTimeout(1500);
-    const s3=await p.evaluate(async()=>{const st=await tx('readonly',s=>s.getAll()),o=st.find(i=>i.id==='old1'),k=await metaGet('rec_kept')||[];return {mem:items.some(i=>i.id==='old1'&&!i.photo),gone:!items.some(i=>/^old2/.test(i.id))&&!st.some(i=>/^old2/.test(i.id)),stored:!!o&&!o.photo&&o.updated===5,flag:localStorage.getItem('rec_clean'),
-      kept:k.filter(x=>x.kind==='item').map(x=>String(x.rec.id).slice(0,4)+':'+x.dropped+':'+!!x.rec.photo).join(),days:k.filter(x=>x.kind!=='item').map(x=>{const c=cleanDay(x.rec);if(!c)return 'DROPPED '+JSON.stringify(x.rec).slice(0,400);
+    const s3=await p.evaluate(async()=>{const st=await HOOK.tx('readonly',s=>s.getAll()),o=st.find(i=>i.id==='old1'),k=await HOOK.metaGet('rec_kept')||[];return {mem:HOOK.items.some(i=>i.id==='old1'&&!i.photo),gone:!HOOK.items.some(i=>/^old2/.test(i.id))&&!st.some(i=>/^old2/.test(i.id)),stored:!!o&&!o.photo&&o.updated===5,flag:localStorage.getItem('rec_clean'),
+      kept:k.filter(x=>x.kind==='item').map(x=>String(x.rec.id).slice(0,4)+':'+x.dropped+':'+!!x.rec.photo).join(),days:k.filter(x=>x.kind!=='item').map(x=>{const c=HOOK.cleanDay(x.rec);if(!c)return 'DROPPED '+JSON.stringify(x.rec).slice(0,400);
         return Object.keys({...x.rec,...c}).filter(f=>JSON.stringify(x.rec[f])!==JSON.stringify(c[f])||!(f in c)||!(f in x.rec)).map(f=>`${x.rec.date} ${f}: ${JSON.stringify(x.rec[f])} -> ${JSON.stringify(c[f])}`).join('; ')}),toast:document.querySelector('#toast').textContent}});
     if(s3.days.length)console.log('DAY SET ASIDE: '+s3.days.join(' | '));
     ok(!s3.days.length,'no day record the app wrote is set aside by the start-up check ('+s3.days.join(' | ')+')');
@@ -91,7 +91,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(ct==='Color: low confidence · Pattern: medium confidence'||(!/</.test(ct)&&/low confidence/.test(ct)),'confTxt shows only the words high, medium and low ('+ct+')');
 
     // ---- W2-12-06: a name typed with right-to-left overrides is saved without them
-    const nm=await p.evaluate(async()=>{const i={id:'n1',type:'suit',primaryColor:'navy',pattern:'solid',added:1};HOOK.items=[i];await setItemField('n1','name','‮epyt‬ blazer');return items[0].name});
+    const nm=await p.evaluate(async()=>{const i={id:'n1',type:'suit',primaryColor:'navy',pattern:'solid',added:1};HOOK.items=[i];await HOOK.setItemField('n1','name','‮epyt‬ blazer');return HOOK.items[0].name});
     ok(nm==='epyt blazer','an item name is saved without bidi override characters ('+JSON.stringify(nm)+')');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await p.close();
@@ -125,10 +125,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await q.goto(url);await q.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
     await q.addInitScript(()=>{window.__rx=n=>(window.__rxs=window.__rxs||[]).push(n)});
     await q.reload();await q.waitForFunction(()=>window.appReady);
-    const sy=await q.evaluate(async()=>{const a=await syncNow();show('today');await new Promise(r=>setTimeout(r,300));show('wardrobe');await new Promise(r=>setTimeout(r,300));
-      for(const i of items){openItem(i.id);await new Promise(r=>setTimeout(r,100));HOOK.closeItem()}
-      return {a,ids:items.map(i=>i.id).sort().join(),marks:document.querySelectorAll('[data-rx],[data-q]').length,hits:window.__rxs||[],st:localStorage.getItem('sync_status')}});
-    gets=0;const again=await q.evaluate(()=>syncNow());
+    const sy=await q.evaluate(async()=>{const a=await HOOK.syncNow();HOOK.show('today');await new Promise(r=>setTimeout(r,300));HOOK.show('wardrobe');await new Promise(r=>setTimeout(r,300));
+      for(const i of HOOK.items){HOOK.openItem(i.id);await new Promise(r=>setTimeout(r,100));HOOK.closeItem()}
+      return {a,ids:HOOK.items.map(i=>i.id).sort().join(),marks:document.querySelectorAll('[data-rx],[data-q]').length,hits:window.__rxs||[],st:localStorage.getItem('sync_status')}});
+    gets=0;const again=await q.evaluate(()=>HOOK.syncNow());
     ok(sy.a===true&&sy.marks===0&&!sy.hits.length,`a sync that brings crafted records puts nothing into the page (ok ${sy.a}, marks ${sy.marks}, calls ${sy.hits.join()}, ${sy.st})`);
     ok(/c2/.test(sy.ids)&&/g1/.test(sy.ids)&&!/[<"']/.test(sy.ids),'the backup\'s good records arrive and no crafted id does ('+sy.ids+')');
     ok(again===true&&gets<=1,'the next sync is one small request, not a loop asking for the whole backup ('+gets+' GETs)');

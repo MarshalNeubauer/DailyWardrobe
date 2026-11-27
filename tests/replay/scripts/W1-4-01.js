@@ -31,9 +31,11 @@ const phone = async name => { const p = await openPhone({ profile: 'verify4-r01-
 const guard = async p => { const u = await p.page.evaluate(() => localStorage.worker_url); if (u && u !== `http://127.0.0.1:${PORT + 1}/`) throw new Error('worker_url wrong: ' + u) };
 async function tapBtn(p, re, scope = 'body') { const l = p.page.locator(scope).getByRole('button', { name: re }).first(); await l.scrollIntoViewIfNeeded().catch(() => {}); const b = await l.boundingBox(); if (!b) throw new Error('no button ' + re); await p.tapAt(b.x + b.width / 2, b.y + b.height / 2); await sleep(500) }
 async function skipSetup(p) { for (let i = 0; i < 4; i++) { let hit = false; for (const re of [/^Skip$/, /^Not now$/, /^Later$/]) if (await p.page.getByRole('button', { name: re }).first().isVisible().catch(() => false)) { await tapBtn(p, re); hit = true } if (!hit) break } }
-// P runs the old c4a549b app, which has no HOOK (tests/hook.js): there `syncing` is still the page's global
-const sync = p => p.page.evaluate(async () => { for (let i = 0; i < 100 && ((window.HOOK ? HOOK.syncing : window.syncing) || window.syncRun); i++) await new Promise(r => setTimeout(r, 200)); return syncNow() });
-const rules = p => p.page.evaluate(async () => ({ mem: settings.planRules, idb: ((await metaGet('settings')) || {}).planRules, PLAN_RULES }));
+// P runs the old c4a549b app, which has no HOOK (tests/hook.js): there its names are still the page's globals (READS_KEPT in
+// tests/bridge.test.js); Q runs today's app, read through HOOK. sync and rules run on both; setLaundry and P's Add steps on P alone
+const sync = p => p.page.evaluate(async () => { for (let i = 0; i < 100 && ((window.HOOK ? HOOK.syncing : window.syncing) || (window.HOOK ? HOOK.syncRun : window.syncRun)); i++) await new Promise(r => setTimeout(r, 200)); return window.HOOK ? HOOK.syncNow() : syncNow() });
+const rules = p => p.page.evaluate(async () => window.HOOK ? ({ mem: HOOK.settings.planRules, idb: ((await HOOK.metaGet('settings')) || {}).planRules, PLAN_RULES: HOOK.PLAN_RULES })
+  : ({ mem: settings.planRules, idb: ((await metaGet('settings')) || {}).planRules, PLAN_RULES }));
 const toasts = p => p.page.evaluate(() => window.__toasts || []);
 const planned = t => t.some(s => /planner was updated/i.test(s));
 async function setLaundry(p, v) { await p.page.evaluate(() => openSettings('care')); await sleep(600); await p.page.selectOption('#cfg-laundry', String(v)); await sleep(300); await tapBtn(p, /^Done$/, '#settings-modal'); await sleep(600) }
@@ -54,7 +56,7 @@ const out = {};
   await startLab(NEW);
   const Q = await phone('Q'); await Q.page.goto(LINK); await Q.ready(); await sleep(5000); await guard(Q); await skipSetup(Q);
   await sync(Q); await sleep(1500); await sync(Q);
-  out.Qjoined = { items: await Q.page.evaluate(() => items.length), rules: await rules(Q) };
+  out.Qjoined = { items: await Q.page.evaluate(() => HOOK.items.length), rules: await rules(Q) };
   out.Qstart1 = await restart(Q);            // the one expected re-plan (the backup said 14)
   await sync(Q);
   out.Qstart2_quiet = await restart(Q);      // baseline: nothing happened elsewhere, should be quiet

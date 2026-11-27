@@ -15,8 +15,8 @@ L.main(async()=>{
   await L.startLab('W1-3-05',L.NEW,'2026-11-15T08:00:00+03:00');
   const A=await L.open('W1-3-05-A');await L.skipSetup(A);await L.sleep(1000);
   const e1=await newPattern(A,'Birdseye');const e2=await newPattern(A,'Herringbone');
-  const r=await A.page.evaluate(()=>({own:(settings.custom&&settings.custom.patterns||[]).map(p=>p.key+':'+p.name),
-    suitList:patChoices({type:'suit',pattern:'solid'}).map(p=>patName(p)).filter(n=>/birdseye|herringbone/i.test(n))}));
+  const r=await A.page.evaluate(()=>({own:(HOOK.settings.custom&&HOOK.settings.custom.patterns||[]).map(p=>p.key+':'+p.name),
+    suitList:HOOK.patChoices({type:'suit',pattern:'solid'}).map(p=>HOOK.patName(p)).filter(n=>/birdseye|herringbone/i.test(n))}));
   const ok=!e1&&r.own.some(x=>/^own-birdseye:Birdseye$/.test(x))&&r.suitList.filter(n=>/^birdseye$/i.test(n)).length===2;
   await L.finish(ok,{errors:{Birdseye:e1,Herringbone:e2},...r});
 });

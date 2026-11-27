@@ -29,9 +29,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const FIX=path.join(__dirname,'fixtures','cm','suit'),recs={};
     for(const f of fs.readdirSync(FIX)){const n=f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/');recs[n]=`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(FIX,f)).toString('base64')}
     await p.evaluate(async recs=>{HOOK.ASM_ON=true;self.ASM_CM_SIZE=512;HOOK.asmAheadSoon=()=>{};HOOK.asmAhead=async()=>{};HOOK.asmCmSrcSig();HOOK.asmCmCodeSig();
-      for(const [n,img] of Object.entries(recs))renders[HOOK.asmCmKey('suit',n)]={img,t:1000,sig:'asm/cm test',model:'colormaster'};
+      for(const [n,img] of Object.entries(recs))HOOK.renders[HOOK.asmCmKey('suit',n)]={img,t:1000,sig:'asm/cm test',model:'colormaster'};
       const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');x.fillStyle='#e6e2dc';x.fillRect(0,0,512,512);
-      renders[HOOK.asmCmBgKey()]={img:c.toDataURL('image/png'),t:4242,sig:'asm/cm-bg test'};
+      HOOK.renders[HOOK.asmCmBgKey()]={img:c.toDataURL('image/png'),t:4242,sig:'asm/cm-bg test'};
       const I=(type,col,x={})=>({id:type+col,type,primaryColor:col,pattern:'solid',...x});
       window.__L=['burgundy','green','navy','brown','olive','grey'].map(t=>({top:I('suit','navy'),shirt:I('shirt','white'),tie:I('tie',t)}));
       window.__hide=h=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>h});Object.defineProperty(document,'visibilityState',{configurable:true,get:()=>h?'hidden':'visible'});document.dispatchEvent(new Event('visibilitychange'))};
@@ -92,10 +92,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // ---- CR-8-04 on the page: the painter's own rule ----
     const bt=await p.evaluate(()=>['#ffffff','#cfe0f2','#3b4a63'].map(sh=>{const svg=outfitMannequinSvg({kind:'shirt-open',shirtColor:sh,bot:{color:'#555'},shirt:{color:sh}});
       const m=/<g class="fig-shirtbtn">(?:<circle[^>]*\/>)(<circle[^>]*fill="(#[0-9a-f]{6})"\/>)/i.exec(svg);
-      const want='#'+HOOK.asmCmBtnCol([1,3,5].map(k=>srgbLin8(parseInt(sh.slice(k,k+2),16)))).map(v=>Math.round(255*linSrgb(v)).toString(16).padStart(2,'0')).join('');return [m&&m[2],want]}));
+      const want='#'+HOOK.asmCmBtnCol([1,3,5].map(k=>HOOK.srgbLin8(parseInt(sh.slice(k,k+2),16)))).map(v=>Math.round(255*HOOK.linSrgb(v)).toString(16).padStart(2,'0')).join('');return [m&&m[2],want]}));
     ok(bt.every(([d,w])=>d===w),`CR-8-04: the mannequin's buttons are the painted ones (${bt.map(x=>x.join('='))})`);
     // ---- CR-8-05: herringbone swatch ids stay unique after the cache evicts ----
-    const hb=await p.evaluate(async()=>{const ids=[],cols=Object.keys(COLORS).slice(0,24);let made=0;
+    const hb=await p.evaluate(async()=>{const ids=[],cols=Object.keys(HOOK.COLORS).slice(0,24);let made=0;
       for(const c of cols){const i={id:'hb-'+c,type:'shirt',primaryColor:c,pattern:'herringbone'};const s=HOOK.ovlHbShirt(i);const m=s&&/data-hb="([^"]+)"/.exec(s);if(m)ids.push(m[1]);
         const e=HOOK.OVL_HB.get(HOOK.ovlHbKey(i));if(e&&e.p){await e.p.catch(()=>{});if(e.url)made++}}
       return {n:ids.length,distinct:new Set(ids).size,made}});

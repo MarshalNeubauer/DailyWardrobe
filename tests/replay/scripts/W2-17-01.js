@@ -15,7 +15,7 @@ async function pickMonday(tag) {
 async function mondayOnWed(ph) {
   await V.world(ph, WED); await V.reopen(ph);
   const r = await V.rec(ph, K), p = await V.planned(ph, K, 'tie');
-  const worn = await ph.page.evaluate(k => { const o = planFor()[k]; return { frozen: !!(o && o.frozen) } }, K);
+  const worn = await ph.page.evaluate(k => { const o = HOOK.planFor()[k]; return { frozen: !!(o && o.frozen) } }, K);
   return { mondayTie: p, frozen: worn.frozen, recIdsTie: r && r.ids && r.ids.tie, recForceTie: r && r.force && r.force.tie, auto: !!(r && r.auto) };
 }
 V.run(async () => {

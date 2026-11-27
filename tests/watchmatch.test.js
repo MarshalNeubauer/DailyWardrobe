@@ -18,17 +18,17 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     sent=[];await post({mode:'item',item:'a pair of black shoes',key:'c2222222222222222'});
     ok(sent[0].url==='https://api.openai.com/v1/images/generations','without a photo it is generated from the description, as before');
     // app
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{HOOK.CK_OPEN['*']=true});
     const r=await p.evaluate(()=>{const w={id:'w1',type:'watch',primaryColor:'silver',pattern:'solid',metal:'silver',dial:'white',band:'integrated',bezel:'engraved',watchStyle:'chronograph',details:'small seconds at 10, 15/30/45 minute counter at 2'};
       // the date watch's window shows today's day: on the 12th it read as a 12 numeral, so the clock reads the 3rd while drawing
       const RD=Date;window.Date=class extends RD{constructor(...a){super(...(a.length?a:[2026,10,3,12]))}};let svg,plain;
       try{svg=HOOK.itemThumb(w);plain=HOOK.itemThumb({...w,watchStyle:'date',bezel:'smooth',band:'bracelet'})}finally{window.Date=RD}
       const o={suitDay:true,top:{id:'s',type:'suit',primaryColor:'navy',pattern:'solid',photo:'data:image/jpeg;base64,AAA'},shirt:{id:'h',type:'shirt',primaryColor:'white',pattern:'solid'},tie:{id:'t',type:'tie',primaryColor:'burgundy',pattern:'solid'},watch:w};
-      return {opts:[WATCH_STYLES,BANDS,BEZELS].map(l=>l.map(x=>x[0]).join()).join(' | '),
+      return {opts:[HOOK.WATCH_STYLES,HOOK.BANDS,HOOK.BEZELS].map(l=>l.map(x=>x[0]).join()).join(' | '),
         // the traced watch (drawWatchTraced) is seen at an angle: its subdials are ellipses, two more than a three-hand watch has
         subdials:(svg.match(/<ellipse /g)||[]).length-(plain.match(/<ellipse /g)||[]).length,blue:svg.includes('#1f4fa8'),nums:/>12<\/text>/.test(svg)&&/>6<\/text>/.test(svg),bezel:/>30<\/text>/.test(svg),plainHas:/>12<\/text>/.test(plain),
-        txt:watchText(w),desc:HOOK.itemDesc(w),pic:HOOK.ITEM_PIC_TYPES.includes('watch'),
-        key:comboKey(o)!==comboKey({...o,watch:{...w,details:'other'}})&&comboKey(o)!==comboKey({...o,watch:{...w,watchStyle:'date'}})}});
+        txt:HOOK.watchText(w),desc:HOOK.itemDesc(w),pic:HOOK.ITEM_PIC_TYPES.includes('watch'),
+        key:HOOK.comboKey(o)!==HOOK.comboKey({...o,watch:{...w,details:'other'}})&&HOOK.comboKey(o)!==HOOK.comboKey({...o,watch:{...w,watchStyle:'date'}})}});
     ok(/chronograph/.test(r.opts)&&/integrated/.test(r.opts)&&/engraved/.test(r.opts),`the wardrobe offers chronograph, integrated bracelet and engraved bezel (${r.opts})`);
     ok(r.subdials>=2&&r.blue&&r.nums&&r.bezel&&!r.plainHas,'a chronograph is drawn with subdials (and the minute counter\'s blue segment), 12 and 6 numerals and an engraved bezel');
     // long descriptions are not cut off
@@ -39,9 +39,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(r.pic&&/three-quarter view/.test(r.desc),'watches get product pictures');
     ok(r.key,'changing the watch style or details gives a new outfit photo key');
     // editor
-    await p.evaluate(()=>{HOOK.items=[{id:'w1',type:'watch',primaryColor:'silver',pattern:'solid',metal:'silver',dial:'white',band:'integrated',bezel:'engraved',watchStyle:'chronograph'}];HOOK.flt='all';HOOK.editing='w1';show('wardrobe')});
+    await p.evaluate(()=>{HOOK.items=[{id:'w1',type:'watch',primaryColor:'silver',pattern:'solid',metal:'silver',dial:'white',band:'integrated',bezel:'engraved',watchStyle:'chronograph'}];HOOK.flt='all';HOOK.editing='w1';HOOK.show('wardrobe')});
     await p.fill('.wdetails input','blue mark at 45');await p.press('.wdetails input','Tab');
-    ok(await p.evaluate(()=>items[0].details==='blue mark at 45'),'the watch editor has a Details field');
+    ok(await p.evaluate(()=>HOOK.items[0].details==='blue mark at 45'),'the watch editor has a Details field');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };

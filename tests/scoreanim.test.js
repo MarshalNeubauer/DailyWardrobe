@@ -9,12 +9,12 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
       HOOK.items=[I('suit','navy'),I('suit','grey'),I('shirt','white'),I('shirt','pink'),I('tie','burgundy'),I('tie','green'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
-      settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.scoreOpen=false;show('today')});
+      HOOK.settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.scoreOpen=false;HOOK.show('today')});
     const r0=await p.evaluate(()=>{const b=document.querySelector('#sbox');return {tag:b.tagName,btn:b.querySelector('button.month-link').getAttribute('aria-expanded'),h:b.getBoundingClientRect().height,
       panel:document.querySelector('#spanel').getBoundingClientRect().height,same:['#ibox','#mbox'].every(s=>Math.round(document.querySelector(s).getBoundingClientRect().height)===Math.round(b.getBoundingClientRect().height))}});
     ok(r0.tag==='SECTION'&&r0.btn==='false'&&r0.panel===0&&r0.same,'folded: a button with the same size as the other cards, the breakdown hidden');
     // sample the height while it opens: it grows over several frames
-    const s=await p.evaluate(async()=>{const vis=b=>{const e=b.querySelector('.fedge>i');return Math.round(e?e.getBoundingClientRect().top+parseFloat(e.style.getPropertyValue('--fr'))-b.getBoundingClientRect().top+1:b.getBoundingClientRect().height)};toggleScore();const box=document.querySelector('#sbox'),hs=[];const t0=performance.now();
+    const s=await p.evaluate(async()=>{const vis=b=>{const e=b.querySelector('.fedge>i');return Math.round(e?e.getBoundingClientRect().top+parseFloat(e.style.getPropertyValue('--fr'))-b.getBoundingClientRect().top+1:b.getBoundingClientRect().height)};HOOK.toggleScore();const box=document.querySelector('#sbox'),hs=[];const t0=performance.now();
       while(performance.now()-t0<700){hs.push(vis(box));await new Promise(r=>requestAnimationFrame(r))}
       const li=[...box.querySelectorAll('.sdl')],delays=li.map(l=>parseFloat(getComputedStyle(l).animationDelay)),bars=li.map(l=>getComputedStyle(l.querySelector('.sdb i')).animationName);
       return {hs,distinct:new Set(hs).size,final:hs[hs.length-1],first:hs[0],delays,bars,expanded:box.querySelector('.month-link').getAttribute('aria-expanded'),chev:getComputedStyle(box.querySelector('.chev')).transform}});
@@ -25,10 +25,10 @@ module.exports=async({ok,chromium,url,settle})=>{
       return li.length>=5&&li.map((l,i)=>{const w=l.querySelector('.sdb').getBoundingClientRect().width,f=l.querySelector('.sdb i').getBoundingClientRect().width;return Math.abs(f/w-v[i]/100)<.02}).every(Boolean)});
     ok(bars,'each bar ends at its dial\'s value');
     // a re-render keeps it open without replaying
-    const keep=await p.evaluate(()=>{renderToday();const b=document.querySelector('#sbox');return {open:b.classList.contains('open'),instant:b.classList.contains('instant'),anim:getComputedStyle(b.querySelector('.sdl')).animationName}});
+    const keep=await p.evaluate(()=>{HOOK.renderToday();const b=document.querySelector('#sbox');return {open:b.classList.contains('open'),instant:b.classList.contains('instant'),anim:getComputedStyle(b.querySelector('.sdl')).animationName}});
     ok(keep.open&&keep.instant&&keep.anim==='none','it stays open across a re-render, without replaying the animation');
     // folding: shrinks over several frames back to the card size
-    const f=await p.evaluate(async()=>{const vis=b=>{const e=b.querySelector('.fedge>i');return Math.round(e?e.getBoundingClientRect().top+parseFloat(e.style.getPropertyValue('--fr'))-b.getBoundingClientRect().top+1:b.getBoundingClientRect().height)};toggleScore();const box=document.querySelector('#sbox'),hs=[];const t0=performance.now();
+    const f=await p.evaluate(async()=>{const vis=b=>{const e=b.querySelector('.fedge>i');return Math.round(e?e.getBoundingClientRect().top+parseFloat(e.style.getPropertyValue('--fr'))-b.getBoundingClientRect().top+1:b.getBoundingClientRect().height)};HOOK.toggleScore();const box=document.querySelector('#sbox'),hs=[];const t0=performance.now();
       const li=[...box.querySelectorAll('#spanel .sli')],lift={name:getComputedStyle(li[0]).animationName,d0:parseFloat(getComputedStyle(li[0]).animationDelay),dn:parseFloat(getComputedStyle(li[li.length-1]).animationDelay)};
       while(performance.now()-t0<1100){hs.push(vis(box));await new Promise(r=>requestAnimationFrame(r))}return {lift,distinct:new Set(hs).size,last:hs[hs.length-1],ib:Math.round(document.querySelector('#ibox').getBoundingClientRect().height)}});
     ok(f.lift.name==='mcLift'&&f.lift.dn===0&&f.lift.d0>0.1,`folding plays the checks backwards: the last lifts out first, the first ${Math.round(f.lift.d0*1000)} ms later`);

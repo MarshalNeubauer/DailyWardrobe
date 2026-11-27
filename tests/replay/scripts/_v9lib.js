@@ -48,18 +48,18 @@ async function joinAndSetUp(ph,link){
     await ph.tap('#n-wardrobe');await sleep(800);await tapText(ph,/spreadsheet/i)}
   await sleep(800);await ph.page.setInputFiles('input[accept*=csv]',f);await sleep(1000);
   await ph.tap('#kit-imp');await sleep(2500);await ph.tap('#n-today');await sleep(1200);
-  const n=await ph.page.evaluate(()=>items.length);if(n<16)throw new Error('import gave '+n+' items');
+  const n=await ph.page.evaluate(()=>HOOK.items.length);if(n<16)throw new Error('import gave '+n+' items');
   await sync(ph)}
 async function sync(ph){await ph.background();await sleep(3500);await ph.foreground();await sleep(2500)}
 async function reopen(ph){await ph.reopen(APP);await ph.ready();await sleep(3000);await guard(ph)}
 async function openItem(ph,re){await ph.tap('#n-wardrobe');await sleep(700);await waitToast(ph);
-  await ph.page.evaluate(()=>{if(typeof CK_OPEN!=='undefined')CK_OPEN['*']=true});   // #497: the sheet's fields are in folded sections; open them all (no-op before)
+  await ph.page.evaluate(()=>{if('CK_OPEN' in HOOK)HOOK.CK_OPEN['*']=true});   // #497: the sheet's fields are in folded sections; open them all (no-op before)
   const l=ph.page.locator('#wardrobe .gi').filter({hasText:re}).first();await l.scrollIntoViewIfNeeded();const b=await l.boundingBox();await ph.tapAt(b.x+b.width/2,b.y+b.height/2);await sleep(900);
   if(!await vis(ph,'#item-view .wf-name')){await l.click({force:true});await sleep(900)}}
 async function rename(ph,re,name){await openItem(ph,re);const f=ph.page.locator('#item-view .wf-name');await f.click();await f.press('Control+a');await f.type(name);await sleep(300);
   await tapText(ph,/^Done$/,'#item-view');await sleep(700)}
 async function delItem(ph,re){await openItem(ph,re);await tapText(ph,/Delete item/,'#item-view');await sleep(1200)}
-const names=ph=>ph.page.evaluate(()=>items.map(i=>i.name||desc(i)).sort());
+const names=ph=>ph.page.evaluate(()=>HOOK.items.map(i=>i.name||HOOK.desc(i)).sort());
 async function server(){const d=await mock('kv-dump');const k=Object.keys(d).find(k=>/wardrobe:v1$/.test(k));if(!k)return null;const e=d[k];const v=e.b?Buffer.from(e.v,'base64').toString('utf8'):e.v;
   const j=JSON.parse(v),data=j.data||j;return {keys:Object.keys(d),items:(data.items||[]).map(i=>(i.name||i.type+' '+(i.primaryColor||''))+'@'+new Date(i.updated||i.added).toISOString()),tomb:data.tombstones||{},days:(data.days||[]),settings:data.settings}}
 function verdict(ok,ev){log(ok?'REPRODUCED':'NOT REPRODUCED');log('evidence:',ev)}

@@ -98,8 +98,8 @@ async function survey(eng,browser,{ok,url,C,page}){
     add('tie',['navy','burgundy','green','brown','grey','red','purple','black','blue','gold','navy','burgundy']);
     add('shoes',['black','brown','oxblood'],{leather:'calf'});add('belt',['black','brown','oxblood'],{leather:'calf',metal:'silver'});
     add('socks',['navy','charcoal','black','brown']);add('watch',['silver'],{metal:'silver',band:'metal bracelet'});add('tieclip',['silver'],{metal:'silver'});add('pocketsquare',['white']);
-    for(const i of I)await put(i);
-    settings.setupDone=1;settings.workdays=[0,1,2,3,4];await saveUserSettings();try{localStorage.setItem('tour_seen','1')}catch(e){}
+    for(const i of I)await HOOK.put(i);
+    HOOK.settings.setupDone=1;HOOK.settings.workdays=[0,1,2,3,4];await HOOK.saveUserSettings();try{localStorage.setItem('tour_seen','1')}catch(e){}
     return I.length});
   const kmap=await sp.evaluate(ks=>{const o={};for(const k of ks){const [kind,n]=k.split('|');o[k]=HOOK.asmCmKey(kind,n)}return o},Object.keys(recs));
   const bg=await sp.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');x.fillStyle='#e6e2dc';x.fillRect(0,0,512,512);return {k:HOOK.asmCmBgKey(),img:c.toDataURL('image/png')}});
@@ -141,8 +141,8 @@ async function run(eng,browser,{ok,url,settle}){
       if(c.hold&&name===c.held)await c.hold;await route.continue().catch(()=>{})});
     c.p=await ctx.newPage();c.p.on('pageerror',e=>c.errs.push(e.message));
     await c.p.goto(url);await c.p.waitForFunction(()=>window.appReady);
-    await c.p.evaluate(async()=>{if(document.querySelector('#setup.on'))HOOK.setupClose();settings.setupDone=1;settings.laundryDays=3;await saveUserSettings();
-      await put({id:'ml-shirt',type:'shirt',primaryColor:'white',pattern:'solid',added:1});await put({id:'ml-tie',type:'tie',primaryColor:'navy',pattern:'solid',added:2});await put({id:'ml-suit',type:'suit',primaryColor:'navy',pattern:'solid',added:3})});
+    await c.p.evaluate(async()=>{if(document.querySelector('#setup.on'))HOOK.setupClose();HOOK.settings.setupDone=1;HOOK.settings.laundryDays=3;await HOOK.saveUserSettings();
+      await HOOK.put({id:'ml-shirt',type:'shirt',primaryColor:'white',pattern:'solid',added:1});await HOOK.put({id:'ml-tie',type:'tie',primaryColor:'navy',pattern:'solid',added:2});await HOOK.put({id:'ml-suit',type:'suit',primaryColor:'navy',pattern:'solid',added:3})});
     return c};
   // loads the page with one script held: every script before it has run, none after
   const held=async(c,name,ready)=>{c.errs.length=0;c.held=name;c.hold=new Promise(r=>c.let=r);
@@ -161,39 +161,39 @@ async function run(eng,browser,{ok,url,settle}){
   // the script right after act.js (add.js until the restructure S3a moved the ui kit and logic there), and the one after start.js
   const order=[...fs.readFileSync(path.join(ROOT,'index.html'),'utf8').replace(/<!--[\s\S]*?-->/g,'').matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)].map(m=>m[1]);
   const afterAct=order[order.indexOf('act.js')+1],afterStart=order[order.indexOf('start.js')+1];
-  await held(c,afterAct,()=>typeof ACTS==='object');
-  const st0=await c.p.evaluate(()=>({n:Object.keys(ACTS).length,rs:document.readyState,nav:!!document.querySelector('#n-stats'),late:typeof show==='undefined'&&typeof startUp==='undefined'}));
+  await held(c,afterAct,()=>'ACTS' in HOOK&&typeof HOOK.ACTS==='object');
+  const st0=await c.p.evaluate(()=>({n:Object.keys(HOOK.ACTS).length,rs:document.readyState,nav:!!document.querySelector('#n-stats'),late:!('show' in HOOK)&&!('startUp' in HOOK)}));
   ok(st0.n===0&&st0.late&&st0.nav,T+`with ${afterAct}, the script after act.js, held the page is drawn and act.js listens, but no script has registered a handler yet (${JSON.stringify(st0)})`);
   ok(st0.rs==='interactive',T+`document.readyState is already "interactive" while the deferred scripts run (${st0.rs}): afterDom can't go by it`);
-  const early=await c.p.evaluate(()=>{window.__ad=0;afterDom(()=>{window.__ad++});return window.__ad});
+  const early=await c.p.evaluate(()=>{window.__ad=0;HOOK.afterDom(()=>{window.__ad++});return window.__ad});
   for(const sel of Object.values(CTRL))await tap(c,sel);
   ok(c.errs.length===0,T+`each tab, the gear and the theme button tapped before any handler is registered: no page error (${c.errs.join(' | ')||'none'})`);
   await go(c);
   ok(early===0&&await c.p.evaluate(()=>window.__ad)===1,T+'afterDom waits for the last script: its function didn\'t run while they were loading, and ran once after');
-  ok(await c.p.evaluate(()=>{let r=0;afterDom(()=>{r++});return r})===1,T+'after that afterDom runs its function at once');
-  ok(await shown(c)==='today'&&c.errs.length===0&&await c.p.evaluate(()=>items.length===3&&!settingsOpen()),T+`those taps are dropped: the app starts on Today with its wardrobe, no page error (${c.errs.join(' | ')||'none'})`);
+  ok(await c.p.evaluate(()=>{let r=0;HOOK.afterDom(()=>{r++});return r})===1,T+'after that afterDom runs its function at once');
+  ok(await shown(c)==='today'&&c.errs.length===0&&await c.p.evaluate(()=>HOOK.items.length===3&&!HOOK.settingsOpen()),T+`those taps are dropped: the app starts on Today with its wardrobe, no page error (${c.errs.join(' | ')||'none'})`);
   await held(c,'start.js',()=>'todayTabTap' in HOOK&&typeof HOOK.todayTabTap==='function'&&'setOpenTap' in HOOK&&typeof HOOK.setOpenTap==='function'&&'themeTap' in HOOK&&typeof HOOK.themeTap==='function');
   await tap(c,CTRL.Today);await tap(c,CTRL.Wardrobe);await tap(c,CTRL.Insights);
   ok(c.errs.length===0,T+`the tabs tapped with today.js in and start.js not: no page error (${c.errs.join(' | ')||'none'})`);
   await go(c);ok(await shown(c)==='today'&&c.errs.length===0,T+'and the app starts on Today');
   await held(c,afterStart,()=>'tabTap' in HOOK&&typeof HOOK.tabTap==='function');
-  await tap(c,CTRL['the gear']);const setEarly=await c.p.evaluate(()=>settingsOpen());await tap(c,CTRL['the theme button']);
+  await tap(c,CTRL['the gear']);const setEarly=await c.p.evaluate(()=>HOOK.settingsOpen());await tap(c,CTRL['the theme button']);
   const themed=await c.p.evaluate(()=>document.documentElement.dataset.theme||'');
   ok(c.errs.length===0,T+`the gear and the theme button tapped with their scripts in and the later ones not: no page error (${c.errs.join(' | ')||'none'}; theme "${themed}")`);
   // Settings opened before the stored settings were read showed the defaults, and a change there was saved over the stored copy
-  ok(!setEarly&&await c.p.evaluate(()=>settings.laundryDays!==3),T+'the gear doesn\'t open Settings before the stored settings are read (the page still holds the defaults)');
+  ok(!setEarly&&await c.p.evaluate(()=>HOOK.settings.laundryDays!==3),T+'the gear doesn\'t open Settings before the stored settings are read (the page still holds the defaults)');
   await c.p.evaluate(()=>{document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));window.dispatchEvent(new PopStateEvent('popstate',{state:null}));
     const dt=new DataTransfer();dt.items.add(new File([new Uint8Array([137,80,78,71])],'p.png',{type:'image/png'}));document.dispatchEvent(new ClipboardEvent('paste',{clipboardData:dt,bubbles:true,cancelable:true}))});
-  await wait(150);ok(c.errs.length===0&&await c.p.evaluate(()=>queue.length===0),T+`Escape, Back and a pasted photo during loading: no page error, no card started (${c.errs.join(' | ')||'none'})`);
+  await wait(150);ok(c.errs.length===0&&await c.p.evaluate(()=>HOOK.queue.length===0),T+`Escape, Back and a pasted photo during loading: no page error, no card started (${c.errs.join(' | ')||'none'})`);
   await tap(c,CTRL.Insights);await go(c);
-  const aft=await c.p.evaluate(async()=>{const st=await metaGet('settings');return {set:settingsOpen(),n:items.length,mem:settings.laundryDays+'/'+settings.setupDone,st:st.laundryDays+'/'+st.setupDone}});
+  const aft=await c.p.evaluate(async()=>{const st=await HOOK.metaGet('settings');return {set:HOOK.settingsOpen(),n:HOOK.items.length,mem:HOOK.settings.laundryDays+'/'+HOOK.settings.setupDone,st:st.laundryDays+'/'+st.setupDone}});
   ok(await shown(c)==='stats'&&c.errs.length===0&&aft.n===3,T+`after start-up the app is on Insights, the tab tapped last, with its wardrobe (${await shown(c)}; ${c.errs.join(' | ')||'no page error'})`);
   ok(aft.set&&aft.mem==='3/1'&&aft.st==='3/1',T+`and Settings, asked for during loading, opens now, over the stored settings (laundry days/setup ${aft.mem} in memory, ${aft.st} stored)`);
-  await c.p.evaluate(()=>{closeSettings();try{localStorage.removeItem('theme')}catch(e){}});
+  await c.p.evaluate(()=>{HOOK.closeSettings();try{localStorage.removeItem('theme')}catch(e){}});
 
   /* ---- a script that can't be loaded (CR-7-03) ---- */
   const card=()=>c.p.evaluate(()=>{const d=document.querySelector('#today #start-fail');return d?{text:d.textContent,btn:!!d.querySelector('button'),vis:d.getBoundingClientRect().height>40&&!document.querySelector('#today').hidden,role:d.getAttribute('role')}:null});
-  const stored=()=>c.p.evaluate(async()=>(await tx('readonly',s=>s.getAll())).map(i=>i.id).sort().join());
+  const stored=()=>c.p.evaluate(async()=>(await HOOK.tx('readonly',s=>s.getAll())).map(i=>i.id).sort().join());
   const fail=async(refuse,until,ms)=>{c.errs.length=0;c.refuse=refuse;c.hold=null;await c.p.goto('about:blank');await c.p.goto(url,{waitUntil:'load'});
     await c.p.waitForFunction(until,null,{timeout:ms||15000,polling:100}).catch(()=>{});return card()};
   // start.js itself: nothing can say "start-up failed" but the head's own script
@@ -205,13 +205,13 @@ async function run(eng,browser,{ok,url,settle}){
   // Try again loads the page again: this time start.js comes
   c.refuse=null;c.errs.length=0;
   await Promise.all([c.p.waitForFunction(()=>window.appReady&&!document.querySelector('#start-fail'),null,{timeout:20000,polling:100}),c.p.evaluate(()=>document.querySelector('#start-fail button').click())]);
-  ok(await shown(c)==='today'&&await c.p.evaluate(()=>items.length)===3&&await stored()==='ml-shirt,ml-suit,ml-tie',T+'Try again starts the app, with the wardrobe as it was');
+  ok(await shown(c)==='today'&&await c.p.evaluate(()=>HOOK.items.length)===3&&await stored()==='ml-shirt,ml-suit,ml-tie',T+'Try again starts the app, with the wardrobe as it was');
   // a script that doesn't parse (what a failed import is to a module graph), early in the list: start-up can't finish
   k=await fail({'core.js':{body:'const broken=;'}},()=>!!document.querySelector('#start-fail'),12000);
   ok(k&&/couldn’t start/.test(k.text)&&k.btn,T+`core.js doesn't parse: start-up can't get anywhere, and the same card says so a few seconds after the page has loaded (${k?'shown':'not shown'})`);
   // a late script missing: the app starts without that feature, and no card
   k=await fail({'about.js':{status:404}},()=>window.appReady);await wait(5200);k=await card();
-  ok(!k&&await shown(c)==='today'&&await c.p.evaluate(()=>window.appReady&&items.length===3&&document.querySelector('#today').children.length>0),T+'about.js can\'t be loaded: the app still starts on Today with its wardrobe, and no start-up card covers it');
+  ok(!k&&await shown(c)==='today'&&await c.p.evaluate(()=>window.appReady&&HOOK.items.length===3&&document.querySelector('#today').children.length>0),T+'about.js can\'t be loaded: the app still starts on Today with its wardrobe, and no start-up card covers it');
   // act.js missing: settings.js and start.js (required) import acts since the restructure S5d and S5e, so the graph doesn't link and the start-up card shows
   // (the owner's choice (c), 2026-11-25: act.js counts as required; before, Today was drawn down to its month box)
   k=await fail({'act.js':{status:404}},()=>!!document.querySelector('#start-fail'),12000);
@@ -228,15 +228,15 @@ async function run(eng,browser,{ok,url,settle}){
   // accessor in HOOK's chain, which ends in the runner's root before any module's object: it is never reached for these)
   const md=await c.p.evaluate(()=>{const d=n=>{for(let o=HOOK;o;o=Object.getPrototypeOf(o)){const x=n in o&&Object.getOwnPropertyDescriptor(o,n);if(x)return x}return {}},has=(f,n)=>{try{return f[n]===null}catch(e){return 'throws'}};
     return {fns:['backKind','backOn','backOver','backLand','backPush','backDrop','backBorrow','backReturn','backHold','backSettled','backWanted','histPush','histDrop'].every(n=>typeof globalThis[n]==='function'),
-      loc:APP_LOC,get:['appHist','appKind','itemHist'].map(n=>typeof d(n).get+'/'+typeof d(n).set).join(),strict:has(backPush,'caller')+'/'+has(mergeItem,'caller'),patched:!!Date.prototype._dwLoc}});
+      loc:HOOK.APP_LOC,get:['appHist','appKind','itemHist'].map(n=>typeof d(n).get+'/'+typeof d(n).set).join(),strict:has(HOOK.backPush,'caller')+'/'+has(mergeItem,'caller'),patched:!!Date.prototype._dwLoc}});
   md.own=await c.p.evaluate('[typeof BACK,typeof backPop,typeof appLocale].join()');   // (as text: these are not the page's names, and the checkers would take a function's use of them for one)
   ok(md.own==='undefined,undefined,undefined'&&md.fns&&md.loc==='en-US'&&md.patched,T+`back.js and locale.js run as modules: their own names (BACK, backPop, appLocale) are not the page's, the bridged functions and APP_LOC are, and the Date patch is in (${JSON.stringify(md)})`);
   ok(md.get==='function/undefined,function/undefined,function/undefined'&&md.strict==='throws/true',T+'the three Back flags are getters with no setter, and back.js\'s functions are strict (reading a function\'s caller throws) where a classic script\'s are not');
-  const flags=()=>c.p.evaluate(()=>HOOK.appHist+'/'+HOOK.appKind+'/'+HOOK.itemHist+'/'+backKind());
+  const flags=()=>c.p.evaluate(()=>HOOK.appHist+'/'+HOOK.appKind+'/'+HOOK.itemHist+'/'+HOOK.backKind());
   const live=[await flags()];
-  await c.p.evaluate(()=>openSettings());await settle(c.p,300);live.push(await flags());
+  await c.p.evaluate(()=>HOOK.openSettings());await settle(c.p,300);live.push(await flags());
   const kept=await c.p.evaluate(()=>Reflect.set(HOOK,'appKind','zz')+'/'+HOOK.appKind);
-  await c.p.evaluate(()=>closeSettings());await settle(c.p,500);live.push(await flags());
+  await c.p.evaluate(()=>HOOK.closeSettings());await settle(c.p,500);live.push(await flags());
   ok(live.join(' ')==='false//false/ true/set/false/set false//false/'&&kept==='false/set'&&c.errs.length===0,T+`a getter gives the module's value of the moment: no entry, Settings' entry, none again (${live.join(' ')}); a write from outside is refused and changes nothing (${kept})`);
   // the pattern for a `let` the tests assign: a getter and a setter, so a bare assignment in the page reaches the module's own variable
   await c.p.addScriptTag({type:'module',content:'let mlState=1;globalThis.mlRead=()=>mlState;Object.defineProperties(globalThis,{mlState:{get:()=>mlState,set:v=>{mlState=v}}});export {};'});
@@ -255,14 +255,14 @@ async function run(eng,browser,{ok,url,settle}){
   const midway=await c.p.evaluate(()=>({card:window.__card,today:document.querySelector('#today').children.length,ready:!!window.appReady,busy:window.startBusy}));
   ok(c.errs.length===1&&midway.today===0&&!midway.ready&&midway.card===0,T+`an uncaught error during loading and the stored wardrobe 6 s late: 5 s after the page loaded Today is still empty and no card has come (${JSON.stringify(midway)})`);
   await c.p.waitForFunction(()=>window.appReady,null,{timeout:20000});await settle(c.p,300);
-  ok(await c.p.evaluate(n=>window.__card===0&&items.length===3&&document.querySelector('#today').children.length>0&&JSON.parse(localStorage.getItem('err_log')||'[]').filter(x=>/didn’t start/.test(x.m)).length===n,notedBefore),T+'then the app starts as usual: the card never came and nothing was noted as a failed start');
+  ok(await c.p.evaluate(n=>window.__card===0&&HOOK.items.length===3&&document.querySelector('#today').children.length>0&&JSON.parse(localStorage.getItem('err_log')||'[]').filter(x=>/didn’t start/.test(x.m)).length===n,notedBefore),T+'then the app starts as usual: the card never came and nothing was noted as a failed start');
   c.refuse=null;await c.ctx.close();
   // a first run, signed out, with such an error: Today's first page and the setup, never the card
   {const ctx=await browser.newContext({viewport:{width:402,height:874},hasTouch:true,isMobile:eng==='Chromium',serviceWorkers:'block'});
     await ctx.route(u=>!u.href.startsWith(origin)&&/^https?:/.test(u.href),route=>route.fulfill({status:503,headers:{'content-type':'application/json','access-control-allow-origin':'*'},body:'{"error":"server"}'}));
     await ctx.addInitScript(()=>{window.__card=0;new MutationObserver(()=>{if(document.getElementById('start-fail'))window.__card++}).observe(document,{childList:true,subtree:true});setTimeout(()=>{throw new Error('modload test: a stray error during loading')},20)});
     const p=await ctx.newPage();await p.goto(url);await p.waitForFunction(()=>window.appReady);await wait(5000);
-    const f=await p.evaluate(()=>({card:window.__card,today:document.querySelector('#today').children.length,n:items.length,setup:!!document.querySelector('#setup.on,#tour.on,.tour.on')}));
+    const f=await p.evaluate(()=>({card:window.__card,today:document.querySelector('#today').children.length,n:HOOK.items.length,setup:!!document.querySelector('#setup.on,#tour.on,.tour.on')}));
     ok(f.card===0&&f.today>0&&f.n===0,T+`a first run, signed out, with an uncaught error during loading: Today's first page is drawn and the card never comes (${JSON.stringify(f)})`);
     await ctx.close()}
 
@@ -275,7 +275,7 @@ async function run(eng,browser,{ok,url,settle}){
   await tap(a,CTRL.Today);await tap(a,CTRL.Wardrobe);
   const mid=await a.p.evaluate(()=>document.body.innerText);
   ok(!/[؀-ۿ٠-٩]/.test(mid)&&a.errs.length===0,T+'taps before the patch draw no date: no Arabic letter or digit on the page, no page error');
-  await go(a);await a.p.evaluate(()=>show('today'));await settle(a.p,300);
+  await go(a);await a.p.evaluate(()=>HOOK.show('today'));await settle(a.p,300);
   const txt=await a.p.evaluate(()=>({all:document.querySelector('#today').innerText,head:(document.querySelector('#today .dlong')||document.querySelector('#today')).textContent.slice(0,60),sample:new Date(2026,10,15).toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}));
   ok(!/[؀-ۿ]/.test(txt.all)&&/(January|February|March|April|May|June|July|August|September|October|November|December)/.test(txt.all)&&txt.sample==='Sunday, November 15',
     T+`after start-up Today's dates are in English with Latin digits ("${txt.head.replace(/\s+/g,' ').trim()}"; a date reads "${txt.sample}")`);
@@ -287,7 +287,7 @@ async function run(eng,browser,{ok,url,settle}){
   for(const [saved,scheme] of [['dark','light'],['light','dark']]){
     const t=await open({colorScheme:scheme},`try{localStorage.setItem('theme','${saved}')}catch(e){}`);
     await held(t,'merge.js',()=>!!document.querySelector('body>nav'));
-    const v=await t.p.evaluate(()=>({theme:document.documentElement.dataset.theme||'',bg:getComputedStyle(document.body).backgroundColor,core:typeof TYPES,want:null}));
+    const v=await t.p.evaluate(()=>({theme:document.documentElement.dataset.theme||'',bg:getComputedStyle(document.body).backgroundColor,core:'TYPES' in HOOK?typeof HOOK.TYPES:'undefined',want:null}));
     const want=await t.p.evaluate(s=>{const d=document.createElement('div');d.style.cssText='position:absolute;visibility:hidden';d.setAttribute('data-x','');document.documentElement.appendChild(d);
       const old=document.documentElement.dataset.theme;document.documentElement.dataset.theme=s==='dark'?'light':'dark';const other=getComputedStyle(document.body).backgroundColor;document.documentElement.dataset.theme=old;d.remove();return other},saved);
     ok(v.core==='undefined'&&v.theme===saved&&v.bg!==want,T+`a saved ${saved} theme on a ${scheme} phone: set before the first script (merge.js held, none has run), the page already in its colors (${v.bg}, the other theme's is ${want})`);
