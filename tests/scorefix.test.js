@@ -11,9 +11,9 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     const S=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});HOOK.items=[];
       const navy=I('suit','navy'),bl=I('shoes','black',{leather:'calf'}),br=I('shoes','brown',{leather:'calf'}),bb=I('belt','black',{leather:'calf',metal:'silver'}),w=I('watch','silver',{metal:'silver'});HOOK.items=[bb];
       const mk=(top,shirt,tie,shoes,belt,socks,x={})=>({suitDay:top&&top.type==='suit',top,bot:x.bot||top,shirt,tie,shoes,belt,socks,watch:w,clip:null,notes:[],...x});
-      const R=o=>{const r=rateOutfit(o);return {s:r.score,l:r.label,hard:r.hard.join(),lost:Object.fromEntries(r.checks.filter(c=>c.pts<c.max).map(c=>[c.label,c.pts+'/'+c.max])),why:r.checks.filter(c=>c.pts<c.max).map(c=>c.why).join(' | ')}};
+      const R=o=>{const r=HOOK.rateOutfit(o);return {s:r.score,l:r.label,hard:r.hard.join(),lost:Object.fromEntries(r.checks.filter(c=>c.pts<c.max).map(c=>[c.label,c.pts+'/'+c.max])),why:r.checks.filter(c=>c.pts<c.max).map(c=>c.why).join(' | ')}};
       const wh=I('shirt','white'),bu=I('tie','burgundy'),ns=I('socks','navy'),base=mk(navy,wh,bu,bl,bb,ns);
-      const prev=(o,n)=>({jg:jacketGroup(o.top),jc:planCol(o.top),sg:shirtGroup(o.shirt),tg:tieGroup(o.tie),tid:o.tie.id,sl:shirtLook(o.shirt),tl:tieLook(o.tie),sid:o.shirt.id,sh:o.shoes.id,n});
+      const prev=(o,n)=>({jg:HOOK.jacketGroup(o.top),jc:HOOK.planCol(o.top),sg:HOOK.shirtGroup(o.shirt),tg:HOOK.tieGroup(o.tie),tid:o.tie.id,sl:HOOK.shirtLook(o.shirt),tl:HOOK.tieLook(o.tie),sid:o.shirt.id,sh:o.shoes.id,n});
       return {classic:R(base),
         taste:[R(mk(navy,I('shirt','pink'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),bl,bb,ns)),R(mk(navy,I('shirt','lavender'),bu,br,I('belt','brown',{leather:'calf',metal:'silver'}),ns)),R(mk(I('suit','charcoal'),wh,I('tie','silver'),bl,bb,I('socks','charcoal'))),
           R(mk(I('suit','lightgrey'),I('shirt','black'),I('tie','silver'),bl,bb,I('socks','grey')))],
@@ -39,11 +39,11 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(!S.var0.lost.Variety&&S.varTie.lost.Variety==='3/5'&&S.varLook.lost.Variety==='2/5'&&S.varShoes.lost.Variety==='4/5'&&!S.varShoesMon.lost.Variety,
       `variety: the same tie as the workday before ${S.varTie.lost.Variety}, the same look as two workdays ago ${S.varLook.lost.Variety}, yesterday's shoes ${S.varShoes.lost.Variety} (not after a weekend)`);
     // ---- the score card (six dials since 2026-11-18; tests/scoredials.test.js has the rest)
-    await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.view={y:2026,m:10};const pl=planMonth(2026,10),k=Object.keys(pl).find(k=>keyDate(k)>=todayDate()&&pl[k].top&&items.some(s=>s.type==='shoes'&&shoeScore(pl[k].top,pl[k].bot||pl[k].top,s)<=-50));HOOK.sel=keyDate(k);show('today')})()`);await settle(p,400);
-    const c0=await p.evaluate(()=>{const o=planFor()[key(sel)],r=rateOutfit(o);return {s:r.score,hard:r.hard.length,dials:document.querySelectorAll('#sbox .dial').length,bad:document.querySelectorAll('#sbox .dial.d-bad').length,variety:r.checks.some(c=>c.label==='Variety')}});
+    await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.settings.workdays=[1,2,3,4,5];HOOK.settings.blazerDays=[4];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.view={y:2026,m:10};const pl=HOOK.planMonth(2026,10),k=Object.keys(pl).find(k=>HOOK.keyDate(k)>=HOOK.todayDate()&&pl[k].top&&HOOK.items.some(s=>s.type==='shoes'&&HOOK.shoeScore(pl[k].top,pl[k].bot||pl[k].top,s)<=-50));HOOK.sel=HOOK.keyDate(k);HOOK.show('today')})()`);await settle(p,400);
+    const c0=await p.evaluate(()=>{const o=HOOK.planFor()[HOOK.key(HOOK.sel)],r=HOOK.rateOutfit(o);return {s:r.score,hard:r.hard.length,dials:document.querySelectorAll('#sbox .dial').length,bad:document.querySelectorAll('#sbox .dial.d-bad').length,variety:r.checks.some(c=>c.label==='Variety')}});
     ok(c0.hard===0&&c0.s>=90&&c0.dials===6&&!c0.bad&&c0.variety,`the planned day scores ${c0.s} with no real mistake (six dials, none ringed), and is checked for variety`);
     // wear the wrong shoes by hand: the Occasion dial says so and the card offers the way back
-    await p.evaluate(()=>{const o=planFor()[key(sel)],bad=items.filter(i=>i.type==='shoes').find(s=>shoeScore(o.top,o.bot||o.top,s)<=-50)||null;window.badShoes=bad&&bad.id;return bad&&pickItem('shoes',bad.id)});await settle(p,400);
+    await p.evaluate(()=>{const o=HOOK.planFor()[HOOK.key(HOOK.sel)],bad=HOOK.items.filter(i=>i.type==='shoes').find(s=>HOOK.shoeScore(o.top,o.bot||o.top,s)<=-50)||null;window.badShoes=bad&&bad.id;return bad&&HOOK.pickItem('shoes',bad.id)});await settle(p,400);
     const c1=await p.evaluate(()=>{const d=document.querySelector('#sbox .dial.d-bad');return {has:!!window.badShoes,bad:d?d.textContent:'',label:document.querySelector('#sbox .month-link').getAttribute('aria-label')}});
     ok(c1.has&&/!Occasion/.test(c1.bad)&&/Occasion broken rule/.test(c1.label)&&/1 thing to fix/.test(c1.label),`shoes that don't suit the suit, picked by hand: the Occasion dial is ringed with "!" (${c1.label})`);
     await p.waitForFunction(()=>document.querySelector('#sbox.ranked'),null,{timeout:10000}).catch(()=>{});
@@ -53,21 +53,21 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     ok(/1 thing to fix/.test(c2.rules)&&c2.failed.length===1,`the broken rule is said and marked in the rules (${c2.rules})`);
     await p.evaluate(()=>{const b=[...document.querySelectorAll('#sbox .sfixbtn')].find(b=>/shoes/i.test(b.textContent));b.click()});
     await p.waitForFunction(()=>!document.querySelector('#sbox .dial.d-bad'),null,{timeout:5000}).catch(()=>{});
-    const c3=await p.evaluate(()=>{const o=planFor()[key(sel)];return {bad:!!document.querySelector('#sbox .dial.d-bad'),shoes:o.shoes.id!==window.badShoes,belt:!o.belt||beltFit(o.shoes,o.belt)!==null,open:document.querySelector('#sbox').classList.contains('open'),hard:rateOutfit(o).hard.length}});
+    const c3=await p.evaluate(()=>{const o=HOOK.planFor()[HOOK.key(HOOK.sel)];return {bad:!!document.querySelector('#sbox .dial.d-bad'),shoes:o.shoes.id!==window.badShoes,belt:!o.belt||HOOK.beltFit(o.shoes,o.belt)!==null,open:document.querySelector('#sbox').classList.contains('open'),hard:HOOK.rateOutfit(o).hard.length}});
     ok(!c3.bad&&c3.shoes&&c3.belt&&c3.open&&!c3.hard,'a tap on it wears those shoes (the belt follows), the rule is met again; the card stays open');
-    await p.evaluate(()=>toggleScore());await settle(p,500);
+    await p.evaluate(()=>HOOK.toggleScore());await settle(p,500);
     // ---- stats: what was really worn, week by week
-    await p.evaluate(()=>{const T=todayDate();HOOK.dayRecs={};HOOK.cache={};const pl={...planMonth(2026,8),...planMonth(2026,9),...planMonth(2026,10)};
-      for(const [k,o] of Object.entries(pl)){const d=keyDate(k);if(d<T&&o.top&&d>=new Date(2026,8,20))dayRecs[k]={date:k,ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest}}
+    await p.evaluate(()=>{const T=HOOK.todayDate();HOOK.dayRecs={};HOOK.cache={};const pl={...HOOK.planMonth(2026,8),...HOOK.planMonth(2026,9),...HOOK.planMonth(2026,10)};
+      for(const [k,o] of Object.entries(pl)){const d=HOOK.keyDate(k);if(d<T&&o.top&&d>=new Date(2026,8,20))HOOK.dayRecs[k]={date:k,ids:HOOK.idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest}}
       // one day worn with shoes that don't suit the suit
-      const wrong=(o,s)=>shoeScore(o.top,o.bot||o.top,s)<=-50,k=Object.keys(dayRecs).sort((a,b)=>keyDate(b)-keyDate(a)).find(k=>items.some(s=>s.type==='shoes'&&wrong(pl[k],s))),bad=items.find(s=>s.type==='shoes'&&wrong(pl[k],s));dayRecs[k].ids={...dayRecs[k].ids,shoes:bad.id,belt:null};
+      const wrong=(o,s)=>HOOK.shoeScore(o.top,o.bot||o.top,s)<=-50,k=Object.keys(HOOK.dayRecs).sort((a,b)=>HOOK.keyDate(b)-HOOK.keyDate(a)).find(k=>HOOK.items.some(s=>s.type==='shoes'&&wrong(pl[k],s))),bad=HOOK.items.find(s=>s.type==='shoes'&&wrong(pl[k],s));HOOK.dayRecs[k].ids={...HOOK.dayRecs[k].ids,shoes:bad.id,belt:null};
       HOOK.cache={};HOOK.openStats()});await p.waitForFunction(()=>!!document.querySelector('#st-trend'),null,{timeout:20000});await settle(p,600);   // (the six months are planned in idle slices first: stats.js statsShow)
     const st=await p.evaluate(()=>{const c=document.querySelector('#st-trend'),S=HOOK.buildStats();return {cols:c?c.querySelectorAll('.st-wk').length:0,low:c?c.querySelectorAll('.st-col i.low').length:0,txt:c?c.textContent.replace(/\s+/g,' '):'',avg:S.wornAvg,hard:S.wornHard,days:S.trendDays,w:c?Math.round(c.getBoundingClientRect().width):0,over:document.documentElement.scrollWidth-document.documentElement.clientWidth}});
     ok(st.cols===8&&st.days>20&&st.avg>=85&&/What you really wore, week by week/.test(st.txt),`Stats → Your scores: eight weekly columns over ${st.days} worn days, average ${st.avg}`);
     ok(st.hard===1&&st.low===1&&/1 had a real mistake/.test(st.txt)&&st.over===0,'the week with a real mistake is marked, and the card says how many days had one');
     // the unused-piece reasons are worked out once for the page, not once per piece
     const perf=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:'x'+type+(k++),type,primaryColor,pattern:'solid',...x});const cols=['white','lightblue','pink','lavender','cream','navy','black','charcoal'];
-      HOOK.items=[...items,...Array.from({length:60},(_,n)=>I('shirt',cols[n%cols.length])),...Array.from({length:40},(_,n)=>I('tie',['navy','burgundy','green','purple','gold','charcoal'][n%6]))];HOOK.dayRecs={};HOOK.cache={};const t=performance.now();HOOK.buildStats().unused.forEach(r=>HOOK.whyUnused(r.i));return Math.round(performance.now()-t)});
+      HOOK.items=[...HOOK.items,...Array.from({length:60},(_,n)=>I('shirt',cols[n%cols.length])),...Array.from({length:40},(_,n)=>I('tie',['navy','burgundy','green','purple','gold','charcoal'][n%6]))];HOOK.dayRecs={};HOOK.cache={};const t=performance.now();HOOK.buildStats().unused.forEach(r=>HOOK.whyUnused(r.i));return Math.round(performance.now()-t)});
     ok(perf<8000,`stats with 100 more shirts and ties: counted and explained in ${perf} ms`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}

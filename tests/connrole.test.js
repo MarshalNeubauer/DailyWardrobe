@@ -17,14 +17,14 @@ module.exports=async({ok,engines,url})=>{
       const hold=async(ctx,ms)=>{const h=await ctx.newPage();await h.goto(new URL('icon-192.png',url).href);
         await h.evaluate(ms=>new Promise((yes,no)=>{const o=indexedDB.open('wardrobe');o.onerror=()=>no(o.error);o.onsuccess=()=>{const d=o.result,t=d.transaction('meta','readwrite'),s=t.objectStore('meta'),end=performance.now()+ms;
           const spin=()=>{if(performance.now()<end)s.get('lab-hold').onsuccess=spin};spin();t.oncomplete=()=>d.close();yes()}}),ms);return h};
-      const restart=async(o,ms=1200)=>{const h=await hold(o.ctx,ms);await o.p.reload();await o.p.waitForFunction(()=>window.appReady);await o.p.evaluate(()=>connRestored);await o.p.waitForTimeout(150);await h.close()};
+      const restart=async(o,ms=1200)=>{const h=await hold(o.ctx,ms);await o.p.reload();await o.p.waitForFunction(()=>window.appReady);await o.p.evaluate(()=>HOOK.connRestored);await o.p.waitForTimeout(150);await h.close()};
       for(const role of ['tester','owner']){const o=await open(role),p=o.p;
-        await p.evaluate(async([h,role])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','lab-code');await connKeep();HOOK.rememberRole({role,id:'u1'})},[HOST,role]);
+        await p.evaluate(async([h,role])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','lab-code');await HOOK.connKeep();HOOK.rememberRole({role,id:'u1'})},[HOST,role]);
         await restart(o);
         ok(await classes(p)===role,T+`a ${role}'s phone that kept its connection starts as ${role} (${await classes(p)})`);
         await p.evaluate(()=>{for(const k of ['worker_url','app_token'])localStorage.removeItem(k)});
         await restart(o);
-        const w=await p.evaluate(()=>({url:localStorage.getItem('worker_url'),open:settingsOpen(),on:isConnected()}));
+        const w=await p.evaluate(()=>({url:localStorage.getItem('worker_url'),open:HOOK.settingsOpen(),on:HOOK.isConnected()}));
         ok(w.url===HOST&&w.on&&!w.open,T+`a ${role}'s lost connection is put back, Settings not opened (${JSON.stringify(w)})`);
         ok(await classes(p)===role,T+`and the page is ${role}, not nocon, without opening Settings (${await classes(p)})`);
         await o.ctx.close()}

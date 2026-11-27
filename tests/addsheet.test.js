@@ -19,8 +19,8 @@ async function run(eng,browser,{ok,url,WARDROBES,settle,w,h,scheme}){
     return route.fulfill({status:503,headers:H,body:'{"error":"server"}'})});   // (no /sync, no reading: nothing paid)
   await ctx.addInitScript(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','tok');localStorage.setItem('tour_seen','1')});
   const p=await ctx.newPage(),errs=[];p.on('pageerror',e=>errs.push(e.message));p.setDefaultTimeout(8000);
-  await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
-  await p.evaluate(W=>{HOOK.rememberRole({role:'owner'});const w=(0,eval)(W);HOOK.items=w.realistic.map(i=>({...i}));settings.setupDone=1;HOOK.cache={};queue.length=0;show('wardrobe');openAdd()},WARDROBES);
+  await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{HOOK.CK_OPEN['*']=true});
+  await p.evaluate(W=>{HOOK.rememberRole({role:'owner'});const w=(0,eval)(W);HOOK.items=w.realistic.map(i=>({...i}));HOOK.settings.setupDone=1;HOOK.cache={};HOOK.queue.length=0;HOOK.show('wardrobe');HOOK.openAdd()},WARDROBES);
   await settle(p,400);
   const ev=(f,a)=>p.evaluate(f,a);
   const tap=async s=>{await p.click(s);await settle(p,350)};
@@ -28,8 +28,8 @@ async function run(eng,browser,{ok,url,WARDROBES,settle,w,h,scheme}){
   const TT=(type,x,y,ms=16)=>{clock=type==='touchStart'?Math.max(clock+ms,Date.now()):clock+ms;return cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}],timestamp:clock/1000})};
   const swipe=async(x,y0,y1,n=8,ms=16)=>{await TT('touchStart',x,y0);for(let k=1;k<=n;k++){await TT('touchMove',x,y0+(y1-y0)*k/n,ms);await p.waitForTimeout(ms)}await TT('touchEnd',x,y1);await settle(p,500)};
   const rect=s=>ev(s=>{const e=document.querySelector(s);if(!e)return null;const r=e.getBoundingClientRect();return {top:r.top,left:r.left,right:r.right,bottom:r.bottom,w:r.width,h:r.height}},s);
-  const npsUp=()=>ev(()=>!!npsId&&!!document.querySelector('#nps-sheet.on'));
-  const kitUp=()=>ev(()=>!!kit&&!!document.querySelector('#kitsheet.on.kbs'));
+  const npsUp=()=>ev(()=>!!HOOK.npsId&&!!document.querySelector('#nps-sheet.on'));
+  const kitUp=()=>ev(()=>!!HOOK.kit&&!!document.querySelector('#kitsheet.on.kbs'));
   // the sheet's top edge over the frames after a tap: it rises from below
   const rise=async(sel,act)=>{await ev(s=>{window._tops=[];let k=0;const f=()=>{const e=document.querySelector(s),r=e&&e.getBoundingClientRect();if(r&&r.height>0&&getComputedStyle(e).visibility!=='hidden')window._tops.push(r.top);if(++k<40)requestAnimationFrame(f)};requestAnimationFrame(f)},sel);
     await act();await settle(p,400);const t=await ev(()=>window._tops),end=t[t.length-1];return {first:Math.round(Math.max(...t.slice(0,4))),end:Math.round(end)}};
@@ -72,7 +72,7 @@ async function run(eng,browser,{ok,url,WARDROBES,settle,w,h,scheme}){
   await ev(()=>{document.querySelector('#nps-q').scrollTop=0});
 
   // ---- closing an untouched card: ×, Cancel, a swipe, Back; nothing asked, nothing kept
-  const shut=async(how)=>{const s=await ev(()=>({up:!!npsId,asking:!!asking,q:queue.length,n:items.length}));return s};
+  const shut=async(how)=>{const s=await ev(()=>({up:!!HOOK.npsId,asking:!!HOOK.asking,q:HOOK.queue.length,n:HOOK.items.length}));return s};
   await tap('#nps-sheet .nps-x');e=await shut();
   ok(!await npsUp()&&!e.asking&&e.q===0,T+`× closes it at once when nothing was changed (${JSON.stringify(e)})`);
   ok(await ev(()=>document.activeElement&&document.activeElement.id==='add-manual'&&!document.querySelector('body>nav').inert),T+'the focus is back on the button and the page usable again');
@@ -92,34 +92,34 @@ async function run(eng,browser,{ok,url,WARDROBES,settle,w,h,scheme}){
   // ---- a changed card asks first: Keep editing keeps it, Discard drops it (×, Cancel, swipe, Back)
   const change=async()=>{await tap('#add-manual');await p.selectOption('#nps-q select[data-f="type"]','tie');await settle(p,300)};
   await change();await tap('#nps-sheet .nps-x');
-  e=await ev(()=>({q:(document.querySelector('#ask-title')||{}).textContent,ok:(document.querySelector('#ask-ok')||{}).textContent,cancel:(document.querySelector('#ask-cancel')||{}).textContent,up:!!npsId}));
+  e=await ev(()=>({q:(document.querySelector('#ask-title')||{}).textContent,ok:(document.querySelector('#ask-ok')||{}).textContent,cancel:(document.querySelector('#ask-cancel')||{}).textContent,up:!!HOOK.npsId}));
   ok(e.q==='Discard this item?'&&e.ok==='Discard'&&e.cancel==='Keep editing'&&e.up,T+`× on a changed card asks "Discard this item?" with Keep editing / Discard (${JSON.stringify(e)})`);
   await tap('#ask-cancel');
-  ok(await npsUp()&&await ev(()=>queue[0]&&queue[0].type==='tie'&&!asking),T+'Keep editing leaves the sheet up with the card as it was');
-  await tap('#nps-cancel');ok(await ev(()=>!!asking),T+'Cancel asks too');
+  ok(await npsUp()&&await ev(()=>HOOK.queue[0]&&HOOK.queue[0].type==='tie'&&!HOOK.asking),T+'Keep editing leaves the sheet up with the card as it was');
+  await tap('#nps-cancel');ok(await ev(()=>!!HOOK.asking),T+'Cancel asks too');
   await tap('#ask-ok');e=await shut();
   ok(!await npsUp()&&e.q===0&&!e.asking,T+`Discard closes it and drops the card (${JSON.stringify(e)})`);
   await change();g=await rect('#nps-sheet');await swipe(g.left+g.w/2,g.top+9,g.top+9+g.h*.5);
-  ok(await ev(()=>!!asking&&!!npsId)&&Math.abs((await rect('#nps-sheet')).top-g.top)<1,T+'a swipe on a changed card springs back and asks');
+  ok(await ev(()=>!!HOOK.asking&&!!HOOK.npsId)&&Math.abs((await rect('#nps-sheet')).top-g.top)<1,T+'a swipe on a changed card springs back and asks');
   await tap('#ask-cancel');await ev(()=>history.back());await p.waitForTimeout(150);await settle(p,400);
-  ok(await ev(()=>!!asking&&!!npsId&&!document.querySelector('#add').hidden),T+'Back on a changed card asks too, the sheet and Add stay');
-  await tap('#ask-ok');ok(!await npsUp()&&await ev(()=>!queue.length),T+'… and Discard closes it');
+  ok(await ev(()=>!!HOOK.asking&&!!HOOK.npsId&&!document.querySelector('#add').hidden),T+'Back on a changed card asks too, the sheet and Add stay');
+  await tap('#ask-ok');ok(!await npsUp()&&await ev(()=>!HOOK.queue.length),T+'… and Discard closes it');
 
   // ---- Confirm: the sheet closes, "Saved: …" with Undo, the piece in the Wardrobe
-  const n0=await ev(()=>items.length);
+  const n0=await ev(()=>HOOK.items.length);
   // (the save, its toast and the redraw come a moment after the tap: waited for, not read after settle, CR-10-03)
-  await change();await tap('#nps-bar .pri');await p.waitForFunction(n0=>!npsId&&items.length===n0+1&&/^Saved: /.test(document.querySelector('#toast').textContent),n0,{timeout:8000}).catch(()=>{});
-  e=await ev(()=>({up:!!npsId,n:items.length,toast:document.querySelector('#toast').textContent,undo:!!document.querySelector('#toast.on button'),add:!document.querySelector('#add').hidden}));
+  await change();await tap('#nps-bar .pri');await p.waitForFunction(n0=>!HOOK.npsId&&HOOK.items.length===n0+1&&/^Saved: /.test(document.querySelector('#toast').textContent),n0,{timeout:8000}).catch(()=>{});
+  e=await ev(()=>({up:!!HOOK.npsId,n:HOOK.items.length,toast:document.querySelector('#toast').textContent,undo:!!document.querySelector('#toast.on button'),add:!document.querySelector('#add').hidden}));
   ok(!e.up&&e.n===n0+1&&/^Saved: .+\./.test(e.toast)&&e.undo&&e.add,T+`Confirm saves it, the sheet closes, back on Add, a toast "${e.toast}" with Undo`);
-  const sid=await ev(()=>items[items.length-1].id);
-  await tap('#toast button');await p.waitForFunction(id=>!items.some(i=>i.id===id),sid);
+  const sid=await ev(()=>HOOK.items[HOOK.items.length-1].id);
+  await tap('#toast button');await p.waitForFunction(id=>!HOOK.items.some(i=>i.id===id),sid);
   ok(true,T+'Undo takes it out again');
-  await ev(()=>{queue.length=0;renderAdd()});
-  await change();await tap('#nps-bar .pri');await p.waitForFunction(n0=>!npsId&&items.length===n0+1,n0,{timeout:8000}).catch(()=>{});
-  await ev(()=>show('wardrobe'));await settle(p,400);
-  e=await ev(()=>({n:items.length,tile:document.querySelectorAll('#wardrobe .gi').length}));
-  ok(e.n===n0+1&&e.tile>=1&&await ev(()=>{const it=items[items.length-1];return !!document.querySelector(`#wardrobe .gi[data-id="${it.id}"],#wardrobe .giopen[data-id="${it.id}"]`)}),T+`the saved piece is in the Wardrobe (${JSON.stringify(e)})`);
-  await ev(()=>openAdd());await settle(p,300);
+  await ev(()=>{HOOK.queue.length=0;HOOK.renderAdd()});
+  await change();await tap('#nps-bar .pri');await p.waitForFunction(n0=>!HOOK.npsId&&HOOK.items.length===n0+1,n0,{timeout:8000}).catch(()=>{});
+  await ev(()=>HOOK.show('wardrobe'));await settle(p,400);
+  e=await ev(()=>({n:HOOK.items.length,tile:document.querySelectorAll('#wardrobe .gi').length}));
+  ok(e.n===n0+1&&e.tile>=1&&await ev(()=>{const it=HOOK.items[HOOK.items.length-1];return !!document.querySelector(`#wardrobe .gi[data-id="${it.id}"],#wardrobe .giopen[data-id="${it.id}"]`)}),T+`the saved piece is in the Wardrobe (${JSON.stringify(e)})`);
+  await ev(()=>HOOK.openAdd());await settle(p,300);
 
   // ---- the import sheet: from below, ×, Cancel, swipe, Back; importing closes it with "Imported N items." and Undo
   r=await rise('#kitsheet',()=>p.click('#add-import'));
@@ -131,18 +131,18 @@ async function run(eng,browser,{ok,url,WARDROBES,settle,w,h,scheme}){
   await tap('#kitsheet .kit-x');ok(!await kitUp()&&await ev(()=>!document.querySelector('#kit-backdrop.on')&&!document.querySelector('#add').hidden),T+'× closes it, Add stays');
   await tap('#add-import');await tap('#kit-cancel');ok(!await kitUp(),T+'Cancel closes it');
   await tap('#add-import');g=await rect('#kitsheet');await swipe(g.left+g.w/2,g.top+9,g.top+9+g.h*.5);
-  ok(!await kitUp()&&await ev(()=>!kit),T+'a swipe down on its header closes it');
+  ok(!await kitUp()&&await ev(()=>!HOOK.kit),T+'a swipe down on its header closes it');
   await tap('#add-import');await ev(()=>history.back());await p.waitForTimeout(150);await settle(p,400);
   ok(!await kitUp()&&await ev(()=>!document.querySelector('#add').hidden),T+"the phone's Back closes it and stays on Add");
-  const m0=await ev(()=>items.length);
+  const m0=await ev(()=>HOOK.items.length);
   await tap('#add-import');await p.fill('#kit-paste','Type,Color,Name\nTie,Burgundy,Sheet tie\nShirt,Light blue,Sheet shirt\nBelt,Dark brown,Sheet belt');await settle(p,300);
   ok(await p.textContent('#kit-imp')==='Add 3 items',T+'pasted rows: "Add 3 items"');
   await tap('#kit-imp');
-  e=await ev(()=>({kit:!!kit,n:items.length,toast:document.querySelector('#toast').textContent,undo:!!document.querySelector('#toast.on button')}));
+  e=await ev(()=>({kit:!!HOOK.kit,n:HOOK.items.length,toast:document.querySelector('#toast').textContent,undo:!!document.querySelector('#toast.on button')}));
   ok(!e.kit&&e.n===m0+3&&/^Imported 3 items\./.test(e.toast)&&e.undo,T+`importing closes the sheet: "${e.toast}" with Undo`);
-  await ev(()=>show('wardrobe'));await settle(p,300);
+  await ev(()=>HOOK.show('wardrobe'));await settle(p,300);
   ok(await ev(()=>['Sheet tie','Sheet shirt','Sheet belt'].every(n=>document.querySelector('#wardrobe').textContent.includes(n))),T+'the imported pieces are in the Wardrobe');
-  await ev(()=>openAdd());await settle(p,300);
+  await ev(()=>HOOK.openAdd());await settle(p,300);
 
   // ---- the wide layout under a stand-in status bar (the unfolded foldable): both sheets start below it
   if(WIDE){const SAT=59;await ev(s=>document.documentElement.style.setProperty('--sat',s+'px'),SAT);

@@ -11,10 +11,10 @@ const settingsstay=async({ok,chromium,url})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       HOOK.items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};show('today');
-      openSettings();let n=0;const mo=new MutationObserver(()=>{}),drawn=()=>n+=mo.takeRecords().filter(r=>r.addedNodes.length).length;mo.observe($('#today'),{childList:true});
-      refreshToday();const stillOpen=settingsOpen(),during=drawn();closeSettings();const after=drawn();mo.disconnect();
-      refreshToday();return {stillOpen,during,after,closedNow:!settingsOpen()}});
+      HOOK.settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.show('today');
+      HOOK.openSettings();let n=0;const mo=new MutationObserver(()=>{}),drawn=()=>n+=mo.takeRecords().filter(r=>r.addedNodes.length).length;mo.observe(HOOK.$('#today'),{childList:true});
+      HOOK.refreshToday();const stillOpen=HOOK.settingsOpen(),during=drawn();HOOK.closeSettings();const after=drawn();mo.disconnect();
+      HOOK.refreshToday();return {stillOpen,during,after,closedNow:!HOOK.settingsOpen()}});
     ok(r.stillOpen&&r.during===0,'a background redraw while Settings is open leaves Settings open');
     ok(r.after===1&&r.closedNow,'Today is redrawn once Settings closes');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
@@ -34,11 +34,11 @@ const settingslock=async({ok,chromium,url,settle})=>{
     // a page long enough to scroll behind Settings
     await p.evaluate(()=>{document.querySelector('main').style.minHeight='4000px';scrollTo(0,600)});await settle(p,200);
     const y0=await p.evaluate(()=>scrollY);
-    await p.evaluate(()=>openSettings());await settle(p,300);
+    await p.evaluate(()=>HOOK.openSettings());await settle(p,300);
     let s=await p.evaluate(()=>({lock:document.documentElement.classList.contains('set-lock'),ov:getComputedStyle(document.documentElement).overflowY,bov:getComputedStyle(document.body).overflowY,y:scrollY}));
     ok(s.lock&&s.ov==='hidden'&&s.bov==='hidden'&&s.y===y0,`opening Settings locks the page behind it where it was (${s.ov}/${s.bov}, ${s.y} of ${y0}px)`);
     // every category open, so Settings is long; the wheel scrolls Settings and never the page
-    await p.evaluate(()=>{for(const k of SET_CATS)setCatOpen(k,true,true)});await settle(p,200);
+    await p.evaluate(()=>{for(const k of HOOK.SET_CATS)HOOK.setCatOpen(k,true,true)});await settle(p,200);
     const tall=await p.evaluate(()=>{const m=document.querySelector('#settings-modal');return m.scrollHeight-m.clientHeight});
     await p.mouse.move(200,500);for(let k=0;k<6;k++){await p.mouse.wheel(0,600);await p.waitForTimeout(30)}await settle(p,300);
     s=await p.evaluate(()=>({top:document.querySelector('#settings-modal').scrollTop,y:scrollY}));
@@ -51,14 +51,14 @@ const settingslock=async({ok,chromium,url,settle})=>{
     ok(s.top===0&&s.y===y0,`scrolling back up reaches the top of Settings (${s.top}px) and leaves the page behind alone (${s.y}px)`);
     // Done closes it: the lock goes and the page is where it was, and scrolls again
     await p.click('#settings-modal .sdone');await settle(p,300);
-    s=await p.evaluate(()=>({lock:document.documentElement.classList.contains('set-lock'),open:settingsOpen(),y:scrollY,ov:getComputedStyle(document.body).overflowY}));
+    s=await p.evaluate(()=>({lock:document.documentElement.classList.contains('set-lock'),open:HOOK.settingsOpen(),y:scrollY,ov:getComputedStyle(document.body).overflowY}));
     ok(!s.open&&!s.lock&&s.ov!=='hidden'&&s.y===y0,`Done closes Settings and gives the page back where it was (${s.y}px)`);
     await p.mouse.wheel(0,300);await settle(p,300);ok(await p.evaluate(y=>scrollY>y,y0),'and the page scrolls again');
     // a category opened near the bottom unfolds where it is: Settings never scrolls by itself (the owner, 2026-11-17)
-    const toggle=async(touch)=>p.evaluate(async touch=>{openSettings();const m=document.querySelector('#settings-modal');await new Promise(r=>setTimeout(r,50));
+    const toggle=async(touch)=>p.evaluate(async touch=>{HOOK.openSettings();const m=document.querySelector('#settings-modal');await new Promise(r=>setTimeout(r,50));
       const el=document.querySelector('#sc-backup');m.scrollTop=Math.max(0,el.offsetTop-m.clientHeight+90);const before=m.scrollTop;   // its head near the bottom
-      toggleCat('backup');if(touch){await new Promise(r=>setTimeout(r,150));m.dispatchEvent(new Event('touchstart'))}
-      await new Promise(r=>setTimeout(r,1100));const after=m.scrollTop;toggleCat('backup');closeSettings();return {before,after}},touch);
+      HOOK.toggleCat('backup');if(touch){await new Promise(r=>setTimeout(r,150));m.dispatchEvent(new Event('touchstart'))}
+      await new Promise(r=>setTimeout(r,1100));const after=m.scrollTop;HOOK.toggleCat('backup');HOOK.closeSettings();return {before,after}},touch);
     let t=await toggle(false);ok(t.before>0&&t.after===t.before,`an opened category near the bottom unfolds without Settings scrolling (${t.before} → ${t.after}px)`);
     t=await toggle(true);ok(t.after===t.before,`nor after a finger touched Settings (${t.before} → ${t.after}px)`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
