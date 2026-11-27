@@ -282,7 +282,7 @@ async function run(eng,browser,{ok,url,settle}){
 
   /* ---- the card never comes on a start that is only slow ---- */
   // an error nobody catches during loading (the catcher hears it), then the stored wardrobe 6 s late: start-up is under way, so it waits
-  const src=fs.readFileSync(path.join(ROOT,'start.js'),'utf8'),slow=src.replace('connRestored.then(()=>','connRestored.then(()=>new Promise(r=>setTimeout(r,6000))).then(()=>');
+  const src=fs.readFileSync(path.join(ROOT,'start.js'),'utf8'),slow=src.replace("need('conn-restored').then(()=>","need('conn-restored').then(()=>new Promise(r=>setTimeout(r,6000))).then(()=>");   // (app.js's connRestored, through bus.js since the restructure S6b)
   ok(slow!==src,T+'(start.js\'s stored read can be slowed for the test)');
   await c.ctx.addInitScript(()=>{window.__card=0;new MutationObserver(()=>{if(document.getElementById('start-fail'))window.__card++}).observe(document,{childList:true,subtree:true});
     try{if(localStorage.getItem('ml_stray'))setTimeout(()=>{throw new Error('modload test: a stray error during loading')},20)}catch(e){}});

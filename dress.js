@@ -92,3 +92,4 @@ export {renderDressUI,newSuitVest,dressSummary,dressWhyUnused,vestMigrating,migr
 acts({dressSwTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('new-suit-vest',newSuitVest);serve('dress-new-item',dressNewItem);
+serve('dress-why-unused',dressWhyUnused);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

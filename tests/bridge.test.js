@@ -326,6 +326,11 @@ const GROWN={
   // colNameTaken), tag-request.js (fieldLabel, valName, aiFields), add-ids.js (the readings in flight, closeTagImg, tagFailNote),
   // measure.js (makeSmall, cropSource, paperSteps), pattern-read.js (measureAndApply), checklist.js (matchShadeQ/E), planner.js
   // (shoesWhyUnused), sync-photos.js (the batch sizes); a handler beside what it calls (add.js, add-card.js, colpick.js)
+  // restructure S6c (2026-11-27): helpers moved down where an import across groups isn't allowed (STEP6 rule 3), their text unchanged:
+  // core.js (settingsOpen, inviteOver, isConnected, the Home Screen checks, tourSeen, oneStop, tagNetText, TAGIMG_CACHE, PAIR_TYPES,
+  // colNameTaken), tag-request.js (fieldLabel, valName, aiFields), add-ids.js (the readings in flight, closeTagImg, tagFailNote),
+  // measure.js (makeSmall, cropSource, paperSteps), pattern-read.js (measureAndApply), checklist.js (matchShadeQ/E), planner.js
+  // (shoesWhyUnused), sync-photos.js (the batch sizes); a handler beside what it calls (add.js, add-card.js, colpick.js)
   'tag-request.js':['aiFields','fieldLabel','valName'],
   'add-save.js':['recordTagResult'],
   'pattern-read.js':['measureAndApply'],

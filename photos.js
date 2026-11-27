@@ -1,7 +1,7 @@
 /* Daily Wardrobe: outfit photos: kept photos and item pictures (the keys, the kept pictures' store and the escapes are photo-keys.js's
    since the restructure S3b, 2026-11-26)
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14.) */
-import {emit} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
+import {emit,need,serve} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
 import {$,COLORS,colName,dayRecs,isCargo,items,key,keyDate,nm,patLabel,patName,primaryCol,settingsOpen,shoeStyle,sockPatterned,sockToe,todayDate,trouserKind,watchText} from './core.js';
 import {comboKey,comboSig,fnv64,keepRender,listPaused,picsDrawn,renders,shareRender,srcOk,workerBase,workerList} from './photo-keys.js';
 import {hasOutfit,planFor,planMonth} from './today-plan.js';
@@ -136,7 +136,7 @@ const wardPic=i=>{if(!WARD_PIC_TYPES.includes(i.type))return null;const p=itemPi
 async function fetchItemPic(i,sure){const W=workerBase(),k=itemKey(i);if(!W||renderTried.has(k)||renders[k])return;renderTried.add(k);
   try{await remoteList();if(remoteListed&&!remoteKeys.has(k)||!sure&&remoteHold())return;   // not on the worker: no 404 to ask for
     const r=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});if(!r.ok)return;const j=await r.json();if(!j||!j.img)return;
-    await keepRender(k,{sig:'item',img:await itemImg(j.img),model:j.model||'',t:j.t||Date.now(),grey:1},false);if(!$('#today').hidden)refreshToday();else if(!$('#wardrobe').hidden&&!phEdit.crop)wardRefresh()}catch(e){console.warn('item picture unavailable',e)}}
+    await keepRender(k,{sig:'item',img:await itemImg(j.img),model:j.model||'',t:j.t||Date.now(),grey:1},false);if(!$('#today').hidden)refreshToday();else if(!$('#wardrobe').hidden&&!need('ph-edit').crop)wardRefresh()}catch(e){console.warn('item picture unavailable',e)}}
 /* the Wardrobe drawn again for a picture that arrived in the background: while Settings or an item's sheet is open it waits for it to close,
    as a sync's redraw does (syncRedraw: viewStale, syncLater); renderWardrobe closes Settings and redraws the sheet (the 2026-11-24 review's
    R1 N1: Settings snapped shut by itself) */
@@ -205,3 +205,4 @@ function itemPicsTap(){startItemPics()}
 /* an item picture has loaded (data-act-load; its key in data-k): its background color is read from it once */
 function itemPicLoad(el){picBg(el,el.dataset.k)}
 acts({itemPicsTap,itemPicLoad});
+serve('asm-live',asmLive);serve('item-pic-ui',renderItemPicUI);serve('prefetch-soon',schedulePrefetch);serve('item-backdrops-fix',fixItemBackdrops);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

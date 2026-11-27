@@ -166,3 +166,4 @@ export {COUNTRY_CODES,countryName,holidayMsg,nagerKeep,builtinHolidays,holYears,
 acts({occClear,countryPick,dayOffAddTap,occAddTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('day-off-add',dayOffAdd);
+serve('holidays-refresh',refreshHolidays);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

@@ -5,6 +5,7 @@
    right after srgb.js, before the painter, which reads the keys, and before every screen. */
 /* ---- kept outfit photos (made by the retired photo generator, worker /render): saved per outfit combination, not per day, so any
    day that wears the same pieces shows the photo; the worker keeps a copy (KV) so every device can show it. ---- */
+import {serve} from './bus.js';
 import {REC_PHOTO,patBase,primaryCol,settings} from './core.js';
 let renders={};   // kept pictures by key: outfit photos made before 2026-11-14 (renderFor shows them), item pictures, assembled pictures
 const esc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');   // ' too: some go into onclick='…'
@@ -81,3 +82,4 @@ Object.defineProperties(globalThis,{renders:{get:()=>renders,set:v=>{renders=v}}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get listKeys(){return listKeys},set listKeys(v){listKeys=v},get renders(){return renders},set renders(v){renders=v},get listAt(){return listAt},set listAt(v){listAt=v},shirtPatterned,comboKey,comboSig,keepRender,workerBase,workerList,esc,picsDrawn};
 export {renders,esc,jsq,srcOk,comboSig,fnv64,comboKey,keepRender,shareRender,workerBase,picsDrawn,listKeys,listAt,workerList,listPaused,loadRenders,shirtPatterned,shirtTextured};
+serve('pics-drawn',picsDrawn);serve('renders-load',loadRenders);serve('renders',()=>renders);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

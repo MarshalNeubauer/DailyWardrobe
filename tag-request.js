@@ -3,6 +3,7 @@
    kept on this device, what the tagger learns from the corrections, and what one tagging call costs. */
 
 import {CLOSE_MAX,COLORS,MATERIALS_BY,TAGIMG_CACHE,TAG_MAX,TAG_TYPES,TYPES,colName,ownMats,patName,settings,tagTypesNow,texSig} from './core.js';
+import {serve} from './bus.js';
 import {esc} from './photo-keys.js';
 /* the colours and patterns the owner added, when there are any (the worker adds them to what the tagger may answer) */
 const customForTag=()=>{const c=settings.custom||{};return (c.colors||[]).length||(c.patterns||[]).length?{colors:c.colors||[],patterns:c.patterns||[]}:undefined};
@@ -68,3 +69,4 @@ function aiFields(ai){return {type:ai.type,primaryColor:COLORS[ai.primaryColor]?
 Object.assign(globalThis,{customForTag,tagFixes,tagExtras,keepTagImg,tagImgOf,resignTagImg,keepCloseImg,sharpCloseOf,tagStatsCard,benchEstimate,describeEstimate,readEstimate,fieldLabel,valName,aiFields});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,keepCloseImg,keepTagImg,resignTagImg,sharpCloseOf,tagExtras,tagImgOf};
 export {customForTag,tagFixes,tagExtras,keepTagImg,tagImgOf,resignTagImg,keepCloseImg,sharpCloseOf,tagStatsCard,benchEstimate,describeEstimate,readEstimate,fieldLabel,valName,aiFields};
+serve('tag-stats-card',tagStatsCard);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

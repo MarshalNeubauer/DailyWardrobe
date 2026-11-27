@@ -180,3 +180,4 @@ $('#today').addEventListener('click',e=>{if(!swOpen)return;const c=e.target.clos
 })();
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('zoomed',()=>zoom);
+serve('zoom-apply',applyZoom);serve('ovl-piece',ovlPiece);serve('sw-apply',swApply);serve('sw-tap',swTap);serve('zoom-out',zoomOut);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

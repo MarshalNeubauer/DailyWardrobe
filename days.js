@@ -2,6 +2,7 @@
    date (keyDate), the pieces of an outfit as a record holds them (idsOf), saving a day's record (saveDay) and keeping a coming day's
    record free of pieces (notAhead). Data only: nothing is drawn here. Loaded right after act.js (app.js, back.js and act.js keep their places), before the files that read them
    (pickscore, add-more, itemsheet, history, locks, today-plan, today, fav and the others); planner.js, earlier, reads keyDate. */
+import {serve} from './bus.js';
 import {SLOTS,dayFields,dayRecs,keyDate,nextStamp,todayDate} from './core.js';
 import {atomic,txs} from './app.js';
 const idsOf=o=>Object.fromEntries(SLOTS.map(s=>[s,o[s]?o[s].id:null]));
@@ -32,3 +33,4 @@ async function clearLocks(){const T=todayDate(),n=await releaseLocks(r=>keyDate(
 Object.assign(globalThis,{idsOf,saveDay,notAhead,lockIds,clearLocks});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,idsOf,saveDay,clearLocks,lockIds};
 export {idsOf,saveDay,notAhead,lockIds,clearLocks,releaseLocks};
+serve('locks-clear',clearLocks);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

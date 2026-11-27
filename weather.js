@@ -94,5 +94,4 @@ function citySearchTap(){findCity()}
 function myLocTap(){useMyLocation()}
 function unitsPick(el){setUnits(el.value)}
 acts({cityPick,cityKey,citySearchTap,myLocTap,unitsPick});
-/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('weather-load',loadWeather);
+serve('weather-load',loadWeather);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

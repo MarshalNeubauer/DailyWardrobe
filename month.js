@@ -177,3 +177,4 @@ export {stackSVG,planOn,nextWorkday,homeDay,dayWord,recentWork,mvSig,wardShort,d
 function monthTap(){toggleMonth()}
 function dayCellTap(el){openDay(+el.dataset.t)}
 acts({monthTap,dayCellTap});
+serve('home-day',homeDay);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

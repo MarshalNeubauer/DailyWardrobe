@@ -3,7 +3,7 @@
    on a swipe (foldAll), stepping a day (stepDay) and the month planned with other records (planWith)
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14, and on
    2026-11-17 (Round C) into today-plan.js, today.js, today-photofold.js, today-picture.js and today-gestures.js, in that order.) */
-import {on,emit} from './bus.js';
+import {on,emit,need,serve,needFn} from './bus.js';
 import {cache,hasOutfit,outSig,planDirty,planFor,planMonth,planSnapSoon,planStartDay,planTrim} from './today-plan.js';
 import {$,COOL,DAY_NAMES,SLOTS,TYPES,dayRecs,desc,di,hasVest,inRotation,isHandPick,isWorkday,isoKey,itemTitle,items,key,nameHtml,needsJacket,needsTie,nm,offName,sentence,setClimate,setWardrobe,setWeather,settings,settingsOpen,shortDesc,titleCls,todayDate} from './core.js';
 import {canPick,closePicker,dayActions,openPicker,pastEdit,picker,recordDays,resetCard,setPastEdit,setSwapMsg,setTodayPullWait,setVest,setWorn,slotLabel,todayPullWait,whenPulled} from './history.js';
@@ -29,7 +29,7 @@ let recordRun=Promise.resolve();
 function planSnapCheck(){const k=cache.snap;if(!k)return;const shown=cache[k];delete cache[k];cache.snap=null;const [y,m]=k.split('-').map(Number);
   const real=planMonth(y,m),same=Object.keys(real).length===Object.keys(shown).length&&Object.keys(real).every(d=>outSig(real[d])===outSig(shown[d]));
   if($('#today').hidden)return;if(!same||(typeof pulledYet==='function'&&!pulledYet()))return refreshToday();   // (before the first sync is merged, renderToday waits for it to record)
-  if(items.length)recordRun=recordDays(real).then(lockUpcoming).then(planSnapSoon)}
+  if(items.length)recordRun=recordDays(real).then(needFn('lock-upcoming')).then(planSnapSoon)}
 /* the forecast and the climate kept on the device, read before Today is first drawn: loadWeather and loadClimate then find them
    unchanged, so start-up plans once instead of three times (without them, again with the climate, again with the forecast) */
 function wxPreload(){const L=settings.location;if(!L)return;
@@ -99,11 +99,11 @@ const slots=o=>{const nj=!o.top&&!needsJacket(o)&&!(o.off&&o.off.top),nt=!o.tie&
   rows.splice(nj?0:1,0,vestRow(o)+rollRow(o));return rows.join('')};
 function toggleRow(s){const el=$('#ri-'+s),o=planFor()[key(sel)];if(!el||!o||!o[s])return;const opening=!el.classList.contains('open');
   // another open photo (a row, or the tile's photo above the list) shuts at once; one above the tapped row is made up for by the scroll, so the row stays under the finger
-  document.querySelectorAll('.ritem.open').forEach(r=>{if(r!==el){picSnap(r,el);const b=r.querySelector('.rowtap');if(b)b.setAttribute('aria-expanded','false')}});
+  document.querySelectorAll('.ritem.open').forEach(r=>{if(r!==el){need('pic-snap',r,el);const b=r.querySelector('.rowtap');if(b)b.setAttribute('aria-expanded','false')}});
   if(opening)el.querySelector('.rpanel-in').innerHTML=rowPanel(rolledOf(o[s],s,o));
   openRow=opening?s:null;const b=el.querySelector('.rowtap');b.setAttribute('aria-expanded',opening);
   b.setAttribute('aria-label',b.getAttribute('aria-label').replace(/(Show|Hide) the photo/,opening?'Hide the photo':'Show the photo'));
-  if(opening)picOpenReady(el,el,()=>openRow===s);else picShut(el)}
+  if(opening)need('pic-open-ready',el,el,()=>openRow===s);else need('pic-shut',el)}
 
 
 /* ---- Today figure: torso in the day's fabrics, tap targets, selected-piece card, below-the-waist tiles ---- */
@@ -116,7 +116,7 @@ const belowBox=(o,below)=>{const i=below.some(([s])=>s===belowOpen)&&o[belowOpen
 /* (no share button on the picture: the owner, 2026-11-14, "the user can just send a screenshot") */
 function swatchStack(o,up){const ps=[['top',o.top],['shirt',o.shirt],['tie',o.tie]].filter(([,i])=>i);if(!ps.length)return '';
   // each swatch is a button: it opens that piece up close (swTap)
-  return `<div class="swstack${up?' up':''}" role="group" aria-label="${esc(ps.map(([s,i])=>slotLabel(s,o)+': '+itemTitle(i)).join('; '))}">${ps.map(([s,i])=>`<button type="button" class="ovsw" data-s="${s}" data-act="swatchTap" aria-pressed="false" aria-label="See the ${esc(slotLabel(s,o).toLowerCase())} up close: ${esc(itemTitle(i))}">${ovlPiece(i)}</button>`).join('')}</div>`}
+  return `<div class="swstack${up?' up':''}" role="group" aria-label="${esc(ps.map(([s,i])=>slotLabel(s,o)+': '+itemTitle(i)).join('; '))}">${ps.map(([s,i])=>`<button type="button" class="ovsw" data-s="${s}" data-act="swatchTap" aria-pressed="false" aria-label="See the ${esc(slotLabel(s,o).toLowerCase())} up close: ${esc(itemTitle(i))}">${need('ovl-piece',i)}</button>`).join('')}</div>`}
 /* (wardShort, the wardrobe can't dress a day yet, is month.js's since the restructure S3e, 2026-11-26: read here as a global) */
 function wornBar(o){if(wardShort())return '';
   const lw=lastWorn(o);
@@ -166,7 +166,7 @@ function figureStage(o){
 function figCuDone(id){const o=planFor()[key(sel)];if(!o||!((o.top&&o.top.id===id)||(!o.top&&o.bot&&o.bot.id===id)))return;
   if(settingsOpen()){todayDirty();return}
   const t=$('#today'),c=$('#mannequin-container'),svg=c&&c.querySelector(':scope > svg');if(!t||t.hidden||!svg||c.classList.contains('photo'))return;
-  svg.outerHTML=figureSvg(o);applyZoom(false)}
+  svg.outerHTML=figureSvg(o);need('zoom-apply',false)}
 
 let dayShown=null;   // the calendar day the app last drew, and whether it was showing "today's" outfit then
 /* a new calendar day (the app brought back from the background, or left open past midnight): Today moves on to the new day's outfit (or the
@@ -190,8 +190,8 @@ function pickPiece(s){const o=planFor()[key(sel)],el=$('#bbox');if(!o||!el||!s||
   document.querySelectorAll('.below .tile').forEach(t=>{const on=opening&&t.getAttribute('data-s')===s;t.setAttribute('aria-expanded',on);
     t.setAttribute('aria-label',t.getAttribute('aria-label').replace(/(Show|Hide) the photo/,on?'Hide the photo':'Show the photo'))});
   const inn=el.querySelector('.rpanel-in');
-  if(opening&&was){picStop(el);inn.innerHTML=rowPanel(o[s]);if(!noMotion())inn.animate([{opacity:0},{opacity:1}],{duration:200});return}   // another tile while one is open: its photo takes the place
-  if(opening){inn.innerHTML=rowPanel(o[s]);picOpenReady(el,$('.below'),()=>belowOpen===s)}else picShut(el)}
+  if(opening&&was){need('pic-stop',el);inn.innerHTML=rowPanel(o[s]);if(!noMotion())inn.animate([{opacity:0},{opacity:1}],{duration:200});return}   // another tile while one is open: its photo takes the place
+  if(opening){inn.innerHTML=rowPanel(o[s]);need('pic-open-ready',el,$('.below'),()=>belowOpen===s)}else need('pic-shut',el)}
 /* where to add a piece (there is no Add tab: Add is the round + on the Wardrobe) */
 /* a location is set but the day within the forecast's 16 days has no weather (it couldn't be fetched): say so, with a way to try again
    (fix round 3, W2-14-14: "Set location" went and the line stayed blank) */
@@ -227,7 +227,7 @@ function renderToday(){
   const p=planFor(),snapped=!!(cache.snap&&p===cache[cache.snap]);
   // the day records are written before the drawing (recordDays puts them in memory at once, then saves): the missed days it records count
   // in this drawing's "last worn" and cleaning frame (fix round 3, W2-14-12: they changed a moment after opening)
-  if(!snapped&&items.length&&typeof pulledYet==='function'&&pulledYet())recordRun=recordDays(p).then(lockUpcoming).then(()=>{planSnapSoon()});
+  if(!snapped&&items.length&&typeof pulledYet==='function'&&pulledYet())recordRun=recordDays(p).then(needFn('lock-upcoming')).then(()=>{planSnapSoon()});
   const o=p[key(sel)]||{suitDay:true,top:null,bot:null,shirt:null,tie:null,shoes:null,belt:null,socks:null,watch:null,clip:null};
   const nav=`<div class="nav day"><button data-act="dayStepTap" data-n="-1" aria-label="Previous day">‹</button><h2 aria-label="${esc(sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}))}"><span class="dlong">${sel.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span><span class="dshort">${sel.toLocaleDateString(undefined,{weekday:'short',month:'long',day:'numeric'})}</span>${(()=>{const wp=wornPill(o);return `<small class="wx${wp?' haspill':''}"><span class="wxc${settings.location?'':' wxlk'}">${settings.location?(wxChip(sel)||wxMissing(sel,wp)):`<a href="#" class="wxl" data-act="wxSetTap">${wp?'Set location':'Set your location for weather'}</a>`}</span>${wp}</small>`})()}</h2><button data-act="dayStepTap" data-n="1" aria-label="Next day">›</button></div>`;
   // only the stage (the figure) slides on a swipe; the date bar and the item list stay put and just update
@@ -241,7 +241,7 @@ function renderToday(){
     // the rest warning goes below the list so the list never shifts when it appears or disappears
     side=`${wardShort()?'':scoreCard(o)}${piecesBox(o)}${dayActions(o)}${goneNote(o)}${(o.notes||[]).map(t=>`<p class="warn">${t}</p>`).join('')}${restWarn(o)}${typeof careNote==='function'?careNote(o):''}`}
   if(typeof calBanner==='function')stage=calBanner(sel)+stage;   // new calendar events, a trip kept (calendar.js)
-  keepFocus($('#today'),()=>{$('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+missedCard()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;actTaps($('#today'))});applyZoom(false);swApply(false);fitNavSoon();wxFit();
+  keepFocus($('#today'),()=>{$('#today').innerHTML=nav+`<div class="daygrid"><div class="stage" id="stage"><div class="slide" id="slide">${stage}</div></div><div class="side">${side}${items.length?monthLink()+missedCard()+resetCard(isWorkday(sel)?o:null):''}</div></div>`;actTaps($('#today'))});need('zoom-apply',false);need('sw-apply',false);fitNavSoon();wxFit();
   todaySay(o);
   if(snapped){const idle=self.requestIdleCallback||(f=>setTimeout(f,50));idle(planSnapCheck,{timeout:600})}   // the kept month: planned for real once idle (planSnapCheck records and locks then)
   else if(items.length&&!(typeof pulledYet==='function'&&pulledYet())&&!todayPullWait){setTodayPullWait(true);whenPulled(()=>{setTodayPullWait(false);if(!$('#today').hidden)refreshToday()})}   // (recorded above when pulled; else drawn again once the backup is merged, and recorded then)
@@ -259,7 +259,7 @@ function todaySay(o){const k=key(sel),h=$('#today .day h2 .dlong'),e=$('#slide .
    the picture back out: it starts as soon as the drag is known to be sideways, so the boxes fold while the day slides; meanwhile the folds
    are quiet (boxfold.js foldQuiet, told through bus.js: without boxfold.js the day still steps) */
 function foldAll(){emit('folding-all',true);try{if(openRow)toggleRow(openRow);if(belowOpen)pickPiece(belowOpen);if(scoreOpen)toggleScore();if(listOpen)toggleList();if(monthOpen)toggleMonth()}
-  catch(e){console.warn(e)}finally{emit('folding-all',false)}setMonthOpen(false);listOpen=false;setScoreOpen(false);belowOpen=openRow=null;zoomOut();if(typeof swClose==='function')swClose()}
+  catch(e){console.warn(e)}finally{emit('folding-all',false)}setMonthOpen(false);listOpen=false;setScoreOpen(false);belowOpen=openRow=null;need('zoom-out');if(typeof swClose==='function')swClose()}
 /* move to the next/previous scheduled day (Sunday-Thursday), crossing months as needed (month.js nextWorkday).
    from: where the new day's outfit slides in from (px, sign = side); 0 = no animation */
 function stepDay(n,from,times=1){
@@ -283,7 +283,7 @@ function rowTap(el){toggleRow(el.dataset.s)}   // a row's swatch and name, and i
 function addOneTap(el){openAdd(el.dataset.type)}   // a missing piece's "Add one" (data-type: the type to add, '' when none)
 function belowPicTap(){pickPiece(belowOpen)}   // the photo unfolded under the tiles
 function tileTap(el){pickPiece(el.dataset.s)}   // a tile under the figure
-function swatchTap(el){swTap(el.dataset.s)}   // a cloth swatch on the picture (today-picture.js)
+function swatchTap(el){need('sw-tap',el.dataset.s)}   // a cloth swatch on the picture (today-picture.js)
 function wornTap(){toggleWorn()}   // the date bar's Wore pill
 function figLoad(){fitNavSoon()}   // the day's picture has loaded (data-act-load)
 function wxRetryTap(el,ev){loadWeather(true);ev.preventDefault()}   // "No forecast · retry" (a link: it goes nowhere)
@@ -304,3 +304,4 @@ globalThis.HOOK={__proto__:globalThis.HOOK||null,get BLOUSE_ROLL_ON(){return BLO
 on('day-changed',()=>renderToday());
 export {recordRun,wxPreload,openRow,setOff,BLOUSE_ROLL_ON,setRoll,restWarn,toggleRow,belowOpen,swatchStack,figureStage,figCuDone,dayShown,keepHome,pickPiece,goToday,listOpen,piecesBox,toggleList,renderToday,foldAll,stepDay,planWith,todayTabTap,setListOpen};
 acts({rollTap,todayTabTap,vestTap,offTap,pickTap,rowTap,addOneTap,belowPicTap,tileTap,swatchTap,wornTap,figLoad,wxRetryTap,wxSetTap,listTap,listFoldTap,dayStepTap});
+serve('today-draw',renderToday);serve('today-home',keepHome);serve('wx-preload',wxPreload);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

@@ -136,3 +136,4 @@ export {phEdit,setPhEdit,smallPhotos,photoTools,paperHint,paperTip,paperRetake,p
 acts({photoFile,photoRotate,photoCrop,photoCuRemove,photoCuFile,paperTipTap,cropDrag,cropZoom,cropApply,cropDiscardTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('replace-texture',replaceTexture);
+serve('small-photos',smallPhotos);serve('ph-edit',()=>phEdit);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

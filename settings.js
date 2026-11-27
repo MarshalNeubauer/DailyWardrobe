@@ -8,7 +8,7 @@
    pilot, 2026-11-25). It imports only the board: an import of core.js or back.js broke the offline deep link (the service worker
    answers a file asked for under another folder with the root's copy, so an import resolved against the root ran the file a second
    time; bus.js keeps nothing on the page, so a second copy of it is harmless). Everything else it still reads as globals. */
-import {on,heard,emit,ask,served,serve} from './bus.js';
+import {on,heard,emit,ask,served,serve,need,needFn} from './bus.js';
 import {$,DAY_NAMES,MATERIALS_BY,applyCustom,dayRecs,inviteOver,isoKey,key,keyDate,keySettings,mergeSettings,nowMs,occOf,ownMats,setWardrobe,settings,settingsOpen,stampSettings,todayDate,wearsJacket,wearsTie} from './core.js';
 import {layerClose,layerOpen,tell} from './ui.js';
 import {backDrop,backKind,backPush} from './back.js';
@@ -58,7 +58,7 @@ function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textC
   set('daysoff',[h&&h.country?((h.list||[]).length?`${h.country} holidays`:`${S.country?S.country(h.country):h.country}: no holiday list`):'No holidays',`${offs} day${offs===1?'':'s'} off`,`${occ} occasion${occ===1?'':'s'}`].join(' · '));
   if(S.calendar)set('calendar',S.calendar());   // (calendar.js)
   set('weather',`${settings.location?settings.location.name:'No location set'} · °${S.unit()}`);   // (weather.js; without it this line throws, as unit() did)
-  set('photos',picsDrawn()?'Drawing only':S.connected&&!S.connected()?'Painted pictures · needs a connection':'Painted pictures');   // (the masters come from the server)
+  set('photos',need('pics-drawn')?'Drawing only':S.connected&&!S.connected()?'Painted pictures · needs a connection':'Painted pictures');   // (the masters come from the server)
   const own=Object.keys((settings.custom&&settings.custom.colors)||{}).length+Object.keys((settings.custom&&settings.custom.patterns)||{}).length;
   const om=Object.keys(MATERIALS_BY).reduce((n,t)=>n+ownMats(t).length,0);   // (own materials, 2026-11-16)
   set('tagging',`${own?own+' color'+(own===1?'':'s')+' & patterns of your own':'Your own colors & patterns'}${om?` · ${om} material${om===1?'':'s'}`:''}`);
@@ -103,7 +103,7 @@ function todayDirty(stale=true){todayStale=stale}
 let viewStale=null;   // the Wardrobe or stats page, when a sync brought changes while Settings was open (syncRedraw): redrawn once it closes
 /* a redraw from work done in the background (photos arriving, the weather, the plan rules check at start-up): while Settings is open
    it waits for Settings to close (todayStale), since drawing Today closes Settings, which snapped shut when opened right after launch */
-function refreshToday(){if(settingsOpen()){todayDirty();return}renderToday()}
+function refreshToday(){if(settingsOpen()){todayDirty();return}need('today-draw')}
 function closeSettings(){const was=settingsOpen();
   if($('#settings-modal')){ $('#settings-modal').style.display='none'; $('#settings-modal').style.pointerEvents='none'; }
   if($('#modal-backdrop')){ $('#modal-backdrop').style.display='none'; $('#modal-backdrop').style.pointerEvents='none'; }
@@ -113,7 +113,7 @@ function closeSettings(){const was=settingsOpen();
   if(was&&over){const k=backKind();if(k==='set'||!k&&subShown())backPush(over)}else backDrop('set');
   setLock(false);
   if(was&&typeof layerClose==='function')layerClose($('#settings-modal'));
-  if(todayStale){todayStale=false;keepHome();renderToday()}   // (Today on the home day follows a workday taken away)
+  if(todayStale){todayStale=false;need('today-home');need('today-draw')}   // (Today on the home day follows a workday taken away)
   // the Wardrobe or stats page a sync changed while Settings was open is drawn again if it is the page under Settings (nav.js show)
   const v=viewStale;viewStale=null;emit('settings-closed',v)
 }
@@ -129,7 +129,7 @@ function saveSettings(){
   try{if($('#cfg-url')) localStorage.setItem('worker_url',$('#cfg-url').value.trim());
     if($('#cfg-token')) localStorage.setItem('app_token',$('#cfg-token').value.trim())}
   catch(e){console.warn('connection not saved',e);setTimeout(()=>toast('Couldn’t save the server address: this browser’s storage is full or blocked.',5000),0)}
-  connKeep();   // the database's copy of the connection follows (app.js)
+  need('conn-keep');   // the database's copy of the connection follows (app.js)
   closeSettings();
   try{renderAdd()}catch(e){console.warn('Add page not drawn',e)}
   emit('connection-saved');   // a backup now (sync.js syncNow)
@@ -142,13 +142,13 @@ function saveSettings(){
    is written at once, as before (a read first delayed the write, and a reload right after a tap lost it) */
 let setSeen=0,setOther=false;
 const setChan=(()=>{try{const c=new BroadcastChannel('dw-settings');c.onmessage=e=>{if(e.data&&+e.data.u>setSeen)setOther=true};return c}catch{return null}})();
-async function saveUserSettings(){stampSettings(settings);planDirty();   // only the settings whose value changed get the new stamp (core.js)   // the settings have changed already: the cached plan is stale now, not only once they are stored
+async function saveUserSettings(){stampSettings(settings);need('plan-dirty');   // only the settings whose value changed get the new stamp (core.js)   // the settings have changed already: the cached plan is stale now, not only once they are stored
   if(setOther){setOther=false;
-    try{const st=await metaGet('settings');
+    try{const st=await need('meta-get','settings');
       if(st&&st.ks&&settings.ks&&(st.updated||0)>setSeen){setWardrobe({settings:mergeSettings(st,settings)});keySettings(settings);applyCustom(settings.custom);todayDirty()}}
     catch(e){console.warn('stored settings not read',e)}}
   setSeen=settings.updated||0;
-  await metaPut('settings',settings);planDirty();try{if(setChan)setChan.postMessage({u:setSeen})}catch{}emit('settings-saved')}   // (sync.js: a backup soon)
+  await need('meta-put','settings',settings);need('plan-dirty');try{if(setChan)setChan.postMessage({u:setSeen})}catch{}emit('settings-saved')}   // (sync.js: a backup soon)
 /* testers have daily limits instead of costs: no "about 7¢" for them (account.js knows who is connected) */
 const showCost=()=>!(typeof isTester==='function'&&isTester());
 /* the parts of Settings drawn by later scripts (Round B, CR-7-11: account.js and remind.js replaced renderSettingsExtras with a wrapper
@@ -160,8 +160,8 @@ function settingsPart(fn){on('settings-parts',fn)}
    the days off, own-lists.js the own colors, patterns and materials, ui.js the connection, care.js the cleaning limits, weather.js the
    location and units), in their load order; then what this file draws, then the summaries, then the parts drawn last */
 function renderSettingsExtras(){
-  renderItemPicUI();renderReplanUI();emit('settings-draw');
-  renderPicturesUI();if(served('asm-ui')){ask('asm-ui');if(asmLive())ask('asm-sync')}
+  need('item-pic-ui');need('replan-ui');emit('settings-draw');
+  renderPicturesUI();if(served('asm-ui')){ask('asm-ui');if(need('asm-live'))ask('asm-sync')}
   const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" data-act="dayTap" data-list="${id}" data-i="${i}" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};
   tog('#cfg-workdays',settings.workdays);tog('#cfg-blazer',settings.blazerDays.filter(d=>settings.workdays.includes(d)));
   if($('#cfg-vest'))$('#cfg-vest').value=settings.vestMode||'auto';if($('#cfg-dark'))$('#cfg-dark').value=settings.darkShirts||'some';
@@ -175,25 +175,25 @@ const PICS_HELP={painted:'Painted pictures: the outfit is painted in its own clo
   drawn:'Drawing only: the outfit is drawn, nothing is downloaded or painted; faster and uses less data.'};
 function renderPicturesUI(){const pan=$('#sp-photos .mpanel-in');if(!pan)return;let g=$('#pics-box');
   if(!g){g=document.createElement('div');g.id='pics-box';g.className='sgroup pics-box';pan.insertBefore(g,pan.firstChild)}
-  const v=picsDrawn()?'drawn':'painted';
+  const v=need('pics-drawn')?'drawn':'painted';
   g.innerHTML=`<div class="slabel">Today’s outfit</div><p class="shelp" id="pics-help">${PICS_HELP[v]}</p>
 <label class="srow">Show <select id="cfg-pictures" data-act-change="picsPick" aria-label="Today’s outfit" aria-describedby="pics-help"><option value="painted">Painted pictures</option><option value="drawn">Drawing only</option></select></label>`;
   $('#cfg-pictures').value=v}
-async function setPictures(v){const d=v==='drawn';if(d===picsDrawn())return;settings.pictures=d?'drawn':'painted';await saveUserSettings();picsSwitched();
+async function setPictures(v){const d=v==='drawn';if(d===need('pics-drawn'))return;settings.pictures=d?'drawn':'painted';await saveUserSettings();picsSwitched();
   renderPicturesUI();if(served('asm-ui'))ask('asm-ui');settingsSummaries()}
 /* the choice changed (here, or on another device: start.js onSyncedData): Today is drawn again (once Settings closes, refreshToday), and
    back on "Painted pictures" the day on screen is painted or downloaded at once, while Settings is still open, and building ahead resumes
    from asmEnsure; on "Drawing only" building ahead stops at its next look (asmAhead's stop) */
-function picsSwitched(){refreshToday();if(picsDrawn()||!asmLive())return;
-  ask('asm-sync');const o=planFor()[key(sel)];if(o&&hasOutfit(o))ask('asm-ensure',o);schedulePrefetch()}
+function picsSwitched(){refreshToday();if(need('pics-drawn')||!need('asm-live'))return;
+  ask('asm-sync');const o=need('plan-for')[key(need('sel-day'))];if(o&&need('has-outfit',o))ask('asm-ensure',o);need('prefetch-soon')}
 /* (vest, workdays, blazer days and units are drawn on Today too: todayStale redraws it when Settings closes; it stayed stale until a restart, audit 2026-11-14) */
 function setVestMode(v){settings.vestMode=v;saveUserSettings();todayDirty();settingsSummaries()}
 /* how often dark shirts are planned (planner.js, darkMode): the coming week is planned again with the new choice */
 /* (fix round 2) saved before the week's locks are released, as setDress (dress.js): tapped then swiped away within ~100 ms, the change was lost */
-async function setDarkShirts(v){settings.darkShirts=v;todayDirty();settingsSummaries();await saveUserSettings();await clearLocks()}
+async function setDarkShirts(v){settings.darkShirts=v;todayDirty();settingsSummaries();await saveUserSettings();await need('locks-clear')}
 function toggleDay(id,i){const k=id==='#cfg-workdays'?'workdays':'blazerDays',l=new Set(settings[k]);l.has(i)?l.delete(i):l.add(i);
   if(k==='workdays'&&l.size===0){tell('At least one workday is needed: pick another day first.');return}settings[k]=[...l].sort();if(k==='workdays')settings.blazerDays=settings.blazerDays.filter(d=>l.has(d));
-  planDirty();todayDirty();renderSettingsExtras();return saveUserSettings().then(clearLocks)}
+  need('plan-dirty');todayDirty();renderSettingsExtras();return saveUserSettings().then(needFn('locks-clear'))}
 /* the markup's handlers (act.js): a day button of Workdays or Blazer days (data-list: its group's id, data-i: the weekday), and the
    Outfit pictures choice */
 function dayTap(el){toggleDay(el.dataset.list,+el.dataset.i)}

@@ -112,6 +112,78 @@ const SOCKETS={
   'pattern-reread':{serve:'pattern-read.js',ask:['asm-cm-page.js'],what:'Read N patterns: a piece\'s pattern read again (rereadSett)'},
   'refresh-today':{serve:'settings.js',ask:['asm-today.js','asm-cm-page.js'],what:'Today redrawn when its picture is ready (refreshToday; settings.js loads after the painter)'},
   'plan-on':{serve:'month.js',ask:['asm-today.js','asm-cm-page.js'],what:'a day\'s planned outfit, for building ahead and Pictures ahead (planOn; month.js loads after the painter)'},
+  // the restructure S6b (2026-11-27, STEP6 rule 2): what a required or today-no-picture file asks of a file it may not import, through
+  // need (a ReferenceError when nothing is served, as the bare name threw when the file was missing)
+  'announce':{serve:'app.js',ask:['toast.js'],what:"words read out by the live region (announce): the Undo button's"},
+  'today-draw':{serve:'today.js',ask:['nav.js','settings.js'],what:"Today drawn (renderToday): the router, Settings closing, a redraw; without today.js the router still throws, so start-up says \"Today couldn’t be shown\""},
+  'stats-draw':{serve:'stats.js',ask:['nav.js'],what:"Insights drawn (renderStats)"},
+  'pics-drawn':{serve:'photo-keys.js',ask:['settings.js','start.js'],what:"whether \"Drawing only\" is chosen (picsDrawn)"},
+  'today-home':{serve:'today.js',ask:['settings.js'],what:"Today on the home day follows a workday taken away (keepHome)"},
+  'conn-keep':{serve:'app.js',ask:['settings.js'],what:"the database's copy of the connection follows (connKeep)"},
+  'meta-get':{serve:'app.js',ask:['settings.js','start.js'],what:"a value read from the database's meta store (metaGet): the stored settings, the plan snapshot"},
+  'meta-put':{serve:'app.js',ask:['settings.js'],what:"a value written to the database's meta store (metaPut): the settings"},
+  'sel-day':{serve:'app.js',ask:['settings.js','start.js'],what:"the day Today shows (sel)"},
+  'plan-for':{serve:'today-plan.js',ask:['settings.js'],what:"the plan of the month shown (planFor)"},
+  'has-outfit':{serve:'today-plan.js',ask:['settings.js'],what:"whether a planned day has an outfit (hasOutfit)"},
+  'plan-dirty':{serve:'today-plan.js',ask:['settings.js'],what:"the cached plan is stale (planDirty)"},
+  'asm-live':{serve:'photos.js',ask:['settings.js','start.js'],what:"whether the painter is on (asmLive)"},
+  'item-pic-ui':{serve:'photos.js',ask:['settings.js'],what:"Settings' Generate item pictures button (renderItemPicUI)"},
+  'prefetch-soon':{serve:'photos.js',ask:['settings.js'],what:"the coming days' pictures fetched soon (schedulePrefetch)"},
+  'replan-ui':{serve:'history.js',ask:['settings.js'],what:"Settings' Start the plan over line (renderReplanUI)"},
+  'locks-clear':{serve:'days.js',ask:['settings.js'],what:"the coming days' locks let go after a rules change (clearLocks)"},
+  'after-dom':{serve:'app.js',ask:['start.js'],what:"fn once the page's scripts have run (afterDom)"},
+  'after-scripts':{serve:'app.js',ask:['start.js'],what:"fn once the page has loaded (afterScripts)"},
+  'stored-clean':{serve:'app.js',ask:['start.js'],what:"the stored items and days checked as start-up reads them (cleanStored)"},
+  'stored-settings-clean':{serve:'app.js',ask:['start.js'],what:"the stored settings checked as start-up reads them (cleanStoredSettings)"},
+  'conn-restored':{serve:'app.js',ask:['start.js'],what:"the connection put back from the database (connRestored, a promise): start-up's reads wait for it"},
+  'sel-set':{serve:'app.js',ask:['start.js'],what:"the day Today shows set (setSel)"},
+  'view-set':{serve:'app.js',ask:['start.js'],what:"the month shown set (setView)"},
+  'tex-swatches':{serve:'app.js',ask:['start.js'],what:"the one-time close-up swatches remade (texSwatches)"},
+  'tx':{serve:'app.js',ask:['start.js'],what:"a transaction on the items store (tx): start-up reads the items"},
+  'txs':{serve:'app.js',ask:['start.js'],what:"a transaction on a store (txs): start-up reads the days"},
+  'plan-snap':{serve:'today-plan.js',ask:['start.js'],what:"the plan snapshot's key in the meta store (PLAN_SNAP)"},
+  'plan-snap-use':{serve:'today-plan.js',ask:['start.js'],what:"the stored plan snapshot taken at start-up (planSnapUse)"},
+  'wx-preload':{serve:'today.js',ask:['start.js'],what:"the kept weather put in place at start-up (wxPreload)"},
+  'home-day':{serve:'month.js',ask:['start.js'],what:"the day Today opens on (homeDay)"},
+  'plan-rules-check':{serve:'history.js',ask:['start.js'],what:"the plan rules checked at start-up (checkPlanRules)"},
+  'learn-drop':{serve:'history.js',ask:['start.js'],what:"an old setting dropped once the first pull is in (dropLearn)"},
+  'when-pulled':{serve:'history.js',ask:['start.js'],what:"fn once the first pull is in (whenPulled)"},
+  'weather-load':{serve:'weather.js',ask:['start.js','sync.js'],what:"the weather loaded (loadWeather): start-up, a sync"},
+  'holidays-refresh':{serve:'daysoff.js',ask:['start.js'],what:"the public holidays refreshed at start-up (refreshHolidays)"},
+  'renders-load':{serve:'photo-keys.js',ask:['start.js'],what:"the kept pictures read at start-up (loadRenders)"},
+  'renders':{serve:'photo-keys.js',ask:['start.js'],what:"the kept pictures (renders)"},
+  'item-backdrops-fix':{serve:'photos.js',ask:['start.js'],what:"the one-time gray backdrops of item pictures (fixItemBackdrops)"},
+  'small-photos':{serve:'item-photo.js',ask:['start.js'],what:"the one-time small copies of item photos (smallPhotos)"},
+  'belt-stuck':{serve:'pickscore.js',ask:['history.js'],what:"the words when the belt has to stay (BELT_STUCK)"},
+  'pick-follow':{serve:'pickscore.js',ask:['history.js'],what:"which slots follow a swapped or picked one (FOLLOW)"},
+  'beltless':{serve:'pickscore.js',ask:['history.js'],what:"whether a belt would need shoes that don't suit the outfit (beltless)"},
+  'boots-off':{serve:'pickscore.js',ask:['history.js'],what:"combat boots taken off with pants they don't go with (bootsOff)"},
+  'fit-of':{serve:'pickscore.js',ask:['history.js'],what:"how well a piece fits the outfit, for the picker (fitOf)"},
+  'fit-tag':{serve:'pickscore.js',ask:['history.js'],what:"the picker's words for a fit (fitTag)"},
+  'hand-pool':{serve:'pickscore.js',ask:['history.js'],what:"the picker's \"Casual · pick by hand\" pieces (handPool)"},
+  'hand-why':{serve:'pickscore.js',ask:['history.js'],what:"why a hand-pick piece is offered (handWhy)"},
+  'keep-hand':{serve:'pickscore.js',ask:['history.js'],what:"a hand-pick piece kept through a pick (keepHand)"},
+  'keep-off':{serve:'pickscore.js',ask:['history.js'],what:"a piece taken off stays off through a swap or pick (keepOff)"},
+  'pick-sub':{serve:'pickscore.js',ask:['history.js'],what:"a picker card's second line (pickSub)"},
+  'pocket-on':{serve:'pickscore.js',ask:['history.js'],what:"a pick puts a taken-off pocket square back (pocketOn)"},
+  'slot-pool':{serve:'pickscore.js',ask:['history.js'],what:"the picker's scored pieces (slotPool)"},
+  'suggest-clean':{serve:'pickscore.js',ask:['history.js'],what:"Suggest another keeps the day clean (suggestClean)"},
+  'suit-pants':{serve:'pickscore.js',ask:['history.js'],what:"a suit's own pants follow its jacket (suitPants)"},
+  'unlock-clash':{serve:'locks.js',ask:['history.js'],what:"the coming days' locks that clash with a changed day let go (unlockClash)"},
+  'lock-upcoming':{serve:'locks.js',ask:['today.js'],what:"the coming week locked after Today records its days (lockUpcoming)"},
+  'pic-open-ready':{serve:'today-photofold.js',ask:['today.js'],what:"a piece's photo opened in its row (picOpenReady)"},
+  'pic-shut':{serve:'today-photofold.js',ask:['today.js'],what:"a piece's photo shut (picShut)"},
+  'pic-snap':{serve:'today-photofold.js',ask:['today.js'],what:"another row's photo shut at once (picSnap)"},
+  'pic-stop':{serve:'today-photofold.js',ask:['today.js'],what:"a photo's motion stopped for another tile (picStop)"},
+  'zoom-apply':{serve:'today-picture.js',ask:['today.js'],what:"the picture's zoom put back after a redraw (applyZoom)"},
+  'ovl-piece':{serve:'today-picture.js',ask:['today.js'],what:"a cloth swatch on the picture (ovlPiece)"},
+  'sw-apply':{serve:'today-picture.js',ask:['today.js'],what:"an open swatch kept open through a redraw (swApply)"},
+  'sw-tap':{serve:'today-picture.js',ask:['today.js'],what:"a swatch tapped: it opens up close (swTap)"},
+  'zoom-out':{serve:'today-picture.js',ask:['today.js'],what:"the picture zoomed out for another day (zoomOut)"},
+  'ph-edit':{serve:'item-photo.js',ask:['photos.js'],what:"the photo editor's state (phEdit): a crop under way holds the Wardrobe's redraw"},
+  'horizon-keys':{serve:'analysis.js',ask:['stats.js'],what:"the workdays Insights and What to buy measure (horizonKeys)"},
+  'dress-why-unused':{serve:'dress.js',ask:['stats.js'],what:"why shoes are never worn, without jackets (dressWhyUnused)"},
+  'tag-stats-card':{serve:'tag-request.js',ask:['stats.js'],what:"the tagging card on Insights (tagStatsCard)"},
   'swatch-svg':{serve:'draw.js',ask:['fav.js'],what:'a piece\'s swatch on the favorites (swatchSVG; fav.js, a logic file, may not import the painter)'},
   // the restructure S6c (2026-11-27, STEP6 rule 3): an optional file's call into another group it doesn't need, or into a file of its own
   // group that loads after it
@@ -225,13 +297,12 @@ const SOCKETS={
   'ph-in':{serve:'sync-photos.js',ask:['sync.js'],what:'a pulled backup\'s photos put back from their references (phIn)'},
   'ph-batch':{serve:'sync-photos.js',ask:['sync.js'],what:'the next batch an upload carries (phBatch)'},
   'ph-out':{serve:'sync-photos.js',ask:['sync.js'],what:'an upload\'s photos sent as references (phOut)'},
-  'weather-load':{serve:'weather.js',ask:['sync.js'],what:'the weather loaded again (loadWeather)'},
 };
 
 module.exports=async({ok,ROOT})=>{
   /* bus.js itself, run as a script with its export blanked */
-  const ctx=vm.createContext({});vm.runInContext(appSrc(ROOT,'bus.js')+';this.B={on,emit,heard,serve,ask,served}',ctx);
-  const {on,emit,heard,serve,ask,served}=ctx.B,log=[];
+  const ctx=vm.createContext({});vm.runInContext(appSrc(ROOT,'bus.js')+';this.B={on,emit,heard,serve,ask,served,need,needFn}',ctx);
+  const {on,emit,heard,serve,ask,served,need,needFn}=ctx.B,log=[];
   /* the sockets */
   ok(ask('nobody',1,2)===undefined,'ask for a name nobody serves: nothing is called and the answer is undefined (the old typeof guard)');
   const seen=[];serve('sum',(a,b)=>{seen.push([a,b]);return a+b});
@@ -241,6 +312,10 @@ module.exports=async({ok,ROOT})=>{
   const sboom=new Error('sboom');serve('throws',()=>{throw sboom});let sgot=null;try{ask('throws')}catch(e){sgot=e}
   ok(sgot===sboom,'an error the served fn throws reaches the one who asked, as a direct call\'s would');
   ok(served('sum')&&!served('nobody')&&!served('nofn'),'served says whether a fn is served under a name (the old typeof guard before a call with other arguments)');
+  let nthrew=null;try{need('nobody',1)}catch(e){nthrew=e}
+  ok(nthrew&&nthrew.name==='ReferenceError'&&need('sum',2,3)===6,'need: what is served is called and answers, as ask; nothing served throws a ReferenceError, as the missing name did');
+  let fthrew=null;try{needFn('nobody')}catch(e){fthrew=e}const nf=needFn('sum');
+  ok(fthrew&&fthrew.name==='ReferenceError'&&typeof nf==='function'&&nf(2,4)===8,'needFn: nothing served throws at once; else a fn that asks the socket');
   on('pinned',()=>'heard');ok(emit('sum')===0&&!heard('sum')&&ask('pinned')===undefined&&emit('pinned')===1,'sockets and topics are apart: a served name is no topic, a pinned topic no socket');
   ok(emit('nobody')===0&&!heard('nobody'),'a topic nobody pinned: emit calls nothing and says 0, heard is false');
   const a=x=>log.push('a'+x),b=x=>log.push('b'+x);on('t',a);on('t',b);on('t',a);
@@ -256,12 +331,12 @@ module.exports=async({ok,ROOT})=>{
   const acorn=require('acorn');
   for(const f of page){if(f==='bus.js')continue;const src=fs.readFileSync(path.join(ROOT,f),'utf8');let ast;
     try{ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:'module'})}catch(e){try{ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:'script'})}catch(e2){continue}}
-    // local name -> bus.js's name (a file that also reads app.js's own ask() imports bus.js's second name for it, askFor; served counts as asking)
+    // local name -> bus.js's name (a file that also reads app.js's own ask() imports bus.js's second name for it, askFor; served, need and needFn count as asking)
     const imp=new Map(ast.body.filter(s=>s.type==='ImportDeclaration'&&s.source.value==='./bus.js').flatMap(s=>s.specifiers.map(x=>[x.local.name,x.imported?x.imported.name:x.local.name])));
     const add=(k,t)=>{const u=used[t]=used[t]||{emit:[],on:[],heard:[]};if(!u[k].includes(f))u[k].push(f)};
     const sock=(k,t)=>{const u=sockUsed[t]=sockUsed[t]||{serve:[],ask:[]};if(!u[k].includes(f))u[k].push(f)};
     const walk=n=>{if(!n||typeof n.type!=='string')return;
-      if(n.type==='CallExpression'&&n.callee.type==='Identifier'){const c0=imp.get(n.callee.name)||null,c=c0==='askFor'||c0==='served'?'ask':c0,a=n.arguments[0],lit=a&&a.type==='Literal'&&typeof a.value==='string';
+      if(n.type==='CallExpression'&&n.callee.type==='Identifier'){const c0=imp.get(n.callee.name)||null,c=c0==='askFor'||c0==='served'||c0==='need'||c0==='needFn'?'ask':c0,a=n.arguments[0],lit=a&&a.type==='Literal'&&typeof a.value==='string';
         // (settingsPart(fn) is settings.js's own way to pin for 'settings-parts': counted as the caller's pin)
         if(n.callee.name==='settingsPart'&&f!=='settings.js')add('on','settings-parts');
         else if(c&&/^(?:emit|on|heard)$/.test(c)&&lit&&!(f==='settings.js'&&c==='on'&&a.value==='settings-parts'))add(c,a.value);
