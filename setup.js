@@ -78,7 +78,6 @@ function setupBack(){if(!setupShown())return;if(setup.at>0){setupGo(-1);backPush
 import {serve,ask,askFor,served} from './bus.js';
 import {clearLocks} from './days.js';
 import {cityFound,findCity,setCityFound,setLocation,setUnits,unit,useMyLocation} from './weather.js';
-import {COUNTRY_CODES,setHolidayCountry} from './daysoff.js';
 serve('setup-yield',setupYield);serve('setup-needs',setupNeeds);   // (and what the wardrobe still needs, for Insights: stats.js)
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,setupCancel,setupClose,setupDress,setupGo,setupOpen,setupSearch,setupVestChosen,get setup(){return setup},set setup(v){setup=v},get SETUP_STEPS(){return SETUP_STEPS},setupDraw,setupFinish,setupShown,setupToday,tzCountry};
@@ -118,10 +117,12 @@ const TZ_CC={'Asia/Kuwait':'KW','Asia/Riyadh':'SA','Asia/Dubai':'AE','Asia/Qatar
   'Europe/London':'GB','Europe/Dublin':'IE','Europe/Paris':'FR','Europe/Berlin':'DE','Europe/Madrid':'ES','Europe/Rome':'IT','Europe/Amsterdam':'NL','Europe/Brussels':'BE','Europe/Zurich':'CH','Europe/Vienna':'AT','Europe/Stockholm':'SE','Europe/Oslo':'NO','Europe/Copenhagen':'DK','Europe/Helsinki':'FI','Europe/Warsaw':'PL','Europe/Lisbon':'PT','Europe/Athens':'GR','Europe/Istanbul':'TR','Europe/Moscow':'RU',
   'America/New_York':'US','America/Chicago':'US','America/Denver':'US','America/Phoenix':'US','America/Los_Angeles':'US','America/Anchorage':'US','Pacific/Honolulu':'US','America/Toronto':'CA','America/Vancouver':'CA','America/Mexico_City':'MX','America/Sao_Paulo':'BR','America/Argentina/Buenos_Aires':'AR','Africa/Johannesburg':'ZA','Africa/Lagos':'NG','Africa/Nairobi':'KE'};
 function tzCountry(){let tz='';try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||''}catch{}
-  if(TZ_CC[tz])return TZ_CC[tz];const m=/-([A-Z]{2})$/.exec(navigator.language||'');return m&&COUNTRY_CODES.includes(m[1])?m[1]:null}
+  if(TZ_CC[tz])return TZ_CC[tz];const m=/-([A-Z]{2})$/.exec(navigator.language||'');return m&&(askFor('country-codes')||[]).includes(m[1])?m[1]:null}
 function setupHolCountry(){if(settings.holidays&&settings.holidays.country)return;const cc=tzCountry();if(cc)settings.holidays={country:cc,list:[],skip:[],fetched:0}}
-async function setupHolidays(){const h=settings.holidays;if(h&&h.country&&(h.fetched||(h.list||[]).length))return;const cc=h&&h.country||tzCountry();if(!cc)return;
-  try{await setHolidayCountry(cc,true)}catch(e){console.warn('holidays not loaded',e)}
+/* (the restructure S6g, the owner's choice of 2026-11-27) without daysoff.js no holiday list is fetched and the setup goes on: the country
+   stays stored with fetched 0 (setupHolCountry), so a later start with daysoff.js fetches it (refreshHolidays) */
+async function setupHolidays(){if(!served('holiday-country-set'))return;const h=settings.holidays;if(h&&h.country&&(h.fetched||(h.list||[]).length))return;const cc=h&&h.country||tzCountry();if(!cc)return;
+  try{await askFor('holiday-country-set',cc,true)}catch(e){console.warn('holidays not loaded',e)}
   if(!(settings.holidays&&settings.holidays.country)){settings.holidays={country:cc,list:[],skip:[],fetched:0};await saveUserSettings()}}
 /* the app is being driven past a setup that opened by itself (items came in from a sync or a restore, another page was
    opened): it steps aside without being marked as done. One the user started from Settings stays. */

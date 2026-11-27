@@ -234,6 +234,8 @@ const SOCKETS={
   'setup-conn-draw':{serve:'setup.js',ask:['account.js'],what:'the setup\'s Connection and All set steps drawn again, when showing'},
   'setup-ward-empty':{serve:'setup.js',ask:['wardrobe.js'],what:'the empty Wardrobe\'s first steps (setupWardEmpty)'},
   'tz-country':{serve:'setup.js',ask:['weather.js'],what:'the country of the phone\'s time zone (tzCountry)'},
+'country-codes':{serve:'daysoff.js',ask:['setup.js'],what:'the countries with a holiday list (COUNTRY_CODES) (the restructure S6g)'},
+'holiday-country-set':{serve:'daysoff.js',ask:['setup.js'],what:"the time zone's holidays fetched at the setup's end (setHolidayCountry) (the restructure S6g)"},
   'invite-checking':{serve:'account.js',ask:['ui.js','add.js','setup.js'],what:'whether an invitation link is being checked (inviteChecking)'},
   'acct-why':{serve:'account.js',ask:['ui.js','add.js','setup.js'],what:'why the last invitation link didn\'t connect (acctWhy)'},
   'connect-link':{serve:'account.js',ask:['ui.js','setup.js'],what:'an invitation link pasted in the setup connects (connectFromLink)'},
