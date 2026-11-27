@@ -30,7 +30,7 @@ const TAGS={
   belt:{type:'belt',primaryColor:'black',secondaryColor:'none',thirdColor:'none',pattern:'solid',material:'leather',texture:'smooth',formality:'business',season:'all'},
 };
 let pn=0;
-async function cardsIdle(ph,ms=30000){const t=Date.now();while(Date.now()-t<ms){const ok=await ph.page.evaluate(()=>typeof queue!=='undefined'&&queue.length>0&&queue.every(q=>!q.busy&&!q.refining&&!q.patternReading)).catch(()=>false);if(ok)return true;await sleep(300)}return false}
+async function cardsIdle(ph,ms=30000){const t=Date.now();while(Date.now()-t<ms){const ok=await ph.page.evaluate(()=>'queue' in HOOK&&HOOK.queue.length>0&&HOOK.queue.every(q=>!q.busy&&!q.refining&&!q.patternReading)).catch(()=>false);if(ok)return true;await sleep(300)}return false}
 async function setupNext(ph){for(let k=0;k<9;k++){if(!await vis(ph,'#su-next'))break;await ph.tap('#su-next');await sleep(700);if(await vis(ph,'#ask-cancel')){await ph.tap('#ask-cancel');await sleep(300)}}
   for(let k=0;k<6;k++){if(!await vis(ph,'#kit-next'))break;await ph.tap('#kit-next');await sleep(300)}}
 async function openAdd(ph){if(await vis(ph,'#add-one'))return;if(!await vis(ph,'#wardrobe')){await ph.tap('#n-wardrobe');await sleep(500)}await ph.tap('#ward-add');await sleep(600)}

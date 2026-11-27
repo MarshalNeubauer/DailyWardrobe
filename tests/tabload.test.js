@@ -20,16 +20,16 @@ async function run(eng,browser,{ok,url,settle}){
   // a stored wardrobe: two pieces, kept by the app itself
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
   await p.evaluate(async()=>{if(document.querySelector('#setup.on'))HOOK.setupClose();
-    await put({id:'tl-shirt',type:'shirt',primaryColor:'white',pattern:'solid',added:1});await put({id:'tl-tie',type:'tie',primaryColor:'navy',pattern:'solid',added:2})});
+    await HOOK.put({id:'tl-shirt',type:'shirt',primaryColor:'white',pattern:'solid',added:1});await HOOK.put({id:'tl-tie',type:'tie',primaryColor:'navy',pattern:'solid',added:2})});
   const state=()=>p.evaluate(()=>({shown:['today','wardrobe','add','stats'].filter(s=>!document.querySelector('#'+s).hidden).join(),
     on:[...document.querySelectorAll('body>nav button.on')].map(b=>b.id).join(),cur:[...document.querySelectorAll('body>nav button[aria-current=page]')].map(b=>b.id).join(),
     cards:document.querySelectorAll('#wardrobe [data-id],#wardrobe .card,#wardrobe .witem').length,wtext:document.querySelector('#wardrobe').textContent.length,
-    stext:document.querySelector('#stats').textContent.length,ttext:document.querySelector('#today').textContent.length,n:items.length,setup:!!document.querySelector('#setup.on')}));
+    stext:document.querySelector('#stats').textContent.length,ttext:document.querySelector('#today').textContent.length,n:HOOK.items.length,setup:!!document.querySelector('#setup.on')}));
   // loads the page with the later scripts held, taps the tabs named, lets the scripts go and waits for start-up
   const load=async taps=>{errs.length=0;hold=new Promise(r=>open=r);const hits0=hits;
     await p.goto(url,{waitUntil:'commit'});
     await p.waitForFunction(()=>'tabTap' in HOOK&&typeof HOOK.tabTap==='function'&&'todayTabTap' in HOOK&&typeof HOOK.todayTabTap==='function'&&!!document.querySelector('#n-stats'),null,{polling:50});   // (not polled by animation frame, the default: WebKit draws no frame while a script is awaited)
-    const before={late:await p.evaluate(()=>typeof wardKeep==='undefined'&&typeof renderStats==='undefined'&&typeof errNote==='undefined'&&!window.appReady),net:hits-hits0};
+    const before={late:await p.evaluate(()=>!('wardKeep' in HOOK)&&!('renderStats' in HOOK)&&!('errNote' in HOOK)&&!window.appReady),net:hits-hits0};
     // Chromium: a finger at the tab's middle. WebKit: the tab's click (as tests/webkit.js's touches end): Playwright's WebKit takes no
     // input while a script is awaited (page.tap and touchscreen.tap never return; no animation frame is drawn either)
     for(const id of taps){

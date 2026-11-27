@@ -37,71 +37,71 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t');localStorage.setItem('last_sync',String(Date.now()))},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
       HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[1,2,3,4,5];settings.blazerDays=[];HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-23T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,23);HOOK.view={y:2026,m:10};show('today')});
-    const before=await p.evaluate(()=>!!planFor()['2026-11-26']&&isWorkday(new Date(2026,10,26)));
-    await p.evaluate(()=>openSettings('daysoff'));
+      HOOK.settings.workdays=[1,2,3,4,5];HOOK.settings.blazerDays=[];HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-23T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,23);HOOK.view={y:2026,m:10};HOOK.show('today')});
+    const before=await p.evaluate(()=>!!HOOK.planFor()['2026-11-26']&&HOOK.isWorkday(new Date(2026,10,26)));
+    await p.evaluate(()=>HOOK.openSettings('daysoff'));
     ok(await p.locator('#cfg-country option').count()>200&&await p.evaluate(()=>[...document.querySelectorAll('#cfg-country option')].some(o=>o.value==='KW'&&o.textContent==='Kuwait')),'Settings has a country selector for public holidays');
-    await p.selectOption('#cfg-country','US');await p.waitForFunction(()=>settings.holidays&&settings.holidays.list.length>0,null,{timeout:8000});
+    await p.selectOption('#cfg-country','US');await p.waitForFunction(()=>HOOK.settings.holidays&&HOOK.settings.holidays.list.length>0,null,{timeout:8000});
     await p.waitForSelector('#holiday-list .hrow',{timeout:8000});   // the list is drawn just after the data arrives
     const rows=await p.locator('#holiday-list .hrow').allTextContents();
     ok(rows.length===4&&/Thanksgiving Day/.test(rows[0])&&/Thu, Nov 26/.test(rows[0])&&!rows.some(r=>/State Day|Christmas Eve/.test(r)),`the country's upcoming public holidays are listed (national public holidays only): ${rows.join(' | ')}`);
     ok(/4 public holidays of United States count as days off/.test(await p.textContent('#holiday-msg')),'and it says they count as days off');
-    await p.evaluate(()=>closeSettings());
-    const off=await p.evaluate(()=>{const d=new Date(2026,10,26);HOOK.sel=new Date(2026,10,25);renderToday();stepDay(1);const next=key(sel);
-      HOOK.monthOpen=false;toggleMonth();const cell=[...document.querySelectorAll('#mpanel .mc')].find(c=>/November 26/.test(c.getAttribute('aria-label')));
-      openDay(+d);return {work:isWorkday(d),planned:!!planFor()['2026-11-26'],next,cls:cell.className,label:cell.getAttribute('aria-label'),msg:document.querySelector('#today .empty').textContent,name:offName(d)}});
+    await p.evaluate(()=>HOOK.closeSettings());
+    const off=await p.evaluate(()=>{const d=new Date(2026,10,26);HOOK.sel=new Date(2026,10,25);HOOK.renderToday();HOOK.stepDay(1);const next=HOOK.key(HOOK.sel);
+      HOOK.monthOpen=false;HOOK.toggleMonth();const cell=[...document.querySelectorAll('#mpanel .mc')].find(c=>/November 26/.test(c.getAttribute('aria-label')));
+      HOOK.openDay(+d);return {work:HOOK.isWorkday(d),planned:!!HOOK.planFor()['2026-11-26'],next,cls:cell.className,label:cell.getAttribute('aria-label'),msg:document.querySelector('#today .empty').textContent,name:HOOK.offName(d)}});
     ok(before&&!off.work&&!off.planned,'a public holiday gets no outfit (it was a workday before)');
     ok(off.next==='2026-11-27','stepping through the days skips it');
     ok(/hol/.test(off.cls)&&/day off: Thanksgiving Day/.test(off.label)&&/A day off: Thanksgiving Day/.test(off.msg),`the month marks it and the day says why ("${off.msg}")`);
     // rotation: the suit planned for the day before is not held back for a holiday, and nothing is recorded as worn on it
-    const rot=await p.evaluate(async()=>{HOOK.TODAY_OVERRIDE='2026-11-30T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,30);HOOK.view={y:2026,m:10};renderToday();
+    const rot=await p.evaluate(async()=>{HOOK.TODAY_OVERRIDE='2026-11-30T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,30);HOOK.view={y:2026,m:10};HOOK.renderToday();
       // a day recorded as worn has its pieces (ids) or worn:true; a record with only a lock is the week lock (lockUpcoming), which on a
       // busy machine was put on the 26th before the holiday list came in: the planner skips the day all the same
-      const worn=k=>{const r=dayRecs[k];return !!(r&&(r.ids||r.worn))};
+      const worn=k=>{const r=HOOK.dayRecs[k];return !!(r&&(r.ids||r.worn))};
       for(let k=0;k<100&&!worn('2026-11-27');k++)await new Promise(r=>setTimeout(r,50));   // past days are recorded in order: once the Friday is, the holiday before it has been passed over (a fixed 400 ms was too short on a busy machine)
       return {rec:worn('2026-11-26'),wed:worn('2026-11-25')}});
     ok(!rot.rec&&rot.wed,'nothing is recorded as worn on the holiday (the workday before it is)');
     // untick a holiday you work: it is planned again
-    await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-23T12:00:00';HOOK.cache={};HOOK.dayRecs={};HOOK.sel=new Date(2026,10,23);HOOK.view={y:2026,m:10};renderToday();openSettings('daysoff')});
-    await p.locator('#holiday-list .hrow input').first().uncheck();await p.waitForFunction(()=>settings.holidays.skip.length===1);
-    ok(await p.evaluate(()=>{closeSettings();return isWorkday(new Date(2026,10,26))&&!!planFor()['2026-11-26']&&!isWorkday(new Date(2026,11,25))}),'unticking a holiday makes it a workday again; the others stay off');
+    await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-23T12:00:00';HOOK.cache={};HOOK.dayRecs={};HOOK.sel=new Date(2026,10,23);HOOK.view={y:2026,m:10};HOOK.renderToday();HOOK.openSettings('daysoff')});
+    await p.locator('#holiday-list .hrow input').first().uncheck();await p.waitForFunction(()=>HOOK.settings.holidays.skip.length===1);
+    ok(await p.evaluate(()=>{HOOK.closeSettings();return HOOK.isWorkday(new Date(2026,10,26))&&!!HOOK.planFor()['2026-11-26']&&!HOOK.isWorkday(new Date(2026,11,25))}),'unticking a holiday makes it a workday again; the others stay off');
     // your own days off: a range with a name, shown as one chip, removable
-    await p.evaluate(()=>openSettings('daysoff'));await p.fill('#cfg-off-from','2026-12-07');await p.fill('#cfg-off-to','2026-12-09');await p.fill('#cfg-off-name','Trip');await p.click('.offadd button');
-    await p.waitForFunction(()=>(settings.daysOff||[]).length===3&&!!document.querySelector('#off-list .fchip'));
-    const own=await p.evaluate(()=>({chip:document.querySelector('#off-list .fchip').textContent,n:document.querySelectorAll('#off-list .fchip').length,off:[7,8,9].every(d=>!isWorkday(new Date(2026,11,d))),name:offName(new Date(2026,11,8)),plan:Object.keys(planMonth(2026,11)).filter(k=>/^2026-12-(7|8|9)$/.test(k)).length}));
+    await p.evaluate(()=>HOOK.openSettings('daysoff'));await p.fill('#cfg-off-from','2026-12-07');await p.fill('#cfg-off-to','2026-12-09');await p.fill('#cfg-off-name','Trip');await p.click('.offadd button');
+    await p.waitForFunction(()=>(HOOK.settings.daysOff||[]).length===3&&!!document.querySelector('#off-list .fchip'));
+    const own=await p.evaluate(()=>({chip:document.querySelector('#off-list .fchip').textContent,n:document.querySelectorAll('#off-list .fchip').length,off:[7,8,9].every(d=>!HOOK.isWorkday(new Date(2026,11,d))),name:HOOK.offName(new Date(2026,11,8)),plan:Object.keys(HOOK.planMonth(2026,11)).filter(k=>/^2026-12-(7|8|9)$/.test(k)).length}));
     ok(own.n===1&&/Dec 7.*Dec 9.*Trip/.test(own.chip)&&own.off&&own.name==='Trip'&&own.plan===0,`a range of your own days off is added in one go (${own.chip})`);
-    await p.fill('#cfg-off-from','2026-12-15');await p.click('.offadd button');await p.waitForFunction(()=>(settings.daysOff||[]).length===4&&document.querySelectorAll('#off-list .fchip').length===2);
-    await p.click('#off-list .fchip button');await p.waitForFunction(()=>(settings.daysOff||[]).length===1);
-    ok(await p.evaluate(()=>isWorkday(new Date(2026,11,8))&&!isWorkday(new Date(2026,11,15))),'a single day works too, and removing the range gives those days back');
+    await p.fill('#cfg-off-from','2026-12-15');await p.click('.offadd button');await p.waitForFunction(()=>(HOOK.settings.daysOff||[]).length===4&&document.querySelectorAll('#off-list .fchip').length===2);
+    await p.click('#off-list .fchip button');await p.waitForFunction(()=>(HOOK.settings.daysOff||[]).length===1);
+    ok(await p.evaluate(()=>HOOK.isWorkday(new Date(2026,11,8))&&!HOOK.isWorkday(new Date(2026,11,15))),'a single day works too, and removing the range gives those days back');
     // saved with the settings (so it syncs and survives a reload)
-    await p.evaluate(()=>saveUserSettings());await p.reload();await p.waitForFunction(()=>window.appReady);   // (the save from the last tap has finished)
-    ok(await p.evaluate(()=>settings.holidays&&settings.holidays.country==='US'&&settings.holidays.skip.length===1&&settings.daysOff.length===1),'days off are saved with the settings');
+    await p.evaluate(()=>HOOK.saveUserSettings());await p.reload();await p.waitForFunction(()=>window.appReady);   // (the save from the last tap has finished)
+    ok(await p.evaluate(()=>HOOK.settings.holidays&&HOOK.settings.holidays.country==='US'&&HOOK.settings.holidays.skip.length===1&&HOOK.settings.daysOff.length===1),'days off are saved with the settings');
     // a country Nager lacks comes from the worker
-    await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-23T12:00:00';HOOK.cache={};openSettings('daysoff')});const n0=nager;
-    await p.selectOption('#cfg-country','KW');await p.waitForFunction(()=>settings.holidays&&settings.holidays.country==='KW'&&settings.holidays.list.length>0,null,{timeout:8000});
-    ok(nager===n0&&await p.evaluate(()=>settings.holidays.list.some(h=>h.d==='2027-02-25'&&h.n==='National Day')&&settings.holidays.list.some(h=>/tentative/.test(h.n))&&!isWorkday(new Date(2027,1,25))&&settings.holidays.skip.length===0),'a country the first source lacks (Kuwait) is loaded through the worker, without asking that source (a 404 on every start)');
+    await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-23T12:00:00';HOOK.cache={};HOOK.openSettings('daysoff')});const n0=nager;
+    await p.selectOption('#cfg-country','KW');await p.waitForFunction(()=>HOOK.settings.holidays&&HOOK.settings.holidays.country==='KW'&&HOOK.settings.holidays.list.length>0,null,{timeout:8000});
+    ok(nager===n0&&await p.evaluate(()=>HOOK.settings.holidays.list.some(h=>h.d==='2027-02-25'&&h.n==='National Day')&&HOOK.settings.holidays.list.some(h=>/tentative/.test(h.n))&&!HOOK.isWorkday(new Date(2027,1,25))&&HOOK.settings.holidays.skip.length===0),'a country the first source lacks (Kuwait) is loaded through the worker, without asking that source (a 404 on every start)');
     // the list is fetched again after a month, keeping what was unticked
     // (it syncs first, so a device that was away doesn't stamp its old settings over another device's newer ones: the real syncNow, its
     // request answered here: "the backup is still that version", or no network)
-    await p.evaluate(()=>{window.__syncAs=async up=>{clearTimeout(syncTimer);await syncRun;const f0=window.__f0||(window.__f0=window.fetch);window.__synced=0;
-      localStorage.setItem('sync_mark',JSON.stringify({url:syncUrl(),v:'1:1',sig:stateSig(mergeState(await localState(),{}))}));
+    await p.evaluate(()=>{window.__syncAs=async up=>{clearTimeout(HOOK.syncTimer);await HOOK.syncRun;const f0=window.__f0||(window.__f0=window.fetch);window.__synced=0;
+      localStorage.setItem('sync_mark',JSON.stringify({url:HOOK.syncUrl(),v:'1:1',sig:stateSig(HOOK.mergeState(await HOOK.localState(),{}))}));
       window.fetch=async(u,o)=>{if(!/\/sync(\?|$)/.test(String(u)))return f0(u,o);window.__synced++;if(!up)throw new TypeError('Failed to fetch');return new Response('{"same":true}',{status:200,headers:{'content-type':'application/json'}})}};
       window.__syncOff=()=>{if(window.__f0)window.fetch=window.__f0;for(const k of ['sync_mark','sync_status'])localStorage.removeItem(k)}});
-    const again=await p.evaluate(async()=>{await HOOK.toggleHoliday('2027-02-25',false);settings.holidays={...settings.holidays,fetched:Date.now()-40*864e5,list:settings.holidays.list.slice(0,2)};await metaPut('settings',settings);
-      await __syncAs(true);let synced=0;try{await refreshHolidays();synced=__synced}finally{__syncOff()}
-      return {n:settings.holidays.list.length,skip:settings.holidays.skip.join(),fresh:Date.now()-settings.holidays.fetched<60000,synced}});
+    const again=await p.evaluate(async()=>{await HOOK.toggleHoliday('2027-02-25',false);HOOK.settings.holidays={...HOOK.settings.holidays,fetched:Date.now()-40*864e5,list:HOOK.settings.holidays.list.slice(0,2)};await HOOK.metaPut('settings',HOOK.settings);
+      await __syncAs(true);let synced=0;try{await HOOK.refreshHolidays();synced=__synced}finally{__syncOff()}
+      return {n:HOOK.settings.holidays.list.length,skip:HOOK.settings.holidays.skip.join(),fresh:Date.now()-HOOK.settings.holidays.fetched<60000,synced}});
     ok(again.n===4&&again.skip==='2027-02-25'&&again.fresh&&again.synced===1,'the holiday list refreshes after a month, after a sync, and keeps the days you unticked');
-    const stay=await p.evaluate(async()=>{const st=settings.holidays,stale={...st,fetched:Date.now()-40*864e5,list:st.list.slice(0,1)};
+    const stay=await p.evaluate(async()=>{const st=HOOK.settings.holidays,stale={...st,fetched:Date.now()-40*864e5,list:st.list.slice(0,1)};
       // the sync brought another device's settings, which refreshed the list already: nothing is fetched or saved over them
-      settings.holidays=stale;await metaPut('settings',{...settings,holidays:{...st,fetched:Date.now()}});
-      await __syncAs(true);await refreshHolidays();__syncOff();const a=settings.holidays.list.length;
+      HOOK.settings.holidays=stale;await HOOK.metaPut('settings',{...HOOK.settings,holidays:{...st,fetched:Date.now()}});
+      await __syncAs(true);await HOOK.refreshHolidays();__syncOff();const a=HOOK.settings.holidays.list.length;
       // the sync failed (offline): not this time
-      settings.holidays=stale;await metaPut('settings',settings);await __syncAs(false);await refreshHolidays();__syncOff();const b=settings.holidays.list.length;
-      settings.holidays=st;await metaPut('settings',settings);return {a,b,n:st.list.length}});
+      HOOK.settings.holidays=stale;await HOOK.metaPut('settings',HOOK.settings);await __syncAs(false);await HOOK.refreshHolidays();__syncOff();const b=HOOK.settings.holidays.list.length;
+      HOOK.settings.holidays=st;await HOOK.metaPut('settings',HOOK.settings);return {a,b,n:st.list.length}});
     ok(stay.a===stay.n&&stay.b===1,`no refetch when the synced settings are fresh already, or when the sync fails (${JSON.stringify(stay)})`);
     // choosing "No public holidays" turns them off
-    await p.selectOption('#cfg-country','');await p.waitForFunction(()=>!(settings.holidays&&settings.holidays.country)&&!document.querySelector('#holiday-list .hrow'),null,{timeout:5000}).catch(()=>{});   // the list is redrawn after the setting clears
-    ok(await p.evaluate(()=>isWorkday(new Date(2027,1,25))&&document.querySelectorAll('#holiday-list .hrow').length===0),'"No public holidays" makes them workdays again');
+    await p.selectOption('#cfg-country','');await p.waitForFunction(()=>!(HOOK.settings.holidays&&HOOK.settings.holidays.country)&&!document.querySelector('#holiday-list .hrow'),null,{timeout:5000}).catch(()=>{});   // the list is redrawn after the setting clears
+    ok(await p.evaluate(()=>HOOK.isWorkday(new Date(2027,1,25))&&document.querySelectorAll('#holiday-list .hrow').length===0),'"No public holidays" makes them workdays again');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
 };

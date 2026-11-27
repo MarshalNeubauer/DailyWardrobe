@@ -16,34 +16,34 @@ const safety=async({ok,chromium,url,settle})=>{
   /* ---- failed saves ---- */
   const {ctx,p,errs}=await open(()=>{window.persistCalls=0;try{Object.defineProperty(StorageManager.prototype,'persist',{value:async()=>{window.persistCalls++;return true}});
     Object.defineProperty(StorageManager.prototype,'persisted',{value:async()=>false})}catch(e){}});
-  const hung=await p.evaluate(()=>Promise.race([txs('items','readwrite',s=>{s.transaction.abort()}).then(()=>'saved',()=>'rejected'),new Promise(r=>setTimeout(()=>r('never settled'),1500))]));
+  const hung=await p.evaluate(()=>Promise.race([HOOK.txs('items','readwrite',s=>{s.transaction.abort()}).then(()=>'saved',()=>'rejected'),new Promise(r=>setTimeout(()=>r('never settled'),1500))]));
   ok(hung==='rejected',`a save whose transaction is aborted fails instead of hanging (${hung})`);
-  const hung2=await p.evaluate(()=>Promise.race([atomic('items','abort-me',()=>{throw new Error('x')}).then(()=>'saved',()=>'rejected'),new Promise(r=>setTimeout(()=>r('never settled'),1500))]));
+  const hung2=await p.evaluate(()=>Promise.race([HOOK.atomic('items','abort-me',()=>{throw new Error('x')}).then(()=>'saved',()=>'rejected'),new Promise(r=>setTimeout(()=>r('never settled'),1500))]));
   ok(hung2==='rejected',`a read-and-write that is aborted fails too (${hung2})`);
   // the phone's storage is full: the browser aborts the transaction with a QuotaExceededError
-  await p.evaluate(()=>{show('add');HOOK.addManual();window.realPut=IDBObjectStore.prototype.put;
+  await p.evaluate(()=>{HOOK.show('add');HOOK.addManual();window.realPut=IDBObjectStore.prototype.put;
     IDBObjectStore.prototype.put=function(){const r=window.realPut.apply(this,arguments),t=this.transaction;Object.defineProperty(t,'error',{get:()=>new DOMException('The quota has been exceeded.','QuotaExceededError')});t.abort();return r}});
   ok(await p.evaluate(()=>window.persistCalls)===0,'nothing is asked of the browser before an item is saved');
   await p.click('#nps-bar .pri');await saveToast(p);
   const full=await toastText(p);
   ok(/Couldn.t save: your phone.s storage is full/.test(full),`a save that fails for lack of space says so (“${full}”)`);
-  ok(await p.evaluate(()=>queue.length===1&&items.length===0&&!!document.querySelector('#nps-bar .pri')),'the card stays, so it can be saved again');
+  ok(await p.evaluate(()=>HOOK.queue.length===1&&HOOK.items.length===0&&!!document.querySelector('#nps-bar .pri')),'the card stays, so it can be saved again');
   // any other rejection with no tap before it stays quiet (one right after a tap says so: errnet.test.js); a storage failure nobody caught is shown
   await p.evaluate(()=>{HOOK.errTapAt=0;document.querySelector('#toast').classList.remove('on');Promise.reject(new Error('something else'))});
   await p.evaluate(()=>new Promise(r=>setTimeout(r,300)));   // waits to see that nothing appears
   ok(await toastText(p)==='','a rejection that is not about storage, with no tap before it, shows nothing');
-  await p.evaluate(()=>{HOOK.storeToldAt=0;metaPut('probe',1)});await saveToast(p);   // (storeToldAt: one failure is said once, so the earlier toast is forgotten first)
+  await p.evaluate(()=>{HOOK.storeToldAt=0;HOOK.metaPut('probe',1)});await saveToast(p);   // (storeToldAt: one failure is said once, so the earlier toast is forgotten first)
   ok(/Couldn.t save/.test(await toastText(p)),'a failed save that nothing caught is still shown');
   // with room again, the same card saves
   await p.evaluate(()=>{IDBObjectStore.prototype.put=window.realPut});
-  await p.click('#nps-bar .pri');await p.waitForFunction(()=>items.length===1&&queue.length===0,null,{timeout:5000}).catch(()=>{});
-  ok(await p.evaluate(async()=>(await tx('readonly',s=>s.getAll())).length===1),'once there is room the card saves');
+  await p.click('#nps-bar .pri');await p.waitForFunction(()=>HOOK.items.length===1&&HOOK.queue.length===0,null,{timeout:5000}).catch(()=>{});
+  ok(await p.evaluate(async()=>(await HOOK.tx('readonly',s=>s.getAll())).length===1),'once there is room the card saves');
 
   /* ---- ask the browser to keep the wardrobe, once, after the first item ---- */
   await p.waitForFunction(()=>window.persistCalls>0,null,{timeout:5000}).catch(()=>{});
   ok(await p.evaluate(()=>window.persistCalls)===1,'after the first item is saved the browser is asked to keep the wardrobe');
   // (opened by a tap, as a person does: Confirm sits where the last one was, and a tap there right after a save is taken for its double tap, ADD_CALM)
-  await p.click('#add-manual');await settle(p,400);await p.click('#nps-bar .pri');await p.waitForFunction(()=>items.length===2&&queue.length===0,null,{timeout:5000}).catch(()=>{});
+  await p.click('#add-manual');await settle(p,400);await p.click('#nps-bar .pri');await p.waitForFunction(()=>HOOK.items.length===2&&HOOK.queue.length===0,null,{timeout:5000}).catch(()=>{});
   ok(await p.evaluate(()=>window.persistCalls)===1,'and not again for the next item');
   await p.reload();await p.waitForFunction(()=>window.appReady);await settle(p,300);
   ok(await p.evaluate(()=>window.persistCalls)===0&&await p.evaluate(()=>!!localStorage.getItem('persist_asked')),'nor at the next start');
@@ -51,19 +51,19 @@ const safety=async({ok,chromium,url,settle})=>{
   /* ---- kept tagging copies of items that no longer exist ---- */
   const img='data:image/png;base64,'+PNG;
   const kept=()=>p.evaluate(async()=>(await (await caches.open('dw-keep-tagimg')).keys()).map(r=>decodeURIComponent(r.url.split('tagimg/')[1])).sort().join(','));
-  const id=await p.evaluate(async img=>{await keepTagImg(items[0].id,img);await keepTagImg('gone-item',img);await keepTagImg('gone-too',img);return items[0].id},img);
+  const id=await p.evaluate(async img=>{await HOOK.keepTagImg(HOOK.items[0].id,img);await HOOK.keepTagImg('gone-item',img);await HOOK.keepTagImg('gone-too',img);return HOOK.items[0].id},img);
   ok(await kept()===[id,'gone-item','gone-too'].sort().join(','),'sharp copies are kept for the benchmark');
   await p.reload();await p.waitForFunction(()=>window.appReady);
   await p.waitForFunction(async()=>(await (await caches.open('dw-keep-tagimg')).keys()).length===1,null,{timeout:8000}).catch(()=>{});
   ok(await kept()===id,`at start-up the copies of items that no longer exist are removed, the others stay (${await kept()})`);
-  ok(await p.evaluate(async id=>!!(await tagImgOf(id)),id),'an existing item still has its copy');
+  ok(await p.evaluate(async id=>!!(await HOOK.tagImgOf(id)),id),'an existing item still has its copy');
 
   /* ---- unsaved Add cards guard the page ---- */
   const leave=()=>p.evaluate(()=>{const e=new Event('beforeunload',{cancelable:true});window.dispatchEvent(e);return e.defaultPrevented});
   ok(await leave()===false,'leaving the page is not questioned when nothing is unsaved');
-  await p.evaluate(()=>{show('add');HOOK.addManual()});
+  await p.evaluate(()=>{HOOK.show('add');HOOK.addManual()});
   ok(await leave()===true,'with an unsaved Add card, leaving the page asks first');
-  await p.evaluate(()=>{queue.length=0;renderAdd()});
+  await p.evaluate(()=>{HOOK.queue.length=0;HOOK.renderAdd()});
   ok(await leave()===false,'and no longer once the card is saved or skipped');
 
   /* ---- wording ---- */
@@ -83,18 +83,18 @@ const safety=async({ok,chromium,url,settle})=>{
       return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({type:'shirt',primaryColor:'white',secondaryColor:'none',tertiaryColor:'none',pattern:'solid',model:'claude-test'})})});
     const q=await c2.newPage();const e2=[];q.on('pageerror',e=>e2.push(e.message));
     await q.goto(url);await q.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t')},HOST);await q.reload();await q.waitForFunction(()=>window.appReady);
-    await q.evaluate(async()=>{show('add');const c=document.createElement('canvas');c.width=c.height=200;c.getContext('2d').fillRect(0,0,200,200);const b=await new Promise(r=>c.toBlob(r,'image/png'));addFiles([new File([b],'a.png',{type:'image/png'})])});   // (a picture large enough to read: ADD_MIN_PX)
-    await q.waitForFunction(()=>queue.length===1&&!queue[0].busy,null,{timeout:10000}).catch(()=>{});
-    const card=()=>q.evaluate(()=>{const f=document.querySelector('#queue .tagfail');return {why:f?f.textContent:'',again:!!(f&&[...f.querySelectorAll('button')].some(b=>/Try again/.test(b.textContent))),type:queue[0]&&queue[0].type,ai:queue[0]&&queue[0].ai}});
+    await q.evaluate(async()=>{HOOK.show('add');const c=document.createElement('canvas');c.width=c.height=200;c.getContext('2d').fillRect(0,0,200,200);const b=await new Promise(r=>c.toBlob(r,'image/png'));HOOK.addFiles([new File([b],'a.png',{type:'image/png'})])});   // (a picture large enough to read: ADD_MIN_PX)
+    await q.waitForFunction(()=>HOOK.queue.length===1&&!HOOK.queue[0].busy,null,{timeout:10000}).catch(()=>{});
+    const card=()=>q.evaluate(()=>{const f=document.querySelector('#queue .tagfail');return {why:f?f.textContent:'',again:!!(f&&[...f.querySelectorAll('button')].some(b=>/Try again/.test(b.textContent))),type:HOOK.queue[0]&&HOOK.queue[0].type,ai:HOOK.queue[0]&&HOOK.queue[0].ai}});
     let c=await card();
     ok(/couldn.t be reached|connection/i.test(c.why)&&c.again,`a photo that couldn't be tagged says why on its card and offers Try again (“${c.why}”)`);
     ok(await q.evaluate(()=>!!document.querySelector('#queue .card select')),'the card can still be filled in by hand: it asks for the type first');
     mode='limit';const n=posts;if(c.again)await q.click('#queue .tagfail button');
-    await q.waitForFunction(()=>queue.length===1&&!queue[0].busy&&/photo readings/.test(document.querySelector('#queue .tagfail')?.textContent||''),null,{timeout:10000}).catch(()=>{});
+    await q.waitForFunction(()=>HOOK.queue.length===1&&!HOOK.queue[0].busy&&/photo readings/.test(document.querySelector('#queue .tagfail')?.textContent||''),null,{timeout:10000}).catch(()=>{});
     c=await card();
     ok(posts===n+1&&/You have used today’s 20 photo readings\. They start again tomorrow\./.test(c.why)&&c.again,`a daily limit shows the server's own message (“${c.why}”)`);
     mode='ok';if(c.again)await q.click('#queue .tagfail button');
-    await q.waitForFunction(()=>queue.length===1&&!queue[0].busy&&queue[0].ai,null,{timeout:10000}).catch(()=>{});
+    await q.waitForFunction(()=>HOOK.queue.length===1&&!HOOK.queue[0].busy&&HOOK.queue[0].ai,null,{timeout:10000}).catch(()=>{});
     c=await card();
     ok(c.ai&&c.type==='shirt'&&c.why==='','Try again tags the card once the server answers');
     ok(e2.length===0,'no page errors while tagging fails'+(e2.length?': '+e2.join(' | '):''));
@@ -128,19 +128,19 @@ const dblost=async({ok,chromium,url})=>{
   try{
     // the connection closed under the app (closed by script: no close event, as when Safari drops it): the next save opens it again
     const p=await open();
-    const a=await p.evaluate(async()=>{dbConn.close();await kitSampleLoad();const stored=await tx('readonly',s=>s.count());return {items:items.length,queue:queue.length,stored}});
+    const a=await p.evaluate(async()=>{HOOK.dbConn.close();await HOOK.kitSampleLoad();const stored=await HOOK.tx('readonly',s=>s.count());return {items:HOOK.items.length,queue:HOOK.queue.length,stored}});
     ok(a.items===24&&a.queue===0&&a.stored===24,`the sample wardrobe loads after the connection was lost (${JSON.stringify(a)})`);
-    const b=await p.evaluate(async c=>{dbConn.close();queue.unshift(c);await save(0);return {queue:queue.length,stored:!!await tx('readonly',s=>s.get(c.id))}},await p.evaluate(card));
+    const b=await p.evaluate(async c=>{HOOK.dbConn.close();HOOK.queue.unshift(c);await HOOK.save(0);return {queue:HOOK.queue.length,stored:!!await HOOK.tx('readonly',s=>s.get(c.id))}},await p.evaluate(card));
     ok(b.queue===0&&b.stored,'Confirm on a card without a photo saves after the connection was lost');
     ok(!p.errs.length,'no page errors: '+p.errs.join(' | '));await p.context().close();
     // storage that stays broken: said, never silent
     const q=await open();
     await q.evaluate(()=>{const T=IDBDatabase.prototype.transaction;window.__T=T;IDBDatabase.prototype.transaction=function(){throw new DOMException('The database connection is closing.','InvalidStateError')}});
-    await q.evaluate(async()=>{queue.unshift({id:'c1',manual:true,type:'shirt',primaryColor:'white',secondaryColor:null,tertiaryColor:null,pattern:'solid',metal:'silver',leather:'calf'});show('add');await save(0)});
-    const c=await q.evaluate(()=>({queue:queue.map(x=>x.id).join(),items:items.length,toast:document.querySelector('#toast').textContent}));
+    await q.evaluate(async()=>{HOOK.queue.unshift({id:'c1',manual:true,type:'shirt',primaryColor:'white',secondaryColor:null,tertiaryColor:null,pattern:'solid',metal:'silver',leather:'calf'});HOOK.show('add');await HOOK.save(0)});
+    const c=await q.evaluate(()=>({queue:HOOK.queue.map(x=>x.id).join(),items:HOOK.items.length,toast:document.querySelector('#toast').textContent}));
     ok(c.queue==='c1'&&c.items===0&&/Couldn’t save/.test(c.toast)&&/open it again/.test(c.toast),`Confirm says it couldn't save and the card stays (${c.toast})`);
-    await q.evaluate(async()=>{queue.length=0;await new Promise(r=>setTimeout(r,1600));await kitSampleLoad()});
-    const d=await q.evaluate(()=>({queue:queue.length,items:items.length,toast:document.querySelector('#toast').textContent}));
+    await q.evaluate(async()=>{HOOK.queue.length=0;await new Promise(r=>setTimeout(r,1600));await HOOK.kitSampleLoad()});
+    const d=await q.evaluate(()=>({queue:HOOK.queue.length,items:HOOK.items.length,toast:document.querySelector('#toast').textContent}));
     ok(d.queue===0&&d.items===0&&/Couldn’t save/.test(d.toast),`the sample says so and leaves no card on Add (${JSON.stringify(d)})`);
     ok(!q.errs.length,'no page errors: '+q.errs.join(' | '));await q.context().close();
   }finally{await browser.close()}

@@ -12,43 +12,43 @@ module.exports=async({ok,chromium,url})=>{
     // the wardrobe started today: no outfit on the days before (a day with a record keeps its outfit)
     const past=await p.evaluate(()=>{const now=Date.now();let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:now,...x});
       HOOK.items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      settings.workdays=[0,1,2,3,4];HOOK.dayRecs={'2026-11-3':{date:'2026-11-3',ids:{top:'suit0',bot:'suit0',shirt:'shirt1',tie:'tie2'},suitDay:true,worn:true}};HOOK.cache={};
-      const pl=planMonth(2026,10),ks=Object.keys(pl).filter(k=>pl[k]&&hasOutfit(pl[k]));
-      const old=items.map(i=>({...i}));items.forEach(i=>delete i.added);HOOK.cache={};const all=Object.keys(planMonth(2026,10)).length;HOOK.items=old;HOOK.cache={};
-      return {before:ks.filter(k=>keyDate(k)<todayDate()),today:!!pl['2026-11-16'],all,rec:pl['2026-11-3']?JSON.stringify(idsOf(pl['2026-11-3'])):'none',keys:Object.keys(pl).slice(0,5).join()}});
+      HOOK.settings.workdays=[0,1,2,3,4];HOOK.dayRecs={'2026-11-3':{date:'2026-11-3',ids:{top:'suit0',bot:'suit0',shirt:'shirt1',tie:'tie2'},suitDay:true,worn:true}};HOOK.cache={};
+      const pl=HOOK.planMonth(2026,10),ks=Object.keys(pl).filter(k=>pl[k]&&HOOK.hasOutfit(pl[k]));
+      const old=HOOK.items.map(i=>({...i}));HOOK.items.forEach(i=>delete i.added);HOOK.cache={};const all=Object.keys(HOOK.planMonth(2026,10)).length;HOOK.items=old;HOOK.cache={};
+      return {before:ks.filter(k=>HOOK.keyDate(k)<HOOK.todayDate()),today:!!pl['2026-11-16'],all,rec:pl['2026-11-3']?JSON.stringify(HOOK.idsOf(pl['2026-11-3'])):'none',keys:Object.keys(pl).slice(0,5).join()}});
     ok(past.before.join()==='2026-11-3'&&past.today,`no planned outfit before the first item was added, except a day really recorded (${past.before.join()}; ${past.rec}; ${past.keys})`);
     ok(past.all>past.before.length+10,'items from before `added` existed keep every planned day');
     // the server's set-up errors
     const pe=await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t1');HOOK.rememberRole({role:'tester'});
-      const t=['Add an OPENAI_API_KEY secret to the worker to generate realistic photos.','Several items in one photo needs Claude: add an ANTHROPIC_API_KEY secret to the worker.','Add a KV namespace binding named WARDROBE to the worker to enable backups.','Today’s limit: 12 outfit photos.'].map(plainErr);
-      const tag=tagFailText(501,{},'Set an ANTHROPIC_API_KEY secret (or add a Workers AI binding named AI) on the worker.');
-      HOOK.rememberRole({role:'owner'});const own=plainErr('Add an OPENAI_API_KEY secret to the worker to generate realistic photos.');return {t,tag,own}});
+      const t=['Add an OPENAI_API_KEY secret to the worker to generate realistic photos.','Several items in one photo needs Claude: add an ANTHROPIC_API_KEY secret to the worker.','Add a KV namespace binding named WARDROBE to the worker to enable backups.','Today’s limit: 12 outfit photos.'].map(HOOK.plainErr);
+      const tag=HOOK.tagFailText(501,{},'Set an ANTHROPIC_API_KEY secret (or add a Workers AI binding named AI) on the worker.');
+      HOOK.rememberRole({role:'owner'});const own=HOOK.plainErr('Add an OPENAI_API_KEY secret to the worker to generate realistic photos.');return {t,tag,own}});
     ok(pe.t.slice(0,3).every(m=>!/OPENAI|ANTHROPIC|worker|\bKV\b|WARDROBE|secret|binding|token/i.test(m))&&pe.t[3]==='Today’s limit: 12 outfit photos.',`a tester reads set-up errors in plain words (${pe.t.join(' | ')})`);
     ok(!/ANTHROPIC|worker|Workers AI/.test(pe.tag),`a failed tagging says it in plain words too (${pe.tag})`);
     ok(/OPENAI_API_KEY/.test(pe.own),'the owner still reads what to set up');
     // no 404 for every day without a photo: the worker's list says which it has
     const asks=[];await p.route('https://w.test/**',r=>{const u=r.request().url();asks.push(u.replace('https://w.test/',''));
       if(/list=1/.test(u))return r.fulfill({status:200,contentType:'application/json',body:'{"keys":[]}'});return r.fulfill({status:404,contentType:'application/json',body:'{"error":"none"}'})});
-    await p.evaluate(async()=>{HOOK.rememberRole({role:'tester'});HOOK.renderTried.clear();HOOK.remoteKeys=null;for(let i=0;i<4;i++){stepDay(1);await new Promise(r=>setTimeout(r,80))}await new Promise(r=>setTimeout(r,400))});
+    await p.evaluate(async()=>{HOOK.rememberRole({role:'tester'});HOOK.renderTried.clear();HOOK.remoteKeys=null;for(let i=0;i<4;i++){HOOK.stepDay(1);await new Promise(r=>setTimeout(r,80))}await new Promise(r=>setTimeout(r,400))});
     ok(asks.filter(a=>/key=|day=/.test(a)).length===0&&asks.some(a=>/list=1/.test(a)),`days without a photo on the worker are not asked about one by one (${asks.length} requests: ${[...new Set(asks.map(a=>a.replace(/=.*/,'')))].join(', ')})`);
     await p.unroute('https://w.test/**');
     // no "· silver" where no metal applies
-    const d=await p.evaluate(()=>[desc({type:'suit',primaryColor:'grey',pattern:'solid',metal:'silver'}),desc({type:'shoes',primaryColor:'black',pattern:'solid',leather:'calf',metal:'silver'}),desc({type:'belt',primaryColor:'black',pattern:'solid',leather:'calf',metal:'gold'})]);
+    const d=await p.evaluate(()=>[HOOK.desc({type:'suit',primaryColor:'grey',pattern:'solid',metal:'silver'}),HOOK.desc({type:'shoes',primaryColor:'black',pattern:'solid',leather:'calf',metal:'silver'}),HOOK.desc({type:'belt',primaryColor:'black',pattern:'solid',leather:'calf',metal:'gold'})]);
     ok(!/silver/.test(d[0])&&!/silver/.test(d[1])&&/gold/.test(d[2]),`a suit's and shoes' caption has no metal, a belt's buckle still shows (${d.join(' | ')})`);
     // "Several items" without a connection
-    const sev=await p.evaluate(()=>{localStorage.removeItem('worker_url');localStorage.removeItem('app_token');openAdd();const n=document.querySelector('#add-group-off');return {hidden:!document.querySelector('#add-group').offsetParent,note:n&&!n.hidden?n.textContent:''}});
+    const sev=await p.evaluate(()=>{localStorage.removeItem('worker_url');localStorage.removeItem('app_token');HOOK.openAdd();const n=document.querySelector('#add-group-off');return {hidden:!document.querySelector('#add-group').offsetParent,note:n&&!n.hidden?n.textContent:''}});
     ok(sev.hidden&&/needs a connection/.test(sev.note),`without a connection Add says that Several items needs one, before any photo is picked (${sev.note})`);
-    await p.evaluate(()=>{HOOK.items=[];HOOK.cache={};show('today')});
+    await p.evaluate(()=>{HOOK.items=[];HOOK.cache={};HOOK.show('today')});
     // the setup: an unfinished city search, and the time zone's holidays
     await p.route('https://geocoding-api.open-meteo.com/**',async r=>{await new Promise(z=>setTimeout(z,1500));r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({results:[{latitude:29.4,longitude:47.9,name:'Kuwait City',country_code:'KW'}]})})});
     await p.route('https://date.nager.at/**',r=>r.fulfill({status:404,body:''}));
-    const su=await p.evaluate(async()=>{settings.holidays=null;settings.location=null;HOOK.setupOpen();setup.at=SETUP_STEPS.indexOf('weather');setupDraw();setup.q='Kuwait';HOOK.setupSearch();await new Promise(r=>setTimeout(r,50));
-      HOOK.setupGo(1);const a={at:SETUP_STEPS[setup.at],msg:document.querySelector('#su-step').textContent};await new Promise(r=>setTimeout(r,1800));HOOK.setupGo(1);a.after=SETUP_STEPS[setup.at];
-      setupFinish(false);for(let i=0;i<40&&!(settings.holidays&&(settings.holidays.list||[]).length);i++)   // (the country is stored at once, its list a moment later: fix round 2)
-await new Promise(r=>setTimeout(r,50));a.cc=settings.holidays&&settings.holidays.country;a.tz=tzCountry();return a});
+    const su=await p.evaluate(async()=>{HOOK.settings.holidays=null;HOOK.settings.location=null;HOOK.setupOpen();HOOK.setup.at=HOOK.SETUP_STEPS.indexOf('weather');HOOK.setupDraw();HOOK.setup.q='Kuwait';HOOK.setupSearch();await new Promise(r=>setTimeout(r,50));
+      HOOK.setupGo(1);const a={at:HOOK.SETUP_STEPS[HOOK.setup.at],msg:document.querySelector('#su-step').textContent};await new Promise(r=>setTimeout(r,1800));HOOK.setupGo(1);a.after=HOOK.SETUP_STEPS[HOOK.setup.at];
+      HOOK.setupFinish(false);for(let i=0;i<40&&!(HOOK.settings.holidays&&(HOOK.settings.holidays.list||[]).length);i++)   // (the country is stored at once, its list a moment later: fix round 2)
+await new Promise(r=>setTimeout(r,50));a.cc=HOOK.settings.holidays&&HOOK.settings.holidays.country;a.tz=HOOK.tzCountry();return a});
     ok(su.at==='weather'&&/haven’t picked a city/.test(su.msg)&&su.after==='connect',`Next on an unfinished city search says so first, and a second Next goes on (${su.at} → ${su.after})`);
     ok(su.tz==='KW'&&su.cc==='KW',`the setup picks the holidays of the time zone's country (${su.cc})`);
-    const ho=await p.evaluate(()=>{openSettings('daysoff');const t=document.querySelector('#holiday-list').textContent;closeSettings();return t});
+    const ho=await p.evaluate(()=>{HOOK.openSettings('daysoff');const t=document.querySelector('#holiday-list').textContent;HOOK.closeSettings();return t});
     ok(/National Day/.test(ho)&&/Eid al-Fitr/.test(ho),`not connected, Kuwait's holidays are worked out on the phone (daysoff.js builtinHolidays: ${ho.trim().slice(0,80)})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}

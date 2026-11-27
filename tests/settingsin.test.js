@@ -32,9 +32,9 @@ module.exports=async({ok,chromium,url,settle})=>{
         holidays:{country:'KW',list:[{d:'2026-12-01',n:'Eid al-Fitr, Arafat Day'}],skip:['2026-12-01'],fetched:1},daysOff:[{d:'2026-12-07',n:'Trip ‏'}],shopSkip:['tie|green|plain','shoes|oxblood|smooth'],
         ownMaterials:{shirt:['cupro']},tagStats:{n:3,wrong:{type:1}},tagFixes:[{field:'pattern',type:'tie',from:'solid',to:'woven',id:'a1',t:1}],care:{suit:5},dress:{jacket:true,tie:false},laundryDays:1,darkShirts:'some',pictures:'drawn',
         ks:{workdays:5},kh:{workdays:'abc'},kse:{shopSkip:{'':5}},khe:{shopSkip:{'#':'x'}}};
-      const x=cleanSettings(own),cs=cleanSettings(c),st=cleanState({items:[],days:[],tombstones:{},settings:c}).settings;
-      let shown=null;const was=settings;try{HOOK.settings=takeSettings({...settings,workdays:[0,1,2,3,4]},{workdays:'x<b>',custom:{colors:{}},updated:9});applyCustom(settings.custom);shown=JSON.stringify(settings.workdays)}catch(e){shown='threw '+e.message}finally{HOOK.settings=was;applyCustom(settings.custom)}
-      return {same:x===own,again:cleanSettings(cs)===cs,state:JSON.stringify(st)===JSON.stringify(cs),cols:cs.custom.colors.map(c=>c.key).join(),pats:cs.custom.patterns.map(p=>p.key+':'+JSON.stringify(p.types)).join(),
+      const x=HOOK.cleanSettings(own),cs=HOOK.cleanSettings(c),st=HOOK.cleanState({items:[],days:[],tombstones:{},settings:c}).settings;
+      let shown=null;const was=HOOK.settings;try{HOOK.settings=HOOK.takeSettings({...HOOK.settings,workdays:[0,1,2,3,4]},{workdays:'x<b>',custom:{colors:{}},updated:9});HOOK.applyCustom(HOOK.settings.custom);shown=JSON.stringify(HOOK.settings.workdays)}catch(e){shown='threw '+e.message}finally{HOOK.settings=was;HOOK.applyCustom(HOOK.settings.custom)}
+      return {same:x===own,again:HOOK.cleanSettings(cs)===cs,state:JSON.stringify(st)===JSON.stringify(cs),cols:cs.custom.colors.map(c=>c.key).join(),pats:cs.custom.patterns.map(p=>p.key+':'+JSON.stringify(p.types)).join(),
         hol:cs.holidays.list.map(h=>h.d).join(),off:cs.daysOff.map(h=>h.d).join(),skip:cs.shopSkip.join(),n:cs.tagStats.n,upd:cs.updated,shown,
         markup:JSON.stringify(cs).includes('__rx')}},crafted());
     ok(u.same,'the app\'s own settings (own colors and patterns with a look, holidays, days off, hidden ideas, materials, stamps…) come out of cleanSettings as the same object: nothing is restamped');
@@ -53,7 +53,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.click('button[aria-label="Settings"]');await settle(p,300);
     await p.click('#sc-backup .scat-head');await settle(p,300);
     await p.setInputFiles('#sp-backup input[type=file]',file);
-    await p.waitForFunction(()=>/Restored/.test(document.querySelector('#toast').textContent)&&settings.daysOff&&settings.daysOff.length);require('fs').unlinkSync(file);
+    await p.waitForFunction(()=>/Restored/.test(document.querySelector('#toast').textContent)&&HOOK.settings.daysOff&&HOOK.settings.daysOff.length);require('fs').unlinkSync(file);
     await p.click('#sc-daysoff .scat-head');await settle(p,300);await p.click('#sc-tagging .scat-head');await settle(p,300);
     const r1=await p.evaluate(()=>({hits:[...new Set(__rxs)],marks:document.querySelectorAll('[data-rx]').length,hol:[...document.querySelectorAll('#holiday-list input')].map(c=>c.dataset.d),
       off:[...document.querySelectorAll('#off-list button')].map(b=>b.dataset.ds),cust:[...document.querySelectorAll('#custom-list .custrow')].map(r=>r.textContent.replace(/\s+/g,' ').trim()),
@@ -62,45 +62,45 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(r1.hol.join()===H1&&r1.off.join()===D1&&r1.cust.length===2&&/Sage/.test(r1.cust[0])&&/Weave/.test(r1.cust[1])&&!r1.inline,
       `Days off lists the file's own holiday and day off, and Your colors & patterns its Sage and Weave, with no inline handler (${r1.cust.join(' | ')})`);
     // tapping them works as before
-    await p.locator('#holiday-list input').first().uncheck();await p.waitForFunction(h=>settings.holidays.skip.includes(h),H1);
-    await p.click('#off-list .fchip button');await p.waitForFunction(()=>!(settings.daysOff||[]).length);
-    await p.click('#custom-list .custrow:has-text("Weave") button');await p.waitForFunction(()=>!settings.custom.patterns.length);
-    ok(await p.evaluate(()=>!__rxs.length&&settings.custom.colors.length===1&&!!COLORS.ownsage),'unticking the holiday, the day off\'s × and Remove do what they say (CR-7-02, CR-2-02)');
+    await p.locator('#holiday-list input').first().uncheck();await p.waitForFunction(h=>HOOK.settings.holidays.skip.includes(h),H1);
+    await p.click('#off-list .fchip button');await p.waitForFunction(()=>!(HOOK.settings.daysOff||[]).length);
+    await p.click('#custom-list .custrow:has-text("Weave") button');await p.waitForFunction(()=>!HOOK.settings.custom.patterns.length);
+    ok(await p.evaluate(()=>!__rxs.length&&HOOK.settings.custom.colors.length===1&&!!HOOK.COLORS.ownsage),'unticking the holiday, the day off\'s × and Remove do what they say (CR-7-02, CR-2-02)');
     // ---- What to buy: the file's hidden idea comes back with Show again
-    await p.evaluate(()=>closeSettings());await settle(p,300);await p.click('#n-stats');await settle(p,300);
+    await p.evaluate(()=>HOOK.closeSettings());await settle(p,300);await p.click('#n-stats');await settle(p,300);
     ok(await p.evaluate(()=>!__rxs.length&&!document.querySelector('#stats [data-rx]')&&/Photo tagging/.test(document.querySelector('#stats').textContent)),'Insights draws the tagging card from the file\'s settings with nothing running');
     await p.evaluate(()=>{const rec={key:'tie|green|plain',name:'green tie',tier:'variety',why:['Adds a color','And another'],items:[{id:'n1',type:'tie',primaryColor:'green',pattern:'solid'}],samples:[]};
       HOOK.shop={sig:HOOK.shopSig(),at:Date.now(),res:{v:2,cats:[{key:'tie',title:'Ties',verdict:'worth',own:null,notes:[],recs:[rec]}],top:[],occasions:[],base:{idle:[],days:100,avg:95,looks:10,problems:0,rest:0},months:6,checked:10,sims:3}}});
     await p.click('#shop-btn');await p.waitForSelector('#shop-c-hidden button');
     const hid=await p.evaluate(()=>[...document.querySelectorAll('#shop-c-hidden button')].map(b=>[b.dataset.unhide,b.getAttribute('onclick')]));
-    await p.click('#shop-c-hidden button');await p.waitForFunction(()=>!(settings.shopSkip||[]).length&&[...document.querySelectorAll('#shop-sheet .shop-rec')].some(e=>e.dataset.key==='tie|green|plain'));
+    await p.click('#shop-c-hidden button');await p.waitForFunction(()=>!(HOOK.settings.shopSkip||[]).length&&[...document.querySelectorAll('#shop-sheet .shop-rec')].some(e=>e.dataset.key==='tie|green|plain'));
     ok(JSON.stringify(hid)==='[["tie|green|plain",null]]'&&!await p.evaluate(()=>__rxs.length),`What to buy lists only the file's own hidden idea, and Show again brings it back (CR-4-01: ${JSON.stringify(hid)})`);
     // ---- the second lock: a value that got past the check (put straight into memory) runs nothing when tapped
     const lock=await p.evaluate(async([ks,hd,od])=>{const W=window.Worker;window.Worker=function(u,o){return /analysis-worker/.test(u)?{postMessage(){},terminate(){}}:new W(u,o)};   // (the real analyzeWardrobe runs; its worker is a stand-in that never answers)
-      try{settings.shopSkip=[ks];HOOK.renderShop();document.querySelector('#shop-c-hidden button').click();await new Promise(r=>setTimeout(r,200));
-        const shopOut=!(settings.shopSkip||[]).length;closeShop();
-        settings.holidays={...settings.holidays,list:[{d:hd,n:'Crafted'}],skip:[]};settings.daysOff=[{d:od,n:'Crafted'}];
-        openSettings('daysoff');await new Promise(r=>setTimeout(r,300));document.querySelector('#holiday-list input').click();await new Promise(r=>setTimeout(r,200));
-        const holSkip=settings.holidays.skip[0]===hd;document.querySelector('#off-list button').click();await new Promise(r=>setTimeout(r,200));
-        return {hits:__rxs.slice(),shopOut,holSkip,offOut:!settings.daysOff.length}}finally{window.Worker=W;HOOK.shopWorker=null;HOOK.shopBusy=null;closeSettings()}},['suit|grey|plain'+S('lock-shop'),H1+S('lock-hol'),H1+S('lock-off')]).catch(e=>({err:String(e)}));
+      try{HOOK.settings.shopSkip=[ks];HOOK.renderShop();document.querySelector('#shop-c-hidden button').click();await new Promise(r=>setTimeout(r,200));
+        const shopOut=!(HOOK.settings.shopSkip||[]).length;HOOK.closeShop();
+        HOOK.settings.holidays={...HOOK.settings.holidays,list:[{d:hd,n:'Crafted'}],skip:[]};HOOK.settings.daysOff=[{d:od,n:'Crafted'}];
+        HOOK.openSettings('daysoff');await new Promise(r=>setTimeout(r,300));document.querySelector('#holiday-list input').click();await new Promise(r=>setTimeout(r,200));
+        const holSkip=HOOK.settings.holidays.skip[0]===hd;document.querySelector('#off-list button').click();await new Promise(r=>setTimeout(r,200));
+        return {hits:__rxs.slice(),shopOut,holSkip,offOut:!HOOK.settings.daysOff.length}}finally{window.Worker=W;HOOK.shopWorker=null;HOOK.shopBusy=null;HOOK.closeSettings()}},['suit|grey|plain'+S('lock-shop'),H1+S('lock-hol'),H1+S('lock-off')]).catch(e=>({err:String(e)}));
     ok(lock&&!lock.err&&!(lock.hits||[]).length&&lock.shopOut&&lock.holSkip&&lock.offOut,'a crafted key or date in memory reaches its handler as plain data: nothing runs, and Show again, the checkbox and × act on that exact value ('+JSON.stringify(lock)+')');
     // ---- start-up: a copy stored before the check is cleaned once, its original kept, and the person told
-    await p.evaluate(async c=>{const s={...settings,...c,ks:undefined,kh:undefined,kse:undefined,khe:undefined};for(const k of ['ks','kh','kse','khe'])delete s[k];
-      await metaPut('settings',s);localStorage.removeItem('set_clean')},crafted());
+    await p.evaluate(async c=>{const s={...HOOK.settings,...c,ks:undefined,kh:undefined,kse:undefined,khe:undefined};for(const k of ['ks','kh','kse','khe'])delete s[k];
+      await HOOK.metaPut('settings',s);localStorage.removeItem('set_clean')},crafted());
     await p.reload();await p.waitForFunction(()=>window.appReady);
     await p.waitForFunction(()=>localStorage.getItem('set_clean')==='1',null,{timeout:10000});
-    const st=await p.evaluate(async()=>{const s=await metaGet('settings'),kept=await metaGet('set_kept')||[];
+    const st=await p.evaluate(async()=>{const s=await HOOK.metaGet('settings'),kept=await HOOK.metaGet('set_kept')||[];
       for(let i=0;i<40&&!/couldn’t be shown safely/.test(document.querySelector('#toast').textContent);i++)await new Promise(r=>setTimeout(r,100));
-      return {stored:JSON.stringify(s).includes('__rx'),mem:JSON.stringify(settings).includes('__rx'),kept:kept.length===1&&JSON.stringify(kept[0].rec).includes('__rx'),
-        own:settings.daysOff.map(d=>d.d).join()+'/'+settings.custom.colors.map(c=>c.key).join(),toast:document.querySelector('#toast').textContent}});
+      return {stored:JSON.stringify(s).includes('__rx'),mem:JSON.stringify(HOOK.settings).includes('__rx'),kept:kept.length===1&&JSON.stringify(kept[0].rec).includes('__rx'),
+        own:HOOK.settings.daysOff.map(d=>d.d).join()+'/'+HOOK.settings.custom.colors.map(c=>c.key).join(),toast:document.querySelector('#toast').textContent}});
     ok(!st.stored&&!st.mem&&st.kept,'at start-up the stored settings are cleaned once (memory and storage), the original kept on the phone (meta set_kept)');
     ok(st.own===D1+'/ownsage'&&/settings couldn’t be shown safely.*Nothing was deleted/.test(st.toast),`the person's own entries stay and a plain message says what happened (${st.own}; "${st.toast}")`);
     await p.click('button[aria-label="Settings"]');await settle(p,300);await p.click('#sc-daysoff .scat-head');await settle(p,300);await p.click('#sc-tagging .scat-head');await settle(p,300);
     ok(await p.evaluate(()=>!__rxs.length&&!document.querySelector('[data-rx]')),'after the reload Settings runs nothing (it did at every start: the stored copy came back each time)');
     // ---- the holiday list from outside: only dated, named holidays
-    await p.selectOption('#cfg-country','US');await p.waitForFunction(()=>settings.holidays&&settings.holidays.country==='US'&&settings.holidays.fetched>0,null,{timeout:8000});
-    await p.waitForFunction(()=>document.querySelectorAll('#holiday-list .hrow').length===settings.holidays.list.length,null,{timeout:5000}).catch(()=>{});   // (drawn just after the list is saved)
-    const h=await p.evaluate(()=>({list:settings.holidays.list.map(x=>x.d+' '+x.n),hits:__rxs.slice(),rows:document.querySelectorAll('#holiday-list .hrow').length}));
+    await p.selectOption('#cfg-country','US');await p.waitForFunction(()=>HOOK.settings.holidays&&HOOK.settings.holidays.country==='US'&&HOOK.settings.holidays.fetched>0,null,{timeout:8000});
+    await p.waitForFunction(()=>document.querySelectorAll('#holiday-list .hrow').length===HOOK.settings.holidays.list.length,null,{timeout:5000}).catch(()=>{});   // (drawn just after the list is saved)
+    const h=await p.evaluate(()=>({list:HOOK.settings.holidays.list.map(x=>x.d+' '+x.n),hits:__rxs.slice(),rows:document.querySelectorAll('#holiday-list .hrow').length}));
     ok(h.list.length&&h.list.every(x=>/^\d{4}-12-02 Good Day b$/.test(x))&&!h.hits.length&&h.rows===h.list.length,`a holiday list with a crafted date keeps only the good holidays, names cleaned (${h.list.join(' | ')})`);
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}

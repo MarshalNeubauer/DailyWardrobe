@@ -28,68 +28,68 @@ async function run(eng,browser,{ok,url,settle,ROOT}){
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
   await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
     HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('pants','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf'})];
-    HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';settings.setupDone=1;settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.location=null;delete settings.pictures;
-    HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};show('today')});
+    HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.settings.setupDone=1;HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[4];HOOK.settings.location=null;delete HOOK.settings.pictures;
+    HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};HOOK.show('today')});
   await settle(p,300);
   const tap=async sel=>{const l=p.locator(sel).first();await l.scrollIntoViewIfNeeded();await l.tap()};
   const days7=box=>p.evaluate(b=>[...document.querySelectorAll(b+' .dtog')].map(x=>(x.getAttribute('aria-pressed')==='true'?1:0)+(x.classList.contains('on')?1:0)).join(''),box);
 
   /* ---- part 1: the controls moved over, by real taps ---- */
-  await p.evaluate(()=>openSettings('schedule'));await settle(p,500);
+  await p.evaluate(()=>HOOK.openSettings('schedule'));await settle(p,500);
   ok(await days7('#cfg-workdays')==='2222200'&&await days7('#cfg-blazer')==='0000200',T+'Settings shows Sunday to Thursday as workdays and Thursday as the blazer day');
-  await tap('#cfg-workdays .dtog:nth-child(6)');await p.waitForFunction(()=>settings.workdays.includes(5)).catch(()=>{});
-  ok(await p.evaluate(()=>settings.workdays.join()==='0,1,2,3,4,5')&&await days7('#cfg-workdays')==='2222220',T+'a tap on Workdays’ Friday button makes Friday a workday and shows it pressed');
-  await p.waitForFunction(async()=>((await metaGet('settings'))||{}).workdays.join()==='0,1,2,3,4,5').catch(()=>{});
-  ok(await p.evaluate(async()=>(await metaGet('settings')).workdays.join()==='0,1,2,3,4,5'),T+'and the choice is saved');
-  await tap('#cfg-blazer .dtog:nth-child(1)');await p.waitForFunction(()=>settings.blazerDays.includes(0)).catch(()=>{});
-  ok(await p.evaluate(()=>settings.blazerDays.join()==='0,4'&&settings.workdays.join()==='0,1,2,3,4,5')&&await days7('#cfg-blazer')==='2000200',T+'a tap on Blazer days’ Sunday button makes Sunday a blazer day, the workdays unchanged');
-  await tap('#cfg-workdays .dtog:nth-child(1)');await p.waitForFunction(()=>!settings.workdays.includes(0)).catch(()=>{});
-  ok(await p.evaluate(()=>settings.workdays.join()==='1,2,3,4,5'&&settings.blazerDays.join()==='4')&&await days7('#cfg-workdays')==='0222220'&&await days7('#cfg-blazer')==='0000200',T+'a second kind of tap, Sunday off the workdays, also takes it off the blazer days');
-  await tap('#cfg-workdays .dtog:nth-child(6)');await p.waitForFunction(()=>!settings.workdays.includes(5)).catch(()=>{});
-  ok(await p.evaluate(()=>settings.workdays.join()==='1,2,3,4'),T+'a tap on a pressed day button takes the day off again');
-  await p.evaluate(()=>{settings.workdays=[2];settings.blazerDays=[];renderSettingsExtras()});
+  await tap('#cfg-workdays .dtog:nth-child(6)');await p.waitForFunction(()=>HOOK.settings.workdays.includes(5)).catch(()=>{});
+  ok(await p.evaluate(()=>HOOK.settings.workdays.join()==='0,1,2,3,4,5')&&await days7('#cfg-workdays')==='2222220',T+'a tap on Workdays’ Friday button makes Friday a workday and shows it pressed');
+  await p.waitForFunction(async()=>((await HOOK.metaGet('settings'))||{}).workdays.join()==='0,1,2,3,4,5').catch(()=>{});
+  ok(await p.evaluate(async()=>(await HOOK.metaGet('settings')).workdays.join()==='0,1,2,3,4,5'),T+'and the choice is saved');
+  await tap('#cfg-blazer .dtog:nth-child(1)');await p.waitForFunction(()=>HOOK.settings.blazerDays.includes(0)).catch(()=>{});
+  ok(await p.evaluate(()=>HOOK.settings.blazerDays.join()==='0,4'&&HOOK.settings.workdays.join()==='0,1,2,3,4,5')&&await days7('#cfg-blazer')==='2000200',T+'a tap on Blazer days’ Sunday button makes Sunday a blazer day, the workdays unchanged');
+  await tap('#cfg-workdays .dtog:nth-child(1)');await p.waitForFunction(()=>!HOOK.settings.workdays.includes(0)).catch(()=>{});
+  ok(await p.evaluate(()=>HOOK.settings.workdays.join()==='1,2,3,4,5'&&HOOK.settings.blazerDays.join()==='4')&&await days7('#cfg-workdays')==='0222220'&&await days7('#cfg-blazer')==='0000200',T+'a second kind of tap, Sunday off the workdays, also takes it off the blazer days');
+  await tap('#cfg-workdays .dtog:nth-child(6)');await p.waitForFunction(()=>!HOOK.settings.workdays.includes(5)).catch(()=>{});
+  ok(await p.evaluate(()=>HOOK.settings.workdays.join()==='1,2,3,4'),T+'a tap on a pressed day button takes the day off again');
+  await p.evaluate(()=>{HOOK.settings.workdays=[2];HOOK.settings.blazerDays=[];HOOK.renderSettingsExtras()});
   await tap('#cfg-workdays .dtog:nth-child(3)');await p.waitForFunction(()=>/At least one workday/.test(document.querySelector('#toast').textContent)).catch(()=>{});
-  ok(await p.evaluate(()=>settings.workdays.join()==='2'&&/At least one workday is needed/.test(document.querySelector('#toast').textContent)),T+'the last workday’s button keeps it and says why');
-  await p.evaluate(()=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];renderSettingsExtras()});
+  ok(await p.evaluate(()=>HOOK.settings.workdays.join()==='2'&&/At least one workday is needed/.test(document.querySelector('#toast').textContent)),T+'the last workday’s button keeps it and says why');
+  await p.evaluate(()=>{HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[4];HOOK.renderSettingsExtras()});
 
-  await p.evaluate(()=>openSettings('photos'));await settle(p,500);
+  await p.evaluate(()=>HOOK.openSettings('photos'));await settle(p,500);
   const pic0=await p.evaluate(()=>({v:document.querySelector('#cfg-pictures').value,h:document.querySelector('#pics-help').textContent.slice(0,16)}));
-  await p.selectOption('#cfg-pictures','drawn');await p.waitForFunction(()=>settings.pictures==='drawn'&&/^Drawing only/.test(document.querySelector('#pics-help').textContent)).catch(()=>{});
-  const pic1=await p.evaluate(()=>({s:settings.pictures,d:picsDrawn(),v:document.querySelector('#cfg-pictures').value,h:document.querySelector('#pics-help').textContent.slice(0,12),sum:document.querySelector('#sum-photos').textContent}));
+  await p.selectOption('#cfg-pictures','drawn');await p.waitForFunction(()=>HOOK.settings.pictures==='drawn'&&/^Drawing only/.test(document.querySelector('#pics-help').textContent)).catch(()=>{});
+  const pic1=await p.evaluate(()=>({s:HOOK.settings.pictures,d:HOOK.picsDrawn(),v:document.querySelector('#cfg-pictures').value,h:document.querySelector('#pics-help').textContent.slice(0,12),sum:document.querySelector('#sum-photos').textContent}));
   ok(pic0.v==='painted'&&/^Painted pictures/.test(pic0.h)&&pic1.s==='drawn'&&pic1.d&&pic1.v==='drawn'&&pic1.h==='Drawing only'&&/Drawing only/.test(pic1.sum),T+'choosing "Drawing only" in Outfit pictures switches the setting, the line under it and the summary ('+JSON.stringify(pic1)+')');
-  await p.selectOption('#cfg-pictures','painted');await p.waitForFunction(()=>settings.pictures==='painted'&&/^Painted pictures/.test(document.querySelector('#pics-help').textContent)).catch(()=>{});   // (the line is redrawn once the choice is saved)
-  ok(await p.evaluate(()=>settings.pictures==='painted'&&!picsDrawn()&&document.querySelector('#cfg-pictures').value==='painted'&&/^Painted pictures/.test(document.querySelector('#pics-help').textContent)),T+'and "Painted pictures" switches it back');
+  await p.selectOption('#cfg-pictures','painted');await p.waitForFunction(()=>HOOK.settings.pictures==='painted'&&/^Painted pictures/.test(document.querySelector('#pics-help').textContent)).catch(()=>{});   // (the line is redrawn once the choice is saved)
+  ok(await p.evaluate(()=>HOOK.settings.pictures==='painted'&&!HOOK.picsDrawn()&&document.querySelector('#cfg-pictures').value==='painted'&&/^Painted pictures/.test(document.querySelector('#pics-help').textContent)),T+'and "Painted pictures" switches it back');
 
-  await p.evaluate(()=>openSettings('daysoff'));await settle(p,500);
+  await p.evaluate(()=>HOOK.openSettings('daysoff'));await settle(p,500);
   await p.fill('#cfg-formal-date','2026-11-18');await tap('#occ-add');await p.waitForFunction(()=>document.querySelectorAll('#formal-list .fchip').length===1).catch(()=>{});
   await p.fill('#cfg-formal-date','2026-11-19');await tap('#occ-add');await p.waitForFunction(()=>document.querySelectorAll('#formal-list .fchip').length===2).catch(()=>{});
-  ok(await p.evaluate(()=>!!(dayRecs['2026-11-18']&&dayRecs['2026-11-18'].formal&&dayRecs['2026-11-19']&&dayRecs['2026-11-19'].formal)&&document.querySelectorAll('#formal-list .fchip').length===2),T+'two formal days are listed under Occasions');
+  ok(await p.evaluate(()=>!!(HOOK.dayRecs['2026-11-18']&&HOOK.dayRecs['2026-11-18'].formal&&HOOK.dayRecs['2026-11-19']&&HOOK.dayRecs['2026-11-19'].formal)&&document.querySelectorAll('#formal-list .fchip').length===2),T+'two formal days are listed under Occasions');
   await tap('#formal-list .fchip:nth-child(2) button');await p.waitForFunction(()=>document.querySelectorAll('#formal-list .fchip').length===1).catch(()=>{});
-  ok(await p.evaluate(()=>!occOf(dayRecs['2026-11-19']||{})&&!!dayRecs['2026-11-18'].formal&&document.querySelectorAll('#formal-list .fchip').length===1&&/Nov 18/.test(document.querySelector('#formal-list').textContent)),T+'a tap on the second occasion’s × makes that day a regular day and keeps the other');
+  ok(await p.evaluate(()=>!HOOK.occOf(HOOK.dayRecs['2026-11-19']||{})&&!!HOOK.dayRecs['2026-11-18'].formal&&document.querySelectorAll('#formal-list .fchip').length===1&&/Nov 18/.test(document.querySelector('#formal-list').textContent)),T+'a tap on the second occasion’s × makes that day a regular day and keeps the other');
   await tap('#formal-list .fchip button');await p.waitForFunction(()=>/No occasions coming up/.test(document.querySelector('#formal-list').textContent)).catch(()=>{});
-  ok(await p.evaluate(()=>!occOf(dayRecs['2026-11-18']||{})&&/No occasions coming up/.test(document.querySelector('#formal-list').textContent)),T+'and the last ×  leaves "No occasions coming up."');
+  ok(await p.evaluate(()=>!HOOK.occOf(HOOK.dayRecs['2026-11-18']||{})&&/No occasions coming up/.test(document.querySelector('#formal-list').textContent)),T+'and the last ×  leaves "No occasions coming up."');
 
-  await p.evaluate(()=>openSettings('weather'));await settle(p,500);
+  await p.evaluate(()=>HOOK.openSettings('weather'));await settle(p,500);
   await p.fill('#cfg-city','Springfield');await tap('#sp-weather .sform button');await p.waitForFunction(()=>document.querySelectorAll('#city-results button').length===3).catch(()=>{});
   ok(await p.evaluate(()=>[...document.querySelectorAll('#city-results button')].map(b=>b.textContent).join('|'))==='Springfield, Illinois, US|Springfield, Missouri, US|Springfield, Massachusetts, US',T+'the city search lists three places');
-  await tap('#city-results button:nth-child(2)');await p.waitForFunction(()=>settings.location&&Object.keys(weather).length>0).catch(()=>{});
-  const loc=await p.evaluate(()=>({n:settings.location&&settings.location.name,lat:settings.location&&settings.location.lat,left:document.querySelectorAll('#city-results button').length,line:document.querySelector('#wx-loc').textContent.slice(0,40),wx:Object.keys(weather).length}));
+  await tap('#city-results button:nth-child(2)');await p.waitForFunction(()=>HOOK.settings.location&&Object.keys(HOOK.weather).length>0).catch(()=>{});
+  const loc=await p.evaluate(()=>({n:HOOK.settings.location&&HOOK.settings.location.name,lat:HOOK.settings.location&&HOOK.settings.location.lat,left:document.querySelectorAll('#city-results button').length,line:document.querySelector('#wx-loc').textContent.slice(0,40),wx:Object.keys(HOOK.weather).length}));
   ok(loc.n==='Springfield, Missouri, US'&&loc.lat===37.22&&loc.left===0&&/^Weather for Springfield, Missouri, US/.test(loc.line)&&loc.wx>0,T+'a tap on the second place sets it as the location, clears the list and loads its forecast ('+JSON.stringify(loc)+')');
   await p.waitForFunction(()=>/Location set to Springfield, Missouri, US/.test(document.querySelector('#sr-live').textContent)).catch(()=>{});
   ok(await p.evaluate(()=>/Location set to Springfield, Missouri, US/.test(document.querySelector('#sr-live').textContent)),T+'and it is announced');
-  await p.evaluate(()=>closeSettings());await settle(p,300);
+  await p.evaluate(()=>HOOK.closeSettings());await settle(p,300);
   ok(!errs.length,T+'no page errors from the controls'+(errs.length?': '+errs.join(' | '):''));
 
   /* ---- part 2: the mechanism against inline handlers ---- */
-  const has=await p.evaluate(()=>typeof acts==='function'&&'actsFirst' in HOOK&&typeof HOOK.actsFirst==='function'&&typeof ACTS==='object');
+  const has=await p.evaluate(()=>'acts' in HOOK&&typeof HOOK.acts==='function'&&'actsFirst' in HOOK&&typeof HOOK.actsFirst==='function'&&'ACTS' in HOOK&&typeof HOOK.ACTS==='object');
   ok(has,T+'act.js is loaded (acts, actsFirst, ACTS)');
   if(!has){await ctx.close();return}
-  const own=await p.evaluate(()=>Object.keys(ACTS));
+  const own=await p.evaluate(()=>Object.keys(HOOK.ACTS));
   await p.evaluate(()=>{
     window.__log=[];const L=(...a)=>{window.__log.push(a.join(':'))};
     /* what a test handler does: says who ran, then what its element asks (o) */
     window.__t=(n,el,ev,o)=>{L(n,el.className,ev.type);if(o==='stop')ev.stopPropagation();if(o==='prevent')ev.preventDefault();if(o==='gone')el.remove();if(o==='throw')throw new Error('act-test throw '+n);if(o==='false')return false};
-    acts({tLog:(el,ev)=>window.__t(el.dataset.n,el,ev,el.dataset.o)});
+    HOOK.acts({tLog:(el,ev)=>window.__t(el.dataset.n,el,ev,el.dataset.o)});
     HOOK.actsFirst({tFirst:(el,ev)=>window.__t('first',el,ev,el.dataset.o)});
     const box=document.createElement('div');box.id='act-fx';box.style.cssText='position:fixed;left:0;top:0;width:390px;height:400px;z-index:99999;background:#fff;overflow:hidden';document.body.appendChild(box);
     const inFx=e=>e.target&&e.target.closest&&e.target.closest('#act-fx');
@@ -156,7 +156,7 @@ async function run(eng,browser,{ok,url,settle,ROOT}){
   await p.evaluate(()=>{window.__fx('act','nested');document.querySelector('#act-fx .c-in').setAttribute('data-act','tNope')});
   const nope=await clickIn(),nopeErr=await p.evaluate(n=>window.__werr.slice(n),w1);
   ok(nopeErr.length===1&&/no handler named "tNope"/.test(nopeErr[0])&&JSON.stringify(nope)===JSON.stringify(['mid:c-mid:click','outer:c-out:click','doc::click','win::click']),T+'a name nothing registered is a page error, and the outer handlers still run ('+nopeErr.join(' | ')+')');
-  const dup=await p.evaluate(()=>{const r=[];try{acts({tLog(){}})}catch(e){r.push(e.message)}try{acts({tNotFn:1})}catch(e){r.push(e.message)}try{HOOK.actsFirst({dayTap(){}})}catch(e){r.push(e.message)}return r.concat(typeof ACTS.tNotFn,String(HOOK.ACT_FIRST.has('dayTap')))});
+  const dup=await p.evaluate(()=>{const r=[];try{HOOK.acts({tLog(){}})}catch(e){r.push(e.message)}try{HOOK.acts({tNotFn:1})}catch(e){r.push(e.message)}try{HOOK.actsFirst({dayTap(){}})}catch(e){r.push(e.message)}return r.concat(typeof HOOK.ACTS.tNotFn,String(HOOK.ACT_FIRST.has('dayTap')))});
   ok(dup.length===5&&/two handlers named "tLog"/.test(dup[0])&&/"tNotFn" is not a function/.test(dup[1])&&/two handlers named "dayTap"/.test(dup[2])&&dup[3]==='undefined'&&dup[4]==='false',T+'a name can’t be registered twice, and only a function can be ('+dup.join(' | ')+')');
   /* a listener on an element between the control and document: it runs before a data-act handler and can stop it (the one difference
      from an inline handler); a handler registered with actsFirst runs before it */

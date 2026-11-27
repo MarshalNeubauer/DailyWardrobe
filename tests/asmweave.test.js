@@ -16,8 +16,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const dia=S('woven',{primaryColor:'white',sett:{...tex('diamond',['01111110','10111101','11011011','11100111','11100111','11011011','10111101','01111110'],65,.31),cr:22},texture:cu});
       const fine=S('dobby',{sett:tex('diamond',['10000001','01000010','00100100','00011000','00011000','00100100','01000010','10000001'],80,.22)});   // no close-up
       const eoe=S('end-on-end',{sett:tex('end-on-end',['1010','0101','1010','0101'],80)}),ox=S('oxford'),solid=S('solid');
-      const w=i=>{const v=asmWeave(i);return v?v.f+(v.hb?':'+v.mm.toFixed(1):''):'plain'};
-      const out={rules:[hb30,hb80,hbNone,dia,fine,eoe,ox,solid].map(w).join(' '),mmDia:await asmTexMm(dia),mmFine:await asmTexMm(fine)};
+      const w=i=>{const v=HOOK.asmWeave(i);return v?v.f+(v.hb?':'+v.mm.toFixed(1):''):'plain'};
+      const out={rules:[hb30,hb80,hbNone,dia,fine,eoe,ox,solid].map(w).join(' '),mmDia:await HOOK.asmTexMm(dia),mmFine:await HOOK.asmTexMm(fine)};
       // which way the threads run: a shirt's big front and a narrow upright cuff
       const W=120,N=W*W,A=new Float32Array(N),idx=[];for(let k=0;k<N;k++){const x=k%W,y=(k/W)|0;if((x>=10&&x<70&&y>=10&&y<110)||(x>=90&&x<100&&y>=20&&y<100)){A[k]=1;idx.push(k)}}
       const ang=HOOK.asmShirtAngles(A,idx,W,W),at=(x,y)=>ang[idx.indexOf(y*W+x)];out.ang=[at(40,60),at(95,60)];

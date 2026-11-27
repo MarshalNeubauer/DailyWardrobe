@@ -395,6 +395,7 @@ function freeNames(src,module){
 }
 const ON_GLOBAL=/\b(?:window|self|globalThis)\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*['"]([A-Za-z_$][\w$]*)['"]\s*\])/g;
 const VIA_HOOK=/\bHOOK\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*['"]([A-Za-z_$][\w$]*)['"]\s*\])/g;
+const IN_HOOK=/['"]([A-Za-z_$][\w$]*)['"]\s+in\s+HOOK\b(?!\s*[.[])/g;   // (not `'k' in HOOK.items[0]`)
 const ASSIGN_AFTER=/^\s*(?:=(?!=)|\+\+|--|[-+*\/%&|^]=|\*\*=|<<=|>>>?=|&&=|\|\|=|\?\?=)/;   // (what follows window.name when it is assigned)
 const HOOK_WRITE=/\bHOOK\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*['"]([A-Za-z_$][\w$]*)['"]\s*\])\s*(?:=(?!=)|\+\+|--|[-+*\/%&|^]=|\*\*=|<<=|>>>?=|&&=|\|\|=|\?\?=)/g;
 /* T2 phase 3 (2026-11-25): strings that are not code though they parse as code: a file name ('shop.js' is `shop.js`), a host name
@@ -468,6 +469,7 @@ function testUses(src,words){
   try{ast=acorn.parse(src,{...o,sourceType:'script',allowReturnOutsideFunction:true})}catch(e){cm=[];try{ast=acorn.parse(src,{...o,sourceType:'module'})}catch(e2){cm=[]}}
   let code=src;for(const [a,z] of cm)code=code.slice(0,a)+code.slice(a,z).replace(/[^\r\n]/g,' ')+code.slice(z);   // (HOOK.name in a comment is no use)
   for(const m of code.matchAll(VIA_HOOK))out.hook.add(m[1]||m[2]);
+  for(const m of code.matchAll(IN_HOOK))out.hook.add(m[1]);   // (S6t3: `'name' in HOOK`, what --to-hook asks for a typeof, uses the name too)
   for(const m of code.matchAll(HOOK_WRITE))out.hookWrites.add(m[1]||m[2]);
   if(!ast)return out;
   const lexical=new Set(),strs=[];
@@ -603,7 +605,15 @@ function bareReads(r,allowed=READS_KEPT){const P=platformAll(),out={};
 const BARE_READS_CHECK=false;
 /* the files that read a bridged name on an older build (tests/replay R.old(sha), which has no HOOK), and the names: they stay bare
    there. The groups fill this in for the uses that really run on an old build; every other use is rewritten */
-const READS_KEPT={};
+const READS_KEPT={
+  'tests/garmentpaint.test.js':['ASM_CM_BTN','ASM_CM_KINDS','SLOTS','asmCmCodeSig','asmCmMf','asmCmSig','asmCmSrcSig','dayClimate','dayRecs','di',
+    'hasVest','inRotation','isWorkday','items','key','occOf','settings','todayDate'],   // S6t2: the page of #511's base (before HOOK) gets a HOOK of its own from its globals, for keysOf and the fixed plan
+  'tests/replay/scripts/W1-1-02.js':['appVersion'],   // S6t2: the first open after the update runs the old cached app (12 Nov, no HOOK)
+  'tests/replay/scripts/lib-verify1.js':['items'],   // S6t2: buildOld counts the pieces on the old build (26cd8b1, no HOOK)
+  'tools/fill-material.js':['itemFields'],   // S6t2: not the page's: the string handed to Function declares itemFields (core.js's text) and returns it
+  /* S6t3: its old phone runs 26cd8b1, 7a28f96 and c4a549b (RP.old), which have no HOOK; today's phone reads them through HOOK */
+  'tests/replay/scripts/CR-6-12.js':['items','syncNow','syncRun'],
+};
 /* the names a test also uses on an older build, which has no HOOK (T2 phase 3): they stay globals there, so --to-hook leaves them */
 const OLD_BUILD=new Set(['syncing','kitEdited','asmCmMf','asmCmCodeSig','asmCmSig','asmCmSrcSig']);
 /* of those, the ones a test assigns there, and the file (S1f): garmentpaint.test.js gives origin/main's page a HOOK of its own whose
@@ -783,7 +793,9 @@ module.exports=async({ok,ROOT})=>{
     ok(h.count===2&&h.odd.length===4,'a HOOK statement without its __proto__ first, a getter giving back another name, a computed key or a setter that doesn\'t plainly assign is named');
     const u=testUses("await p.evaluate(()=>{HOOK.a=1;b();window.c=2});p.evaluate('d(HOOK.e)');log('f is gone');ok(1,`h ${1} too`);vm.runInContext(appSrc(R,'x.js')+';this.K={g}',ctx);",new Set('abcdefgh'));
     ok([...u.global].sort().join()==='b,c,d'&&[...u.hook].sort().join()==='a,e'&&[...u.hookWrites].join()==='a'&&[...u.globalWrites].join()==='c',
-      'a test\'s uses: bare names and window.name in its code and in the code of its strings are global (a sentence, an ok() message, is not: S6t0), HOOK.name is the access point, a string joined after appSrc is the files\' own scope')
+      'a test\'s uses: bare names and window.name in its code and in the code of its strings are global (a sentence, an ok() message, is not: S6t0), HOOK.name is the access point, a string joined after appSrc is the files\' own scope');
+    const ui=testUses("await p.evaluate(()=>!('a' in HOOK)&&\"b\" in HOOK&&'c' in HOOK.d)",new Set('abcd'));
+    ok([...ui.hook].sort().join()==='a,b,d'&&!ui.global.size,'a test\'s `\'name\' in HOOK` (what --to-hook asks for in place of a typeof) is a use of the name through HOOK, `\'key\' in HOOK.x` is not (S6t3)'+` (got ${[...ui.hook]}; global ${[...ui.global]})`)
     /* strings that are not code (T2 phase 3): each is no use, and the rewrite leaves it as it is */
     const W=new Set(['shop','rd','setOpenTap','tieScore','a']);
     const NOT={'a file name':"src('shop.js');p.route('**/shop.js',r=>r.abort());",'an id':"p.click('#'+'rd-camo');tapAt('shop-backdrop');S('lock-shop');",
