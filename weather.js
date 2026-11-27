@@ -1,6 +1,6 @@
 /* Daily Wardrobe: the weather: units, the location and its search, the 16-day forecast and the usual weather by month
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
-import {on} from './bus.js';
+import {on,serve} from './bus.js';
 import {$,climate,key,setClimate,setWeather,settings,weather} from './core.js';
 import {refreshToday,renderSettingsExtras,saveUserSettings,settingsOpen,settingsSummaries,todayDirty} from './settings.js';
 import {announce} from './app.js';
@@ -93,3 +93,4 @@ function citySearchTap(){findCity()}
 function myLocTap(){useMyLocation()}
 function unitsPick(el){setUnits(el.value)}
 acts({cityPick,cityKey,citySearchTap,myLocTap,unitsPick});
+serve('weather-load',loadWeather);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

@@ -6,6 +6,7 @@
    follows the forecast). The planner keeps a locked day's pieces (planner.js, outfit()), so swapping today's tie, marking a day not
    worn or adding an item re-plans only the days after the lock, not tomorrow's outfit. A change made by hand on a day (a swap, a pick,
    an occasion, Reset, a move) drops that day's lock: the day is planned again around the change and locked as it then shows. */
+import {serve} from './bus.js';
 import {clearLocks,lockIds,releaseLocks} from './days.js';
 import {SLOTS,dayFields,dayRecs,di,inRotation,isHandPick,isWorkday,items,key,keyDate,nextStamp,nowMs,todayDate,trueToday} from './core.js';
 import {planFor,planMonth} from './today-plan.js';
@@ -58,3 +59,4 @@ async function unlockClash(k,past){const o=planFor()[k];if(!o||(o.frozen&&!past)
 Object.assign(globalThis,{lockUpcoming,careUnlock,unlockClash});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,lockUpcoming};
 export {lockUpcoming,careUnlock,unlockClash};
+serve('unlock-clash',unlockClash);serve('lock-upcoming',lockUpcoming);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

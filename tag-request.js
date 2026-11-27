@@ -2,6 +2,7 @@
    photo, the fabric close-up, the owner's own colours, patterns and materials, the corrections the owner made before), the sharp copies
    kept on this device, what the tagger learns from the corrections, and what one tagging call costs. */
 
+import {serve} from './bus.js';
 import {CLOSE_MAX,CUSTOM_COL,CUSTOM_PAT,MATERIALS_BY,TAG_MAX,TAG_TYPES,TYPES,hasPat,ownMats,settings,tagTypesNow,texSig} from './core.js';
 import {esc} from './photo-keys.js';
 /* the colours and patterns the owner added, when there are any (the worker adds them to what the tagger may answer) */
@@ -73,3 +74,4 @@ const readEstimate=()=>describeEstimate('colour',true)+describeEstimate('pattern
 Object.assign(globalThis,{customForTag,tagFixes,tagExtras,TAGIMG_CACHE,keepTagImg,tagImgOf,resignTagImg,keepCloseImg,sharpCloseOf,recordTagResult,tagStatsCard,benchEstimate,describeEstimate,readEstimate});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,TAGIMG_CACHE,keepCloseImg,keepTagImg,resignTagImg,sharpCloseOf,tagExtras,tagImgOf};
 export {customForTag,tagFixes,tagExtras,TAGIMG_CACHE,keepTagImg,tagImgOf,resignTagImg,keepCloseImg,sharpCloseOf,recordTagResult,tagStatsCard,benchEstimate,describeEstimate,readEstimate};
+serve('tag-stats-card',tagStatsCard);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

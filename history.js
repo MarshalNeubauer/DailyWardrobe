@@ -5,7 +5,7 @@
    scorecard.js and the cards' fold motion in boxfold.js, loaded right after this file.) */
 /* a change to the day shown says emit('day-changed') (bus.js; the restructure S3e, 2026-11-26): today.js pins renderToday for it, so
    this file, which runs before today.js, no longer calls it */
-import {emit} from './bus.js';
+import {emit,need,serve} from './bus.js';
 import {afterScripts,metaGet,metaPut,sel} from './app.js';
 import {$,CASUAL_JACKETS,CASUAL_TOPS,DAY_NAMES,SLOTS,SLOT_TYPE,TYPES,dayRecs,di,handPickSlot,hasVest,inRotation,isCargo,isHandPick,isWorkday,itemTitle,items,key,keyDate,nm,occLabel,offName,phSm,sentence,settings,shortDate,titleCls,todayDate,trueToday} from './core.js';
 import {firstReal,missedNote} from './missed.js';
@@ -60,14 +60,14 @@ async function swapSlot(slot){
   const skip={...(rec.skip||{})};skip[slot]=[...new Set([...(skip[slot]||[]),cur].filter(Boolean))];
   if(pool.every(i=>skip[slot].includes(i.id)))skip[slot]=[cur];       // tried them all: start the cycle again
   // keep the rest of the outfit; pieces that must follow the swapped one are re-picked
-  const follow=FOLLOW[slot]||[];
+  const follow=need('pick-follow')[slot]||[];
   const force={};for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
   // the planner keeps a suit's own pants with its jacket off, so Suggest another pins the best-matching pants not shown yet (fitOf)
-  if(suitOff){const nx=pool.filter(i=>!skip.bot.includes(i.id)).map(i=>[fitOf('bot',o,i),i]).sort((a,b)=>b[0]-a[0]||(a[1].id<b[1].id?-1:1))[0];if(nx)force.bot=nx[1].id}
-  keepOff(force,k,slot);rec.skip=skip;rec.force=force;delete rec.lock;notAhead(rec,k);
-  if(slot==='belt'&&o.belt&&beltless(k,rec)){swapMsg=BELT_STUCK;emit('day-changed');return}
-  suggestClean(k,o,slot,rec,pool);
-  swapMsg='';await saveDay(rec);await unlockClash(k);emit('day-changed');
+  if(suitOff){const nx=pool.filter(i=>!skip.bot.includes(i.id)).map(i=>[need('fit-of','bot',o,i),i]).sort((a,b)=>b[0]-a[0]||(a[1].id<b[1].id?-1:1))[0];if(nx)force.bot=nx[1].id}
+  need('keep-off',force,k,slot);rec.skip=skip;rec.force=force;delete rec.lock;notAhead(rec,k);
+  if(slot==='belt'&&o.belt&&need('beltless',k,rec)){swapMsg=need('belt-stuck');emit('day-changed');return}
+  need('suggest-clean',k,o,slot,rec,pool);
+  swapMsg='';await saveDay(rec);await need('unlock-clash',k);emit('day-changed');
 }
 /* the planner no longer learns from swaps and picks (removed 2026-11-15, the owner's ask): the votes earlier versions kept in the settings
    (settings.learn) are dropped at start-up, after the first pull, so they stop syncing as dead weight. The removal is stamped like any
@@ -82,10 +82,10 @@ const canPick=o=>!o.frozen||pastEdit===key(sel);   // a past day only while it i
 const slotLabel=(s,o)=>({top:o.top&&CASUAL_JACKETS.includes(o.top.type)?TYPES[o.top.type]:o.suitDay?'Suit':'Blazer',bot:'Pants',shirt:o.shirt&&CASUAL_TOPS.includes(o.shirt.type)?TYPES[o.shirt.type]:'Shirt',tie:'Tie',clip:'Tie clip',vest:'Vest',watch:'Watch',belt:'Belt',shoes:'Shoes',socks:'Socks',coat:o.coat?TYPES[o.coat.type]:'Coat',links:'Cufflinks',pocket:'Pocket square'})[s]||s;
 const pluralWord=w=>/^(shoes|pants|socks|cufflinks|jeans|chinos)$/.test(w);   // "Choose shoes", not "Choose a shoes" (W2-17-13)
 const pickPic=i=>i.photo?`<img src="${srcOk(phSm(i))}" alt="">`:itemPic(i)?`<img src="${srcOk(itemPic(i).img)}" alt="">`:itemThumb(i,true);
-function openPicker(slot){const o=planFor()[key(sel)];if(!o||!canPick(o))return;const pool=slotPool(slot,o),hand=handPool(slot,o),cur=o[slot]&&o[slot].id,label=slotLabel(slot,{...o,shirt:null,top:null}).toLowerCase();   // (the slot's own word, not a casual piece's: "Choose a shirt")
+function openPicker(slot){const o=planFor()[key(sel)];if(!o||!canPick(o))return;const pool=need('slot-pool',slot,o),hand=need('hand-pool',slot,o),cur=o[slot]&&o[slot].id,label=slotLabel(slot,{...o,shirt:null,top:null}).toLowerCase();   // (the slot's own word, not a casual piece's: "Choose a shirt")
   if(!o.frozen&&pool.length+hand.length<2&&!(slot==='pocket'&&!o.pocket&&pool.length)){swapMsg=`That's your only ${slot==='coat'?'coat':(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to choose from.`;emit('day-changed');return}
-  const scored=pool.map(i=>[fitOf(slot,o,i),i]).sort((a,b)=>b[0]-a[0]||(a[1].id<b[1].id?-1:1)),best=scored.length?scored[0][0]:0;
-  const card=([f,i])=>{const [cls,txt]=fitTag(best-f),on=i.id===cur,sub=slot==='bot'&&i.type==='suit'?'The suit’s own pants':pickSub(i,pool);
+  const scored=pool.map(i=>[need('fit-of',slot,o,i),i]).sort((a,b)=>b[0]-a[0]||(a[1].id<b[1].id?-1:1)),best=scored.length?scored[0][0]:0;
+  const card=([f,i])=>{const [cls,txt]=need('fit-tag',best-f),on=i.id===cur,sub=slot==='bot'&&i.type==='suit'?'The suit’s own pants':need('pick-sub',i,pool);
     return `<button class="pick-it${on?' cur':''}" data-act="pickItTap" data-slot="${slot}" data-id="${esc(i.id)}" aria-label="${esc(itemTitle(i)||nm(i))}${sub?', '+esc(sub):''}: ${on?'wearing, ':''}${txt.toLowerCase()}"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span>${typeof favMark==='function'?favMark(i):''}<span class="pick-nm ${titleCls(i)}">${esc(itemTitle(i)||sentence(nm(i)))}</span>${sub?`<small class="mut pick-sub">${esc(sub)}</small>`:''}<small class="fit ${cls}">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}${txt}</small></button>`};
   const none=o.frozen&&slot!=='top'&&cur?`<button type="button" data-act="pickItTap" data-slot="${slot}" data-id="">None: I didn't wear one</button>`:'';
   $('#pick-sheet').innerHTML=`<div class="pick-head"><b id="pick-title">${o.frozen?`What ${label} did you wear?`:`Choose ${pluralWord(label)?label:aAn(label)}`}</b><button class="pick-x" data-act="pickCloseTap" aria-label="Close">×</button></div>
@@ -100,7 +100,7 @@ const HAND_NOTE={shirt:'Worn instead of the shirt: no tie that day.',top:'Worn i
 /* combat boots owned but not offered (the day's pants are not camouflage): a line says why, so they don't seem lost */
 const combatAway=(slot,o,hand)=>slot==='shoes'&&!o.frozen&&!hand.length&&items.some(i=>handPickSlot(i)==='shoes'&&inRotation(i,di(sel)))?'<p class="mut pick-away"><small>Combat boots go with camouflage pants: pick those first.</small></p>':'';
 function handGroup(slot,o,hand,cur){if(!hand.length)return '';
-  const card=i=>{const on=i.id===cur,sub=isCargo(i)?'Cargo pants':i.type==='shoes'?'Combat boots':TYPES[i.type],why=handWhy(i,o);
+  const card=i=>{const on=i.id===cur,sub=isCargo(i)?'Cargo pants':i.type==='shoes'?'Combat boots':TYPES[i.type],why=need('hand-why',i,o);
     return `<button class="pick-it hand-it${on?' cur':''}${why?' hand-no':''}" data-act="pickItTap" data-slot="${slot}" data-id="${esc(i.id)}" aria-label="${esc(itemTitle(i)||nm(i))}, ${esc(sub.toLowerCase())}: ${on?'wearing, ':''}${why?esc(why.toLowerCase()):'picked by hand'}"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span><span class="pick-nm ${titleCls(i)}">${esc(itemTitle(i)||sentence(nm(i)))}</span><small class="mut pick-sub">${esc(sub)}</small><small class="fit ${why?'weak':'hand'}">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}${why||'By hand'}</small></button>`};
   return `<div class="pick-hand" role="group" aria-labelledby="pick-hand-h"><b id="pick-hand-h" class="pick-hand-h">Casual · pick by hand</b><p class="mut"><small>${HAND_NOTE[slot]||''} Never planned or suggested.</small></p><div class="pick-grid">${hand.map(card).join('')}</div></div>`}
 function closePicker(){const was=!!picker;picker=null;const s=$('#pick-sheet'),b=$('#pick-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on');
@@ -127,21 +127,21 @@ async function pickItem(slot,id){const k=key(sel),o=planFor()[k];if(!o)return;cl
   const it=id?items.find(i=>i.id===id)||null:null;
   if(o.frozen)return correctPast(slot,it,true);   // (a pick on a day marked worn is what was really worn: it did nothing, silently, outside "Correct what you wore" (2026-11-18, the owner's coyote belt on a worn day))
   if(!it||(o[slot]&&o[slot].id===id))return;
-  const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest},follow=FOLLOW[slot]||[],force={};
+  const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest},follow=need('pick-follow')[slot]||[],force={};
   for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
-  force[slot]=id;suitPants(force,slot,o);keepHand(force,slot,o);bootsOff(force,slot,o);keepOff(force,k,slot);const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;notAhead(rec,k);pocketOn(rec,slot);
-  if(slot==='belt'&&beltless(k,rec)){swapMsg='That belt needs shoes that don’t suit this outfit, so the belt stays as it was.';emit('day-changed');return}
-  swapMsg='';await saveDay(rec);await unlockClash(k);emit('day-changed')}
+  force[slot]=id;need('suit-pants',force,slot,o);need('keep-hand',force,slot,o);need('boots-off',force,slot,o);need('keep-off',force,k,slot);const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;notAhead(rec,k);need('pocket-on',rec,slot);
+  if(slot==='belt'&&need('beltless',k,rec)){swapMsg='That belt needs shoes that don’t suit this outfit, so the belt stays as it was.';emit('day-changed');return}
+  swapMsg='';await saveDay(rec);await need('unlock-clash',k);emit('day-changed')}
 /* wear a favorite look (fav.js, the picker's "Favorite looks" strip) on the day shown: its jacket, shirt and tie become the owner's own
    picks (rec.force, as pickItem's), the pieces that follow them are chosen again, a jacket of the other kind brings its kind (rec.kind),
    and the days after it that hold one of them let go (unlockClash); Undo puts the day's record back */
 async function wearFav(k){const dk=key(sel),o=planFor()[dk],l=favLooks().find(x=>favLookKey(x)===k);if(!o||o.frozen||!l)return;closePicker();
   const p=favPieces(l);if(!p.sh)return;
-  const was=dayRecs[dk]?{...dayRecs[dk]}:{date:dk},rec={...was,ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest},follow=new Set(['top','shirt','tie',...FOLLOW.top,...FOLLOW.shirt,...FOLLOW.tie]),force={};
+  const was=dayRecs[dk]?{...dayRecs[dk]}:{date:dk},rec={...was,ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest},follow=new Set(['top','shirt','tie',...need('pick-follow').top,...need('pick-follow').shirt,...need('pick-follow').tie]),force={};
   for(const s of SLOTS)if(!follow.has(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
   if(p.j){force.top=p.j.id;if(!isHandPick(p.j))rec.kind=p.j.type==='suit'?'suit':'blazer'}force.shirt=p.sh.id;if(p.tie)force.tie=p.tie.id;
   rec.force=force;delete rec.skip;delete rec.lock;delete rec.off;notAhead(rec,dk);
-  swapMsg='';await saveDay(rec);await unlockClash(dk);emit('day-changed');
+  swapMsg='';await saveDay(rec);await need('unlock-clash',dk);emit('day-changed');
   toast(`Wearing a favorite look ${dayWord()==='today'?'today':'on '+shortDate(sel)}.`,FAV_UNDO_MS,{label:'Undo',fn:async()=>{await saveDay({...was});emit('day-changed')}})}
 /* ---- correcting a past day: what was really worn replaces what was planned, so rest and "last worn" stay true ---- */
 function togglePastEdit(){const k=key(sel);pastEdit=pastEdit===k?null:k;if(pastEdit)setListOpen(true);swapMsg='';emit('day-changed')}
@@ -154,7 +154,7 @@ async function correctPast(slot,it,picked){const k=key(sel),r=dayRecs[k],o=planF
   swapMsg='Corrected.';
   // the locked days after it let go when one holds what was really worn (the jacket on the next workday, the tie within three): yesterday
   // corrected to the pink suit left today locked on it, "the same suit as the workday before" (fix round 3, W2-17-06)
-  await saveDay(rec);await unlockClash(k,true);emit('day-changed')}
+  await saveDay(rec);await need('unlock-clash',k,true);emit('day-changed')}
 const setFormal=(v,k)=>setOccasion(v?'formal':null,k);
 /* give a day an occasion (or none): its swaps are dropped, since the outfit is chosen afresh for the occasion, and the coming days are
    released so they are planned around it (the suit that is right for the occasion may be locked on the day before) */
@@ -236,3 +236,4 @@ function pickNextTap(){pickNext()}
 function resetTap(){resetDay()}
 function pastEditTap(){togglePastEdit()}
 acts({pickBackdropTap,replanTap,pickItTap,pickCloseTap,pickNextTap,resetTap,pastEditTap});
+serve('replan-ui',renderReplanUI);serve('plan-rules-check',checkPlanRules);serve('learn-drop',dropLearn);serve('when-pulled',whenPulled);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

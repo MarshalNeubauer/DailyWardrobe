@@ -2,7 +2,7 @@
    the white-paper steps. (An ES module since 2026-11-23; split out of itemsheet.js on 2026-11-17, no behavior change.) */
 /* ---- Wardrobe editor: replace, rotate, zoom-crop the item's photo. Only the picture changes: the tags (colour, pattern...)
    and the item itself stay, so the plan and the outfit history are untouched. Each change's toast has Undo (picUndo; phEdit.undo holds the editor's steps). ---- */
-import {emit,ask} from './bus.js';   // emit: the Wardrobe's redraw (itemsheet.js, later); ask: the piece open (item-view.js). (No app.js ask() here)
+import {emit,ask,serve} from './bus.js';   // emit: the Wardrobe's redraw (itemsheet.js, later); ask: the piece open (item-view.js). (No app.js ask() here)
 import {DEAD_MSG,deadCanvas,deadPic,fixupRedraw,imgOf,loadImg,put,refreshSwatch,shrink,stillCur} from './app.js';
 import {$,CLOSE_MAX,PH_MAX,TAG_MAX,TAG_Q,TEX_MAX,TEX_MIN_PX,items,paperCloth,phSigOf,texSig} from './core.js';
 import {esc,srcOk} from './photo-keys.js';
@@ -166,3 +166,4 @@ Object.defineProperties(globalThis,{phEdit:{get:()=>phEdit}});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,applyCrop,layoutCrop,paperTip,setPhoto,setTexture,startCrop,undoPhoto,makeSmall,get phEdit(){return phEdit},replaceTexture,smallPhotos};
 export {phEdit,setPhEdit,makeSmall,smallPhotos,photoTools,paperSteps,paperHint,paperTip,paperRetake,paperLine,setPhoto,setTexture,replaceTexture,undoPhoto,startCrop,cropSource,cropEditor,cropKeep,layoutCrop,applyCrop};
 acts({photoFile,photoRotate,photoCrop,photoCuRemove,photoCuFile,paperTipTap,cropDrag,cropZoom,cropApply,cropDiscardTap});
+serve('small-photos',smallPhotos);serve('ph-edit',()=>phEdit);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

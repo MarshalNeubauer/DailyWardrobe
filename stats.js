@@ -5,7 +5,7 @@
    between wears.
    The page's parts in other files (the setup's checklist, the sample wardrobe, What to buy's button, the favorites and cost-per-wear
    cards) are reached through bus.js (the restructure S3f): without the file nothing is asked, as the `typeof f==='function'` guards did. */
-import {emit,heard,ask} from './bus.js';   // (this file reads nothing of app.js's own ask(), the server request)
+import {emit,heard,ask,need,serve} from './bus.js';   // (this file reads nothing of app.js's own ask(), the server request)
 import {$,COLORS,CUSTOM_COL,SHOP_WEEKS,SLOTS,TYPES,avgText,colName,dayRecs,di,dressOut,fmtDay,isHandPick,isWorkday,itemName,itemSeason,items,keyDate,listAnd,nameHtml,nm,phSm,prettyCols,primaryCol,sentence,settings,shortDesc,titleCls,todayDate,wearsJacket,wearsTie} from './core.js';
 import {cache,hasOutfit,planMonth,planStartDay} from './today-plan.js';
 import {HARD_CAP,QWIN,beltFit,beltWait,clothesScore,darkShirt,finish,jacketGroup,pairScore,patternScore,planSim,planStart,rateOutfit,shirtGroup,shirtScore,shoeSuits,tieGroup} from './planner.js';
@@ -29,7 +29,7 @@ function wornDays(){const T=todayDate(),out=[];
   return out.sort((a,b)=>a.d.getTime()-b.d.getTime())}
 /* the planned outfits of the next six months: [[key, outfit]]. The same workdays What to buy measures (analysis.js horizonKeys:
    SHOP_WEEKS weeks from tomorrow), so the two count the same outfits; they counted 122 and 126 (re-audit 2026-11-15) */
-const statsDays=()=>horizonKeys(todayDate(),SHOP_WEEKS);
+const statsDays=()=>need('horizon-keys',todayDate(),SHOP_WEEKS);
 function plannedDays(){const out=[];
   for(const k of statsDays()){const d=keyDate(k),o=planMonth(d.getFullYear(),d.getMonth())[k];if(hasOutfit(o))out.push([k,o])}
   return out}
@@ -42,7 +42,7 @@ function whyUnused(i){
   if(i.paused&&i.order)return i.arrives?`It's on the way: it joins your outfits after ${fmtDay(i.arrives)}.`:'It\'s on the way: put it back in rotation once it arrives.';
   if(i.paused)return 'You took it out of rotation, so the planner leaves it out.';
   if(dressOut(i.type))return `Your dress code leaves out ${i.type==='tie'||i.type==='tieclip'?'ties':'jackets'} (Settings, Schedule), so it is planned only for a formal day, a wedding or a funeral.`;
-  if(!wearsJacket()){const w=dressWhyUnused(i);if(w)return w}
+  if(!wearsJacket()){const w=need('dress-why-unused',i);if(w)return w}
   const by=t=>items.filter(x=>x.type===t),suitDays=settings.workdays.some(d=>!settings.blazerDays.includes(d)),blazerDays=settings.workdays.some(d=>settings.blazerDays.includes(d));
   const day={formal:false,clim:{season:'mild',rain:false,cold:false},hasLinks:by('cufflinks').length>0},jackets=[...(suitDays||!by('blazer').length?by('suit'):[]),...(blazerDays||!by('suit').length?by('blazer'):[])];
   // each jacket's best outfit, and its best with the one shirt or tie asked about, worked out only for the pieces that need a reason and
@@ -185,7 +185,7 @@ ${S.short.length?'':`
   ${S.pairs.length?`<p class="mut"><small>The jacket and tie pairings planned most often.</small></p>${S.pairs.map(p=>`<div class="st-pair"><span class="dot">${swatchSVG(p.a)}</span><span class="dot">${swatchSVG(p.b)}</span><span class="st-nm">${nameHtml(statName1(p.a))} · ${nameHtml(statName2(p.b))}</span><b>${p.n}×</b></div>`).join('')}`:''}
   <p class="mut" style="margin-top:10px"><small>${S.minRest!=null?`A jacket rests at least ${S.minRest} workday${S.minRest===1?'':'s'} before it is worn again. `:''}${S.b2b?`The same shoes are worn two days running ${S.b2b} time${S.b2b===1?'':'s'}: ${(w=>w?`your ${esc(nm(w))} would give them a rest with a ${beltWait(w)} to match.`:'another pair in that color would give them a rest.')(items.find(x=>x.type==='shoes'&&beltWait(x)))}`:'Shoes always get a day off between wears.'}</small></p></section>`}
 
-  ${tagStatsCard()}`;
+  ${need('tag-stats-card')}`;
 }
 /* unfolding a section fills in only its rows, from the numbers the page was drawn from while the plan is the same (it re-drew the whole
    page, W2-18-02); after a change it draws the page again */
@@ -233,3 +233,4 @@ function emptySampleTap(){emit('sample-asked')}   // (kit.js loads it)
 function statsFold(el){statsToggle(el)}
 function statsDayTap(el,ev){openDay(+el.dataset.t);show('today');ev.preventDefault()}
 acts({emptyAddTap,emptySampleTap,statsFold,statsDayTap});
+serve('stats-draw',renderStats);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

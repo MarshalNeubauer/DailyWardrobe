@@ -4,7 +4,7 @@
    (outfit: without jackets every workday is a shirt and trousers, without ties none is picked; a formal day, a wedding
    or a funeral is still dressed in full from what is owned). This file holds the Settings switches and the one-time
    change of the waistcoat default. */
-import {on} from './bus.js';
+import {on,serve} from './bus.js';
 import {$,items,settings,syncUrl,wearsJacket,wearsTie} from './core.js';
 import {saveUserSettings,settingsSummaries,todayDirty} from './settings.js';
 import {planDirty} from './today-plan.js';
@@ -91,3 +91,4 @@ on('settings-summaries',S=>{S.dress=dressSummary});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get vestMigrating(){return vestMigrating},dressSynced,migrateVests,newSuitVest};
 export {renderDressUI,newSuitVest,dressSummary,dressWhyUnused,vestMigrating,migrateVests,dressNewItem,dressSynced};
 acts({dressSwTap});
+serve('dress-why-unused',dressWhyUnused);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
