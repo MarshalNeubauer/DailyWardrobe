@@ -21,7 +21,7 @@ L.main(async () => {
   const s0 = await L.phoneState(E); L.log('before', s0, 'pending', pend0, 'kv', await L.kvItems());
   const r = await L.revokeAndRenew(info.inviteCode); L.log('owner: revoked', r.revoked, 'new invitation made');
   await L.mock('count-reset');
-  if (V === 'knows') { await E.page.evaluate(() => openSettings('connection')); await L.sleep(2500); L.log('after Settings: ended known', (await L.phoneState(E)).ended); await E.page.evaluate(() => closeSettings()); await L.sleep(800) }
+  if (V === 'knows') { await E.page.evaluate(() => HOOK.openSettings('connection')); await L.sleep(2500); L.log('after Settings: ended known', (await L.phoneState(E)).ended); await E.page.evaluate(() => HOOK.closeSettings()); await L.sleep(800) }
   if (V === 'coldslow' || V === 'coldfast') {
     await E.kill(); if (V === 'coldslow') await L.mock('delay', { ms: 1500 });
     await E.reopen(r.link); await E.ready().catch(() => { });
@@ -31,7 +31,7 @@ L.main(async () => {
   const btns = await E.page.evaluate(() => [...document.querySelectorAll('#ask-ok,#ask-cancel')].map(b => b.innerText.trim())).catch(() => []);
   const reqs = (await L.mock('log')).recent.filter(x => /->/.test(x)).map(x => x.replace(/^\S+ /, ''));
   L.log('QUESTION', q ? q.split('\n')[0] : null); L.log('buttons', btns); L.log('state at question', atAsk); L.log('requests until then', reqs);
-  await E.shot('W1-7-01-' + V + '-ask');
+  await E.shot('W1-7-01-' + V + '-HOOK.ask');
   await L.mock('reset');
   const wrongQ = !!q && /^Switch this phone/.test(q);
   let after = null, kv = null;

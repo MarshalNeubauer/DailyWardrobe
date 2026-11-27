@@ -40,11 +40,12 @@ async function backup(ph){await ph.background();await sleep(3000);await ph.foreg
 async function later(ph){await ph.advance(70000);await backup(ph)}
 async function tapText(ph,txt,scope=''){const l=ph.page.locator(`${scope} button:visible`,{hasText:txt}).first();await l.scrollIntoViewIfNeeded({timeout:8000});const b=await l.boundingBox();await ph.tapAt(b.x+b.width/2,b.y+b.height/2);await sleep(600)}
 async function openItemByName(ph,name){for(let k=0;k<4;k++){await ph.tap('#n-wardrobe');await sleep(700);if(await ph.page.evaluate(()=>!document.querySelector('#wardrobe').hidden&&document.querySelectorAll('.gi').length>0))break}
-  await ph.page.evaluate(()=>{if(typeof CK_OPEN!=='undefined')CK_OPEN['*']=true});   // #497: the sheet's fields are in folded sections; open them all (no-op before)
-  const id=await ph.page.evaluate(n=>{const i=items.find(x=>(x.name||'')===n);if(!i)return null;const e=document.querySelector(`#gi-${i.id} .giopen`);if(e)e.scrollIntoView({block:'center'});return i.id},name);
+  await ph.page.evaluate(()=>{if(typeof HOOK!=='undefined'&&'CK_OPEN' in HOOK)HOOK.CK_OPEN['*']=true});   // #497: the sheet's fields are in folded sections; open them all (no-op before)
+  // (run on the old build, which has no HOOK: its items is a classic script's global, READS_KEPT)
+  const id=await ph.page.evaluate(n=>{const i=(typeof HOOK==='undefined'?items:HOOK.items).find(x=>(x.name||'')===n);if(!i)return null;const e=document.querySelector(`#gi-${i.id} .giopen`);if(e)e.scrollIntoView({block:'center'});return i.id},name);
   if(!id)throw new Error('no item '+name);return openItemId(ph,id)}
 async function openItemId(ph,id){for(let k=0;k<4;k++){await ph.tap('#n-wardrobe');await sleep(700);if(await ph.page.evaluate(()=>!document.querySelector('#wardrobe').hidden&&document.querySelectorAll('.gi').length>0))break}
-  await ph.page.evaluate(()=>{if(typeof CK_OPEN!=='undefined')CK_OPEN['*']=true});   // #497's folded sections, also when called directly (W1-3-02-today)
+  await ph.page.evaluate(()=>{if(typeof HOOK!=='undefined'&&'CK_OPEN' in HOOK)HOOK.CK_OPEN['*']=true});   // #497's folded sections, also when called directly (W1-3-02-today)
   await ph.page.evaluate(id=>{const e=document.querySelector(`#gi-${id} .giopen`);if(e)e.scrollIntoView({block:'center'})},id);await sleep(400);
   const b=await ph.page.locator(`#gi-${id} .giopen`).boundingBox();await ph.tapAt(b.x+b.width/2,b.y+b.height/3);await sleep(1000);return id}
 async function setField(ph,k,v){const i=ph.page.locator(`#item-view .wf-${k}:visible`).first();await i.scrollIntoViewIfNeeded();const b=await i.boundingBox();await ph.tapAt(b.x+b.width/2,b.y+b.height/2);await i.fill(v);await i.press('Tab');await sleep(700)}
@@ -52,7 +53,7 @@ async function done(ph){const d=ph.page.locator('#item-view button:visible',{has
 async function today(ph){await ph.tap('#n-today');await sleep(1200)}
 const kvDump=()=>P.mock(PORT,'kv-dump');
 async function serverBackup(){const d=await kvDump();for(const [k,e] of Object.entries(d))if(/:wardrobe:v1$/.test(k)&&!e.b){const o=JSON.parse(e.v);return o.data||o}return null}
-const todayKey=ph=>ph.page.evaluate(()=>key(todayDate()));
+const todayKey=ph=>ph.page.evaluate(()=>HOOK.key(HOOK.todayDate()));
 const dayOf=(bk,k)=>bk&&(bk.days||[]).find(d=>d.date===k)||null;
 const pill=ph=>ph.page.evaluate(()=>{const p=document.querySelector('#wpill');return p?p.innerText.trim():null});
 async function recordToasts(ph){await ph.ctx.addInitScript(()=>{window.__toasts=[];const hook=()=>{const e=document.querySelector('#toast');if(!e)return setTimeout(hook,50);
@@ -62,12 +63,13 @@ async function recordToasts(ph){await ph.ctx.addInitScript(()=>{window.__toasts=
 async function buildLegacy(id){
   await startLab(id,OLD,'2026-11-01T08:00:00+03:00');const link=info.inviteLink;
   const A=await open(id+'-A',link);await skipSetup(A);await sleep(1500);await today(A);
-  await A.tap('#kit-sample-link');for(let i=0;i<40&&await A.page.evaluate(()=>items.length)<24;i++)await sleep(250);await sleep(1500);
-  const workdays=await A.page.evaluate(()=>settings.workdays);
+  // (on the old build, which has no HOOK: its items and settings are a classic script's globals, READS_KEPT)
+  await A.tap('#kit-sample-link');for(let i=0;i<40&&await A.page.evaluate(()=>(typeof HOOK==='undefined'?items:HOOK.items).length)<24;i++)await sleep(250);await sleep(1500);
+  const workdays=await A.page.evaluate(()=>(typeof HOOK==='undefined'?settings:HOOK.settings).workdays);
   await A.advance(5000);
   const suitId=await openItemByName(A,'Navy suit');await setField(A,'name','My navy suit');await done(A);
   // (on the old build, which has no HOOK: its kitEdited is a classic script's global)
-  const old=await A.page.evaluate(id=>{const ke=typeof HOOK==='undefined'?kitEdited:HOOK.kitEdited,i=items.find(x=>x.id===id);return {name:i.name,sample:!!i.sample,editedOldRule:ke(i),own:items.filter(i=>!i.sample||ke(i)).length,all:items.length}},suitId);
+  const old=await A.page.evaluate(id=>{const ke=typeof HOOK==='undefined'?kitEdited:HOOK.kitEdited,its=typeof HOOK==='undefined'?items:HOOK.items,i=its.find(x=>x.id===id);return {name:i.name,sample:!!i.sample,editedOldRule:ke(i),own:its.filter(i=>!i.sample||ke(i)).length,all:its.length}},suitId);
   await today(A);await backup(A);
   for(const t of ['2026-11-04T08:00:00+03:00','2026-11-05T08:00:00+03:00']){await setWorld(t,A);await reopen(A);await sleep(1500);await backup(A)}
   await sleep(1500);const bk=await serverBackup();
@@ -75,7 +77,7 @@ async function buildLegacy(id){
     serverSuit:(bk.items.find(i=>i.id===suitId)||{}).name};
   // the update: the lab restarts on the same kv with today's app; the phone opens it (the new service worker may need a reopen or two)
   await restartLab(NEW);await setWorld('2026-11-08T08:00:00+03:00',A);
-  let isNew=false;for(let k=0;k<5&&!isNew;k++){await reopen(A);isNew=await A.page.evaluate(()=>typeof kitUserEdit==='function');}
+  let isNew=false;for(let k=0;k<5&&!isNew;k++){await reopen(A);isNew=await A.page.evaluate(()=>typeof HOOK!=='undefined'&&'kitUserEdit' in HOOK);}
   if(!isNew)throw new Error('phone A never took today\'s app');
   await sleep(3000);
   return {A,link,suitId,before}}

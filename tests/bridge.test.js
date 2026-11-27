@@ -606,7 +606,12 @@ function bareReads(r,allowed=READS_KEPT){const P=platformAll(),out={};
 const BARE_READS_CHECK=false;
 /* the files that read a bridged name on an older build (tests/replay R.old(sha), which has no HOOK), and the names: they stay bare
    there. The groups fill this in for the uses that really run on an old build; every other use is rewritten */
-const READS_KEPT={};
+const READS_KEPT={
+  // S6t1: phones A and B run the app of 40dbc2c (module bridge, no HOOK) to connect the calendar; C runs today's through HOOK
+  'tests/replay/scripts/CR-6-20.js':['openSettings','settings'],
+  // S6t1: buildLegacy's phone runs c4a549b (classic scripts, no HOOK) until the update; openItemByName runs only there
+  'tests/replay/scripts/_verify3-lib.js':['items','kitEdited','settings'],
+};
 /* the names a test also uses on an older build, which has no HOOK (T2 phase 3): they stay globals there, so --to-hook leaves them */
 const OLD_BUILD=new Set(['syncing','kitEdited','asmCmMf','asmCmCodeSig','asmCmSig','asmCmSrcSig']);
 /* of those, the ones a test assigns there, and the file (S1f): garmentpaint.test.js gives origin/main's page a HOOK of its own whose

@@ -9,10 +9,10 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const PH='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNoaGgAAAMEAYFL09IQAAAAAElFTkSuQmCC';
     await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.dayRecs={};HOOK.cache={};
-      for(const d of [new Date(2026,10,11),new Date(2026,10,12)]){const o=planOn(d);renders[comboKey(o)]={img:'${PH}',sig:comboSig(o)}}   // a kept photo for each day, so the picture is drawn
-      HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};show('today')})()`);
+      for(const d of [new Date(2026,10,11),new Date(2026,10,12)]){const o=HOOK.planOn(d);HOOK.renders[HOOK.comboKey(o)]={img:'${PH}',sig:HOOK.comboSig(o)}}   // a kept photo for each day, so the picture is drawn
+      HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};HOOK.show('today')})()`);
     await p.waitForSelector('#mannequin-container.photo .swstack .ovsw');
-    const st=()=>p.evaluate(()=>{const c=$('#mannequin-container'),R=c.getBoundingClientRect(),rel=e=>{if(!e)return null;const b=e.getBoundingClientRect();return {l:b.left-R.left,t:b.top-R.top,r:b.right-R.left,b:b.bottom-R.top}};
+    const st=()=>p.evaluate(()=>{const c=HOOK.$('#mannequin-container'),R=c.getBoundingClientRect(),rel=e=>{if(!e)return null;const b=e.getBoundingClientRect();return {l:b.left-R.left,t:b.top-R.top,r:b.right-R.left,b:b.bottom-R.top}};
       const sws=[...c.querySelectorAll('.swstack .ovsw')];return {W:R.width,open:c.classList.contains('swopen'),t:HOOK.zoomTarget().style.transform,lens:rel(c.querySelector('.swlens')),lab:rel(c.querySelector('.swlab')),
         labText:(c.querySelector('.swlab')||{}).textContent||'',ring:rel(c.querySelector('.swring')),scroll:c.scrollTop+c.scrollLeft,stack:rel(c.querySelector('.swstack')),sw:sws.map(rel),on:sws.filter(b=>b.classList.contains('on')).map(b=>b.dataset.s),
         pressed:sws.map(b=>b.getAttribute('aria-pressed')),slots:sws.map(b=>b.dataset.s),painted:/as painted/i.test(c.textContent),onShadow:(()=>{const b=sws.find(x=>x.classList.contains('on'));return b?getComputedStyle(b).boxShadow:''})(),share:c.querySelector('.wshare')?'1':'0'}});
@@ -33,26 +33,26 @@ module.exports=async({ok,chromium,url,WARDROBES,settle})=>{
     // narrower phones, opened by real taps: a tap focuses the swatch, and that once scrolled the zoomed picture inside its frame, pushing the
     // big swatch and the ring out of place (seen in the owner's preview at 375 px)
     await p.click('#mannequin-container .ovsw[data-s="tie"]');await settle(p,500);   // (the tie, still open from above, closes)
-    for(const [vw,vh] of [[375,812],[330,700],[720,1000]]){await p.setViewportSize({width:vw,height:vh});await p.evaluate(()=>renderToday());await settle(p,400);
+    for(const [vw,vh] of [[375,812],[330,700],[720,1000]]){await p.setViewportSize({width:vw,height:vh});await p.evaluate(()=>HOOK.renderToday());await settle(p,400);
       const shut=await st();
       for(const s of ['top','shirt','tie']){await p.click(`#mannequin-container .ovsw[data-s="${s}"]`);await settle(p,900);const n=await st();
         if(vw===720)ok(n.sw.every((x,i)=>Math.abs(x.t-shut.sw[i].t)<1&&Math.abs((x.r-x.l)-64)<1),`the Duo upright (${Math.round(n.W)} px picture), ${s}: the small swatches stay where they are at 64 px (top ${n.sw.map(x=>Math.round(x.t)).join('/')} vs ${shut.sw.map(x=>Math.round(x.t)).join('/')})`);
         ok(n.open&&n.scroll===0&&n.lens&&Math.abs(n.lens.t-12)<2&&n.ring&&n.sw.every(x=>Math.abs((x.r-x.l)-swPx(n.W))<1.5)&&!over(n.lens,n.stack)&&!over(n.ring,n.lens)&&!over(n.ring,n.stack)&&n.ring.t>=-1,
           `${vw} px, ${s}: ${Math.round(n.sw[0].r-n.sw[0].l)} px small swatches under a ${Math.round(n.W)} px picture, nothing moves out of place or overlaps (frame scrolled ${n.scroll} px; big swatch to ${n.lens&&Math.round(n.lens.b)}, small from ${n.stack&&Math.round(n.stack.t)})`)}
       await p.click('#mannequin-container .ovsw[data-s="tie"]');await settle(p,600)}
-    await p.setViewportSize({width:390,height:844});await p.evaluate(()=>renderToday());await settle(p,300);
+    await p.setViewportSize({width:390,height:844});await p.evaluate(()=>HOOK.renderToday());await settle(p,300);
     // the same swatch closes; a tap on the picture closes; another day closes
     await p.click('#mannequin-container .ovsw[data-s="tie"]');await settle(p,700);
     await p.click('#mannequin-container .ovsw[data-s="tie"]');await settle(p,700);
     const c=await st();ok(!c.open&&!c.lens&&!c.ring&&c.t===''&&c.sw.every(x=>Math.round(x.r-x.l)===64),'tapping the open swatch again closes it and the swatches grow back');
     await p.click('#mannequin-container .ovsw[data-s="shirt"]');await settle(p,600);
-    await p.mouse.click(...await p.evaluate(()=>{const b=$('#mannequin-container').getBoundingClientRect();return [b.left+b.width*.8,b.top+b.height*.85]}));await settle(p,600);
+    await p.mouse.click(...await p.evaluate(()=>{const b=HOOK.$('#mannequin-container').getBoundingClientRect();return [b.left+b.width*.8,b.top+b.height*.85]}));await settle(p,600);
     ok(!(await st()).open,'a tap on the picture closes it');
     await p.click('#mannequin-container .ovsw[data-s="shirt"]');await settle(p,600);
-    await p.evaluate(()=>stepDay(1,0));await settle(p,600);
+    await p.evaluate(()=>HOOK.stepDay(1,0));await settle(p,600);
     const d=await st();ok(!d.open&&d.t===''&&!d.lens,'moving to another day closes it');
     // a redraw of the same day keeps it open
-    await p.click('#mannequin-container .ovsw[data-s="top"]');await settle(p,600);await p.evaluate(()=>renderToday());await settle(p,300);
+    await p.click('#mannequin-container .ovsw[data-s="top"]');await settle(p,600);await p.evaluate(()=>HOOK.renderToday());await settle(p,300);
     const e=await st();ok(e.open&&e.on.join()==='top'&&e.lens&&/scale\(2\.3\)/.test(e.t),'a redraw of the same day keeps the swatch open');
     ok(!errs.length,'no page errors: '+errs.join('; '));
   }finally{await browser.close()}
