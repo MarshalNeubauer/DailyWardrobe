@@ -13,7 +13,6 @@ declare var SETUP_AUTO: any;
 declare var SYNC_OLD: any;
 declare var SYNC_SEND_TEST: any;
 declare var TEST_PLAN: any;
-declare var _cities: any;
 declare var appReady: any;
 declare var mqData: any;
 declare var outfitMannequinSvg: any;
