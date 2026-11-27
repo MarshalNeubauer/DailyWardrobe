@@ -11,7 +11,6 @@
    its colour (on a dark dial the printing turned light), and a leather strap (the scan's grain along the strap, a broad calf sheen,
    darker painted edges, a stitch line) or a metal bracelet in the case's metal. The open-collar masters share their buttoned masters'
    watch. Its own version (ASM_WATCHV) is in the look's key (asmWatchSig in asm-color.js asmCmSig). */
-import {serve} from './bus.js';
 import {linSrgb8} from './srgb.js';
 import {ASM_LIN,asmData,asmJpeg} from './assemble.js';
 const ASM_WATCHV=1;
@@ -82,8 +81,6 @@ function asmWatchDo(px,S,W,M,T){const L=ASM_LIN,f=S/2048,g=W.g,pad=Math.ceil(14*
       else{const k=Math.min(1.1,Math.max(.35,Y[q]/ref));for(let c=0;c<3;c++)put(q,c,DC[c]*k,a)}}}   // a light dial: its colour, the printing as dark as before
   const gam=linSrgb8;   // (srgb.js)
   for(let j=0;j<h;j++)for(let i=0;i<w;i++){const q=j*w+i;if(!chg[q])continue;const p=4*((Y0+j)*S+X0+i);for(let c=0;c<3;c++)px[p+c]=gam(out[3*q+c])}}   // only what was painted
-/* sockets (bus.js; the restructure S6p, 2026-11-27): the day's watch, painted on the finished picture (asm-color.js asmBuildAfter: the painter lives without this file) */
-serve('asm-watch-paint',asmWatchPaint);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,ASM_WATCH_GEO,asmWatchPaint};
 export {ASM_WATCH_GEO,asmWatchPaint,ASM_WATCH_STRAPS,ASM_WATCHV,ASM_WATCH_MASTER,asmWatchMetal};

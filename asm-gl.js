@@ -675,8 +675,8 @@ function asmGlStatus(){const el=document.getElementById('gl-status');if(!el)retu
 function asmGlSet(v){try{if(v==='off')localStorage.setItem(ASM_GL,'0');else localStorage.removeItem(ASM_GL)}catch{}asmGlStatus()}
 /* a picture came back from the painter (asmRun): remember which way it was made, for the line above */
 function asmGlNote(r){if(!r||!('gl' in r))return;asmGlLast={gl:!!r.gl,ms:r.ms!=null?r.ms:null};asmGlStatus()}
-/* sockets (bus.js; the restructure S6p, 2026-11-27): what assemble.js (today-no-picture) asks of this optional file on the page, and asm-color.js's asmCmBuild in either thread (asm-gl.js imports asm-color.js); setAsmGlState for lab/gl-bench-run.js */
-serve('asm-gl-try',asmGlTry);serve('asm-gl-free',asmGlFree);serve('asm-gl-note',asmGlNote);serve('asm-gl-on-page',asmGlOnPage);serve('asm-gl-state',()=>asmGlState);serve('asm-gl-page',(...a)=>asmGlPage(...a));
+/* sockets (bus.js; the restructure S6p, 2026-11-27): what assemble.js (today-no-picture) asks of this optional file on the page (asm-color.js's asmCmBuild imports asmGlTry since N6, 2026-11-28: the two import each other, and neither reads the other at load); setAsmGlState for lab/gl-bench-run.js */
+serve('asm-gl-free',asmGlFree);serve('asm-gl-note',asmGlNote);serve('asm-gl-on-page',asmGlOnPage);serve('asm-gl-state',()=>asmGlState);serve('asm-gl-page',(...a)=>asmGlPage(...a));
 const setAsmGlState=v=>{asmGlState=v};
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,asmGlBytes,asmGlCuffs,asmGlInit,asmGlReset,get asmGlRetry(){return asmGlRetry},set asmGlRetry(v){asmGlRetry=v},asmGlSet,get asmGlPage(){return asmGlPage},set asmGlPage(v){asmGlPage=v},get asmGlPaint(){return asmGlPaint},set asmGlPaint(v){asmGlPaint=v},asmGlFree,asmGlNote,asmGlOnPage,asmGlProbe,get asmGlState(){return asmGlState},set asmGlState(v){asmGlState=v},asmGlUI,asmGlWhy};

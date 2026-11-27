@@ -23,6 +23,9 @@ import {ask,serve,served} from './bus.js';
 import {linSrgb,linSrgb8,srgbLin} from './srgb.js';
 import {ASM_CMV,ASM_CM_KINDS} from './asm-keys.js';
 import {ASM_CREASE_DEG,ASM_FLOW,ASM_FORE_K,ASM_LIN,ASM_PX_MM,ASM_SIZE,ASM_SLEEVE_FLOW,asmBarDraw,asmBodyFlow,asmData,asmFlowAt,asmImg,asmJpeg,asmLinenTile,asmPolyAt,asmSleeveFlow,asmSleeveSegs,asmTubeAt,asmTubePart,asmTubeRaw,asmTubeTabs,asmTweedTile} from './assemble.js';
+import {asmWatchPaint} from './asm-watch.js';
+import {asmPocketPaint} from './asm-pocket.js';
+import {asmGlTry} from './asm-gl.js';
 const ASM_CM='asm_cm';   // localStorage: '0' = this phone puts pictures together the earlier way
 const asmCmPref=()=>{try{return localStorage.getItem(ASM_CM)!=='0'}catch{return true}};
 try{localStorage.removeItem(ASM_CM)}catch{}   // (its Settings switch is gone, 2026-11-13: a phone that had it off paints again; asmCmSet stays for the tests)
@@ -261,7 +264,7 @@ function asmCrFind(d,W,H){const L=ASM_LIN,N=W*H,R=new Float32Array(N),G=new Floa
   // the cloth's contrast wins, and of the pairs within ASM_CR.near of it the smallest cell (a double cell explains as much as a single)
   const prs=[];for(let i=0;i<pk.length;i++)for(let j=i+1;j<pk.length;j++){const p=pk[i],q=pk[j],cr=Math.abs(p.x*q.y-p.y*q.x);if(cr/(Math.hypot(p.x,p.y)*Math.hypot(q.x,q.y))<=.35)continue;const v=pile(p.x,p.y,q.x,q.y);prs.push({p,q,cr,per:v[1]>0?v[0]/v[1]:0})}
   if(!prs.length)return null;let top=0;for(const r of prs)if(r.per>top)top=r.per;let pick=null;for(const r of prs)if(r.per>=ASM_CR.near*top&&(!pick||r.cr<pick.cr))pick=r;
-  let a=pick.p,b=pick.q;if(Math.abs(a.y)>Math.abs(a.x)){const t=a;a=b;b=t}if(a.x<0)a={x:-a.x,y:-a.y};if(b.y<0)b={x:-b.x,y:-b.y};
+  let a=/** @type {{x:number,y:number}} */(pick.p),b=/** @type {{x:number,y:number}} */(pick.q);if(Math.abs(a.y)>Math.abs(a.x)){const t=a;a=b;b=t}if(a.x<0)a={x:-a.x,y:-a.y};if(b.y<0)b={x:-b.x,y:-b.y};
   let P=[a.x,a.y,b.x,b.y],best=pile(P[0],P[1],P[2],P[3])[0];for(const st of [.3,.15,.07,.03])for(let pass=0;pass<3;pass++)for(let q=0;q<4;q++)for(const sg of [-1,1]){const T2=P.slice();T2[q]+=sg*st;const v=pile(T2[0],T2[1],T2[2],T2[3])[0];if(v>best){best=v;P=T2}}
   const pv=pile(P[0],P[1],P[2],P[3]);
   // (the owner, on his lavender print: "how come they turned the pattern sideways?": its figures sit on a diagonal grid, and a tile
@@ -692,7 +695,7 @@ keep=1;   // (2026-11-14 audit) one master in memory everywhere: the PC pre-buil
 let asmCmBuild=async function asmCmBuild(job){const hit=await asmCmSetup(job);
   // (2026-11-14) a look the graphics chip covers (asm-gl.js asmGlCovers) is painted there, about ten times faster and within 2 levels
   // of the picture below; anything else, no WebGL2, a lost context or the switch off (job.gl false) is painted here as before
-  if(job.gl!==false&&served('asm-gl-try')){const r=await ask('asm-gl-try',job,hit);if(r)return r}
+  if(job.gl!==false){const r=await asmGlTry(job,hit);if(r)return r}
   const t0=performance.now(),P=hit.P,S=P.S,N=P.N,L=ASM_LIN,M=P.M,A=P.A,names=P.names,geo=P.geo,tg=P.tieGeo,ls=S/ASM_SIZE,o=new Uint8ClampedArray(4*N);
   // the background picture at this size (kept while the same picture and size come back)
   let BG=null;if(job.bg&&P.bgShadow){const bk=job.bgt+'|'+S;if(!asmCmMem.bg||asmCmMem.bg.k!==bk)asmCmMem.bg={k:bk,d:(await asmData(job.bg,S)).data};BG=asmCmMem.bg.d}
@@ -894,9 +897,9 @@ async function asmBuild(job){
   if(job.cm&&job.setupOnly){const hit=await asmCmSetup(job);if(job.diskCache!==false&&typeof indexedDB!=='undefined'&&!await asmCmDiskGet(asmCmDiskKey(job))){const x=await asmCmPack(hit.P);if(x)await asmCmDiskPut(asmCmDiskKey(job),x,job.cm+'|')}return {setup:true}}   // (warming, asm-color.js asmCmWarm)
   if(!job||!job.cm)return {};return asmBuildAfter(await asmCmBuild(job),job)}
 /* the day's watch and pocket square, painted on the finished picture (asm-watch.js, asm-pocket.js; also after the page's draw, asm-gl.js asmGlFinOff) */
-async function asmBuildAfter(r,job){if(job.watch&&served('asm-watch-paint'))r=await ask('asm-watch-paint',r,job.watch);
+async function asmBuildAfter(r,job){if(job.watch)r=await asmWatchPaint(r,job.watch);
   if(job.ocpDecal&&served('asm-ocp-paint'))r=await ask('asm-ocp-paint',r,job.ocpDecal);   // the uniform blouse's tapes and rank (asm-ocp.js)
-  return job.pocket&&served('asm-pocket-paint')?ask('asm-pocket-paint',r,job.pocket):r}
+  return job.pocket?asmPocketPaint(r,job.pocket):r}
 /* the painter's sockets (bus.js; the restructure S6p, 2026-11-27): what assemble.js, asm-look.js and asm-today.js, draw.js (today-no-picture)
    and the mannequin ask of this optional file, which they may not import; in the worker nobody asks (asm-worker.js imports asmBuild) */
 serve('asm-build',asmBuild);serve('asm-cm-warming',()=>asmCmWarming);serve('asm-cm-kind',asmCmKind);serve('asm-nk-base-of',asmNkBaseOf);serve('asm-cm-btn-col',asmCmBtnCol);
