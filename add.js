@@ -94,7 +94,7 @@ function stopRead(id){const q=queue.find(x=>x.id===id);if(!q||!q.abort||q.multiB
    there (the last card's: "Import from a spreadsheet", whose sheet then covered Add). A tap within ADD_CALM ms of a Confirm and near
    the same spot is let go */
 const ADD_CALM=450;let addCalm=null;
-document.addEventListener('click',/** @param {MouseEvent & {target: Element}} e */e=>{const t=e.target&&e.target.closest?e.target:null;if(!t||!t.closest('#add'))return;
+document.addEventListener('click',e=>{const t=e.target&&/** @type {Element} */(e.target).closest?/** @type {Element} */(e.target):null;if(!t||!t.closest('#add'))return;
   if(addCalm&&addCalm.ok&&e.isTrusted&&Date.now()-addCalm.t<ADD_CALM&&Math.hypot(e.clientX-addCalm.x,e.clientY-addCalm.y)<40){e.preventDefault();e.stopPropagation();return}
   if(e.isTrusted)addCalm=t.closest('[id^="qconf-"]')?{t:Date.now(),x:e.clientX,y:e.clientY}:null},true);   // (any other tap ends it)
 /* a new card is brought into view (it used to land below the One item / Several items buttons, out of sight under the tab bar) */

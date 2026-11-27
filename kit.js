@@ -66,8 +66,8 @@ function kitBackTap(){kitGo(-1)}
 function kitNextTap(){kitGo(1)}
 function kitGuideTap(){kitClose();kitCloseupGuide()}
 // ← → step the cards only: not in the import (no cards: → closed it and lost the pasted rows) nor while typing in a field (re-audit 2026-11-15)
-addEventListener('keydown',/** @param {KeyboardEvent & {target: Element}} e */e=>{if(!kit)return;if(e.key==='Escape'){e.preventDefault();kitClose();return}
-  if(!kit.cards.length||(e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable]')))return;
+addEventListener('keydown',e=>{if(!kit)return;if(e.key==='Escape'){e.preventDefault();kitClose();return}
+  if(!kit.cards.length||(e.target&&/** @type {Element} */(e.target).closest&&/** @type {Element} */(e.target).closest('input,textarea,select,[contenteditable]')))return;
   if(e.key==='ArrowRight')kitGo(1);else if(e.key==='ArrowLeft')kitGo(-1)});
 
 /* the pictures: drawn, in the app's own colours (no photos to download) */

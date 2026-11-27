@@ -197,7 +197,7 @@ on('wardrobe-changed',renderWardrobe);serve('wardrobe-draw',renderWardrobe);
       setTimeout(()=>stepType(n,(dx<0?1:-1)*w*.6),160);
     }else{sl.style.transition='transform .2s ease-out,opacity .2s';sl.style.transform='translateX(0)';sl.style.opacity='1'}};
   el.addEventListener('touchend',end,{passive:true});el.addEventListener('touchcancel',end,{passive:true});
-  document.addEventListener('keydown',/** @param {KeyboardEvent & {target: Element}} e */e=>{if(el.hidden||editing||e.target.closest('input,select,textarea'))return;if(e.key==='ArrowRight')stepType(1);if(e.key==='ArrowLeft')stepType(-1)});
+  document.addEventListener('keydown',e=>{if(el.hidden||editing||/** @type {Element} */(e.target).closest('input,select,textarea'))return;if(e.key==='ArrowRight')stepType(1);if(e.key==='ArrowLeft')stepType(-1)});
 })();
 function renderWardrobe(){
   closeSettings();if(editing!==phEdit.id)setPhEdit({id:null,undo:[],crop:null});   // undo lasts while the item stays open

@@ -877,11 +877,11 @@ const homeStandalone=()=>window.DW_STANDALONE===true||/** @type {any} */(navigat
    themselves (beforeinstallprompt, kept in homeEvt): the step's Install button opens the browser's own dialog; where the browser gives none
    (Firefox, an install dismissed, a browser that never offers it) the step shows the menu steps instead. The installed app shares the
    browser's storage, so nothing is said about setting up first. window.DW_ANDROID: tests */
-const homeAndroid=()=>/** @type {any} */(window).DW_ANDROID===true||(!homeIOS()&&/Android/i.test(navigator.userAgent));
+const homeAndroid=()=>window.DW_ANDROID===true||(!homeIOS()&&/Android/i.test(navigator.userAgent));
 const homeNeeded=()=>(homeIOS()||homeAndroid())&&!homeStandalone();
 /* which browser the app is open in on an iPhone or iPad (2026-11-16, a tester used Chrome and was shown Safari's steps): every iOS browser
    draws with Safari's engine but has its own buttons, and a Home Screen app added from any of them keeps its own storage. window.DW_BROWSER: tests */
-const homeBrowser=()=>/** @type {any} */(window).DW_BROWSER||(/CriOS/.test(navigator.userAgent)?'Chrome':/FxiOS/.test(navigator.userAgent)?'Firefox':/EdgiOS/.test(navigator.userAgent)?'Edge':'Safari');
+const homeBrowser=()=>window.DW_BROWSER||(/CriOS/.test(navigator.userAgent)?'Chrome':/FxiOS/.test(navigator.userAgent)?'Firefox':/EdgiOS/.test(navigator.userAgent)?'Edge':'Safari');
 /* the same in a few words, for a line elsewhere (Settings → reminders) */
 const homeShareShort=()=>{const b=homeBrowser();return b==='Chrome'?'tap Share in Chrome’s address bar, then “Add to Home Screen”':b==='Safari'?'tap ⋯, then Share, then “Add to Home Screen”':`open ${b}’s menu, tap Share, then “Add to Home Screen”`};
 /* (moved from safety.js with its text unchanged, the restructure S6c) */

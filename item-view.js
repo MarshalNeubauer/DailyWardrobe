@@ -128,9 +128,9 @@ function stepItem(n,from){
     if(!((Math.abs(dx)>70||(fast&&Math.abs(dx)>30))&&stepItem(n,n*Math.min(innerWidth*.5,220)))){
       el.style.transition='transform .2s ease-out,opacity .2s';el.style.transform='translateX(0)';el.style.opacity='1'}};
   b.addEventListener('touchend',end,{passive:true});b.addEventListener('touchcancel',end,{passive:true});
-  document.addEventListener('keydown',/** @param {KeyboardEvent & {target: Element}} e */e=>{if(!editing)return;
+  document.addEventListener('keydown',e=>{if(!editing)return;
     if(e.key==='Escape'){if(phEdit.crop){cropKeep();emit('wardrobe-changed')}else closeItem();return}   // Esc leaves the crop as Back does: a moved frame is kept
-    if(e.target.closest&&e.target.closest('input,select,textarea'))return;
+    if(/** @type {Element} */(e.target).closest&&/** @type {Element} */(e.target).closest('input,select,textarea'))return;
     if(e.key==='ArrowRight')stepItem(1);if(e.key==='ArrowLeft')stepItem(-1)});
 })();
 /* the markup's handlers (act.js): the item sheet's backdrop and Done, and its previous and next buttons (data-n: -1 or 1) */
