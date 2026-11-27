@@ -1,11 +1,10 @@
 {
  "note": "Type errors per file and scope (tests/typecheck.js). May only go down: fix errors, then `node tests/typecheck.js --update`.",
- "total": 13,
+ "total": 10,
  "files": {
   "page": {
    "asm-cm-job.js": 8,
-   "asm-color.js": 2,
-   "merge.js": 3
+   "asm-color.js": 2
   },
   "asm": {},
   "analysis": {},
