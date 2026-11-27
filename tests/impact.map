@@ -1,6 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	13afe766646fb57778a5
-# tested	7023a8eaa8cb4ef0977b
+# tested	e0e7063af048973a1021
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -3005,7 +3004,6 @@ backgesture-item.test.js	tests/backgesture-parts.js	<any>
 backgesture-item.test.js	tests/fixedplan.js	<any>
 backgesture-item.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-item.test.js	tests/fixtures/suit-mink.jpg	<loaded>
-backgesture-item.test.js	tests/webkit.js	<any>
 backgesture-item.test.js	theme.js	<loaded>	applyTheme
 backgesture-item.test.js	toast.js	<loaded>	toast	undoHere
 backgesture-item.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -17171,7 +17169,6 @@ setup.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@doc
 setup.test.js	tag-request.js	<loaded>
 setup.test.js	tagging.js	<loaded>
 setup.test.js	tests/fixedplan.js	<any>
-setup.test.js	tests/webkit.js	<any>
 setup.test.js	theme.js	<loaded>	applyTheme
 setup.test.js	toast.js	<loaded>	toast	toastDrop	toastOff	undoOff
 setup.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold	todayBusy	todayCovered
@@ -17698,6 +17695,7 @@ sharpclose.test.js	sync.js	<loaded>	@connRestored.then	adoptBackupSettings	after
 sharpclose.test.js	tag-request.js	<loaded>	describeEstimate	keepCloseImg	readEstimate	sharpCloseOf	tagImgOf	visTok
 sharpclose.test.js	tagging.js	<loaded>
 sharpclose.test.js	tests/fixedplan.js	<any>
+sharpclose.test.js	tests/webkit.js	<any>
 sharpclose.test.js	theme.js	<loaded>	applyTheme
 sharpclose.test.js	toast.js	<loaded>	toast	undoHere
 sharpclose.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -17706,7 +17704,7 @@ sharpclose.test.js	today-picture.js	<loaded>	@{constel$todayinPice}	applyZoom	sw
 sharpclose.test.js	today-plan.js	<loaded>	@serveplansnap	hasOutfit	planDirty	planFor	planMonth	planSnapUse
 sharpclose.test.js	today.js	<loaded>	renderToday	todaySay	wornPill	wxFit	wxPreload
 sharpclose.test.js	ui.js	<loaded>	closeupBtn	cuTouch	layerInert	layerUp	netErr	noMotion	uiEsc
-sharpclose.test.js	wardrobe.js	<loaded>	@servewardpendingrestore	@whenPulled	giNote	giTag	ivOn	matMigrate	matOnItem	matRenameTo	sockLegacy	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
+sharpclose.test.js	wardrobe.js	<loaded>	@servewardpendingrestore	@servewardsynced	@whenPulled	giNote	giTag	ivOn	matMigrate	matOnItem	matRenameTo	sockLegacy	sockToeMigrate	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardSort	wardView
 sharpclose.test.js	weather.js	<loaded>	loadWeather
 sharpclose.test.js	who.js	<loaded>	acctRole	applyRole	isTester
 shellfix.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutConn	aboutDbDelete	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutResetAt	aboutSay	aboutShow	aboutStart	appVersion	askDelete	checkForUpdate	delAskTap	delDeviceTap	deleteMyData	loadFeedback	renderAbout	swVersionOf	wipeDevice
