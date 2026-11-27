@@ -10,14 +10,13 @@
    - a sample wardrobe to try the app with (kitSampleLoad): 22 pieces marked sample, a note on Today while they are there, removed in one tap */
 
 /* ---- one sheet for the tour and the guide: cards with a picture, Back and Next, the last one closes it ---- */
-import {$,COLORS,CUSTOM_COL,CUSTOM_PAT,KIT_TOUR,MATERIALS_BY,METAL_TYPES,PATS_BY,PAT_ALIAS,SEASON_TYPES,SHIRT_WEAVE_MAT,TYPES,accentsFor,accentsOf,askPersist,colName,colsFor,dayRecs,dressOut,fitCol,hasPat,homeAndroid,homeBrowser,homeIOS,homeNeeded,homeStandalone,inviteOver,isConnected,itemFields,itemName,itemTitle,items,keyDate,leatherWord,leathersFor,matAlias,mergeState,metalWord,myInviteLink,nextStamp,normCol,nowMs,patLabel,patName,sentence,setWardrobe,settings,shortDesc,syncUrl,todayDate,typeWord,watchOpts,wearsJacket,wearsTie} from './core.js';
+import {$,COLORS,CUSTOM_COL,CUSTOM_PAT,KIT_TOUR,MATERIALS_BY,METAL_TYPES,PATS_BY,PAT_ALIAS,SEASON_TYPES,SHIRT_WEAVE_MAT,TYPES,accentsFor,accentsOf,askPersist,colName,colsFor,dayRecs,dressOut,fitCol,hasPat,homeAndroid,homeBrowser,homeIOS,homeNeeded,homeStandalone,inviteOver,isConnected,itemFields,itemName,itemTitle,items,keyDate,leatherWord,leathersFor,matAlias,mergeState,metalWord,myInviteLink,nextStamp,normCol,nowMs,patLabel,patName,sentence,setWardrobe,settings,shortDesc,syncUrl,todayDate,typeWord,watchOpts,wearsJacket,wearsTie,esc} from './core.js';
 import {askConfirm,layerInert,noMotion,sheetSwipe} from './ui.js';
 import {backBorrow,backOn,backPush,backReturn} from './back.js';
 import {closeSettings,openSettings,refreshToday,todayDirty} from './settings.js';
 import {toast} from './toast.js';
 import {cap1,dbMark,dbRetry,editing,metaGet,put,queue,storeFailure,tx,txFail} from './app.js';
 import {planDirty} from './today-plan.js';
-import {esc} from './photo-keys.js';
 import {swatchSVG} from './draw.js';
 import {openAdd,show} from './nav.js';
 import {clearLocks} from './days.js';
@@ -31,11 +30,6 @@ function kitInert(on){for(const el of document.querySelectorAll('body>header,mai
 function kitHist(){if(kit&&kit.hist===undefined)kit.hist=backBorrow('kit')}
 /* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
 function setKitNoMine(v){kitNoMine=v}
-/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
-   as globals. Above the file's first top-level call that can throw (backOn): its functions are then still the page's. A getter reads its
-   `let` when asked, so the ones declared below are here too; the consts declared below are handed over above homeAbout() */
-Object.assign(globalThis,{kitOpen,kitClose,tourOpen,kitSaved,kitDuplicate,kitImportOpen,kitFixOldImports,kitSampleMigrate,kitSampleLoad,kitShareDone,kitShareFilter,kitSampleBanner,homeSteps,safariRemind,homeOpen,homeAbout,setKitNoMine});
-Object.defineProperties(globalThis,{kit:{get:()=>kit},kitQuiet:{get:()=>kitQuiet},kitNoMine:{get:()=>kitNoMine,set:v=>{kitNoMine=v}}});
 /* the notice board (bus.js): "Try a sample wardrobe" on an empty Insights or Packing list (stats.js no longer names this file) */
 import {on,askFor,served,serve,emit} from './bus.js';
 import {savedTitle} from './add-save.js';
@@ -810,7 +804,6 @@ const HOME_CARD={key:'home',get title(){return homeLabel()},pic:()=>'',last:'Got
 function homeOpen(){kitOpen([HOME_CARD])}
 /* Settings → About: the button only where it helps */
 function homeAbout(){const b=$('#home-again');if(b){b.hidden=!homeNeeded();b.textContent=homeLabel()}}
-Object.assign(globalThis,{PAPER_CARD,kitUserEdit,kitEdited,kitSentStamp,kitSampleTag,kitSampleNote,kitStartRow,homeTester,homeCopyBtn,HOME_CARD});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,KIT_IMP_LAST,KIT_IMP_UNDO_MS,KIT_MINE_CUT,KIT_TEMPLATE,KIT_YIELD,homeAgain,kitDelMany,kitDraw,kitDupMark,kitEdited,kitEl,get kitImp(){return kitImp},get kitImpBusy(){return kitImpBusy},kitImportFile,kitImportGo,kitImportText,kitItem,kitLastImp,kitRead,kitSampleRemove,kitSampleSig,get kitSampling(){return kitSampling},get kitSdNew(){return kitSdNew},set kitSdNew(v){kitSdNew=v},kitSends,kitStore,kitTemplate,kitTx,kitType,kitUnimport,kitUnsave,tourAgain,homeOpen,homeSteps,get kit(){return kit},kitClose,kitFixOldImports,kitImportOpen,kitSampleLoad,kitSampleMigrate,kitShareDone,kitShareFilter,kitUserEdit,safariRemind,tourOpen};
 export {kit,kitImpBusy,kitEl,kitOpen,kitClose,kitDraw,tourOpen,tourAgain,homeAgain,PAPER_CARD,kitQuiet,kitSaved,kitUnsave,kitTx,kitItem,kitStore,kitDelMany,kitDuplicate,kitType,kitRead,KIT_TEMPLATE,kitTemplate,kitImp,KIT_IMP_LAST,KIT_IMP_UNDO_MS,kitLastImp,kitImportOpen,kitImportFile,kitDupMark,kitImportText,kitImportGo,kitFixOldImports,kitUnimport,kitNoMine,kitUserEdit,kitEdited,KIT_MINE_CUT,kitSampleMigrate,KIT_YIELD,kitSampleSig,kitSampling,kitSampleLoad,kitSampleRemove,kitSdNew,kitShareDone,kitSentStamp,kitSends,kitShareFilter,kitSampleTag,kitSampleNote,kitSampleBanner,kitStartRow,homeTester,homeCopyBtn,homeSteps,safariRemind,HOME_CARD,homeOpen,homeAbout,setKitNoMine};
@@ -827,3 +820,4 @@ acts({kitShut,kitBackTap,kitNextTap,kitGuideTap,kitUnimportTap,kitTemplateTap,ki
   importOpenTap,tourAgainTap,homeAgainTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('kit-quiet',()=>kitQuiet);serve('kit-saved',kitSaved);serve('paper-tip',()=>kitOpen([PAPER_CARD]));serve('kit-sample-tag',kitSampleTag);serve('kit-duplicate',kitDuplicate);serve('kit-sample-note',kitSampleNote);serve('kit-no-mine',setKitNoMine);serve('kit-share-filter',kitShareFilter);serve('kit-sent-stamp',kitSentStamp);serve('kit-share-done',kitShareDone);serve('kit-shown',()=>!!kit);serve('home-open',homeOpen);serve('safari-remind',safariRemind);serve('kit-home-close',()=>{if(kit&&kit.cards[0]===HOME_CARD)kitClose()});serve('tour-open',tourOpen);serve('home-steps',homeSteps);serve('kit-start-row',kitStartRow);serve('home-tester',homeTester);serve('home-copy-btn',homeCopyBtn);serve('kit-sample-load',kitSampleLoad);serve('kit-import-open',kitImportOpen);serve('kit-open',kitOpen);serve('home-about',homeAbout);
+serve('kit-user-edit',kitUserEdit);serve('kit-sample-banner',kitSampleBanner);serve('kit-fix-old',kitFixOldImports);serve('kit-sample-migrate',kitSampleMigrate);   // the restructure S6f: what required and today-no-picture files ask of this file

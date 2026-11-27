@@ -4,8 +4,7 @@
    setQField, add-card.js; the item sheet's setItemField, wardrobe.js). */
 /* ---- an item's own name, brand, material and notes ---- */
 import {cap1} from './app.js';
-import {MATERIALS_BY,matsFor,noBidi} from './core.js';
-import {esc} from './photo-keys.js';
+import {MATERIALS_BY,matsFor,noBidi,esc} from './core.js';
 const WARD_FIELDS=['name','brand','material','notes'];
 const WARD_MAX={name:60,brand:40,material:40,notes:500};
 const matLabel=m=>m==='other'?'Other':cap1(m);
@@ -29,8 +28,5 @@ const optLab=(list,v)=>{const o=list.find(x=>x[0]===v);return o?cap1(o[1]):''};
 /* a material its type can't have goes; a typed "Other" material stays where the type has a list (an own material of another type goes, like a
    listed one). Also the Add card's type change and save (CR-1-06: a jacket read as tweed and changed to a tie was saved "Other · tweed") */
 function matTidy(it){const ml=matsFor(it.type);if(it.material&&!(ml&&(ml.includes(it.material)||!Object.keys(MATERIALS_BY).some(x=>matsFor(x).includes(it.material)))))delete it.material;return it}
-/* An ES module: the bridge (tests/bridge.test.js lists it). add-card.js, add-save.js, wardrobe.js, itemsheet.js and kit.js read these as
-   globals; the tests call matRow. No top-level call */
-Object.assign(globalThis,{WARD_FIELDS,WARD_MAX,matLabel,matRow,fldRow,notesRow,matPicked,wardSaveFields,optLab,matTidy});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,matRow};
 export {WARD_FIELDS,WARD_MAX,matLabel,matRow,fldRow,notesRow,matPicked,wardSaveFields,optLab,matTidy};

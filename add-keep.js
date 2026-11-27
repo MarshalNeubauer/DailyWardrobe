@@ -67,11 +67,6 @@ function addWatch(){if(addWatchOn)return;addWatchOn=true;askFor('guard-unsaved')
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')addKeep()});
   addEventListener('pagehide',()=>addKeep());
   addEventListener('online',()=>askFor('add-back-online'))}
-/* An ES module since 2026-11-23: its other names are its own. The bridge (tests/bridge.test.js lists it): every file that changes a card
-   calls addKeep or addKeepSoon; add.js and add-sheet.js addWatch, add-sheet.js addCardRec, kit.js addRevive, safety.js addRestore.
-   addKeepT is read by tests/addcards.test.js (a getter); the same test assigns addRestoreState (add.js reads it): a setter too */
-Object.assign(globalThis,{addKeepSoon,addCardRec,addKeep,addRevive,addRestore,addWatch});
-Object.defineProperties(globalThis,{addRestoreState:{get:()=>addRestoreState,set:v=>{addRestoreState=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get addKeepT(){return addKeepT},get addRestoreState(){return addRestoreState},set addRestoreState(v){addRestoreState=v}};
 export {addKeepT,addRestoreState,addKeepSoon,addCardRec,addKeep,addRevive,addRestore,addWatch};

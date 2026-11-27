@@ -2,8 +2,8 @@
    asm-kinds.js and asm-ocp.js with their text unchanged): a look's route, signature and job (asmCmRoute, asmCmSig, asmCmJob), the code
    fingerprint (asmCmCode, asmCmCodeSig), the masters' manifest (asmCmMfGet), warming and Today's hook (asmCmWarm, asmCmEnsure),
    Settings' Pictures ahead and Painted plain (asmCmUI, asmCmStatus, asmGapUI, asmReadGaps) and the item sheet's line (asmGapNote). */
-import {$,isConnected,isWorkday,itemTitle,key,sentence,titleCls,todayDate} from './core.js';
-import {comboKey,esc,renders,workerBase} from './photo-keys.js';
+import {$,isConnected,isWorkday,itemTitle,key,sentence,titleCls,todayDate,esc} from './core.js';
+import {comboKey,renders,workerBase} from './photo-keys.js';
 import {sel,txs} from './app.js';
 import {planFor} from './today-plan.js';
 import {NEED_CONN} from './ui.js';

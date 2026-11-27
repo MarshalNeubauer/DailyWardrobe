@@ -137,8 +137,8 @@ const rollback=async({ok,chromium,url,ROOT})=>{
     ok(nm==='My lucky tie','a name typed just before the page goes is saved when it goes, not 0.6 s later');
     // a second phone's setup: the account's vest choice (stamped) is kept; a new install's default still becomes "No vest"
     const vs=await p.evaluate(()=>{const was=JSON.stringify(HOOK.settings),s0=HOOK.setup;HOOK.setup={...HOOK.setup,first:true,vestSet:false};
-      HOOK.settings=keySettings({workdays:[0,1,2,3,4],blazerDays:[4],vestMode:'auto',updated:0});const fresh=!HOOK.setupVestChosen();
-      HOOK.settings.vestMode='always';stampSettings(HOOK.settings);const chosen=!HOOK.setupVestChosen();HOOK.setup=s0;HOOK.settings=JSON.parse(was);return {fresh,chosen}});
+      HOOK.settings=HOOK.keySettings({workdays:[0,1,2,3,4],blazerDays:[4],vestMode:'auto',updated:0});const fresh=!HOOK.setupVestChosen();
+      HOOK.settings.vestMode='always';HOOK.stampSettings(HOOK.settings);const chosen=!HOOK.setupVestChosen();HOOK.setup=s0;HOOK.settings=JSON.parse(was);return {fresh,chosen}});
     ok(vs.fresh===true&&vs.chosen===false,`the setup sets "No vest" only while the vest is still the app's default (${JSON.stringify(vs)})`);
     ok(!errs.length,'no page errors: '+errs.join(' | '))}
   finally{await b2.close()}
@@ -321,14 +321,14 @@ const snapshots=async({ok,chromium,url,ROOT})=>{
     while(Date.now()<end){await HOOK.recordRun;const s=stateSig(await HOOK.localState());same=!HOOK.syncing&&s===last?same+1:0;last=s;if(same>=3)return true;await new Promise(r=>setTimeout(r,120))}return false});
   const hush=async(...ps)=>{for(const p of ps){await quiet(p);await p.evaluate(()=>clearTimeout(HOOK.syncTimer))}};
   const why=async()=>` [A ${await sig(A.p)}; good ${good}; A's workdays ${JSON.stringify(await A.p.evaluate(()=>HOOK.settings.workdays))}; B ${await sig(B.p)}]`;
-  await A.p.evaluate(async()=>{for(const [id,c] of [['t1','navy'],['t2','burgundy'],['t3','green']]){const it={id,type:'tie',primaryColor:c,pattern:'solid',added:Date.now()};await put(it);HOOK.items.push(it)}
+  await A.p.evaluate(async()=>{for(const [id,c] of [['t1','navy'],['t2','burgundy'],['t3','green']]){const it={id,type:'tie',primaryColor:c,pattern:'solid',added:Date.now()};await HOOK.put(it);HOOK.items.push(it)}
     const s={...HOOK.settings,workdays:[1,2,3,4,5],updated:Date.now()};HOOK.settings=s;await HOOK.metaPut('settings',s);await HOOK.syncNow()});
   await B.p.evaluate(()=>HOOK.syncNow());
   const good=await sig(A.p);
   // pretend yesterday's copy was this good state, then a bad change: one tie deleted, one recoloured, junk added, settings broken
   store.set('snap:2026-11-09',store.get('wardrobe:v1'));meta.set('snap:2026-11-09',meta.get('wardrobe:v1'));
   await A.p.evaluate(async()=>{const t=Date.now()+5;await HOOK.del('t1');const tomb={...(await HOOK.metaGet('tombstones')||{}),t1:t};await HOOK.metaPut('tombstones',tomb);
-    const b={...HOOK.items.find(i=>i.id==='t2'),primaryColor:'pink',updated:t};await put(b);const j={id:'junk',type:'tie',primaryColor:'red',pattern:'solid',added:t};await put(j);
+    const b={...HOOK.items.find(i=>i.id==='t2'),primaryColor:'pink',updated:t};await HOOK.put(b);const j={id:'junk',type:'tie',primaryColor:'red',pattern:'solid',added:t};await HOOK.put(j);
     HOOK.items=await HOOK.tx('readonly',s=>s.getAll());const s={...HOOK.settings,workdays:[],updated:t};HOOK.settings=s;await HOOK.metaPut('settings',s);await HOOK.syncNow()});
   await B.p.evaluate(()=>HOOK.syncNow());
   ok(await sig(B.p)!==good&&(await sig(B.p)).includes('junk'),'(the damage reached the backup and the other device)');

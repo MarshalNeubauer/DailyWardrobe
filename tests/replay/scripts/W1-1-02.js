@@ -1,3 +1,4 @@
+/* global appVersion */   // an older build's globals, read on that build only (tests/bridge.test.js READS_KEPT; the app's bridge is down since the restructure S6f)
 // W1-1-02: the update morning's KV writes for one tester updating 12 Nov -> today (13-item wardrobe here, the tester had 16).
 // Prints the writes of (1) the first open on the old cached app against today's server, (2) the first sync after the update
 // (upgradePhotos remakes every photo at 1536 px + a small copy each). REPRODUCED when the two together are at least 2 writes per item and the post-update sync alone at least 1 per item

@@ -2,9 +2,8 @@
    photo, the fabric close-up, the owner's own colours, patterns and materials, the corrections the owner made before), the sharp copies
    kept on this device, what the tagger learns from the corrections, and what one tagging call costs. */
 
-import {CLOSE_MAX,COLORS,MATERIALS_BY,TAGIMG_CACHE,TAG_MAX,TAG_TYPES,TYPES,colName,ownMats,patName,settings,tagTypesNow,texSig} from './core.js';
+import {CLOSE_MAX,COLORS,MATERIALS_BY,TAGIMG_CACHE,TAG_MAX,TAG_TYPES,TYPES,colName,ownMats,patName,settings,tagTypesNow,texSig,esc} from './core.js';
 import {serve} from './bus.js';
-import {esc} from './photo-keys.js';
 /* the colours and patterns the owner added, when there are any (the worker adds them to what the tagger may answer) */
 const customForTag=()=>{const c=settings.custom||{};return (c.colors||[]).length||(c.patterns||[]).length?{colors:c.colors||[],patterns:c.patterns||[]}:undefined};
 /* the latest corrections (another item's only: the benchmark must not hand an item its own answer) */
@@ -63,10 +62,7 @@ const valName=(k,v)=>!v?'none':k==='type'?(TYPES[v]||v).toLowerCase():k==='patte
    review's R2 N1: 42 of 60 shirt patterns) */
 function aiFields(ai){return {type:ai.type,primaryColor:COLORS[ai.primaryColor]?ai.primaryColor:'grey',secondaryColor:ai.secondaryColor&&ai.secondaryColor!=='none'?ai.secondaryColor:null,
   tertiaryColor:ai.tertiaryColor&&ai.tertiaryColor!=='none'?ai.tertiaryColor:null,pattern:ai.pattern||'solid'}}
-/* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it; the file has no top-level call): app.js,
-   add.js, item-photo.js, migrate.js, measure.js, pattern-read.js, colpick.js, look.js, safety.js and stats.js, classic scripts, and
-   add-keep.js, add-save.js, tagging.js (TAG_Q) and checklist.js (texSig), modules that read them as globals, use these */
-Object.assign(globalThis,{customForTag,tagFixes,tagExtras,keepTagImg,tagImgOf,resignTagImg,keepCloseImg,sharpCloseOf,tagStatsCard,benchEstimate,describeEstimate,readEstimate,fieldLabel,valName,aiFields});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,keepCloseImg,keepTagImg,resignTagImg,sharpCloseOf,tagExtras,tagImgOf};
 export {customForTag,tagFixes,tagExtras,keepTagImg,tagImgOf,resignTagImg,keepCloseImg,sharpCloseOf,tagStatsCard,benchEstimate,describeEstimate,readEstimate,fieldLabel,valName,aiFields};
 serve('tag-stats-card',tagStatsCard);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
+serve('tag-extras',tagExtras);   // the restructure S6f: app.js's tag request (a data file, below this one in the layers)

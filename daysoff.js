@@ -1,8 +1,8 @@
 /* Daily Wardrobe: Settings → Days off: public holidays, your own days off and the occasions (formal days)
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
 import {on,askFor,serve} from './bus.js';
-import {$,OCCASIONS,dayRecs,isoKey,isoToDate,key,keyDate,nameHtml,nowMs,occLabel,occOf,setStr,setWardrobe,settings,settingsOpen,shortDate,syncUrl,takeSettings,todayDate,trueToday,yearDate} from './core.js';
-import {esc,workerBase} from './photo-keys.js';
+import {$,OCCASIONS,dayRecs,isoKey,isoToDate,key,keyDate,nameHtml,nowMs,occLabel,occOf,setStr,setWardrobe,settings,settingsOpen,shortDate,syncUrl,takeSettings,todayDate,trueToday,yearDate,esc} from './core.js';
+import {workerBase} from './photo-keys.js';
 import {saveUserSettings,settingsSummaries,todayDirty} from './settings.js';
 import {metaGet} from './app.js';
 import {monthPlan,nextWorkday} from './month.js';
@@ -153,10 +153,6 @@ function occClear(el){setOccasion(null,el.dataset.day)}
 function countryPick(el){setHolidayCountry(el.value)}
 function dayOffAddTap(){addDayOff()}
 function occAddTap(){addFormalDay()}
-/* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals: settings, setup,
-   start, calendar, history and missed; the rest are read by tests; holidayMsg is a let only this file writes: a getter. Above the
-   file's one top-level call (acts, when act.js did not load): the names are then still the page's */
-Object.assign(globalThis,{COUNTRY_CODES,countryName,setHolidayCountry,refreshHolidays,dayOffAdd,renderDaysOffUI,renderFormalUI});
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-draw',()=>{renderFormalUI();renderDaysOffUI()});
 on('settings-summaries',S=>{S.country=countryName});
@@ -167,3 +163,4 @@ acts({occClear,countryPick,dayOffAddTap,occAddTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('day-off-add',dayOffAdd);
 serve('holidays-refresh',refreshHolidays);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
+serve('formal-ui',renderFormalUI);   // the restructure S6f: history.js redraws Settings' occasions

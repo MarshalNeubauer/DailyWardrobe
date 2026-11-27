@@ -39,7 +39,9 @@
  "files": {
   "merge.js": {
    "class": "optional",
-   "group": "merge"
+   "group": "merge",
+   "startFails": "core.js cleanSettings reads merge.js's SET_META while start-up cleans the stored settings (so since merge.js left core.js, 2026-11-17): start.js startFailed (the toast \"Something went wrong while the app was starting\"), measured on main 4b84222 (the restructure S6f), for the owner to choose",
+   "note": "without merge.js the stored settings are not applied and Today is drawn from the stored wardrobe: with its picture on modload's held Monday, without it on a day the default settings don't dress (the contract had it as only the backups lost: S6x, #666)"
   },
   "bus.js": {
    "class": "required",
@@ -79,7 +81,8 @@
    "class": "optional",
    "group": "painter",
    "on404": "painted",
-   "note": "without it Today has no mannequin: its only figure is the painted picture, there once the painter has painted (late on a busy machine; not on Windows WebKit, whose healthy page showed no painted picture in the lab survey)"
+   "note": "without it Today has no mannequin: its only figure is the painted picture, there once the painter has painted (late on a busy machine; not on Windows WebKit, whose healthy page showed no painted picture in the lab survey)",
+   "startFails": "Today's first drawing calls draw.js's outfitMannequinSvg, which mannequin.js puts on self: start.js startFailed (the toast \"Something went wrong while the app was starting\"), measured on main 4b84222 (the restructure S6f), for the owner to choose"
   },
   "mq/vest.js": {
    "class": "optional",
@@ -199,7 +202,8 @@
   },
   "today-picture.js": {
    "class": "optional",
-   "group": "today-picture"
+   "group": "today-picture",
+   "startFails": "Today's first drawing asks today-picture.js zoom-apply (need): start.js startFailed (the toast \"Something went wrong while the app was starting\"), measured on main 4b84222 (the restructure S6f), for the owner to choose"
   },
   "today-gestures.js": {
    "class": "optional",
@@ -223,11 +227,13 @@
   },
   "daysoff.js": {
    "class": "optional",
-   "group": "daysoff"
+   "group": "daysoff",
+   "startFails": "setup.js needs daysoff.js, and start-up asks setup.js setup-start (need): start.js startFailed (the toast \"Something went wrong while the app was starting\"), measured on main 4b84222 (the restructure S6f), for the owner to choose"
   },
   "weather.js": {
    "class": "optional",
-   "group": "weather"
+   "group": "weather",
+   "startFails": "setup.js needs weather.js, and start-up asks setup.js setup-start and weather.js weather-load (need): start.js startFailed (the toast \"Something went wrong while the app was starting\"), measured on main 4b84222 (the restructure S6f), for the owner to choose"
   },
   "toast.js": {
    "class": "required",
@@ -258,7 +264,8 @@
   },
   "dress.js": {
    "class": "optional",
-   "group": "dress"
+   "group": "dress",
+   "startFails": "start-up asks dress.js vests-migrate (need): start.js startFailed (the toast \"Something went wrong while the app was starting\"), measured on main 4b84222 (the restructure S6f), for the owner to choose"
   },
   "tag-request.js": {
    "class": "optional",
@@ -398,7 +405,8 @@
    "class": "optional",
    "group": "backup",
    "on404": "painted",
-   "note": "as mannequin.js: without it Today has only the painted picture"
+   "note": "as mannequin.js: without it Today has only the painted picture",
+   "startFails": "start-up waits for the first pull through sync.js after-pull (need, history.js whenPulled): start.js startFailed (the toast \"Something went wrong while the app was starting\"), measured on main 4b84222 (the restructure S6f), for the owner to choose"
   },
   "sync-photos.js": {
    "class": "optional",
@@ -418,7 +426,8 @@
   },
   "setup.js": {
    "class": "optional",
-   "group": "setup"
+   "group": "setup",
+   "startFails": "start-up asks setup.js setup-start (need): start.js startFailed (the toast \"Something went wrong while the app was starting\"), measured on main 4b84222 (the restructure S6f), for the owner to choose"
   },
   "kit.js": {
    "class": "optional",

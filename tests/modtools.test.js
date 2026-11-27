@@ -78,11 +78,11 @@ module.exports=async({ok,ROOT})=>{
 
   /* ---- the cross-file write check, the ledger and the bridge ---- */
   const g=require('./globals.test.js').measure(FIX);
-  ok(g.owner.count==='a.js'&&g.owner.bump==='a.js'&&g.owner.label==='m.js'&&g.owner.cache==='m.js'&&g.owner.px==='lib/n.js'&&!('hidden' in g.owner)&&!('LIMIT' in g.owner),'shared state has an owner across the move: a classic script its `let`s and functions, a module what it bridges');
+  ok(g.owner.count==='a.js'&&g.owner.bump==='a.js'&&g.owner.label==='m.js'&&g.owner.cache==='m.js'&&g.owner.px==='lib/n.js'&&g.owner.hidden==='m.js'&&!('LIMIT' in g.owner),'shared state has an owner across the move: a classic script its `let`s and functions, a module its own (bridged or not: since the restructure S6f a module bridges nothing)');
   ok(JSON.stringify(g.seen)==='{"count":{"m.js":1,"c.js":1},"cache":{"c.js":1}}','a write to another file\'s state is counted from a module, and to a module\'s bridged `let` ('+JSON.stringify(g.seen)+')');
   const D=require('./deps.test.js'),d=D.measure(FIX),inOrder=o=>Object.fromEntries(Object.entries(o).sort().map(([k,v])=>[k,Array.isArray(v)?v:inOrder(v)]));
-  ok(JSON.stringify(inOrder(d.uses))==='{"a.js":{},"c.js":{"a.js":["bump","count"],"lib/n.js":["px"],"m.js":["cache","label"]},"lib/n.js":{},"m.js":{"a.js":["LIMIT","bump","count"],"lib/n.js":["px"]}}',
-    'the ledger keeps a module\'s row: the globals it uses, the file it imports from, and what others use of its bridge ('+JSON.stringify(d.uses)+')');
+  ok(JSON.stringify(inOrder(d.uses))==='{"a.js":{},"c.js":{"a.js":["bump","count"],"lib/n.js":["px"],"m.js":["cache","hidden","label"]},"lib/n.js":{},"m.js":{"a.js":["LIMIT","bump","count"],"lib/n.js":["px"]}}',
+    'the ledger keeps a module\'s row: the globals it uses, the file it imports from, and what others use of its exports (its bridge until the restructure S6f: c.js using hidden, an export, now counts) ('+JSON.stringify(d.uses)+')');
   ok(JSON.stringify(D.edgesOf(D.measure(ROOT).uses))===JSON.stringify(JSON.parse(rd('tests/deps.json')).files),'and the app\'s ledger is as committed');
   const B=require('./bridge.test.js'),m=B.measure(FIX);
   ok(JSON.stringify(m.bridge)==='{"lib/n.js":["px"],"m.js":["cache","label"]}'&&m.mods.join()==='lib/n.js,m.js','the bridge lists each module\'s bridged names');

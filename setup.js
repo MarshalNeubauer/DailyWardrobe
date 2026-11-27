@@ -3,14 +3,13 @@
 /* (2026-11-14, the owner) on an iPhone or iPad in a browser tab, a "Home Screen" step right after Welcome: the Home Screen app keeps its
    own storage, apart from Safari's, so what is set up in Safari stays there; it is shown before anything is set up. Not in the app opened
    from the Home Screen, not on other devices (the steps are then as before). SETUP_STEPS is worked out when the setup opens. */
-import {$,DAY_NAMES,dayRecs,hasInviteHash,homeAndroid,homeIOS,homeNeeded,inRotation,inviteOver,isConnected,isHandPick,items,settings,settingsOpen,tourSeen} from './core.js';
+import {$,DAY_NAMES,dayRecs,hasInviteHash,homeAndroid,homeIOS,homeNeeded,inRotation,inviteOver,isConnected,isHandPick,items,settings,settingsOpen,tourSeen,esc} from './core.js';
 import {layerInert,tell} from './ui.js';
 import {closeSettings,saveUserSettings,setVestMode,todayDirty,toggleDay} from './settings.js';
 import {backDrop,backOn,backPush} from './back.js';
 import {renderToday} from './today.js';
 import {openAdd,show} from './nav.js';
 import {announce,keepFocus} from './app.js';
-import {esc} from './photo-keys.js';
 import {acts} from './act.js';
 const SETUP_BASE=['welcome','week','wear','weather','connect','done'];
 let SETUP_STEPS=SETUP_BASE.slice();
@@ -73,24 +72,14 @@ function setupOpen(again,resume){
 /* the phone's Back is its ‹ Back; on the first step a first setup stays open, "Run setup again" closes as its Cancel (the Back audit,
    2026-11-15: Back did nothing there) */
 function setupBack(){if(!setupShown())return;if(setup.at>0){setupGo(-1);backPush('setup')}else if(!setup.first)setupCancel();else backPush('setup')}
-/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals:
-   start.js starts and yields the setup (setupStart, setupYield), account.js and kit.js read and redraw it (setup, SETUP_STEPS,
-   setupShown, setupDraw, setupFinish, setupSample), today.js, stats.js and wardrobe.js draw the empty states (setupNeeds, setupToday,
-   setupWardEmpty), weather.js asks tzCountry; setupOpen, setupClose, setupCancel, setupGo, setupSearch, setupDress and setupVestChosen
-   are called by tests only. SETUP_STEPS is a let only this file writes: a getter; tests/rollback.test.js sets setup: a getter and a
-   setter; a module imports them.
-   Above the file's first call that can throw (backOn, when back.js did not load; then acts): the names are then still the page's, as
-   a classic script's were */
-Object.assign(globalThis,{setupShown,setupStart,setupFinish,tzCountry,setupYield,setupSample,setupDraw,setupNeeds,setupToday,setupWardEmpty});
 /* the socket nav.js asks as a page is shown (bus.js): a setup that opened by itself steps aside; and the backup's words for the
    Connection step, which sync.js serves (without sync.js the step says the wardrobe is backed up, as ui.js's Connection line does;
    this file reads nothing of app.js's own ask(), the server request) */
 import {serve,ask,askFor,served} from './bus.js';
 import {clearLocks} from './days.js';
-import {findCity,setLocation,setUnits,unit,useMyLocation} from './weather.js';
+import {cityFound,findCity,setCityFound,setLocation,setUnits,unit,useMyLocation} from './weather.js';
 import {COUNTRY_CODES,setHolidayCountry} from './daysoff.js';
 serve('setup-yield',setupYield);serve('setup-needs',setupNeeds);   // (and what the wardrobe still needs, for Insights: stats.js)
-Object.defineProperties(globalThis,{SETUP_STEPS:{get:()=>SETUP_STEPS},setup:{get:()=>setup,set:v=>{setup=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,setupCancel,setupClose,setupDress,setupGo,setupOpen,setupSearch,setupVestChosen,get setup(){return setup},set setup(v){setup=v},get SETUP_STEPS(){return SETUP_STEPS},setupDraw,setupFinish,setupShown,setupToday,tzCountry};
 export {SETUP_STEPS,setup,setupDress,setupShown,setupStart,setupVestChosen,setupOpen,setupClose,setupCancel,setupFinish,tzCountry,setupYield,setupGo,setupSample,setupDraw,setupSearch,setupNeeds,setupToday,setupWardEmpty};
@@ -222,11 +211,11 @@ function setupDay(kind,i){toggleDay(kind==='workdays'?'#cfg-workdays':'#cfg-blaz
 function setupSetDress(k){const d=setupDress();d[k]=!d[k];settings.dress={...(settings.dress||{}),...d};saveUserSettings().then(clearLocks);setupDraw();const b=$('#su-sw-'+k);if(b)b.focus({preventScroll:true})}   // saved first (fix round 2: swiped away at once, it was lost)
 function setupVest(v){setup.vestSet=true;setVestMode(v);setupSave()}
 function setupUnits(v){setUnits(v);setupDraw()}
-/* the city search is the Settings one (findCity reads Settings' own field and keeps its answers in window._cities) */
+/* the city search is the Settings one (findCity reads Settings' own field and keeps its answers in weather.js's cityFound) */
 async function setupSearch(){const q=(setup.q||'').trim();if(!q&&(setup.cities||setup.cityMsg)){setup.cities=null;setup.cityMsg='';setupDraw();return}if(!q||!$('#cfg-city'))return;
-  $('#cfg-city').value=q;window._cities=null;setup.cities=null;setup.cityMsg='Searching…';setupDraw();
+  $('#cfg-city').value=q;setCityFound(null);setup.cities=null;setup.cityMsg='Searching…';setupDraw();
   await findCity();if($('#city-results'))$('#city-results').innerHTML='';$('#cfg-city').value='';
-  const res=window._cities;setup.cities=res||null;setup.cityMsg=!res?'City search is unavailable right now.':res.length?'':'No matches. Try the name in English or a nearby larger city, or Use my location.';setupDraw();announce(setup.cityMsg||`${res.length} place${res.length===1?'':'s'} found`)}
+  const res=cityFound;setup.cities=res||null;setup.cityMsg=!res?'City search is unavailable right now.':res.length?'':'No matches. Try the name in English or a nearby larger city, or Use my location.';setupDraw();announce(setup.cityMsg||`${res.length} place${res.length===1?'':'s'} found`)}
 function setupPick(i){const c=(setup.cities||[])[i];if(!c)return;setup.cities=null;setup.cityMsg='';setup.q='';setLocation(c);setupDraw()}
 /* useMyLocation answers later (the permission prompt): the step is drawn again once the location has changed */
 function setupLocate(){const was=JSON.stringify(settings.location);useMyLocation();
@@ -297,3 +286,4 @@ acts({setupCancelTap,setupSkipTap,setupBackTap,setupNextTap,setupDayTap,setupSwT
   setupAgainTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('setup-shown',setupShown);serve('setup-finish',setupFinish);serve('setup-sample',setupSample);serve('setup-conn-draw',()=>{if(setupShown()&&/^(connect|done)$/.test(SETUP_STEPS[setup.at]))setupDraw()});serve('setup-ward-empty',setupWardEmpty);serve('tz-country',tzCountry);
+serve('setup-today',setupToday);serve('setup-start',setupStart);   // the restructure S6f: what required and today-no-picture files ask of this file

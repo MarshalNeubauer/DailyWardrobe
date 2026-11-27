@@ -4,7 +4,7 @@
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of today.js on 2026-11-17, Round C.) */
 /* the plan for a month. Every month from two months back shares one simulation (kept in the cache, so anything that clears
    the cache starts it again): another month only plans the days not planned yet. Earlier months are built on their own. */
-import {serve} from './bus.js';
+import {serve,need} from './bus.js';   // (planner.js's planning, a logic file above this one in the layers: the restructure S6f)
 import {climate,dayRecs,isoKey,items,keyDate,settings,todayDate,weather} from './core.js';
 import {idsOf} from './days.js';
 import {metaPut,view} from './app.js';
@@ -15,9 +15,9 @@ function planDirty(){cache={}}
 const planRuns=[];   // the months worked out (not from the cache) since start-up (tests/speed.test.js)
 function planMonth(y,m){const k=y+'-'+m;if(cache[k])return cache[k];if(planRuns.length<200)planRuns.push(k);
   if(window.TEST_PLAN)return cache[k]=TEST_PLAN.plan(y,m);   // tests that don't need the planner (tests/fixedplan.js)
-  const start=planStart(y,m),T=todayDate();
-  if(+start!==+planStart(T.getFullYear(),T.getMonth()))return cache[k]=planTrim(buildPlan(y,m));
-  return cache[k]=planTrim((cache.sim||(cache.sim=planSim(start))).upTo(new Date(y,m+1,0)))}
+  const start=need('plan-start',y,m),T=todayDate();
+  if(+start!==+need('plan-start',T.getFullYear(),T.getMonth()))return cache[k]=planTrim(need('plan-build',y,m));
+  return cache[k]=planTrim((cache.sim||(cache.sim=need('plan-sim',start))).upTo(new Date(y,m+1,0)))}
 /* no outfit is shown for a day before the wardrobe existed (the day the first item was added; items from before `added` existed set no
    start): a new user saw two weeks of planned past days with ✕ and ✓ and "22 outfits" in the month (audit 2026-11-13). The planner
    still plans them (rest and variety carry on from them); they are only left out of the month's plan, and a day with a record stays */
@@ -51,13 +51,6 @@ const outSig=o=>o&&JSON.stringify([idsOf(o),!!o.vest,!!o.suitDay,o.notes||[]]);
 let planSnapT=0;
 function planSnapSoon(){clearTimeout(planSnapT);planSnapT=setTimeout(()=>{const T=todayDate(),k=T.getFullYear()+'-'+T.getMonth(),p=cache[k];if(!p||cache.snap||window.TEST_PLAN||!items.length)return;
   try{metaPut(PLAN_SNAP,{k,sig:planSig(),plan:snapOut(p,new Map(items.map(i=>[i.id,i]))),t:Date.now()}).catch(e=>console.warn('plan not kept',e))}catch(e){console.warn('plan not kept',e)}},1500)}
-/* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. planDirty is called by 25 page
-   scripts, planFor by 14 and planMonth by 9; cache is read by nine page scripts and set by 95 tests (cache={}): a getter and a
-   setter; today.js and stats.js ask planStartDay, today.js planTrim, outSig and planSnapSoon, start.js PLAN_SNAP and planSnapUse,
-   shop.js strHash; planRuns, planSig and planSnapUsed (a let only this file writes: a getter) are read by tests/speed.test.js; a
-   module imports them. The file has no top-level call, so the bridge is its last lines */
-Object.assign(globalThis,{planDirty,planMonth,planStartDay,planTrim,planFor,hasOutfit,PLAN_SNAP,strHash,planSnapUse,outSig,planSnapSoon});
-Object.defineProperties(globalThis,{cache:{get:()=>cache,set:v=>{cache=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,planRuns,planSig,get planSnapUsed(){return planSnapUsed},get cache(){return cache},set cache(v){cache=v},planStartDay,planMonth,PLAN_SNAP,hasOutfit,planDirty,planFor};
 export {cache,planDirty,planRuns,planMonth,planStartDay,planTrim,planFor,hasOutfit,PLAN_SNAP,strHash,planSig,planSnapUse,planSnapUsed,outSig,planSnapSoon};

@@ -1,7 +1,6 @@
 /* Daily Wardrobe: the server's daily backups and Roll back (split from sync.js, 2026-11-17). */
 import {on} from './bus.js';
-import {$,cleanState,inviteOver,items,nowMs,settingsOpen,stampAllSettings,syncUrl} from './core.js';
-import {esc} from './photo-keys.js';
+import {$,cleanState,inviteOver,items,nowMs,settingsOpen,stampAllSettings,syncUrl,esc} from './core.js';
 import {applyMerged,localState,setRestoring,syncNow} from './sync.js';
 import {ENDED,endedAnswer,inviteEnded} from './app.js';
 import {NEED_CONN,askConfirm,plainErr} from './ui.js';
@@ -76,9 +75,6 @@ async function rollBack(pick){const sel=$('#snap-list'),id=pick&&pick.id||sel&&s
 /* the markup's handlers (act.js): the Daily backups list on focus (it loads its days), and Roll back */
 function snapFocus(){loadSnapshots()}
 function rollBackTap(){rollBack()}
-/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): settings.js, a classic script, calls loadSnapshots; the tests call it and the
-   other three (actsindex, backup-storage, clock, rollback, sample); a module imports them */
-Object.assign(globalThis,{loadSnapshots});
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-category',k=>{if(k==='backup')loadSnapshots()});   // the daily backups list is read as Backup opens
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */

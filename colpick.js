@@ -5,8 +5,8 @@
    saves it (setq on the Add card, sete in the editor). */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit,askFor,serve} from './bus.js';
-import {$,COLORS,COLOR_OPTS,COLS_BY,CUSTOM_COL,CUSTOM_PAT,DIAL_COLS,LUMS,PATS_BY,TEXTURE_TYPES,TYPES,accentsFor,accentsOf,colBaseFor,colName,colNameTaken,colsFor,dE00,hexRgb,isConnected,items,labOf,matTypeOne,matTypeWord,matsFor,normPat,ownColFind,ownMatName,ownMats,ownNameClean,ownNameShort,ownPatFind,paperCloth,patBase,patName,patNameTaken,patOf,primaryCol,rgbLab,settings,shadeHex,shadeName,sockPatterned,sockToeKey,soleStyle,strapBand} from './core.js';
-import {esc,srcOk} from './photo-keys.js';
+import {$,COLORS,COLOR_OPTS,COLS_BY,CUSTOM_COL,CUSTOM_PAT,DIAL_COLS,LUMS,PATS_BY,TEXTURE_TYPES,TYPES,accentsFor,accentsOf,colBaseFor,colName,colNameTaken,colsFor,dE00,hexRgb,isConnected,items,labOf,matTypeOne,matTypeWord,matsFor,normPat,ownColFind,ownMatName,ownMats,ownNameClean,ownNameShort,ownPatFind,paperCloth,patBase,patName,patNameTaken,patOf,primaryCol,rgbLab,settings,shadeHex,shadeName,sockPatterned,sockToeKey,soleStyle,strapBand,esc} from './core.js';
+import {srcOk} from './photo-keys.js';
 import {ask,cap1,cardOf,editing,generateSwatch,imgOf,keepFocus,put,queue,refreshSwatch} from './app.js';
 import {addKeep} from './add-keep.js';
 import {planDirty} from './today-plan.js';
@@ -117,11 +117,6 @@ function accAddTap(el){openColPick(el.dataset.s,el.dataset.k,'accents')}
    the page's, so it is asked first (back.js backOver), closes (‹ first on a "New" sheet opened from the list, as its own ‹ does) and back.js
    puts that entry back, so the next Back closes the page. A sheet that borrowed the entry over it (a question, the close-up chooser, the
    reading sheet) takes its own Back. */
-/* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above the file's
-   first top-level call that can throw (backOver, when back.js did not load): the functions are then still the page's. The consts
-   declared below this line are handed over above acts({…}), with the one export */
-Object.assign(globalThis,{colHas,SOCK_THIRD,colShows,colTidy,colRows,colTarget,accDel,colNear,openColPick,closeColPick,colPickSel,useColPick,renderColPick,cnLeft,openColNew,openPatNew,openCustomNew,rdOff,rdCost,rdEditorBtn,rdStart,rdDoneHtml,openColForm,openPatForm});
-Object.defineProperties(globalThis,{colPick:{get:()=>colPick,set:v=>{colPick=v}}});
 backOver(top=>{if(!colPick||top==='ask'||top==='cu'||top==='rd')return false;
   if(colPick.newc&&colPick.newc.from==='pick')colNewBack();else closeColPick();return true});
 /* ---- swiping a sheet down closes it (2026-11-15, the owner: "When I click on color or texture, the sheet comes up, but I can't swipe it
@@ -840,7 +835,6 @@ function colBackdropTap(){closeColPick()}
 /* a close-up retaken from the New color sheet and from the reading sheet (ui.js closeupBtn, cuGot) */
 function cnRetakeFile(el,ev,f){cuGot(el,f,x=>cnRetake(x))}
 function rdRetakeFile(el,ev,f){cuGot(el,f,x=>rdRetake(x))}
-Object.assign(globalThis,{SW_GRAB,NEW_COL,patChoices,patVar,patBtn,EP,cnHex,RD_LOOKUPS,rdCostLine,rdAddBtn,lookShadeOk});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,cnDrawn,cnFromHsv,cnName,colAsk,colAskImgs,colChoices,colFamily,colFieldLabel,colNewAdd,colPickView,cpAskHint,get rd(){return rd},set rd(v){rd=v},rdAccOf,rdClose,rdColOf,get rdLast(){return rdLast},rdOpen,rdRender,rdRetake,rdRun,rdUndoAll,get colPick(){return colPick},set colPick(v){colPick=v},closeColPick,colPickSel,colTarget,patChoices,patVar,renderColPick,useColPick,colRows,colShows,openColNew,openColPick,openCustomNew};
 export {lookShadeOk,colPick,colFamily,colHas,SOCK_THIRD,colShows,colFieldLabel,colTidy,colRows,colTarget,colChoices,accDel,colNear,openColPick,closeColPick,SW_GRAB,colPickSel,colPickView,useColPick,renderColPick,colAsk,colAskImgs,NEW_COL,cpAskHint,patChoices,patVar,patBtn,EP,cnHex,cnFromHsv,cnDrawn,cnLeft,openColNew,openPatNew,openCustomNew,cnName,colNewAdd,rd,rdLast,RD_LOOKUPS,rdOff,rdCost,rdCostLine,rdEditorBtn,rdAddBtn,rdStart,rdRetake,rdRun,rdColOf,rdOpen,rdClose,rdAccOf,rdRender,rdUndoAll,rdDoneHtml,openColForm,openPatForm,custNewTap,accDelTap,accAddTap};

@@ -1,3 +1,4 @@
+/* global ASM_CM_BTN, ASM_CM_KINDS, SLOTS, asmCmCodeSig, asmCmMf, asmCmSig, asmCmSrcSig, dayClimate, dayRecs, di, hasVest, inRotation, isWorkday, items, key, occOf, settings, todayDate */   // an older build's globals, read on that build only (tests/bridge.test.js READS_KEPT; the app's bridge is down since the restructure S6f)
 // The new garments' masters (2026-11-16, asm-kinds.js): every existing look keeps its picture key byte for byte (origin/main's app files
 // served to a second page, the same looks keyed in both; jeans change only once the faded master is in the manifest), the painter's code
 // fingerprints are main's, the new kinds' keys carry their kind and differ, a kind whose master isn't on the worker paints nothing, each new

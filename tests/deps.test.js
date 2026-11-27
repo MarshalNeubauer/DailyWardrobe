@@ -65,7 +65,9 @@ function measure(ROOT){
     const ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:m?'module':'script',ranges:true});
     const g=escope.analyze(ast,{ecmaVersion:2024,sourceType:m?'module':'script'}).globalScope,own=new Set(g.variables.map(v=>v.name));
     // (a module worker's named imports are its uses too: asm-worker.js since the restructure S6p, 2026-11-27)
-    parsed[f]={top:m?[...modscope.bridged(ast,src).names.keys()]:topNames(ast),free:[...new Set(g.through.map(r=>r.identifier.name))].filter(n=>!own.has(n)),
+    // (a module's names are what it exports since the bridge came down, the restructure S6f: another file reads them through an import)
+    const ex=m?ast.body.filter(st=>st.type==='ExportNamedDeclaration').flatMap(st=>[...st.specifiers.map(x=>x.exported.name||x.exported.value),...(st.declaration?modscope.declared({body:[st.declaration]}).map(d=>d.name):[])]):[];
+    parsed[f]={top:m?[...new Set([...modscope.bridged(ast,src).names.keys(),...ex])]:topNames(ast),free:[...new Set(g.through.map(r=>r.identifier.name))].filter(n=>!own.has(n)),
       imports:m?modscope.imports(ast,f):[]}}
     return parsed[f]};
   let names=0;

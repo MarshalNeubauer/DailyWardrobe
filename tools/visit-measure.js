@@ -42,7 +42,7 @@ const PROBE=`(()=>{if(window.__vis)return;const L=window.__vis=[];let last='';
   const st=()=>{const c=document.getElementById('mannequin-container');if(!c)return 'none';const im=c.querySelector(':scope > img');
     if(im)return im.complete&&im.naturalWidth>0?'photo':'photo-loading';return c.querySelector('svg')?'drawing':'empty'};
   const tick=()=>{const s=st();let d='';try{d=HOOK.sel.getFullYear()+'-'+(HOOK.sel.getMonth()+1)+'-'+HOOK.sel.getDate()}catch{}const k=s+'|'+d;
-    if(k!==last){last=k;let m='';try{if(!window.appReady)throw 0;const o=HOOK.planFor()[HOOK.key(HOOK.sel)],r=o&&HOOK.asmLive()&&(HOOK.asmFor(o)?'exact':asmStale&&asmStale(o)?'stale':'');m=r||''}catch{}L.push({t:Math.round(performance.now()),s,d,m})}
+    if(k!==last){last=k;let m='';try{if(!window.appReady)throw 0;const o=HOOK.planFor()[HOOK.key(HOOK.sel)],r=o&&HOOK.asmLive()&&(HOOK.asmFor(o)?'exact':HOOK.asmStale&&HOOK.asmStale(o)?'stale':'');m=r||''}catch{}L.push({t:Math.round(performance.now()),s,d,m})}
     requestAnimationFrame(tick)};requestAnimationFrame(tick)})()`;
 async function open(ctx,label){
   const page=ctx.pages()[0]||await ctx.newPage();const cdp=await ctx.newCDPSession(page);

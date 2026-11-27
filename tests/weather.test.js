@@ -68,7 +68,7 @@ const weather=async({ok,chromium,url})=>{
   // ---- weather ----
   await p.evaluate(()=>{HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[4];HOOK.openSettings('weather')});
   await p.fill('#cfg-city','Austin');await p.click('text=Search');
-  await p.click('#city-results button');await p.waitForFunction(()=>Object.keys(weather).length>0);
+  await p.click('#city-results button');await p.waitForFunction(()=>Object.keys(HOOK.weather).length>0);
   ok(wxCalls>=1,'choosing a city fetches the forecast');
   const w=await p.evaluate(()=>{HOOK.closeSettings();HOOK.cache={};const P=HOOK.buildPlan(2026,10),g=k=>P[k];return {
     loc:HOOK.settings.location&&HOOK.settings.location.name,
@@ -121,23 +121,23 @@ const climate=async({ok,chromium,url})=>{
     // before a location is set: the calendar decides, so mid-January is "cold" and warns about the missing overcoat
     const cal=await p.evaluate(()=>{const o=HOOK.planMonth(2027,0)['2027-1-12'];return {season:o.clim.season,note:(o.notes||[]).some(n=>/overcoat/.test(n))}});
     ok(cal.season==='cold'&&cal.note,'without climate history, January follows the calendar: cold, and a missing overcoat is flagged');
-    await p.evaluate(()=>HOOK.setLocation({lat:29.31,lon:48.01,name:'Kuwait City'}));await p.waitForFunction(()=>!!climate&&!!weather['2026-11-15'],null,{timeout:8000});   // both the climate history and the forecast have arrived
+    await p.evaluate(()=>HOOK.setLocation({lat:29.31,lon:48.01,name:'Kuwait City'}));await p.waitForFunction(()=>!!HOOK.climate&&!!HOOK.weather['2026-11-15'],null,{timeout:8000});   // both the climate history and the forecast have arrived
     ok(calls===1&&/start_date=\d{4}-01-01&end_date=\d{4}-12-31/.test(lastUrl)&&/latitude=29.31/.test(lastUrl),`the usual weather for the location is fetched once (${lastUrl.split('?')[1]||''})`);
     const k=await p.evaluate(()=>{const g=(y,m,d)=>HOOK.planMonth(y,m)[y+'-'+(m+1)+'-'+d];const jan=g(2027,0,12),apr=g(2027,3,13),jul=g(2027,6,13),tom=g(2026,10,15);
-      return {jan:jan.clim.season,janNote:(jan.notes||[]).some(n=>/overcoat/.test(n)),janVest:jan.vest,apr:apr.clim.season,jul:jul.clim.season,julVest:jul.vest,fc:!!tom.clim.wx,n:climate.length,jt:climate[0].tmax,
+      return {jan:jan.clim.season,janNote:(jan.notes||[]).some(n=>/overcoat/.test(n)),janVest:jan.vest,apr:apr.clim.season,jul:jul.clim.season,julVest:jul.vest,fc:!!tom.clim.wx,n:HOOK.climate.length,jt:HOOK.climate[0].tmax,
         notes:Object.entries(HOOK.planMonth(2027,1)).filter(([d,o])=>HOOK.keyDate(d)>HOOK.todayDate()&&(o.notes||[]).some(n=>/overcoat/.test(n))).length}});
     ok(k.n===12&&k.jt===19,'it is averaged per month (January highs 19°C)');
     ok(k.jan==='mild'&&!k.janNote&&k.notes===0,`in a hot climate January is mild: no overcoat warnings through February (${k.jan}, ${k.notes} warnings)`);
     ok(k.apr==='warm'&&k.jul==='warm'&&k.janVest&&!k.julVest,`April is already warm there (${k.apr}); the vest comes off for the hot months and stays on in January`);
     ok(k.fc,'days inside the forecast still use the forecast');
     // kept on the device: a reload does not fetch it again; Settings says what is used
-    await p.evaluate(()=>HOOK.saveUserSettings());await p.reload();await p.waitForFunction(()=>window.appReady&&!!climate,null,{timeout:8000});
+    await p.evaluate(()=>HOOK.saveUserSettings());await p.reload();await p.waitForFunction(()=>window.appReady&&!!HOOK.climate,null,{timeout:8000});
     ok(calls===1,'the climate history is kept on the device (no second download after a reload)');
     await p.evaluate(()=>HOOK.openSettings('weather'));
     ok(/usual weather there/.test(await p.textContent('#wx-loc'))&&(await p.evaluate(()=>HOOK.unit())==='F'?/66°.*115°/:/19°.*46°/).test(await p.textContent('#wx-loc')),`Settings says days beyond the forecast use the usual weather (${await p.textContent('#wx-loc')})`);
     // another location: fetched again for the new place
     await p.evaluate(()=>HOOK.setLocation({lat:51.5,lon:-0.12,name:'London'}));for(let t=0;t<250&&calls<2;t++)await p.waitForTimeout(20);
-    await p.waitForFunction(()=>Array.isArray(climate)&&climate.length===12,null,{timeout:5000}).catch(()=>{});   // the request is made before its answer fills the climate in
+    await p.waitForFunction(()=>Array.isArray(HOOK.climate)&&HOOK.climate.length===12,null,{timeout:5000}).catch(()=>{});   // the request is made before its answer fills the climate in
     ok(calls===2,'changing the location fetches that place\'s climate');
     // the what-to-buy analysis plans with it too
     const pay=await p.evaluate(()=>{let sent=null;const W=window.Worker;window.Worker=function(){this.postMessage=d=>{sent=d};this.terminate=()=>{}};HOOK.analyzeWardrobe();window.Worker=W;HOOK.shopBusy=null;return Array.isArray(sent.climate)&&sent.climate.length});

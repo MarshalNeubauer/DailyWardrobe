@@ -296,9 +296,6 @@ async function cropSource(it){const ph=await imgOf(it.photo);
     const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.translate(W/2,H/2);x.rotate(q*Math.PI/2);x.drawImage(sharp,-sharp.naturalWidth/2,-sharp.naturalHeight/2);
     const g=grey(c);let s=0;for(let k=0;k<g.length;k++)s+=Math.abs(g[k]-want[k]);if(s/g.length<=CROP_MATCH)return c}
   return ph}
-/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
-   as globals. The file has no top-level call, so the bridge is its last lines */
-Object.assign(globalThis,{wbRead,wbGains,applyWb,closeRead,paperKey,paperOf,paperNow,paperCopy,measureCloth,measKL,colRef,nearestCols,FAR_DE,MEAS_GAP,measureCard,measHint,multiCol,measureParts,BLUR_SHARP,sharpness,colourVerdicts,aiSignals,undoMeasured,makeSmall,paperSteps,cropSource});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,AI_HIGH_FLAG,AI_LOW_AUTO,MEAS_AUTO,PAPER,applyMeasured,calibLab,urlCanvas,wbRead,aiSignals,applyWb,closeRead,colourVerdicts,measHint,measureCard,measureCloth,nearestCols,paperKey,wbGains,makeSmall};
 export {wbRead,wbGains,applyWb,closeRead,PAPER,paperKey,urlCanvas,paperOf,paperNow,paperCopy,measureCloth,calibLab,measKL,colRef,nearestCols,FAR_DE,MEAS_GAP,measureCard,measHint,multiCol,measureParts,BLUR_SHARP,sharpness,MEAS_AUTO,colourVerdicts,AI_LOW_AUTO,AI_HIGH_FLAG,aiSignals,applyMeasured,undoMeasured,makeSmall,paperSteps,cropSource,PH_SM,PAPER_CAM,CROP_MATCH};

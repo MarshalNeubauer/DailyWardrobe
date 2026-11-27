@@ -1,3 +1,4 @@
+/* global items */   // an older build's globals, read on that build only (tests/bridge.test.js READS_KEPT; the app's bridge is down since the restructure S6f)
 // W1-2-01: rows imported on the 14 Nov app naming an own color are saved with the list index ("0","1"...) as their color,
 // and today's app keeps it: the item sheet says "Colour None". Standalone: lab on port 9620, fresh KV and profile.
 const RP = require('../harness/paths.js');

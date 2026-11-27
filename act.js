@@ -62,9 +62,6 @@ function actListen(){if(actOn)return;actOn=true;
     document.addEventListener(t,ev=>actFire(ev,a,true,false),true);
     document.addEventListener(t,ev=>actFire(ev,a,false,false))}
   for(const t of ACT_OWN){const a=actAttr(t);document.addEventListener(t,ev=>actFire(ev,a,false,true),true)}}
-/* An ES module since 2026-11-24. The bridge (tests/bridge.test.js): every file registers its handlers through acts as a global, so it is
-   handed over before this file's first top-level call */
-Object.assign(globalThis,{ACTS,acts,actTaps});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,ACT_FIRST,actsFirst,ACTS,acts};
 export {ACTS,ACT_FIRST,acts,actsFirst,actTaps};

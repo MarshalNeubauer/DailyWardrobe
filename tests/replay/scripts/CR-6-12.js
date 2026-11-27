@@ -1,3 +1,4 @@
+/* global items, syncNow, syncRun */   // an older build's globals, read on that build only (tests/bridge.test.js READS_KEPT; the app's bridge is down since the restructure S6f)
 // CR-6-12 / CR-5-12 (Round B, 2026-11-17): the merge rules moved into merge.js, one copy shared by the app and the worker. The worker
 // must merge exactly as before, so phones still on an old app keep backing up: for each old build (26cd8b1 12 Nov, 7a28f96 14 Nov,
 // c4a549b 15 Nov a) a phone on that app, against today's worker, joins, adds two pieces, backs up, adds a third and backs up again;

@@ -7,11 +7,10 @@
      the wardrobe changed since (shopSig) or it is over a week old
    - "Bought it" adds the piece as bought, on the way (item.order + item.paused, optional arrival date)
    - "Not for me" hides that colour and pattern for good (settings.shopSkip: keys type|colour group|pattern class, synced) */
-import {$,COOL,SHOP_WEEKS,SLOTS,TODAY_OVERRIDE,avgText,climate,dayRecs,fmtDay,inRotation,isHandPick,isoKey,items,keyDate,listAnd,nm,nowMs,offDays,prettyCols,sentence,settings,todayDate,wearsJacket,wearsTie,weather} from './core.js';
+import {$,COOL,SHOP_WEEKS,SLOTS,TODAY_OVERRIDE,avgText,climate,dayRecs,fmtDay,inRotation,isHandPick,isoKey,items,keyDate,listAnd,nm,nowMs,offDays,prettyCols,sentence,settings,todayDate,wearsJacket,wearsTie,weather,esc} from './core.js';
 import {planDirty,strHash} from './today-plan.js';
 import {darkMode} from './planner.js';
 import {db,editing,keepFocus,metaGet,metaPut,put} from './app.js';
-import {esc} from './photo-keys.js';
 import {backDrop,backOn,backPush} from './back.js';
 import {figureSvg,itemThumb} from './draw.js';
 import {saveUserSettings} from './settings.js';
@@ -31,17 +30,11 @@ const shopFresh=()=>!!shop&&shop.sig===shopSig()&&Date.now()-(shop.at||0)<SHOP_S
 const shopHid=x=>(settings.shopSkip||[]).includes(x.key);
 const shopRecs=r=>r?r.cats.reduce((a,c)=>a+c.recs.filter(x=>!shopHid(x)).length,0):0;
 const shopFind=key=>{const r=shopPart||(shop&&shop.res);if(!r)return null;for(const c of r.cats){const x=c.recs.find(x=>x.key===key);if(x)return x}return null};
-/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
-   as globals: stats (shopButton), start (closeShop), today-gestures (shopOpen); the rest are read by tests. Above the file's first call
-   that can throw (db.then, then backOn and acts): the names are then still the page's. shopBusyText, a const declared further down, is
-   handed over above acts({…}), where the one export is */
-Object.assign(globalThis,{shopButton,closeShop});
 /* the socket nav.js asks as another page is shown (bus.js): What to buy closes */
 import {serve,askFor,emit} from './bus.js';
 import {layerClose,layerOpen} from './ui.js';
 import {CLASS_NAMES,TYPE_WORD,groupLabel,runAnalysis} from './analysis.js';
 serve('shop-close',closeShop);serve('shop-button',shopButton);   // (and its button on Insights: stats.js)
-Object.defineProperties(globalThis,{shopOpen:{get:()=>shopOpen}});
 db.then(()=>metaGet('shop')).then(v=>{if(v&&v.res&&v.res.v===2&&!shop){shop=v;if(!$('#wardrobe').hidden&&!editing)emit('wardrobe-changed')}}).catch(()=>{});
 
 /* the button on the Wardrobe tab */

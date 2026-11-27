@@ -1,10 +1,9 @@
 /* Daily Wardrobe: the weather: units, the location and its search, the 16-day forecast and the usual weather by month
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
 import {on,askFor,serve} from './bus.js';
-import {$,climate,key,setClimate,setWeather,settings,settingsOpen,weather} from './core.js';
+import {$,climate,key,setClimate,setWeather,settings,settingsOpen,weather,esc} from './core.js';
 import {refreshToday,renderSettingsExtras,saveUserSettings,settingsSummaries,todayDirty} from './settings.js';
 import {announce} from './app.js';
-import {esc} from './photo-keys.js';
 import {planDirty} from './today-plan.js';
 import {acts} from './act.js';
 import {tell} from './ui.js';
@@ -41,10 +40,10 @@ async function cityEnglish(list,lang){if(lang==='en')return list;
     return c}))}
 async function findCity(){const q=($('#cfg-city')&&$('#cfg-city').value||'').trim();
   // an empty search clears the last one's results (they stayed, fix round 2)
-  if(!q){window._cities=[];if($('#city-results'))$('#city-results').innerHTML='';return}
+  if(!q){cityFound=[];if($('#city-results'))$('#city-results').innerHTML='';return}
   try{const lang=cityLang(q),r=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=8&language='+lang+'&name='+encodeURIComponent(q));const j=await r.json();
     const res=cityList(await cityEnglish((j.results||[]).slice(0,8),lang)).slice(0,5);
-    window._cities=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" data-act="cityPick" data-i="${i}">${esc(c.name)}${c.alt?` <span dir="auto">(${esc(c.alt)})</span>`:''}</button>`).join(''):'<small class="mut" id="city-none">No matches. Try the name in English or a nearby larger city, or Use my location.</small>';
+    cityFound=res;$('#city-results').innerHTML=res.length?res.map((c,i)=>`<button type="button" data-act="cityPick" data-i="${i}">${esc(c.name)}${c.alt?` <span dir="auto">(${esc(c.alt)})</span>`:''}</button>`).join(''):'<small class="mut" id="city-none">No matches. Try the name in English or a nearby larger city, or Use my location.</small>';
     announce(res.length?`${res.length} place${res.length===1?'':'s'} found`:'No matches.')}   // (said: W2-19-01)
   catch(e){$('#city-results').innerHTML='<small class="mut">City search is unavailable right now.</small>';announce('City search is unavailable right now.')}}
 /* 16-day forecast from Open-Meteo (free, no key); cached for 3 hours */
@@ -76,18 +75,18 @@ async function loadWeather(force){
     setWeather(days);localStorage.setItem('wx',JSON.stringify({lat:L.lat,lon:L.lon,t:Date.now(),days}));planDirty();if(!$('#today').hidden)refreshToday()}
   catch(e){console.warn('weather unavailable',e)}
 }
-/* the bridge (tests/bridge.test.js lists it), above acts({…}), the file's one top-level call: settings.js and setup.js (unit, renderWxLoc,
-   setUnits, setLocation, useMyLocation, findCity), today.js (wxChip, loadWeather), start.js and safety.js (loadWeather) use these as
-   globals (setup.js is a module too, as is scorecard.js: temp); geoName is read by tests/setup.test.js only */
-Object.assign(globalThis,{unit,temp,wxChip,renderWxLoc,setUnits,setLocation,useMyLocation,findCity,loadWeather});
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-draw',()=>{renderWxLoc();if($('#cfg-units'))$('#cfg-units').value=unit()});
 on('settings-summaries',S=>{S.unit=unit});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,geoName,findCity,setLocation,setUnits,unit};
-export {unit,temp,wxChip,renderWxLoc,setUnits,setLocation,useMyLocation,geoName,findCity,loadWeather};
-/* the markup's handler (act.js): a place in the city search's results (data-i: its place in the list kept as _cities) */
-function cityPick(el){setLocation(window._cities[+el.dataset.i])}
+/* the city search's answers (findCity), for its results' taps here and the setup's own list (setup.js), cityFound: kept on window as _cities until the
+   restructure S6f, a page global two files shared */
+let cityFound=null;
+function setCityFound(v){cityFound=v}
+export {unit,temp,wxChip,renderWxLoc,setUnits,setLocation,useMyLocation,geoName,findCity,loadWeather,cityFound,setCityFound};
+/* the markup's handler (act.js): a place in the city search's results (data-i: its place in cityFound) */
+function cityPick(el){setLocation(cityFound[+el.dataset.i])}
 /* index.html's (act.js): Enter in the city field, Search, "Use my location" and the Units choice */
 function cityKey(el,ev){if(ev.key==='Enter'){ev.preventDefault();findCity()}}
 function citySearchTap(){findCity()}
@@ -95,3 +94,4 @@ function myLocTap(){useMyLocation()}
 function unitsPick(el){setUnits(el.value)}
 acts({cityPick,cityKey,citySearchTap,myLocTap,unitsPick});
 serve('weather-load',loadWeather);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
+serve('temp',temp);serve('wx-chip',wxChip);   // the restructure S6f: what today-no-picture files ask of this file

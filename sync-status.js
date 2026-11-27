@@ -21,9 +21,6 @@ function showSyncStatus(){const sum=$('#sum-backup');if(sum)try{sum.textContent=
   else el.textContent=st||(syncUrl()?'Not backed up yet.':'Not connected.'+safariWord())}
 /* not connected, in a Safari tab: why the backup file matters (decision 2 for W1-11-04; the setup's Home Screen step said it once) */
 const safariWord=()=>safariTab()?` ${tabBrowser()} can clear a website’s data when it isn’t opened for about a week or the phone runs short of space: Download backup now and then keeps a copy in Files.`:'';
-/* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it): backupfile.js draws the line after a
-   restore; the addcards and backup-storage tests too. */
-Object.assign(globalThis,{showSyncStatus});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,showSyncStatus};
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-open',()=>showSyncStatus());   // the Backup line, as Settings opens

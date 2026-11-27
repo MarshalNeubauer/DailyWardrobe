@@ -4,9 +4,8 @@
 import {askFor,serve,emit} from './bus.js';   // serve: nav.js (required) sets and drops what Today's "Add one" asked for, and leaves the sheet, through sockets
 import {addCardRec,addWatch} from './add-keep.js';
 import {keepFocus,queue} from './app.js';
-import {$,PAIR_TYPES,TYPES,normPat,watchOpts} from './core.js';
+import {$,PAIR_TYPES,TYPES,normPat,watchOpts,esc} from './core.js';
 import {cardSafe,ckLeftLine,confBtn,formCard,shirtColFix} from './add-card.js';
-import {esc} from './photo-keys.js';
 import {backBorrow,backOn,backPush,backReturn} from './back.js';
 import {cmpMount} from './checklist.js';
 import {askAnswer,askConfirm,asking,layerInert,sheetSwipe} from './ui.js';
@@ -71,13 +70,6 @@ async function npsCancel(fromBack){const q=npsCard();if(!npsId||npsAsking)return
 function npsBack(){if(npsId)npsCancel(true)}
 /* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
 function setAddFor(v){addFor=v}
-/* An ES module since 2026-11-23: its other names are its own. The bridge (tests/bridge.test.js lists it): add.js (renderAddFor, npsDraw,
-   npsId), ui.js (npsId, npsAsking, npsInert, npsCancel) and start.js (npsLeave); addManual and npsClose are called by the tests.
-   npsId and npsAsking are written here only: getters. start.js sets addFor with setAddFor (S1a; the tests read it through HOOK). Before backOn() and
-   acts(), the file's two calls that can throw (back.js or act.js not loaded): the names are then still the page's, as a classic
-   script's were (every one is a function, or a let declared above) */
-Object.assign(globalThis,{renderAddFor,npsInert,npsDraw,npsCancel,npsLeave,setAddFor});
-Object.defineProperties(globalThis,{npsId:{get:()=>npsId},npsAsking:{get:()=>npsAsking}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,addManual,npsClose,get addFor(){return addFor},npsCancel,get npsId(){return npsId}};
 export {addManual,addFor,renderAddFor,npsId,npsAsking,npsInert,npsDraw,npsClose,npsCancel,npsLeave,setAddFor};
@@ -98,3 +90,4 @@ function npsSwipe(){if(npsSwipeOn)return;const s=$('#nps-sheet');if(!s)return;np
 function addManualTap(){addManual()}
 function npsCloseTap(){npsCancel()}
 acts({npsCancelTap,addManualTap,npsCloseTap});
+serve('nps-id',()=>npsId);serve('nps-inert',npsInert);serve('nps-asking',()=>npsAsking);serve('nps-cancel',npsCancel);   // the restructure S6f: ui.js's layers and Escape (a required file) and the "Add without a photo" sheet

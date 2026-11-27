@@ -4,12 +4,12 @@
    job on 2026-11-17: item-photo.js the photo tools, item-view.js the sheet itself. Since the restructure S3d, 2026-11-26, it loads after
    wardrobe.js, care.js and cost.js, whose parts it draws.) */
 import {on,serve,ask,served,askFor} from './bus.js';
-import {esc,srcOk} from './photo-keys.js';
+import {srcOk} from './photo-keys.js';
 import {cap1,editing,flt,keepFocus,put,refreshSwatch,setFlt} from './app.js';
 import {cropEditor,paperHint,paperLine,paperRetake,phEdit,photoTools,setPhEdit} from './item-photo.js';
 import {wardPic} from './photos.js';
 import {itemThumb} from './draw.js';
-import {$,BANDS,BEZELS,BLOUSE_TAPE_MAX,CARE_ABLE,COLORS,CUFFS,DIAL_OPTS,FABRIC,HANDPICK_TYPES,MATERIALS_BY,METAL_TYPES,OCP_RANKS,SEASONS,SEASON_TYPES,SHOE_STYLES,TROUSER_KINDS,TYPES,VESTS,WATCH_STYLES,careTimes,careWashed,careWord,dayRecs,hasPat,hasVest,isConnected,isoKey,items,keyDate,leatherLabel,leatherWord,leathersFor,metalOptsFor,normPat,paperCloth,patBase,patName,phSm,primaryCol,shadeName,shoeStyle,tapeText,todayDate,trouserKindShown,watchOpts} from './core.js';
+import {$,BANDS,BEZELS,BLOUSE_TAPE_MAX,CARE_ABLE,COLORS,CUFFS,DIAL_OPTS,FABRIC,HANDPICK_TYPES,MATERIALS_BY,METAL_TYPES,OCP_RANKS,SEASONS,SEASON_TYPES,SHOE_STYLES,TROUSER_KINDS,TYPES,VESTS,WATCH_STYLES,careTimes,careWashed,careWord,dayRecs,hasPat,hasVest,isConnected,isoKey,items,keyDate,leatherLabel,leatherWord,leathersFor,metalOptsFor,normPat,paperCloth,patBase,patName,phSm,primaryCol,shadeName,shoeStyle,tapeText,todayDate,trouserKindShown,watchOpts,esc} from './core.js';
 import {closeupBtn,itemGoneTell,tell} from './ui.js';
 import {DETECT_PATS,detectPattern,usableSett} from './detect.js';
 import {WATCH_DETAILS_MAX,ivOn,matOnItem,wardBack,wardBar,wardCount,wardDelete,wardDuplicate,wardFieldsTop,wardFlt,wardFresh,wardGrid,wardKeep} from './wardrobe.js';
@@ -174,13 +174,6 @@ function stepType(n,from){
   const x=from===undefined?(n>0?1:-1)*Math.min(innerWidth*.35,140):from;if(!x)return true;
   sl.style.transition='none';sl.style.transform=`translateX(${x}px)`;sl.style.opacity='0';void sl.offsetWidth;
   sl.style.transition='transform .24s cubic-bezier(.2,.8,.2,1),opacity .2s ease-out';sl.style.transform='translateX(0)';sl.style.opacity='1';return true}
-/* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. renderWardrobe is called by the files
-   loaded after this one (kit.js, shop.js, sync.js) and 15 tests (the earlier files announce 'wardrobe-changed'); item-view.js draws the
-   sheet with itemBody; colpick.js and look.js (sete, patSummary, redetect, clearStripes); togglePause and rm are called by tests only; a
-   module imports them. (phEdit is item-photo.js's and wardPic photos.js's since the restructure S3d.)
-   Above the file's first call that can throw ($ and the Wardrobe page's own element, then acts): the names are then still the page's,
-   as a classic script's were */
-Object.assign(globalThis,{itemBody,sete,patSummary,redetect,clearStripes,renderWardrobe});
 /* an item's edits, asked for by colpick.js and look.js (loaded before this file, of the Add group: tests/bus.test.js SOCKETS) */
 serve('item-set',sete);serve('pat-summary',patSummary);serve('pat-redetect',redetect);serve('pat-clear',clearStripes);
 /* the Wardrobe's redraw for the files loaded before this one (bus.js: they announce 'wardrobe-changed'; nav.js asks 'wardrobe-draw' when

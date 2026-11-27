@@ -11,10 +11,10 @@ import {addTexture,renderAdd} from './add.js';
 import {addOwnMaterial,groupOf,matOffer,newColHex,removeOwnMaterial,renderOwnMatUI} from './own-lists.js';
 import {announce,cap1,cardAt,cardIx,editing,generateSwatch,put,qAt,queue,refreshSwatch} from './app.js';
 import {saveUserSettings,settingsPart,showCost} from './settings.js';
-import {$,COLORS,CUSTOM_COL,DIAL_COLS,FABRIC,MATERIALS_BY,METAL,METAL_TONES,OWN_MAT_MAX,PATS_BY,SHADE_MAX,TYPES,clipMetal,colName,colsFor,isConnected,items,leatherWord,leathersFor,matTypeWord,matsFor,metalWord,normPat,ownMatName,paperCloth,patBase,patName,primaryCol,settings,shadeHex,shadeName,sockPatterned,sockToeKey,soleStyle,strapBand,watchOpts} from './core.js';
+import {$,COLORS,CUSTOM_COL,DIAL_COLS,FABRIC,MATERIALS_BY,METAL,METAL_TONES,OWN_MAT_MAX,PATS_BY,SHADE_MAX,TYPES,clipMetal,colName,colsFor,isConnected,items,leatherWord,leathersFor,matTypeWord,matsFor,metalWord,normPat,ownMatName,paperCloth,patBase,patName,primaryCol,settings,shadeHex,shadeName,sockPatterned,sockToeKey,soleStyle,strapBand,watchOpts,esc} from './core.js';
 import {colourVerdicts,paperCopy,paperOf,undoMeasured} from './measure.js';
 import {ckLr,matGuessOf,matNewOf,setq} from './add-card.js';
-import {esc,jsq} from './photo-keys.js';
+import {jsq} from './photo-keys.js';
 import {itemThumb,swatchSVG} from './draw.js';
 import {claudeOnly,readSett,rereadSett,settable} from './pattern-read.js';
 import {addKeep} from './add-keep.js';
@@ -38,15 +38,6 @@ function lookSet(on){on=!!on;try{if(on)localStorage.setItem(LOOK_LS,'1');else lo
   announce(on?'New Look editor on.':'New Look editor off.')}
 function renderLookSetting(){const el=document.querySelector('#beta-list');if(!el)return;const on=lookOn();
   el.innerHTML=`<div class="dress-row"><span class="dress-txt"><b id="beta-look-l">New Look editor (beta)</b><small id="beta-look-h">One Look section for color, pattern and material when you add or open an item. This phone only; switch it off any time and nothing is lost.</small></span><button type="button" class="dress-sw${on?' on':''}" id="beta-look" role="switch" aria-checked="${on}" aria-labelledby="beta-look-l" aria-describedby="beta-look-h" data-act="lkSwitch" data-on="${!on}"><i></i></button></div>`}
-/* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. lookOn is asked by core.js,
-   add-card.js, item-view.js, itemsheet.js, tagging.js, own-lists.js and colpick.js; add-card.js and itemsheet.js draw the section
-   (lookSection), colpick.js draws and uses the picker sheet with lookCur, lookWrite, lookClipMetal, lookSetEnamel, renderLookPick,
-   lookUsePick, lookShadeHtml, lookSugCols and lookSugPats; own-lists.js draws the own materials (lookOwnMatUI), item-view.js opens
-   a piece fresh (lookOpenFresh), add-save.js saves (lookSave); lookSet, lookOwnMats, lookSetMat, lookShadeStep and lookCheck are
-   called by tests only. A module imports them.
-   Above the file's first call that can throw (settingsPart, when settings.js did not load; then acts): the functions are then still
-   the page's, as a classic script's were; the consts declared further down are handed over above acts */
-Object.assign(globalThis,{lookWrite,lookOwnMatUI,lookSetEnamel,renderLookPick,lookUsePick,lookShadeHtml,lookSugCols,lookSugPats,lookSection,lookOpenFresh,lookSave});
 /* the color sheet's beta parts, asked for by colpick.js (loaded before this file: tests/bus.test.js SOCKETS) */
 serve('look-use-pick',lookUsePick);serve('look-set-enamel',lookSetEnamel);serve('look-write',lookWrite);serve('look-pick-draw',renderLookPick);
 serve('look-sug-cols',lookSugCols);serve('look-sug-pats',lookSugPats);serve('look-shade-html',lookShadeHtml);

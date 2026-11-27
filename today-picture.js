@@ -155,14 +155,6 @@ function swApply(anim){const c=$('#mannequin-container'),t=zoomTarget(),o=planFo
   const ring=mk('swring'),d=cl(2*r*SW_Z,.16,.26)*W;ring.style.width=ring.style.height=d+'px';ring.style.left=(tx+SW_Z*fx*W)+'px';ring.style.top=(ty+SW_Z*fy*H)+'px'}
 function swTap(s){const k=key(sel);if(zoom){zoom=null;applyZoom(false)}swOpen=swOpen&&swOpen.k===k&&swOpen.s===s?null:{k,s};swApply(true)}
 function swClose(){if(swOpen){swOpen=null;swApply(true)}}
-/* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. today.js lays out the swatches with
-   ovlPiece and calls applyZoom, zoomOut, swApply, swTap and swClose; zoom is read by today-gestures.js and only this file assigns it:
-   a getter; tests/care.test.js sets swOpen: a getter and a setter; the swatch makers and their caches (ovlItem, ovlWeave, ovlSvg, ovlGrain,
-   ovlSuitPng, OVL_HB, ovlHbKey, ovlHbShirt, OVL_CU, ovlCuKey), zoomTarget and toggleZoom are read by tests only; a module imports them.
-   Above the file's first call that can throw ($ and Today's own element, when core.js did not load): the names are then still the
-   page's, as a classic script's were */
-Object.assign(globalThis,{ovlPiece,applyZoom,zoomOut,swApply,swTap,swClose});
-Object.defineProperties(globalThis,{zoom:{get:()=>zoom}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,OVL_CU,OVL_HB,ovlCuKey,ovlGrain,ovlHbKey,ovlHbShirt,ovlItem,ovlSuitPng,ovlSvg,ovlWeave,get swOpen(){return swOpen},set swOpen(v){swOpen=v},toggleZoom,zoomTarget,ovlPiece,swTap,get zoom(){return zoom},zoomOut};
 export {ovlItem,ovlWeave,ovlSvg,ovlGrain,ovlSuitPng,OVL_HB,ovlHbKey,ovlHbShirt,OVL_CU,ovlCuKey,ovlPiece,zoom,zoomTarget,applyZoom,toggleZoom,zoomOut,swOpen,swApply,swTap,swClose};
@@ -181,3 +173,4 @@ $('#today').addEventListener('click',e=>{if(!swOpen)return;const c=e.target.clos
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('zoomed',()=>zoom);
 serve('zoom-apply',applyZoom);serve('ovl-piece',ovlPiece);serve('sw-apply',swApply);serve('sw-tap',swTap);serve('zoom-out',zoomOut);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
+serve('sw-close',swClose);   // the restructure S6f: today.js closes an open swatch

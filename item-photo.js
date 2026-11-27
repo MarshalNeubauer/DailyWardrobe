@@ -4,8 +4,8 @@
    and the item itself stay, so the plan and the outfit history are untouched. Each change's toast has Undo (picUndo; phEdit.undo holds the editor's steps). ---- */
 import {serve,emit,ask,askFor} from './bus.js';   // emit: the Wardrobe's redraw (itemsheet.js, later); ask: the piece open (item-view.js). (No app.js ask() here)
 import {DEAD_MSG,deadPic,fixupRedraw,imgOf,loadImg,put,refreshSwatch,shrink,stillCur} from './app.js';
-import {$,CLOSE_MAX,PH_MAX,TAG_MAX,TAG_Q,TEX_MAX,TEX_MIN_PX,items,paperCloth,phSigOf,texSig} from './core.js';
-import {esc,srcOk} from './photo-keys.js';
+import {$,CLOSE_MAX,PH_MAX,TAG_MAX,TAG_Q,TEX_MAX,TEX_MIN_PX,items,paperCloth,phSigOf,texSig,esc} from './core.js';
+import {srcOk} from './photo-keys.js';
 import {closeupBtn,cuGot,cuTouch} from './ui.js';
 import {toast} from './toast.js';
 import {planDirty} from './today-plan.js';
@@ -126,10 +126,6 @@ function paperTipTap(){paperTip()}
 function cropZoom(el){phEdit.crop.z=+el.value;layoutCrop()}
 function cropApply(el){applyCrop(el.dataset.id)}
 function cropDiscardTap(){cropDiscard()}
-/* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above the file's
-   one top-level call (acts, when act.js did not load): the names are then still the page's */
-Object.assign(globalThis,{smallPhotos,photoTools,paperHint,paperRetake,paperLine,replaceTexture,cropEditor,cropKeep,setPhEdit});
-Object.defineProperties(globalThis,{phEdit:{get:()=>phEdit}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,applyCrop,layoutCrop,paperTip,setPhoto,setTexture,startCrop,undoPhoto,get phEdit(){return phEdit},replaceTexture,smallPhotos};
 export {phEdit,setPhEdit,smallPhotos,photoTools,paperHint,paperTip,paperRetake,paperLine,setPhoto,setTexture,replaceTexture,undoPhoto,startCrop,cropEditor,cropKeep,layoutCrop,applyCrop};

@@ -320,12 +320,8 @@ async function adoptBackupSettings(local,data){
   const kept={...local.settings,...data.settings};await metaPut('settings',kept);local.settings=kept;
   setWardrobe({settings:takeSettings(settings,data.settings)});applyCustom(settings.custom);planDirty();askFor('weather-load');
   if(!$('#today').hidden)refreshToday();return true}
-/* An ES module since 2026-11-24. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
-   as globals. Above the file's top-level set-up, whose connRestored.then and acts({…}) throw when app.js or act.js didn't load */
-Object.assign(globalThis,{syncPaused,syncWaiting,backedUpWords,tabBrowser,safariTab,localState,applyMerged,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,WIPED_SYNC,syncNow,scheduleSync,setRestoring,adoptBackupSettings,SYNC_SEND_MAX});
 /* the socket the setup's Connection step asks for its words (bus.js; setup.js no longer names this file: the restructure S3f) */
 serve('backed-up-words',backedUpWords);
-Object.defineProperties(globalThis,{syncTimer:{get:()=>syncTimer},syncRun:{get:()=>syncRun},restoring:{get:()=>restoring,set:v=>{restoring=v}},syncing:{get:()=>syncing,set:v=>{syncing=v}}});
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-saved',()=>scheduleSync());   // a backup soon after the settings were saved
 on('connection-saved',()=>{syncNow().catch(e=>console.warn('sync not started',e))});   // Settings' Done: a backup now
@@ -344,3 +340,4 @@ function syncNowTap(){syncTap()}
 acts({syncNowTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('sync-soon',scheduleSync);serve('sync-now',syncNow);serve('sync-redraw',syncRedraw);serve('sync-needs-pull',syncNeedsPull);serve('sync-later-run',syncLaterRun);serve('sync-stop',()=>clearTimeout(syncTimer));serve('sync-running',()=>syncRun);
+serve('after-pull',afterPull);serve('pulled-yet',pulledYet);serve('sync-paused',syncPaused);   // the restructure S6f: what required and today-no-picture files ask of this file

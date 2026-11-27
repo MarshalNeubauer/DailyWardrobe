@@ -3,6 +3,7 @@
    look.js imports them too. Nothing runs at load. */
 import {MATERIALS_BY,METAL,TEXTURE_TYPES,clipMetal,colName,hasPat,items,leatherWord,leathersFor,metalWord,patBase,watchOpts} from './core.js';
 import {cap1} from './app.js';
+import {serve} from './bus.js';
 const LOOK_LS='beta_look';
 let lookBetaMemo=null;
 function setLookMemo(v){lookBetaMemo=v}   // (look.js lookSet)
@@ -46,6 +47,5 @@ const LOOK_PAT_GROUPS=[[['solid','heather'],'Plain'],[['pinstripe','chalk-stripe
   [['herringbone','birdseye','nailhead','sharkskin','twill','tweed','oxford','pinpoint','royal-oxford','end-on-end','chambray','dobby','woven','textured','fine-texture'],'Weaves'],[['knit','ribbed','cable'],'Knits'],
   [['polka-dot','paisley','foulard','camouflage','argyle','clock','border'],'Figures']];
 const lookPatGroupOf=p=>{const b=patBase(p);const g=LOOK_PAT_GROUPS.findIndex(([l])=>l.includes(b));return g<0?LOOK_PAT_GROUPS.length:g};
-/* the bridge (tests/bridge.test.js): core.js, item-view.js, itemsheet.js, item-photo.js and tagging.js still ask lookOn as a global, the tests the rest */
-Object.assign(globalThis,{lookOn,LOOK_COATS,LOOK_METALT,LOOK_ENAMEL,LOOK_METAL_COLS,lookCu,lookHasPat,lookCur,lookClipMetal,LOOK_PK,LOOK_KS,LOOK_PAT_GROUPS,lookPatGroupOf});
 export {LOOK_LS,lookOn,setLookMemo,LOOK_CU,LOOK_COATS,LOOK_METALT,LOOK_CLIP_METALS,LOOK_ENAMEL,LOOK_METAL_COLS,lookCu,lookHasPat,LOOK_SHIRT_FIBERS,LOOK_SHIRT_CLOTHS,LOOK_SHIRT_AS,lookBuiltins,lookCur,lookVal,lookClipMetal,LOOK_PK,LOOK_KS,LOOK_PAT_GROUPS,lookPatGroupOf};
+serve('look-on',lookOn);   // the restructure S6f: what required and today-no-picture files ask of this file (core.js tagTypesNow)

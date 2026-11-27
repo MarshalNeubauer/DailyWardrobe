@@ -19,11 +19,12 @@ function measure(ROOT){
   const tags=modscope.pageScripts(ROOT),files=tags.map(t=>t.src),mod=Object.fromEntries(tags.map(t=>[t.src,t.module]));
   const asts={},srcs={};
   for(const f of files){srcs[f]=fs.readFileSync(path.join(ROOT,f),'utf8');asts[f]=acorn.parse(srcs[f],{ecmaVersion:'latest',sourceType:mod[f]?'module':'script',locations:true,ranges:true})}
-  /* who declares each mutable top-level name (a module: who bridges it) */
+  /* who declares each mutable top-level name (a module: every one it declares, a function, a `let`, a `var`: since the restructure S6f it
+     bridges none, and another file reaches it only through an import, which can't be assigned) */
   const owner={};
   for(const f of files){
     if(mod[f]){const kind=new Map(modscope.declared(asts[f]).map(d=>[d.name,d.kind]));
-      for(const [n,how] of modscope.bridged(asts[f],srcs[f]).names)if(how==='accessor'||!/^(?:const|class|import)$/.test(kind.get(n)||''))owner[n]=f;
+      for(const [n,k] of kind)if(!/^(?:const|class|import)$/.test(k||''))owner[n]=f;
       continue}
     for(const st of asts[f].body){
     if(st.type==='FunctionDeclaration')owner[st.id.name]=f;
@@ -49,7 +50,7 @@ module.exports=async({ok,ROOT})=>{
   const {files,owner,seen,where}=measure(ROOT);
   // (over 1,000 before the painter's files became modules, C3: a module's names it keeps to itself are no other file's to write)
   // (a module owns the names it bridges: 655 since T2 phase 3 took the tests' own names off the bridge, 2026-11-25; 966 before)
-  // (567 since the painter's files bridge nothing, the restructure S6p, 2026-11-27)
+  // (567 since the painter's files bridge nothing, the restructure S6p, 2026-11-27; since S6f every module's own mutable names)
   ok(files.length>40&&Object.keys(owner).length>400,`index.html's ${files.length} scripts read, ${Object.keys(owner).length} mutable top-level names`);
   const fresh=[],over=[],under=[];
   for(const [name,by] of Object.entries(seen))for(const [f,n] of Object.entries(by)){
