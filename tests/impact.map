@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	05854656809e06ebd999
+# tested	b2c5d4ada7e02a2123a7
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	acctSettingsPart	acctStart	get	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -3004,7 +3004,6 @@ backgesture-item.test.js	tests/backgesture-parts.js	<any>
 backgesture-item.test.js	tests/fixedplan.js	<any>
 backgesture-item.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-item.test.js	tests/fixtures/suit-mink.jpg	<loaded>
-backgesture-item.test.js	tests/webkit.js	<any>
 backgesture-item.test.js	theme.js	<loaded>	applyTheme
 backgesture-item.test.js	toast.js	<loaded>	toast	undoHere
 backgesture-item.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -3107,7 +3106,6 @@ backgesture-over.test.js	tests/backgesture-parts.js	<any>
 backgesture-over.test.js	tests/fixedplan.js	<any>
 backgesture-over.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-over.test.js	tests/fixtures/suit-mink.jpg	<loaded>
-backgesture-over.test.js	tests/webkit.js	<any>
 backgesture-over.test.js	theme.js	<loaded>	applyTheme
 backgesture-over.test.js	toast.js	<loaded>	toastDrop	undoOff
 backgesture-over.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -18684,7 +18682,7 @@ staledevice.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settab
 staledevice.test.js	photo-keys.js	<loaded>	@serverenders	comboKey	comboSig	esc	fnv64	get	listPaused	loadRenders	lookSig	picsDrawn	shirtPatterned	shirtTextured	workerBase	workerList
 staledevice.test.js	photos.js	<loaded>	aAn	asmLive	fetchItemPic	fetchRemoteRender	fixItemBackdrops	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	picCol	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	shareLocalPics
 staledevice.test.js	pickscore.js	<loaded>
-staledevice.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
+staledevice.test.js	planner.js	<loaded>	dCol	favLookOf	favRead	idsAhead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
 staledevice.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go
 staledevice.test.js	safety.js	<loaded>	adoptBackupSettings	db.then.dbDown	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 staledevice.test.js	scorecard.js	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
@@ -21196,7 +21194,7 @@ ui.test.js	calendar.js	<loaded>	@onsettingssummaries	@whenPulled	calAuto	calBann
 ui.test.js	care.js	<loaded>	@onsettingscategory	@onsettingsdraw	careBadge	careBandFit	careBandSoon	careCard	careCounts	careDayState	careFrame	careLists	careName	careNote	careNoun	careState	careSum	careTag	careTop	careWornLine	laundryDays	openCare	renderCare	renderCareUI
 ui.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	cmpBind	cmpDiff	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt
 ui.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	EP	colBtn	colFieldLabel	colHas	colLabel	colRows	colShows	get	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff
-ui.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	accentsOf	acctBase	acctCall	acctEsc	applyCustom	avgText	camoPat	careLimit	careTimes	careWashed	careWord	casualTop	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dayClimate	dayFields	desc	di	dressOut	get	get dayRecs	get items	get settings	hasInviteHash	hasPat	hasVest	hexRgb	inRotation	iosDevice	iosInSafari	isCargo	isHandPick	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keyDate	keySettings	keySplit	leatherWord	lum	lumCol	matsFor	metalWord	mix	nameHtml	nameIso	needsJacket	needsTie	nextStamp	nm	normPat	nowMs	occOf	offDays	offName	ownMats	paperCloth	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	set	set TODAY_OVERRIDE	set items	setWardrobe	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	sockToeWord	stampSettings	strapBand	styleWord	subHashes	syncUrl	takeSettings	texSig	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	watchOpts	watchText	wearsJacket	wearsTie
+ui.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	accentsOf	acctBase	acctCall	acctEsc	applyCustom	avgText	camoPat	careLimit	careTimes	careWashed	careWord	casualTop	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dayClimate	dayFields	desc	di	dressOut	get	get dayRecs	get items	get settings	hasInviteHash	hasPat	hasVest	hexRgb	inRotation	iosDevice	iosInSafari	isCargo	isHandPick	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keyDate	keySettings	keySplit	leatherWord	lum	lumCol	matsFor	metalWord	mix	nameHtml	nameIso	needsJacket	needsTie	nextStamp	nm	normPat	nowMs	occOf	offDays	offName	ownMats	paperCloth	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	seasonFit	sentence	set	set TODAY_OVERRIDE	set items	setWardrobe	shadeName	shoeStyle	shortCol	shortDate	shortDesc	sockPatterned	sockToe	sockToeKey	sockToeWord	stampSettings	strapBand	styleWord	subHashes	syncUrl	takeSettings	texSig	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	watchOpts	watchText	wearsJacket	wearsTie
 ui.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwRegion	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed
 ui.test.js	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 ui.test.js	daysoff.js	<loaded>	@onsettingsdraw	@onsettingssummaries	countryName	daysOffListen	isoDate	refreshHolidays	renderDaysOffUI	renderFormalUI
