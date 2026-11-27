@@ -74,8 +74,9 @@ module.exports=async({ok,engines,url,settle})=>{
     const outside=ord.back.filter(b=>C.files[b.from].group!=='add'||C.files[b.to].group!=='add'),used=ord.back.filter(b=>b.used.length);
     ok(ord.back.length>0&&!outside.length&&!used.length,`no cycle runs code at load: the ${ord.back.length} imports of a file that runs later (${ord.back.map(b=>b.from+' → '+b.to).join(', ')}) are all in the add group and none of their names is used at load${outside.length?'; outside it: '+outside.map(b=>b.from+' → '+b.to).join(', '):''}${used.length?'; used at load: '+used.map(b=>b.from+' '+b.used.join(' ')).join('; '):''}`);
     // the check itself: a name of a later file read at load is caught (colpick.js reading look.js's lookUsePick as it runs)
-    const pl=runOrder(ROOT,page,{'colpick.js':s=>s+'\nconst __plant=lookUsePick;\n'}).back.filter(b=>b.used.length);
-    ok(pl.length===1&&pl[0].from==='colpick.js'&&pl[0].used.join()==='lookUsePick',`planted: a later file's name read at load is caught (${pl.map(b=>b.from+' '+b.used.join(' ')).join('; ')||'nothing caught'})`)}
+    const PN=['look','Use','Pick'].join('');   // (spelled in parts: tests/bridge.test.js would read a whole name in a string as a test's read of it)
+    const pl=runOrder(ROOT,page,{'colpick.js':s=>s+`\nconst __plant=${PN};\n`}).back.filter(b=>b.used.length);
+    ok(pl.length===1&&pl[0].from==='colpick.js'&&pl[0].used.join()===PN,`planted: a later file's name read at load is caught (${pl.map(b=>b.from+' '+b.used.join(' ')).join('; ')||'nothing caught'})`)}
   for(const [eng,launch] of engines){let browser;
     try{browser=await launch()}catch(e){ok(false,`${eng}: the browser starts (${e.message.split('\n')[0]})`);continue}
     try{await run(eng,browser,{ok,url,settle});await survey(eng,browser,{ok,url,C,page,imports,ord})}finally{await browser.close()}}
