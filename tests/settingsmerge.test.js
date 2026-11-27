@@ -47,25 +47,25 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
       const p=await c.newPage();p.errs=[];p.on('pageerror',e=>p.errs.push(e.message));await p.goto(url);
       await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);return p};
-    const sync=p=>p.evaluate(()=>syncNow());
+    const sync=p=>p.evaluate(()=>HOOK.syncNow());
     const backup=()=>JSON.parse(store.get('wardrobe:v1')).data.settings||{};
     const A=await device();
-    await A.evaluate(async()=>{settings.workdays=[0,1,2,3,4];settings.units='C';await saveUserSettings()});await sync(A);
+    await A.evaluate(async()=>{HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.units='C';await HOOK.saveUserSettings()});await sync(A);
     const B=await device();await sync(B);
-    ok(await B.evaluate(()=>settings.units==='C'),'phone B takes the backup\'s settings');
+    ok(await B.evaluate(()=>HOOK.settings.units==='C'),'phone B takes the backup\'s settings');
     // each phone changes a different setting before it syncs
-    await A.evaluate(async()=>{settings.workdays=[0,1,2,3];await saveUserSettings()});
-    await B.evaluate(async()=>{settings.location={name:'Kuwait City',lat:29.37,lon:47.98};await saveUserSettings()});
+    await A.evaluate(async()=>{HOOK.settings.workdays=[0,1,2,3];await HOOK.saveUserSettings()});
+    await B.evaluate(async()=>{HOOK.settings.location={name:'Kuwait City',lat:29.37,lon:47.98};await HOOK.saveUserSettings()});
     await sync(B);await sync(A);await sync(B);
-    const s=backup(),sa=await A.evaluate(()=>({w:settings.workdays,l:settings.location&&settings.location.name})),sb=await B.evaluate(()=>({w:settings.workdays,l:settings.location&&settings.location.name}));
+    const s=backup(),sa=await A.evaluate(()=>({w:HOOK.settings.workdays,l:HOOK.settings.location&&HOOK.settings.location.name})),sb=await B.evaluate(()=>({w:HOOK.settings.workdays,l:HOOK.settings.location&&HOOK.settings.location.name}));
     ok(JSON.stringify(s.workdays)==='[0,1,2,3]'&&s.location&&s.location.name==='Kuwait City',`the backup keeps both phones' changes (${JSON.stringify([s.workdays,s.location&&s.location.name])})`);
     ok(JSON.stringify(sa)==='{"w":[0,1,2,3],"l":"Kuwait City"}'&&JSON.stringify(sb)===JSON.stringify(sa),`and both phones end with both (${JSON.stringify([sa,sb])})`);
     // the same setting on both: the later save wins
     // (blazer days merge day by day since fix round 3: core.js SET_SPLIT; the laundry days are one value)
-    await A.evaluate(async()=>{settings.laundryDays=2;await saveUserSettings()});await new Promise(r=>setTimeout(r,20));
-    await B.evaluate(async()=>{settings.laundryDays=3;await saveUserSettings()});
+    await A.evaluate(async()=>{HOOK.settings.laundryDays=2;await HOOK.saveUserSettings()});await new Promise(r=>setTimeout(r,20));
+    await B.evaluate(async()=>{HOOK.settings.laundryDays=3;await HOOK.saveUserSettings()});
     await sync(A);await sync(B);await sync(A);
-    const bd=JSON.stringify([backup().laundryDays,await A.evaluate(()=>settings.laundryDays),await B.evaluate(()=>settings.laundryDays)]);
+    const bd=JSON.stringify([backup().laundryDays,await A.evaluate(()=>HOOK.settings.laundryDays),await B.evaluate(()=>HOOK.settings.laundryDays)]);
     ok(bd==='[3,3,3]','the same setting changed on both phones: the later change wins everywhere '+bd);
     ok(!A.errs.length&&!B.errs.length,'no page errors: '+[...A.errs,...B.errs].join(' | '));
   }finally{await browser.close()}

@@ -38,9 +38,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       // light falloff alone (a smooth gradient) is no texture
       const gr=x.createLinearGradient(0,0,300,0);gr.addColorStop(0,'#707070');gr.addColorStop(1,'#c0c0c0');x.fillStyle=gr;x.fillRect(0,0,300,300);
       const flat=HOOK.texContrast(plain,12),it={id:'w1',type:'shirt',primaryColor:'white',pattern:'woven',sett:s};
-      const def=fabricDef('sw',it,'shirt'),fig=fabricDef('fg',it,'shirt','fig'),asStripe={...it,pattern:'stripe'},spec2=HOOK.specSett(TEX,{tex:c,type:'suit'});   // a woven or tonal-check tie keeps one since 2026-11-13 (tieweave.test.js)
-      const L=h=>rgbLab(...hexRgb(h))[0],tn=texTones(colOf(it),s.tex).map(L),f1=s.tex.grid.join('').split('').filter(v=>v==='1').length/96,nv=texTones('#1b2a4a',{...s.tex,lighter:false}).map(L);
-      return {s,flat,def,fig,tones:tn,mean:tn[0]*(1-f1)+tn[1]*f1,whiteL:L(colOf(it)),navy:nv,usable:!!usableSett(it),stripeUsable:!!usableSett(asStripe),summary:settSummary(s),sig:settSig(s),spec2}},TEX);
+      const def=HOOK.fabricDef('sw',it,'shirt'),fig=HOOK.fabricDef('fg',it,'shirt','fig'),asStripe={...it,pattern:'stripe'},spec2=HOOK.specSett(TEX,{tex:c,type:'suit'});   // a woven or tonal-check tie keeps one since 2026-11-13 (tieweave.test.js)
+      const L=h=>HOOK.rgbLab(...HOOK.hexRgb(h))[0],tn=HOOK.texTones(HOOK.colOf(it),s.tex).map(L),f1=s.tex.grid.join('').split('').filter(v=>v==='1').length/96,nv=HOOK.texTones('#1b2a4a',{...s.tex,lighter:false}).map(L);
+      return {s,flat,def,fig,tones:tn,mean:tn[0]*(1-f1)+tn[1]*f1,whiteL:L(HOOK.colOf(it)),navy:nv,usable:!!HOOK.usableSett(it),stripeUsable:!!HOOK.usableSett(asStripe),summary:HOOK.settSummary(s),sig:HOOK.settSig(s),spec2}},TEX);
     ok(sp.s&&sp.s.v===4&&sp.s.tex.kind==='diamond'&&sp.s.tex.grid.length===12&&sp.s.tex.lighter&&sp.s.tex.measured&&sp.s.cr===12&&sp.s.tr===150&&sp.s.src==='claude+pixels','Claude\'s diamond bitmap becomes the shirt\'s pattern reading, with the repeats in the close-up and across the shirt');
     ok(sp.s.tex.rel>.04&&sp.s.tex.rel<.3,`the texture's strength is measured from the user's close-up (a ${Math.round(sp.s.tex.rel*100)}% lightness swing)`);
     ok(sp.flat<.03,`a smooth light falloff is not counted as texture (${(sp.flat*100).toFixed(1)}%)`);
@@ -53,28 +53,28 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(sp.usable&&!sp.stripeUsable&&sp.spec2===null,'the texture is drawn only while the shirt is a weave pattern, and not for suits');
     ok(/diamond dobby/.test(sp.summary)&&/^t/.test(sp.sig),'it is summarised and has its own signature');
     // Add: a woven shirt with a close-up asks Claude and keeps the texture
-    await p.evaluate(async()=>{show('add');const b=await (await fetch('tests/fixtures/shirt-diamond-closeup.jpg')).blob();await addFiles([new File([b],'s.jpg',{type:'image/jpeg'})])});
-    await p.waitForFunction(()=>queue[0]&&queue[0].pattern==='woven',null,{timeout:20000});
-    await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/shirt-diamond-closeup.jpg')).blob();await addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
-    await p.waitForFunction(()=>queue[0].sett&&queue[0].sett.tex,null,{timeout:20000});
+    await p.evaluate(async()=>{HOOK.show('add');const b=await (await fetch('tests/fixtures/shirt-diamond-closeup.jpg')).blob();await HOOK.addFiles([new File([b],'s.jpg',{type:'image/jpeg'})])});
+    await p.waitForFunction(()=>HOOK.queue[0]&&HOOK.queue[0].pattern==='woven',null,{timeout:20000});
+    await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/shirt-diamond-closeup.jpg')).blob();await HOOK.addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
+    await p.waitForFunction(()=>HOOK.queue[0].sett&&HOOK.queue[0].sett.tex,null,{timeout:20000});
     const card=await p.evaluate(()=>document.querySelector('#queue').textContent);
     ok(calls.length===1&&calls[0].type==='shirt'&&calls[0].closeup&&/diamond dobby weave/.test(card),'adding a woven shirt\'s close-up asks Claude for its weave, and the card says so');
-    await p.evaluate(()=>save(0));
-    const sv=await p.evaluate(()=>{const it=items.find(i=>i.type==='shirt');return {tex:!!(it.sett&&it.sett.tex),spec:!!it.patternSpec,key:comboKey({shirt:it})}});
+    await p.evaluate(()=>HOOK.save(0));
+    const sv=await p.evaluate(()=>{const it=HOOK.items.find(i=>i.type==='shirt');return {tex:!!(it.sett&&it.sett.tex),spec:!!it.patternSpec,key:HOOK.comboKey({shirt:it})}});
     ok(sv.tex&&sv.spec,'the saved shirt keeps the texture and Claude\'s reading');
     // Claude unavailable: no stripes are made up from the weave
     patternReply=()=>[502,{error:'ai'}];
-    await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/shirt-diamond-closeup.jpg')).blob();await addFiles([new File([b],'s.jpg',{type:'image/jpeg'})]);await addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
-    await p.waitForFunction(()=>queue[0]&&!queue[0].patternReading&&queue[0].specFailed,null,{timeout:20000});
-    ok(await p.evaluate(()=>!queue[0].sett),'when Claude can\'t read the weave, the shirt keeps its generic drawing (the band reader is not used on a weave)');
-    await p.evaluate(()=>{HOOK.queue=[];renderAdd()});
+    await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/shirt-diamond-closeup.jpg')).blob();await HOOK.addFiles([new File([b],'s.jpg',{type:'image/jpeg'})]);await HOOK.addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
+    await p.waitForFunction(()=>HOOK.queue[0]&&!HOOK.queue[0].patternReading&&HOOK.queue[0].specFailed,null,{timeout:20000});
+    ok(await p.evaluate(()=>!HOOK.queue[0].sett),'when Claude can\'t read the weave, the shirt keeps its generic drawing (the band reader is not used on a weave)');
+    await p.evaluate(()=>{HOOK.queue=[];HOOK.renderAdd()});
     // Settings → Outfit pictures → Painted plain (one list since 2026-11-13, with the former "Shirt weaves"): a textured shirt with no reading is listed and read
     patternReply=()=>[200,{...TEX,model:'m'}];
-    await p.evaluate(async()=>{const it=items.find(i=>i.type==='shirt');delete it.sett;delete it.patternSpec;await put(it);show('settings')});
-    const ui=await p.evaluate(()=>{asmCmUI();return document.querySelector('#cm-gaps').textContent});
+    await p.evaluate(async()=>{const it=HOOK.items.find(i=>i.type==='shirt');delete it.sett;delete it.patternSpec;await HOOK.put(it);HOOK.show('settings')});
+    const ui=await p.evaluate(()=>{HOOK.asmCmUI();return document.querySelector('#cm-gaps').textContent});
     ok(/Painted plain \(1\)/.test(ui)&&/Read 1 pattern/.test(ui),'Painted plain lists the one textured shirt without a weave reading, with a button to read it: '+ui.slice(0,120));
     const before=calls.length;await p.evaluate(()=>HOOK.asmReadGaps());
-    const after=await p.evaluate(()=>({tex:!!items.find(i=>i.type==='shirt').sett.tex,ui:document.querySelector('#cm-gaps').textContent}));
+    const after=await p.evaluate(()=>({tex:!!HOOK.items.find(i=>i.type==='shirt').sett.tex,ui:document.querySelector('#cm-gaps').textContent}));
     ok(calls.length===before+1&&after.tex&&/Every patterned piece/.test(after.ui),'"Read 1 pattern" reads it and the list empties');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}

@@ -213,26 +213,26 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
     await p.reload();await p.waitForFunction(()=>window.appReady);const d={ctx,p,errs,n:ctx.__n};devs.push(d);return d};
-  const sync=d=>d.p.evaluate(()=>syncNow());
+  const sync=d=>d.p.evaluate(()=>HOOK.syncNow());
   // every device still first: no sync or day recording running, the stored wardrobe the same over three checks 120 ms apart (at most
   // 6 s), and the backup an edit or a redraw scheduled (scheduleSync, 2.5 s on) called off, as tests/sync.test.js's quiet. On a busy
   // machine the older app's scheduled sync (C: the whole backup, down and up) came due during B's count on the new worker:
   // "still takes the small sync (10425.2 KB up, 20886.1 KB down, 5 requests)", the nightly run of 2026-11-17
   const quiet=d=>d.p.evaluate(async()=>{let last='',same=0;const end=Date.now()+6000;
-    while(Date.now()<end){await recordRun;const sig=stateSig(await localState());same=!HOOK.syncing&&sig===last?same+1:0;last=sig;if(same>=3)break;await new Promise(r=>setTimeout(r,120))}
-    clearTimeout(syncTimer)});
+    while(Date.now()<end){await HOOK.recordRun;const sig=stateSig(await HOOK.localState());same=!HOOK.syncing&&sig===last?same+1:0;last=sig;if(same>=3)break;await new Promise(r=>setTimeout(r,120))}
+    clearTimeout(HOOK.syncTimer)});
   // one sync on d, with what it sent and received (d's own requests: each is noted with its device)
   const counted=(d,r)=>{const t=traffic.filter(x=>x.who===d.n);return {ok:r,up:t.reduce((a,x)=>a+x.up,0),down:t.reduce((a,x)=>a+x.down,0),n:t.length,t,big:t.some(x=>x.up>1e6||x.down>1e6)}};
   // (d's own scheduled backup is called off before the wait, so the change it holds goes up in the count, not during the quiet:
   // "a day marked worn goes up without the backup (0.0 KB up …)" on the branch's nightly run)
-  const measured=async d=>{await d.p.evaluate(()=>clearTimeout(syncTimer));await Promise.all(devs.map(quiet));traffic.length=0;return counted(d,await sync(d))};
+  const measured=async d=>{await d.p.evaluate(()=>clearTimeout(HOOK.syncTimer));await Promise.all(devs.map(quiet));traffic.length=0;return counted(d,await sync(d))};
   const kb=x=>`${(x.up/1e3).toFixed(1)} KB up, ${(x.down/1e3).toFixed(1)} KB down, ${x.n} requests`;
   const status=d=>d.p.evaluate(()=>localStorage.getItem('sync_status'));
-  const itemOf=(d,id)=>d.p.evaluate(id=>items.find(i=>i.id===id)||null,id);
+  const itemOf=(d,id)=>d.p.evaluate(id=>HOOK.items.find(i=>i.id===id)||null,id);
   // an edit is made on a quiet device: made while the device's own background sync ran (the older app's, just started), that sync
   // took the edit into its mark without sending it, and the counted sync then saw nothing to send ("and still saves the whole backup
   // … 0.0 KB up, 1 requests", after main's #554 changed the timing)
-  const edit=async(d,id,f)=>{await quiet(d);return d.p.evaluate(async([id,f])=>{const it={...items.find(i=>i.id===id),...f,updated:Date.now()};await put(it);HOOK.items=items.map(i=>i.id===id?it:i)},[id,f])};
+  const edit=async(d,id,f)=>{await quiet(d);return d.p.evaluate(async([id,f])=>{const it={...HOOK.items.find(i=>i.id===id),...f,updated:Date.now()};await HOOK.put(it);HOOK.items=HOOK.items.map(i=>i.id===id?it:i)},[id,f])};
   const stored=()=>JSON.parse(store.get('wardrobe:v1'));
   // the backup whole, photos inline, as an older app downloads it (since 2026-11-13 the stored value keeps its photos by reference)
   const full=async()=>JSON.parse(await (await W.fetch(new Request(HOST+'sync',{headers:{'x-app-token':'secret'}}),env)).text());
@@ -241,15 +241,15 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
     // a first sync brings the whole wardrobe, photos and all
     await sync(A);await sync(B);
     const a0=await itemOf(A,'it7'),b0=await itemOf(B,'it7');
-    ok(a0&&b0&&a0.photo===seed.items[7].photo&&b0.texture===seed.items[7].texture&&b0.swatch===seed.items[7].swatch&&(await A.p.evaluate(()=>items.length))===40,`two devices with this app take the whole wardrobe from a backup an older worker stored (${MB.toFixed(1)} MB), every photo intact`);
+    ok(a0&&b0&&a0.photo===seed.items[7].photo&&b0.texture===seed.items[7].texture&&b0.swatch===seed.items[7].swatch&&(await A.p.evaluate(()=>HOOK.items.length))===40,`two devices with this app take the whole wardrobe from a backup an older worker stored (${MB.toFixed(1)} MB), every photo intact`);
     ok(!!meta.get('wardrobe:v1').pv&&!store.get('wardrobe:v1').includes('base64')&&(await full()).data.items[7].photo===seed.items[7].photo&&[...store.keys()].some(k=>/^ph:[0-9a-f]{20}$/.test(k)),'the next save stores the backup with its photos by reference (no photos in it), each photo once under ph:<hash>');
     await sync(A);await sync(B);   // (both settled)
 
     // a day marked worn on A: under 100 KB each way, on A and on B
-    await A.p.evaluate(()=>saveDay({date:'2026-11-03',ids:['it0','it1','it2'],worn:true},true));
+    await A.p.evaluate(()=>HOOK.saveDay({date:'2026-11-03',ids:['it0','it1','it2'],worn:true},true));
     const up1=await measured(A),down1=await measured(B);
     ok(up1.ok&&!up1.big&&up1.up+up1.down<100e3&&up1.t.some(x=>x.m==='POST'),`a day marked worn goes up without the backup (${kb(up1)})`);
-    ok(down1.ok&&!down1.big&&down1.up+down1.down<100e3&&(await B.p.evaluate(()=>dayRecs['2026-11-03']&&dayRecs['2026-11-03'].worn===true)),`and comes down to the other device the same way (${kb(down1)})`);
+    ok(down1.ok&&!down1.big&&down1.up+down1.down<100e3&&(await B.p.evaluate(()=>HOOK.dayRecs['2026-11-03']&&HOOK.dayRecs['2026-11-03'].worn===true)),`and comes down to the other device the same way (${kb(down1)})`);
     // a swapped piece (an item edited) on B, back to A
     await edit(B,'it5',{primaryColor:'burgundy'});
     const up2=await measured(B),down2=await measured(A),a5=await itemOf(A,'it5');
@@ -260,7 +260,7 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
     ok(up3.ok&&up3.up>150e3&&up3.up<300e3&&(await full()).data.items.find(i=>i.id==='it9').photo===np,`a replaced photo is sent once (${kb(up3)})`);
     ok(down3.ok&&down3.down>150e3&&down3.down<300e3&&down3.t.some(x=>x.q.startsWith('?ph='))&&(await itemOf(B,'it9')).photo===np,`and downloaded alone by the other device (${kb(down3)})`);
     // a deletion (tombstone)
-    await A.p.evaluate(async()=>{const t=Date.now();await del('it3');await metaPut('tombstones',{...(await metaGet('tombstones')||{}),it3:t});HOOK.items=items.filter(i=>i.id!=='it3')});
+    await A.p.evaluate(async()=>{const t=Date.now();await HOOK.del('it3');await HOOK.metaPut('tombstones',{...(await HOOK.metaGet('tombstones')||{}),it3:t});HOOK.items=HOOK.items.filter(i=>i.id!=='it3')});
     await sync(A);await sync(B);
     ok(!(await itemOf(B,'it3'))&&!stored().data.items.some(i=>i.id==='it3')&&stored().data.tombstones.it3,'a deletion reaches the backup and the other device');
     // both devices change something before either syncs: the second is refused (409), asks again and merges
@@ -274,15 +274,15 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
     const q=await measured(A);
     ok(q.ok&&q.n===1&&q.down<200,`nothing new: one small request (${kb(q)})`);
     // a device whose storage was cleared but kept its marker gets everything back
-    await B.p.evaluate(async()=>{for(const i of await tx('readonly',s=>s.getAll()))await tx('readwrite',s=>s.delete(i.id));HOOK.items=[]});
+    await B.p.evaluate(async()=>{for(const i of await HOOK.tx('readonly',s=>s.getAll()))await HOOK.tx('readwrite',s=>s.delete(i.id));HOOK.items=[]});
     await sync(B);
-    ok((await B.p.evaluate(()=>items.length))===(await A.p.evaluate(()=>items.length))&&(await itemOf(B,'it7')).photo===seed.items[7].photo&&stored().data.items.length>30,'a device that lost its wardrobe gets it back, photos and all, and the backup is not emptied');
+    ok((await B.p.evaluate(()=>HOOK.items.length))===(await A.p.evaluate(()=>HOOK.items.length))&&(await itemOf(B,'it7')).photo===seed.items[7].photo&&stored().data.items.length>30,'a device that lost its wardrobe gets it back, photos and all, and the backup is not emptied');
 
     // an older app (the whole backup each time) on the same worker
     // (counted from its start: its start-up sync is the first download; a quiet before the count would let it finish uncounted)
     await Promise.all(devs.map(quiet));traffic.length=0;const C=await device(true);
     const cs=counted(C,await sync(C));
-    ok(cs.ok&&cs.t[0].q===''&&(await itemOf(C,'it9')).photo===np&&(await C.p.evaluate(()=>items.length))===(await A.p.evaluate(()=>items.length)),`an older app still downloads the whole backup and reads it (${kb(cs)})`);
+    ok(cs.ok&&cs.t[0].q===''&&(await itemOf(C,'it9')).photo===np&&(await C.p.evaluate(()=>HOOK.items.length))===(await A.p.evaluate(()=>HOOK.items.length)),`an older app still downloads the whole backup and reads it (${kb(cs)})`);
     await edit(C,'it13',{primaryColor:'black'});const cu=await measured(C);
     ok(cu.ok&&cu.t.some(x=>x.m==='PUT'&&x.up>1e6)&&stored().data.items.find(i=>i.id==='it13').primaryColor==='black'&&meta.get('wardrobe:v1').pv,`and still saves the whole backup, which the worker stores by reference (${kb(cu)})`);
     const fromOld=await measured(A);
@@ -295,9 +295,9 @@ const deltasync=async({ok,chromium,url,ROOT})=>{
     const anySnap=[...store.keys()].filter(k=>/^snap:\d{4}-\d{2}-\d{2}$/.test(k));
     const sv=anySnap.length&&(await (await W.fetch(new Request(HOST+'sync?snap='+anySnap[0].slice(5),{headers:{'x-app-token':'secret'}}),env)).json());
     ok(anySnap.length>=1&&sv&&sv.data.items.find(i=>i.id==='it7').photo===seed.items[7].photo,`the day's first change keeps the backup as it was (${anySnap.join(', ')}), photos inline`);
-    await A.p.evaluate(()=>openSettings&&openSettings());await A.p.evaluate(()=>HOOK.loadSnapshots());
-    await A.p.evaluate(async d=>{$('#snap-list').value=d;const r=HOOK.rollBack();$('#ask-ok').click();await r},anySnap[0].slice(5));
-    const rb=await A.p.evaluate(()=>({st:$('#snap-status').textContent,c5:items.find(i=>i.id==='it5').primaryColor,n:items.length}));
+    await A.p.evaluate(()=>HOOK.openSettings&&HOOK.openSettings());await A.p.evaluate(()=>HOOK.loadSnapshots());
+    await A.p.evaluate(async d=>{HOOK.$('#snap-list').value=d;const r=HOOK.rollBack();HOOK.$('#ask-ok').click();await r},anySnap[0].slice(5));
+    const rb=await A.p.evaluate(()=>({st:HOOK.$('#snap-status').textContent,c5:HOOK.items.find(i=>i.id==='it5').primaryColor,n:HOOK.items.length}));
     await sync(B);
     ok(/Rolled back\./.test(rb.st)&&rb.c5==='navy'&&(await itemOf(B,'it5')).primaryColor==='navy'&&(await itemOf(B,'it5')).photo===seed.items[5].photo&&store.has('snap:before-restore'),`Roll back goes through the small sync and reaches the other device (${rb.st})`);
 
@@ -360,28 +360,28 @@ const inlineswatch=async({ok,chromium,url,ROOT})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
     await p.reload();await p.waitForFunction(()=>window.appReady);return {p,errs}};
-  const itemOf=(d,id)=>d.p.evaluate(id=>items.find(i=>i.id===id)||null,id);
+  const itemOf=(d,id)=>d.p.evaluate(id=>HOOK.items.find(i=>i.id===id)||null,id);
   const stored=()=>JSON.parse(store.get('wardrobe:v1'));
   try{
     const A=await device();
-    ok(await A.p.evaluate(()=>syncNow())&&(await itemOf(A,'it1')).swatch===oldSw&&(await itemOf(A,'it1')).photo===photos[1],'this app reads the old record: the referenced PNG swatch (under the new PH_MIN) comes back whole');
-    await A.p.evaluate(()=>syncNow());
+    ok(await A.p.evaluate(()=>HOOK.syncNow())&&(await itemOf(A,'it1')).swatch===oldSw&&(await itemOf(A,'it1')).photo===photos[1],'this app reads the old record: the referenced PNG swatch (under the new PH_MIN) comes back whole');
+    await A.p.evaluate(()=>HOOK.syncNow());
     // an edit of an old item: its PNG swatch now rides inline; nothing is written but the backup (and the day's copy)
     writes.length=0;
-    await A.p.evaluate(async()=>{const it={...items.find(i=>i.id==='it0'),primaryColor:'charcoal'};await put(it);HOOK.items=items.map(i=>i.id==='it0'?it:i)});
-    ok(await A.p.evaluate(()=>syncNow())&&!writes.some(k=>k.startsWith('ph:'))&&stored().data.items.find(i=>i.id==='it0').swatch===oldSw&&store.has('ph:'+hashOf(oldSw)),
+    await A.p.evaluate(async()=>{const it={...HOOK.items.find(i=>i.id==='it0'),primaryColor:'charcoal'};await HOOK.put(it);HOOK.items=HOOK.items.map(i=>i.id==='it0'?it:i)});
+    ok(await A.p.evaluate(()=>HOOK.syncNow())&&!writes.some(k=>k.startsWith('ph:'))&&stored().data.items.find(i=>i.id==='it0').swatch===oldSw&&store.has('ph:'+hashOf(oldSw)),
       `an edited old item goes up with no photo written (${writes.join(', ')}); its swatch is inline, the old value stays for the clean-up`);
     // a new item: the swatch is cut as a JPEG of a few KB from a real close-up
-    const sw=await A.p.evaluate(async()=>{const im=await imgOf('tests/fixtures/blazer-windowpane-closeup.jpg'),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);
+    const sw=await A.p.evaluate(async()=>{const im=await HOOK.imgOf('tests/fixtures/blazer-windowpane-closeup.jpg'),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);
       const s=HOOK.cropSwatch(c,1,.5,.5,'#1f2a44');return {s,min:HOOK.PH_MIN}});
     ok(sw.s.startsWith('data:image/jpeg;base64,')&&sw.s.length<sw.min*.75,`the swatch is a JPEG of ${(sw.s.length/1024).toFixed(1)} KB of text (a PNG was about 38 KB), under PH_MIN (${sw.min})`);
     const np=pic(60e3),nt=pic(70e3);writes.length=0;
-    await A.p.evaluate(async([sw,np,nt])=>{const it={id:'new1',type:'suit',primaryColor:'grey',pattern:'solid',added:Date.now(),photo:np,texture:nt,swatch:sw,swSrc:'tex'};await put(it);HOOK.items=[...items,it]},[sw.s,np,nt]);
-    ok(await A.p.evaluate(()=>syncNow())&&writes.filter(k=>k.startsWith('ph:')).length===2&&stored().data.items.find(i=>i.id==='new1').swatch===sw.s&&!store.has('ph:'+hashOf(sw.s)),
+    await A.p.evaluate(async([sw,np,nt])=>{const it={id:'new1',type:'suit',primaryColor:'grey',pattern:'solid',added:Date.now(),photo:np,texture:nt,swatch:sw,swSrc:'tex'};await HOOK.put(it);HOOK.items=[...HOOK.items,it]},[sw.s,np,nt]);
+    ok(await A.p.evaluate(()=>HOOK.syncNow())&&writes.filter(k=>k.startsWith('ph:')).length===2&&stored().data.items.find(i=>i.id==='new1').swatch===sw.s&&!store.has('ph:'+hashOf(sw.s)),
       `a new item with a photo and a close-up writes 2 photos and the backup (${writes.join(', ')}), its swatch inline: one write less than before`);
     // another device takes both, the old reference and the inline swatch
     const B=await device();
-    ok(await B.p.evaluate(()=>syncNow())&&(await itemOf(B,'new1')).swatch===sw.s&&(await itemOf(B,'it2')).swatch===oldSw&&(await itemOf(B,'new1')).photo===np,'another device gets the inline swatch and the old referenced one');
+    ok(await B.p.evaluate(()=>HOOK.syncNow())&&(await itemOf(B,'new1')).swatch===sw.s&&(await itemOf(B,'it2')).swatch===oldSw&&(await itemOf(B,'new1')).photo===np,'another device gets the inline swatch and the old referenced one');
     // the full backup an older app downloads has both inline
     const full=JSON.parse(await (await worker.fetch(new Request(HOST+'sync',{headers:{'x-app-token':'secret'}}),env)).text());
     ok(full.data.items.find(i=>i.id==='it2').swatch===oldSw&&full.data.items.find(i=>i.id==='new1').swatch===sw.s,'an older app\'s whole download carries both swatches inline');
@@ -393,9 +393,9 @@ const inlineswatch=async({ok,chromium,url,ROOT})=>{
       ok(/const PH_MIN = 256,/.test(fs.readFileSync(path.join(dir,'worker','backup.js'),'utf8')),'(the worker from before: PH_MIN 256)');
       const Old=(await import(pathToFileURL(path.join(dir,'worker.js')).href)).default;const cur=worker;worker=Old;
       const sw2=sw.s.replace(/.$/,c=>c==='A'?'B':'A'),np2=pic(50e3);writes.length=0;
-      await A.p.evaluate(async([sw,np])=>{const it={id:'new2',type:'shirt',primaryColor:'white',pattern:'solid',added:Date.now(),photo:np,swatch:sw,swSrc:'photo'};await put(it);HOOK.items=[...items,it]},[sw2,np2]);
-      const okA=await A.p.evaluate(()=>syncNow()),st=await A.p.evaluate(()=>localStorage.getItem('sync_status'));
-      const C=await device();const okC=await C.p.evaluate(()=>syncNow());const got=await itemOf(C,'new2');worker=cur;try{fs.rmSync(dir,{recursive:true,force:true})}catch{}
+      await A.p.evaluate(async([sw,np])=>{const it={id:'new2',type:'shirt',primaryColor:'white',pattern:'solid',added:Date.now(),photo:np,swatch:sw,swSrc:'photo'};await HOOK.put(it);HOOK.items=[...HOOK.items,it]},[sw2,np2]);
+      const okA=await A.p.evaluate(()=>HOOK.syncNow()),st=await A.p.evaluate(()=>localStorage.getItem('sync_status'));
+      const C=await device();const okC=await C.p.evaluate(()=>HOOK.syncNow());const got=await itemOf(C,'new2');worker=cur;try{fs.rmSync(dir,{recursive:true,force:true})}catch{}
       ok(okA&&!st&&store.has('ph:'+hashOf(sw2))&&okC&&got&&got.swatch===sw2&&got.photo===np2,`against the worker from before, a new inline swatch is saved (stored separately by it, as before) and read back on another device (${writes.join(', ')})`);}
     ok([A,B].every(d=>!d.errs.length),'no page errors ('+[A,B].flatMap(d=>d.errs).join('; ')+')');
   }finally{await browser.close()}
@@ -479,27 +479,27 @@ const w3fix6=async({ok,chromium,url,ROOT})=>{
       await p.goto(url);await p.waitForFunction(()=>window.appReady);p.ctx=ctx;return p};
     // a photo of about 25 KB (over PH_MIN, so sent and kept on its own): distinct text per item
     const addPhotos=(p,n,from=0)=>p.evaluate(async([n,from])=>{for(let k=from;k<from+n;k++){const ph='data:image/jpeg;base64,'+(k.toString(36)+'Q').repeat(25000).slice(0,25000);
-      const it={id:'p'+k,type:'tie',primaryColor:'navy',pattern:'solid',photo:ph,added:Date.now()+k,updated:Date.now()+k};await put(it);items.push(it)}},[n,from]);
+      const it={id:'p'+k,type:'tie',primaryColor:'navy',pattern:'solid',photo:ph,added:Date.now()+k,updated:Date.now()+k};await HOOK.put(it);HOOK.items.push(it)}},[n,from]);
     const backup=()=>JSON.parse(store.get('wardrobe:v1')||'{"data":{"items":[]}}');
 
     // W2-18-01: twelve photo items, a 120 KB budget: several POSTs, each under it, all stored
     const A=await open({send:120000});
-    await A.evaluate(()=>syncNow());await addPhotos(A,12);A.ctx.posts.length=0;
-    const r1=await A.evaluate(async()=>({ok:await syncNow(),st:localStorage.getItem('sync_status'),last:+localStorage.getItem('last_sync')||0}));
+    await A.evaluate(()=>HOOK.syncNow());await addPhotos(A,12);A.ctx.posts.length=0;
+    const r1=await A.evaluate(async()=>({ok:await HOOK.syncNow(),st:localStorage.getItem('sync_status'),last:+localStorage.getItem('last_sync')||0}));
     const onServer=(backup().data.items||[]).length,phs=[...store.keys()].filter(k=>k.startsWith('ph:')).length;
     ok(r1.ok&&!r1.st&&r1.last>0&&A.ctx.posts.length>=3&&A.ctx.posts.every(n=>n<150000)&&onServer===12&&phs===12,
       `12 photo items go up in ${A.ctx.posts.length} batches under the budget (${A.ctx.posts.join(', ')} bytes), all 12 kept with their photos`);
     // the status while batches go up
-    const prog=await A.evaluate(()=>{localStorage.setItem('sync_status','Backing up: 7 items with photos still to send…');localStorage.setItem('last_sync',Date.now());openSettings('backup');showSyncStatus();
-      const r={line:document.querySelector('#sync-status').textContent,sum:backupSummary(localStorage.getItem('worker_url'))};localStorage.removeItem('sync_status');closeSettings();return r});
+    const prog=await A.evaluate(()=>{localStorage.setItem('sync_status','Backing up: 7 items with photos still to send…');localStorage.setItem('last_sync',Date.now());HOOK.openSettings('backup');HOOK.showSyncStatus();
+      const r={line:document.querySelector('#sync-status').textContent,sum:HOOK.backupSummary(localStorage.getItem('worker_url'))};localStorage.removeItem('sync_status');HOOK.closeSettings();return r});
     ok(/^Backing up: 7 items with photos still to send…/.test(prog.line)&&/^Backing up photos · last saved today$/.test(prog.sum),`plain progress words (“${prog.line}” / “${prog.sum}”)`);
     // a server with a smaller limit: 413 halves the budget, still everything goes up; nothing is resent in one body
     await addPhotos(A,6,12);A.ctx.posts.length=0;A.ctx.limit=60000;
-    const r2=await A.evaluate(async()=>({ok:await syncNow(),st:localStorage.getItem('sync_status')}));
+    const r2=await A.evaluate(async()=>({ok:await HOOK.syncNow(),st:localStorage.getItem('sync_status')}));
     ok(r2.ok&&(backup().data.items||[]).length===18&&A.ctx.posts.filter(n=>n>60000).length<=2,`after a 413 the batches are smaller and all go up (${A.ctx.posts.join(', ')})`);
     // one item larger than the server takes: paused until tomorrow with words, and the next close sends nothing
     A.ctx.limit=10000;await addPhotos(A,1,30);A.ctx.posts.length=0;
-    const r3=await A.evaluate(async()=>{const ok1=await syncNow();const st=localStorage.getItem('sync_status');const ok2=await syncNow();return {ok1,ok2,st,pause:+localStorage.getItem('sync_pause')||0}});
+    const r3=await A.evaluate(async()=>{const ok1=await HOOK.syncNow();const st=localStorage.getItem('sync_status');const ok2=await HOOK.syncNow();return {ok1,ok2,st,pause:+localStorage.getItem('sync_pause')||0}});
     ok(!r3.ok1&&!r3.ok2&&r3.pause>Date.now()&&/too large for the server/.test(r3.st)&&!/HTTP|413/.test(r3.st)&&A.ctx.posts.length===1,`one item too large: paused with plain words, sent once only (${A.ctx.posts.length} POST; “${r3.st}”)`);
     // W1-10-03 / W1-10-04: the pause's end in local time; Connection doesn't say "backed up" while paused
     // a pause ending later today, whatever the hour the test runs: 30 minutes from now, or 23:59 when that would be tomorrow (it was
@@ -508,7 +508,7 @@ const w3fix6=async({ok,chromium,url,ROOT})=>{
     // than a day; it was 03:00 tomorrow, over 26 hours off between 00:00 and 01:00, which syncPaused lets go as set by a wrong clock
     const pz=await A.evaluate(()=>{const now=new Date(),later=new Date(+now+30*60e3);if(later.getDate()!==now.getDate()){later.setTime(+now);later.setHours(23,59,59,0)}
       const at=later.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});const tom=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1,0,30);
-      localStorage.setItem('sync_pause',+later);const a=backupSummary('x');localStorage.setItem('sync_pause',+tom);const b=backupSummary('x');const w=backedUpWords();localStorage.removeItem('sync_pause');return {a,b,w,at,w2:backedUpWords()}});
+      localStorage.setItem('sync_pause',+later);const a=HOOK.backupSummary('x');localStorage.setItem('sync_pause',+tom);const b=HOOK.backupSummary('x');const w=HOOK.backedUpWords();localStorage.removeItem('sync_pause');return {a,b,w,at,w2:HOOK.backedUpWords()}});
     const atRe=new RegExp('^Paused until '+pz.at.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s/g,'\\s?'));
     ok(atRe.test(pz.a)&&/^Paused until tomorrow/.test(pz.b),`"Paused until" says the real time when it is today (“${pz.a}” / “${pz.b}”, ${pz.at} expected)`);
     ok(/paused until/.test(pz.w)&&/only on this phone/.test(pz.w)&&pz.w2==='your wardrobe is backed up',`while paused, Connection's words say so (“${pz.w}”)`);
@@ -518,16 +518,16 @@ const w3fix6=async({ok,chromium,url,ROOT})=>{
     ok(lab.d==='Mon, Nov 16, start of the day · 5 items'&&lab.e==='Sun, Nov 15, start of the day · empty'&&lab.m==='Start of November 2026 · empty'&&lab.o==='Sat, Nov 14, start of the day',
       `daily backups named by their day, with counts (${JSON.stringify(lab)})`);
     const askQ=await A.evaluate(async()=>{const sel=document.querySelector('#snap-list');sel.innerHTML='<option value="2026-11-15" data-n="0">Sun, Nov 15, start of the day · empty</option>';sel.value='2026-11-15';
-      const run=HOOK.rollBack();for(let i=0;i<300&&!asking;i++)await new Promise(r=>setTimeout(r,10));const txt=document.querySelector('#ask-sheet.on')?document.querySelector('#ask-sheet').textContent:'';askAnswer(false);await run;return txt});
+      const run=HOOK.rollBack();for(let i=0;i<300&&!HOOK.asking;i++)await new Promise(r=>setTimeout(r,10));const txt=document.querySelector('#ask-sheet.on')?document.querySelector('#ask-sheet').textContent:'';HOOK.askAnswer(false);await run;return txt});
     ok(/no items: rolling back to it empties the wardrobe/.test(askQ),'the roll-back question says an empty copy empties the wardrobe');
     // W1-10-01 in the app: the server's saves used up says nothing was deleted, with the local time
     const del=await A.evaluate(async()=>{const f0=window.fetch;window.fetch=async()=>new Response('{"error":"kv-limit","what":"write","message":"x"}',{status:429});
       const r=await HOOK.aboutDeleteAccount({w:localStorage.getItem('worker_url'),t:'secret'});window.fetch=f0;return r});
     ok(del.fail&&/can’t delete anything more today, so nothing was deleted\. Try again after \d/.test(del.fail),`Delete everything refused for the day's saves: said in the app's words (“${del.fail}”)`);
     // W1-1-02: the day's remakes
-    const rm=await A.evaluate(async()=>{localStorage.removeItem('remake_day');const a=remakeLeft();remakeSpend(10);const b=remakeLeft();
-      const cv=document.createElement('canvas');cv.width=cv.height=8;const cx=cv.getContext('2d');items.forEach((it,k)=>{cx.fillStyle='rgb(40,'+(60+k)+',90)';cx.fillRect(0,0,8,8);it.photo=cv.toDataURL('image/png')});   // real pictures: the real makeSmall runs
-      for(const it of items)delete it.photoSm;const n0=await smallPhotos();localStorage.removeItem('remake_day');remakeSpend(7);const n1=await smallPhotos(),made=items.filter(it=>it.photoSm&&it.phSig===HOOK.phSigOf(it.photo)).length;return {a,b,n0,n1,made}});
+    const rm=await A.evaluate(async()=>{localStorage.removeItem('remake_day');const a=HOOK.remakeLeft();HOOK.remakeSpend(10);const b=HOOK.remakeLeft();
+      const cv=document.createElement('canvas');cv.width=cv.height=8;const cx=cv.getContext('2d');HOOK.items.forEach((it,k)=>{cx.fillStyle='rgb(40,'+(60+k)+',90)';cx.fillRect(0,0,8,8);it.photo=cv.toDataURL('image/png')});   // real pictures: the real makeSmall runs
+      for(const it of HOOK.items)delete it.photoSm;const n0=await HOOK.smallPhotos();localStorage.removeItem('remake_day');HOOK.remakeSpend(7);const n1=await HOOK.smallPhotos(),made=HOOK.items.filter(it=>it.photoSm&&it.phSig===HOOK.phSigOf(it.photo)).length;return {a,b,n0,n1,made}});
     ok(rm.a===10&&rm.b===0&&rm.n0===0&&rm.n1===3&&rm.made===3,`a connected phone remakes at most 10 pictures a day, the rest on the next days (${JSON.stringify(rm)})`);
     ok(!A.errs.length,'no page errors: '+A.errs.join('; '));
     await A.ctx.close();
@@ -537,7 +537,7 @@ const w3fix6=async({ok,chromium,url,ROOT})=>{
     const fullR=await B.evaluate(async()=>{const P=IDBObjectStore.prototype,o=P.put;P.put=function(){throw new DOMException('The quota has been exceeded.','QuotaExceededError')};
       // (the lead's re-run on final main: a start-up write had failed a moment before, its toast already replaced by "Connected as …",
       // and saveFailed's once-in-1.5 s skipped the sync's: the sync's own toast is said every time)
-      let e1=null;try{await addTombstones({zz:1})}catch(e){e1=e}HOOK.storeToldAt=Date.now();toast('Connected as Fay');const ok=await syncNow();P.put=o;
+      let e1=null;try{await HOOK.addTombstones({zz:1})}catch(e){e1=e}HOOK.storeToldAt=Date.now();HOOK.toast('Connected as Fay');const ok=await HOOK.syncNow();P.put=o;
       return {name:e1&&e1.name,store:!!(e1&&e1.dwStore),ok,st:localStorage.getItem('sync_status'),toast:document.querySelector('#toast').textContent}});
     ok(fullR.name==='QuotaExceededError'&&fullR.store,`a put that throws aborts with its own error (${fullR.name})`);
     ok(!fullR.ok&&/storage is full/.test(fullR.st)&&/^Backup failed/.test(fullR.st)&&/storage is full/.test(fullR.toast),`the sync says the phone's storage is full, in a toast too (“${fullR.st}”)`);
@@ -545,14 +545,14 @@ const w3fix6=async({ok,chromium,url,ROOT})=>{
 
     // Decision 2: Safari only, not connected
     const S=await open({ios:true,conn:false});
-    const saf=await S.evaluate(()=>{openSettings('backup');showSyncStatus();const line=document.querySelector('#sync-status').textContent;closeSettings();return {line,home:homeSteps(true)}});
+    const saf=await S.evaluate(()=>{HOOK.openSettings('backup');HOOK.showSyncStatus();const line=document.querySelector('#sync-status').textContent;HOOK.closeSettings();return {line,home:HOOK.homeSteps(true)}});
     ok(/Safari can clear a website’s data/.test(saf.line)&&/Download backup/.test(saf.line),`Backup & sync, not connected in Safari, says why the file matters (“${saf.line}”)`);
     ok(/home-risk/.test(saf.home)&&/can clear the app’s data/.test(saf.home),'the setup\'s Home Screen step says it once');
-    const rem=await S.evaluate(async()=>{for(let k=0;k<11;k++){const it={id:'s'+k,type:'tie',primaryColor:'navy',pattern:'solid',added:Date.now()};items.push(it)}
+    const rem=await S.evaluate(async()=>{for(let k=0;k<11;k++){const it={id:'s'+k,type:'tie',primaryColor:'navy',pattern:'solid',added:Date.now()};HOOK.items.push(it)}
       localStorage.removeItem('safari_remind');localStorage.removeItem('backup_file_at');document.querySelector('#toast').classList.remove('on');
-      const a=safariRemind(),t=document.querySelector('#toast').textContent,again=safariRemind();
-      localStorage.removeItem('safari_remind');localStorage.setItem('backup_file_at',Date.now());const after=safariRemind();
-      localStorage.removeItem('backup_file_at');items.splice(-5);localStorage.removeItem('safari_remind');const few=safariRemind();return {a,t,again,after,few}});
+      const a=HOOK.safariRemind(),t=document.querySelector('#toast').textContent,again=HOOK.safariRemind();
+      localStorage.removeItem('safari_remind');localStorage.setItem('backup_file_at',Date.now());const after=HOOK.safariRemind();
+      localStorage.removeItem('backup_file_at');HOOK.items.splice(-5);localStorage.removeItem('safari_remind');const few=HOOK.safariRemind();return {a,t,again,after,few}});
     ok(rem.a&&/only in Safari/.test(rem.t)&&/Download backup/.test(rem.t)&&!rem.again&&!rem.after&&!rem.few,
       `at 10+ items never backed up, a reminder with Download backup; not again within a month, not after a backup file, not under 10 (${JSON.stringify(rem)})`);
     ok(!S.errs.length,'no page errors: '+S.errs.join('; '));

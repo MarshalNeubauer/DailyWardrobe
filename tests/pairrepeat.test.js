@@ -13,16 +13,16 @@ module.exports=async({ok,chromium,url})=>{
       const X=I('tie','navy',{secondaryColor:'pink',pattern:'stripe',name:'Navy-pink stripe'}),others=[I('tie','burgundy'),I('tie','green'),I('tie','gold'),I('tie','charcoal'),I('tie','navy')];
       const shoes=[I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'})],belts=[I('belt','black',{leather:'calf'}),I('belt','brown',{leather:'calf'})];
       HOOK.items=[...suits,...plain,pinkA,pinkB,X,...others,...shoes,...belts,I('socks','navy'),I('socks','charcoal')];
-      settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='never';settings.holidays=null;settings.daysOff=[];HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE='2026-11-16T08:00:00';
-      HOOK.dayRecs={};let w=0;const R=(d,s,sh,t)=>{dayRecs[key(d)]={date:key(d),worn:true,ids:{top:s.id,bot:s.id,shirt:sh.id,tie:t.id,shoes:shoes[0].id,belt:belts[0].id}}};
-      for(const d=new Date(2026,6,1);d<new Date(2026,10,15);d.setDate(d.getDate()+1)){if(!isWorkday(d))continue;R(d,suits[w%suits.length],plain[w%plain.length],others[w%others.length]);w++}
+      HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[];HOOK.settings.vestMode='never';HOOK.settings.holidays=null;HOOK.settings.daysOff=[];HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE='2026-11-16T08:00:00';
+      HOOK.dayRecs={};let w=0;const R=(d,s,sh,t)=>{HOOK.dayRecs[HOOK.key(d)]={date:HOOK.key(d),worn:true,ids:{top:s.id,bot:s.id,shirt:sh.id,tie:t.id,shoes:shoes[0].id,belt:belts[0].id}}};
+      for(const d=new Date(2026,6,1);d<new Date(2026,10,15);d.setDate(d.getDate()+1)){if(!HOOK.isWorkday(d))continue;R(d,suits[w%suits.length],plain[w%plain.length],others[w%others.length]);w++}
       R(new Date(2026,10,15),suits[0],pinkA,X);
-      HOOK.cache={};const pl={...planMonth(2026,10),...planMonth(2026,11)};
-      const days=Object.keys(pl).filter(d=>keyDate(d)>=new Date(2026,10,15)&&pl[d].tie&&pl[d].shirt).sort((a,b)=>keyDate(a)-keyDate(b));
-      const seq=days.map(d=>({d,top:pl[d].top&&pl[d].top.id,sh:pl[d].shirt.name||pl[d].shirt.primaryColor,g:shirtGroup(pl[d].shirt),t:pl[d].tie.id,tn:pl[d].tie.name||pl[d].tie.primaryColor}));
+      HOOK.cache={};const pl={...HOOK.planMonth(2026,10),...HOOK.planMonth(2026,11)};
+      const days=Object.keys(pl).filter(d=>HOOK.keyDate(d)>=new Date(2026,10,15)&&pl[d].tie&&pl[d].shirt).sort((a,b)=>HOOK.keyDate(a)-HOOK.keyDate(b));
+      const seq=days.map(d=>({d,top:pl[d].top&&pl[d].top.id,sh:pl[d].shirt.name||pl[d].shirt.primaryColor,g:HOOK.shirtGroup(pl[d].shirt),t:pl[d].tie.id,tn:pl[d].tie.name||pl[d].tie.primaryColor}));
       const reps=[];seq.forEach((x,i)=>{for(let j=Math.max(0,i-10);j<i;j++)if(seq[j].t===x.t&&seq[j].g===x.g){reps.push(x.d+' '+x.sh+'+'+x.tn+' after '+seq[j].d);break}});
       const pinkX=seq.map((x,i)=>x.t===X.id&&x.g==='pink'?i:-1).filter(i=>i>=0);
-      return {reps,pinkX,pinkXd:pinkX.map(i=>seq[i].d+' '+seq[i].top),pinkB:seq.findIndex(x=>x.sh==='Pink B'),rules:PLAN_RULES,gap:'PAIR_GAP' in HOOK&&HOOK.PAIR_GAP,n:seq.length}});
+      return {reps,pinkX,pinkXd:pinkX.map(i=>seq[i].d+' '+seq[i].top),pinkB:seq.findIndex(x=>x.sh==='Pink B'),rules:HOOK.PLAN_RULES,gap:'PAIR_GAP' in HOOK&&HOOK.PAIR_GAP,n:seq.length}});
     ok(r.gap===5&&r.rules>=23,`PAIR_GAP 5, PLAN_RULES 23 or later (${r.gap}, ${r.rules})`);
     ok(r.pinkX[0]===0&&r.pinkX.slice(1).every((x,i)=>x-r.pinkX[i]>10),`the pink shirt and navy-pink tie never come back within 10 workdays, under any suit (${r.pinkXd.join(', ')})`);
     ok(r.pinkX.length>=2,`the pair still comes round after its 10 workdays (${r.pinkXd.join(', ')})`);

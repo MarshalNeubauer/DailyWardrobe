@@ -5,9 +5,9 @@ const L=require('./_verify3-lib.js');
 L.main(async()=>{
   const info=await L.startLab('W1-3-02-today',L.NEW,'2026-11-15T08:00:00+03:00');
   const A=await L.open('W1-3-02t-A',info.inviteLink);await L.skipSetup(A);await L.sleep(1500);await L.today(A);
-  await A.tap('#kit-sample-link');for(let i=0;i<40&&await A.page.evaluate(()=>items.length)<24;i++)await L.sleep(250);await L.sleep(2000);
+  await A.tap('#kit-sample-link');for(let i=0;i<40&&await A.page.evaluate(()=>HOOK.items.length)<24;i++)await L.sleep(250);await L.sleep(2000);
   await L.backup(A);const k=await L.todayKey(A);
-  const look=()=>A.page.evaluate(k=>{const r=dayRecs[k]||{};const off=new Set(items.filter(i=>!HOOK.kitSends(i)).map(i=>i.id));
+  const look=()=>A.page.evaluate(k=>{const r=HOOK.dayRecs[k]||{};const off=new Set(HOOK.items.filter(i=>!HOOK.kitSends(i)).map(i=>i.id));
     const ids=[...new Set([r.ids,r.lock,r.force].flatMap(o=>o?Object.values(o):[]).filter(Boolean))];
     return {worn:r.worn,ids,unowned:ids.filter(v=>off.has(v)).length}},k);
   // (1) untouched sample outfit

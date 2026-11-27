@@ -13,8 +13,8 @@ L.run(async () => {
     const disabled = await pg.$eval('#cn-add', b => b.disabled);
     if (!disabled) { await ph.tap('#cn-add'); await L.sleep(900) }
     res[nm] = { addDisabled: disabled, error: await pg.evaluate(() => (document.querySelector('#cn-error') || {}).innerText || null),
-      saved: await pg.evaluate(n => [...(settings.custom?.colors || []), ...(settings.custom?.patterns || [])].some(c => c.name === n), nm) };
-    await pg.evaluate(() => typeof closeColPick === 'function' && closeColPick()); await L.sleep(400);
+      saved: await pg.evaluate(n => [...(HOOK.settings.custom?.colors || []), ...(HOOK.settings.custom?.patterns || [])].some(c => c.name === n), nm) };
+    await pg.evaluate(() => 'closeColPick' in HOOK && HOOK.closeColPick()); await L.sleep(400);
   }
   const ar1 = res['بني فاتح'], ar2 = res['حياكة'], cafe = res['Café'];
   const ok = !ar1.saved && /two letters/.test(ar1.error || '') && !ar2.saved && /two letters/.test(ar2.error || '') && cafe.saved;

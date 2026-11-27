@@ -4,7 +4,7 @@ const L=require('./_verify3-lib.js');
 L.main(async()=>{
   const {A,link}=await L.buildLegacy('W1-3-03');
   await L.today(A);const k=await L.todayKey(A);await L.backup(A);await L.later(A);
-  const aRec=await A.page.evaluate(k=>{const r=dayRecs[k];return r?{ids:!!r.ids,auto:!!r.auto}:null},k);
+  const aRec=await A.page.evaluate(k=>{const r=HOOK.dayRecs[k];return r?{ids:!!r.ids,auto:!!r.auto}:null},k);
   const s=L.dayOf(await L.serverBackup(),k);
   await A.kill();
   await L.setServerTime('2026-11-09T08:00:00+03:00');

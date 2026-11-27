@@ -8,11 +8,11 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
   try{
     const run=async(tz,fn,arg)=>{const ctx=await browser.newContext({viewport:{width:390,height:844},...(tz?{timezoneId:tz}:{})}),p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
       await p.goto(url);await p.waitForFunction(()=>window.appReady);
-      await p.evaluate(`(async()=>{const W=${WARDROBES};HOOK.items=W.realistic.map(i=>({...i}));settings.holidays=null;settings.daysOff=[];HOOK.weather={};HOOK.climate=null;
-        try{await recordRun}catch{}
+      await p.evaluate(`(async()=>{const W=${WARDROBES};HOOK.items=W.realistic.map(i=>({...i}));HOOK.settings.holidays=null;HOOK.settings.daysOff=[];HOOK.weather={};HOOK.climate=null;
+        try{await HOOK.recordRun}catch{}
         // lock from a given day (iso) with the given workdays; returns the locked days (key format) in order
-        window.lockFrom=async(iso,wd,recs)=>{settings.workdays=wd;HOOK.TODAY_OVERRIDE=iso+'T12:00:00';HOOK.dayRecs=recs||{};HOOK.cache={};await lockUpcoming();
-          return Object.values(dayRecs).filter(r=>r.lock).map(r=>r.date).sort((a,b)=>keyDate(a)-keyDate(b)).join()}})()`);
+        window.lockFrom=async(iso,wd,recs)=>{HOOK.settings.workdays=wd;HOOK.TODAY_OVERRIDE=iso+'T12:00:00';HOOK.dayRecs=recs||{};HOOK.cache={};await HOOK.lockUpcoming();
+          return Object.values(HOOK.dayRecs).filter(r=>r.lock).map(r=>r.date).sort((a,b)=>HOOK.keyDate(a)-HOOK.keyDate(b)).join()}})()`);
       const out=await p.evaluate(fn,arg);await ctx.close();return {out,errs}};
     // the week of Sunday 15 November 2026 to Saturday 21 November
     const SUNTHU=[0,1,2,3,4],MONFRI=[1,2,3,4,5],D=n=>'2026-11-'+n,L=(...ns)=>ns.map(D).join();
@@ -23,17 +23,17 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
       ['Thursday',19,MONFRI,L(19,20)],['Friday',20,MONFRI,L(20)],['Saturday',21,MONFRI,L(23,24,25,26,27)]];
     const r=await run(null,async cs=>{const out=[];for(const [,n,wd] of cs)out.push(await lockFrom('2026-11-'+String(n).padStart(2,'0'),wd));
       // a day off inside the week is not locked
-      settings.daysOff=[{d:'2026-11-18',n:'Day off'}];const off=await lockFrom('2026-11-16',[1,2,3,4,5]);settings.daysOff=[];
+      HOOK.settings.daysOff=[{d:'2026-11-18',n:'Day off'}];const off=await lockFrom('2026-11-16',[1,2,3,4,5]);HOOK.settings.daysOff=[];
       // locks past Friday let go, the owner's own picks kept; a kept trip and a day marked worn keep theirs
-      const id=t=>items.find(i=>i.type===t).id,any=()=>({top:id('suit'),tie:id('tie'),shirt:id('shirt')}),recs={
+      const id=t=>HOOK.items.find(i=>i.type===t).id,any=()=>({top:id('suit'),tie:id('tie'),shirt:id('shirt')}),recs={
         '2026-11-23':{date:'2026-11-23',lock:any(),lockAt:1,force:{tie:id('tie')},skip:{shirt:[id('shirt')]},vest:true,kind:'suit',off:{tie:true},updated:5},
         '2026-11-24':{date:'2026-11-24',lock:any(),lockAt:1,updated:5},
         '2026-11-25':{date:'2026-11-25',lock:any(),trip:1,updated:5},
         '2026-11-26':{date:'2026-11-26',lock:any(),worn:true,updated:5}};
-      await lockFrom('2026-11-16',[1,2,3,4,5],recs);const a=dayRecs['2026-11-23'],b=dayRecs['2026-11-24'],c=dayRecs['2026-11-25'],w=dayRecs['2026-11-26'];
-      const stored=await txs('days','readonly',s=>s.get('2026-11-23')).catch(()=>null);
+      await lockFrom('2026-11-16',[1,2,3,4,5],recs);const a=HOOK.dayRecs['2026-11-23'],b=HOOK.dayRecs['2026-11-24'],c=HOOK.dayRecs['2026-11-25'],w=HOOK.dayRecs['2026-11-26'];
+      const stored=await HOOK.txs('days','readonly',s=>s.get('2026-11-23')).catch(()=>null);
       const rel={pastGone:!a.lock&&!b.lock,picks:JSON.stringify(a.force)===JSON.stringify({tie:id('tie')})&&JSON.stringify(a.skip)===JSON.stringify({shirt:[id('shirt')]})&&a.vest===true&&a.kind==='suit'&&!!a.off&&a.off.tie===true,
-        lockOnly:a.lockOnly===1&&a.base===5,trip:!!c.lock,worn:!!w.lock,stored:!!stored&&!stored.lock&&!!stored.force,inWeek:['2026-11-16','2026-11-17','2026-11-18','2026-11-19','2026-11-20'].every(k=>dayRecs[k]&&dayRecs[k].lock)};
+        lockOnly:a.lockOnly===1&&a.base===5,trip:!!c.lock,worn:!!w.lock,stored:!!stored&&!stored.lock&&!!stored.force,inWeek:['2026-11-16','2026-11-17','2026-11-18','2026-11-19','2026-11-20'].every(k=>HOOK.dayRecs[k]&&HOOK.dayRecs[k].lock)};
       // a Friday: next week's locks from an earlier run go, today stays locked
       const fri=await lockFrom('2026-11-20',[1,2,3,4,5],{'2026-11-23':{date:'2026-11-23',lock:any(),updated:1}});
       return {out,off,rel,fri}},cases.map(c=>[c[0],c[1],c[2]]));

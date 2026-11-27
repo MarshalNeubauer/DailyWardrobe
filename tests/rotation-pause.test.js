@@ -9,50 +9,50 @@ const rotationPause=async({ok,chromium,url,settle})=>{
   const browser=await chromium.launch();
   try{
     const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
-    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{CK_OPEN['*']=true});
+    await p.goto(url);await p.waitForFunction(()=>window.appReady);await p.evaluate(()=>{HOOK.CK_OPEN['*']=true});
     await p.evaluate(()=>{let k=0;const I=(id,type,primaryColor,x={})=>({id,type,primaryColor,pattern:'solid',added:1,...x});
       HOOK.items=[I('navy','suit','navy'),I('grey','suit','grey'),I('char','suit','charcoal'),I('sh1','shirt','white'),I('sh2','shirt','lightblue'),I('t1','tie','burgundy'),I('t2','tie','navy'),
         I('bs','shoes','black',{leather:'calf'}),I('bb','belt','black',{leather:'calf',metal:'silver'}),I('so','socks','charcoal')];
-      settings.workdays=[1,2,3,4,5];settings.blazerDays=[];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.cache={};
+      HOOK.settings.workdays=[1,2,3,4,5];HOOK.settings.blazerDays=[];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.cache={};
       // the navy suit was worn last Monday (a frozen past day) and is pinned by a swap to next Monday
       HOOK.dayRecs={'2026-11-9':{date:'2026-11-9',ids:{top:'navy',shirt:'sh1',tie:'t1',shoes:'bs',belt:'bb',socks:'so'},suitDay:true,worn:true},
         '2026-11-16':{date:'2026-11-16',force:{top:'navy'}}};
-      HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};HOOK.editing=null;HOOK.flt='all';show('wardrobe')});
+      HOOK.sel=new Date(2026,10,11);HOOK.view={y:2026,m:10};HOOK.editing=null;HOOK.flt='all';HOOK.show('wardrobe')});
     // (the real planner, buildPlan: planMonth gives tests/fixedplan.js's outfits, which only shows that file filters inRotation; CR-10-05)
-    const tops=()=>p.evaluate(()=>{const out=[];for(const [k,o] of Object.entries(buildPlan(2026,11)))if(keyDate(k)>=todayDate()&&o.top)out.push(o.top.id);return out});
+    const tops=()=>p.evaluate(()=>{const out=[];for(const [k,o] of Object.entries(HOOK.buildPlan(2026,11)))if(HOOK.keyDate(k)>=HOOK.todayDate()&&o.top)out.push(o.top.id);return out});
     const before=await tops();
     ok(before.includes('navy'),`before: the navy suit is in the upcoming plan (${before.filter(x=>x==='navy').length} days)`);
     // the button in the item's details
-    await p.evaluate(()=>openItem('navy'));await settle(p,500);
+    await p.evaluate(()=>HOOK.openItem('navy'));await settle(p,500);
     const b0=await p.evaluate(()=>{const b=document.querySelector('#item-view .rotbtn');return b&&{t:b.textContent,pressed:b.getAttribute('aria-pressed')}});
     ok(b0&&b0.t==='Take out of rotation'&&b0.pressed==='false','the open item has a "Take out of rotation" button beside Close and Delete');
-    await p.click('#item-view .rotbtn');await p.waitForFunction(()=>items.find(i=>i.id==='navy').paused===true);await settle(p,500);
+    await p.click('#item-view .rotbtn');await p.waitForFunction(()=>HOOK.items.find(i=>i.id==='navy').paused===true);await settle(p,500);
     const st=await p.evaluate(()=>({btn:document.querySelector('#item-view .rotbtn').textContent,note:(document.querySelector('#item-view .rotnote')||{}).textContent||'',
-      still:items.some(i=>i.id==='navy'),pin:dayRecs['2026-11-16'].force,past:dayRecs['2026-11-9'].ids.top}));
+      still:HOOK.items.some(i=>i.id==='navy'),pin:HOOK.dayRecs['2026-11-16'].force,past:HOOK.dayRecs['2026-11-9'].ids.top}));
     ok(st.still&&st.btn==='Put back in rotation'&&/planner won't pick it/.test(st.note)&&/Outfits you already wore keep it/.test(st.note),'it stays in the wardrobe; the button now says "Put back in rotation" and a note says what it means');
     ok(!st.pin&&st.past==='navy','the upcoming day it was pinned to is let go; the worn day keeps it');
     const after=await tops();
     ok(!after.includes('navy')&&after.length===before.length,`the planner no longer picks it for any upcoming day (${after.length} days still planned with the other suits)`);
-    const past=await p.evaluate(()=>{const o=planMonth(2026,10)['2026-11-9'];return o&&o.top&&o.top.id});
+    const past=await p.evaluate(()=>{const o=HOOK.planMonth(2026,10)['2026-11-9'];return o&&o.top&&o.top.id});
     ok(past==='navy','the outfit already worn still shows the navy suit');
     // closed: the box says so
     await p.evaluate(()=>HOOK.closeItem());await settle(p,500);
     ok(await p.evaluate(()=>{const g=document.querySelector('#gi-navy');return g.classList.contains('paused')&&/Out of rotation/.test(g.textContent)}),'its box in the grid is dimmed and tagged "Out of rotation"');
     // picker and Suggest another on today leave it out; correcting a past day offers it
-    const pick=await p.evaluate(async()=>{HOOK.sel=new Date(2026,10,11);show('today');const o=planFor()[key(sel)],today=slotPool('top',o).map(i=>i.id);
-      const pastO=planFor()['2026-11-9'],pastPool=slotPool('top',pastO).map(i=>i.id);
-      const seen=new Set([o.top.id]);for(let n=0;n<4;n++){await HOOK.swapSlot('top');seen.add(planFor()[key(sel)].top.id)}return {today,pastPool,seen:[...seen]}});
+    const pick=await p.evaluate(async()=>{HOOK.sel=new Date(2026,10,11);HOOK.show('today');const o=HOOK.planFor()[HOOK.key(HOOK.sel)],today=HOOK.slotPool('top',o).map(i=>i.id);
+      const pastO=HOOK.planFor()['2026-11-9'],pastPool=HOOK.slotPool('top',pastO).map(i=>i.id);
+      const seen=new Set([o.top.id]);for(let n=0;n<4;n++){await HOOK.swapSlot('top');seen.add(HOOK.planFor()[HOOK.key(HOOK.sel)].top.id)}return {today,pastPool,seen:[...seen]}});
     ok(!pick.today.includes('navy')&&pick.today.length===2,`the picker doesn't offer it for today (${pick.today})`);
     ok(pick.pastPool.includes('navy'),'correcting a past day still offers it (it may have been worn then)');
     ok(!pick.seen.includes('navy'),`"Suggest another" cycles without it (${pick.seen})`);
     // stats explain it
-    ok(await p.evaluate(()=>HOOK.whyUnused(items.find(i=>i.id==='navy'))==='You took it out of rotation, so the planner leaves it out.'),'the stats page gives the reason it is not planned');
+    ok(await p.evaluate(()=>HOOK.whyUnused(HOOK.items.find(i=>i.id==='navy'))==='You took it out of rotation, so the planner leaves it out.'),'the stats page gives the reason it is not planned');
     // put it back
-    await p.evaluate(()=>{show('wardrobe');openItem('navy')});await settle(p,500);await p.click('#item-view .rotbtn');await p.waitForFunction(()=>!('paused' in items.find(i=>i.id==='navy'))&&document.querySelector('#item-view .rotbtn').textContent==='Take out of rotation');
+    await p.evaluate(()=>{HOOK.show('wardrobe');HOOK.openItem('navy')});await settle(p,500);await p.click('#item-view .rotbtn');await p.waitForFunction(()=>!('paused' in HOOK.items.find(i=>i.id==='navy'))&&document.querySelector('#item-view .rotbtn').textContent==='Take out of rotation');
     const back=await tops();
     ok(back.includes('navy')&&await p.evaluate(()=>!document.querySelector('#item-view .rotnote')&&document.querySelector('#item-view .rotbtn').textContent==='Take out of rotation'),`"Put back in rotation" brings it back into the plan (${back.filter(x=>x==='navy').length} days)`);
     // the only belt out of rotation: no belt, and no complaint about belts in the score
-    const belt=await p.evaluate(()=>{items.find(i=>i.id==='bb').paused=true;HOOK.cache={};const o=planFor()['2026-11-12'];return {belt:o.belt,checks:rateOutfit(o).checks.map(c=>c.label)}});
+    const belt=await p.evaluate(()=>{HOOK.items.find(i=>i.id==='bb').paused=true;HOOK.cache={};const o=HOOK.planFor()['2026-11-12'];return {belt:o.belt,checks:HOOK.rateOutfit(o).checks.map(c=>c.label)}});
     ok(belt.belt===null,'with its only belt out of rotation, the outfit has no belt rather than the paused one');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}
@@ -70,12 +70,12 @@ const rotation=async({ok,chromium,url})=>{
       ...shirts.map(([c,pa])=>I('shirt',c,{pattern:pa})),
       I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('tie','burgundy',{pattern:'polka-dot',secondaryColor:'white'}),I('tie','green'),I('tie','navy'),I('tie','grey'),I('tie','purple'),I('tie','brown'),
       I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('watch','black',{metal:'silver'}),I('socks','navy'),I('socks','charcoal')];
-    settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.vestMode='auto';HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-08T12:00:00';
-    const cnt={};for(const s of items.filter(i=>i.type==='shirt'))cnt[s.id]=0;let sum=0,n=0,min=100,maxRun=0;
-    for(const m of [10,11]){HOOK.cache={};const P=buildPlan(2026,m);for(const [kk,o] of Object.entries(P)){if(keyDate(kk)<new Date(2026,10,8)||keyDate(kk).getMonth()!==m)continue;
-      if(o.shirt)cnt[o.shirt.id]++;const sc=rateOutfit(o).score;sum+=sc;n++;min=Math.min(min,sc)}}
+    HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[4];HOOK.settings.vestMode='auto';HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-08T12:00:00';
+    const cnt={};for(const s of HOOK.items.filter(i=>i.type==='shirt'))cnt[s.id]=0;let sum=0,n=0,min=100,maxRun=0;
+    for(const m of [10,11]){HOOK.cache={};const P=HOOK.buildPlan(2026,m);for(const [kk,o] of Object.entries(P)){if(HOOK.keyDate(kk)<new Date(2026,10,8)||HOOK.keyDate(kk).getMonth()!==m)continue;
+      if(o.shirt)cnt[o.shirt.id]++;const sc=HOOK.rateOutfit(o).score;sum+=sc;n++;min=Math.min(min,sc)}}
     const c=Object.values(cnt);return {min:Math.min(...c),max:Math.max(...c),avg:sum/n,low:min,days:n,
-      byName:Object.entries(cnt).map(([id,v])=>items.find(i=>i.id===id).primaryColor+'='+v).join(' ')}});
+      byName:Object.entries(cnt).map(([id,v])=>HOOK.items.find(i=>i.id===id).primaryColor+'='+v).join(' ')}});
   ok(r.min>=2,`every one of 11 shirts is worn at least twice in ${r.days} workdays (${r.byName})`);
   ok(r.max-r.min<=4,'no shirt hogs the rotation');
   ok(r.avg>=95&&r.low>=90,`outfit quality stays high (average ${r.avg.toFixed(1)}, lowest ${r.low})`);

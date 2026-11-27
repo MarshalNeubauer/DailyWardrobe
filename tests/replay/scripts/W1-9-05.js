@@ -3,7 +3,7 @@
 const V=require('./_v9lib.js');
 const invite=async name=>{const r=await fetch(V.W+'invites',{method:'POST',headers:{'x-app-token':'owner-secret','content-type':'application/json'},body:JSON.stringify({name})});
   const j=await r.json();return `${V.APP}#invite=${j.code||(j.invite&&j.invite.code)}&w=${encodeURIComponent(V.W)}`};
-const peek=ph=>ph.page.evaluate(()=>({worn:wornDays().length,planStart:planStartDay()&&isoKey(planStartDay()),records:Object.keys(dayRecs).length}));
+const peek=ph=>ph.page.evaluate(()=>({worn:HOOK.wornDays().length,planStart:HOOK.planStartDay()&&HOOK.isoKey(HOOK.planStartDay()),records:Object.keys(HOOK.dayRecs).length}));
 V.run('W1-9-05',async(phones,link)=>{
   await V.mock('clock',{at:'2026-11-15T06:00:00Z'});
   const a=await V.phone('w05a'),c=await V.phone('w05ctl');phones.push(a,c);

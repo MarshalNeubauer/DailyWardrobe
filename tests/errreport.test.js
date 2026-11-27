@@ -38,16 +38,16 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);return p};
   try{
     const p=await open('tester');
-    await p.evaluate(()=>{show('add');errNote(new Error('boom'),'Close-up answer not applied (suit)')});
+    await p.evaluate(()=>{HOOK.show('add');HOOK.errNote(new Error('boom'),'Close-up answer not applied (suit)')});
     await p.waitForFunction(()=>true);for(let k=0;k<80&&!p.posts.length;k++)await p.waitForTimeout(100);
     ok(p.posts.length===1&&p.posts[0].errs.length>=1&&p.posts[0].errs.some(e=>e.m==='Close-up answer not applied (suit): boom'&&e.w==='add'&&e.v),'a tester\'s error is sent by itself within seconds, with what was going on, the page and the version ('+JSON.stringify(p.posts[0]||{}).slice(0,200)+')');
     ok(await p.evaluate(()=>HOOK.errList().filter(x=>/boom/.test(x.m)).every(x=>x.s===1)),'and marked sent (kept for feedback)');
     // a photo the server didn't tag is reported too; one a phone offline couldn't send is not
-    await p.evaluate(()=>{HOOK.tagWhy='Claude declined this photo.';HOOK.tagNetLast=false;const q={id:'x'};tagFailed(q);HOOK.tagNetLast=true;HOOK.tagWhy='offline';tagFailed({id:'y'})});
+    await p.evaluate(()=>{HOOK.tagWhy='Claude declined this photo.';HOOK.tagNetLast=false;const q={id:'x'};HOOK.tagFailed(q);HOOK.tagNetLast=true;HOOK.tagWhy='offline';HOOK.tagFailed({id:'y'})});
     ok(await p.evaluate(()=>HOOK.errList().some(x=>x.m==='Photo not tagged: Claude declined this photo.')&&!HOOK.errList().some(x=>/offline/.test(x.m))),'a photo not tagged is noted for the report; a phone offline is not');
     ok(await p.evaluate(()=>{HOOK.renderAbout();return /this phone also tells them what broke and where/.test(document.querySelector('#fb-help').textContent)&&/never your photos or your wardrobe/.test(document.querySelector('#fb-help').textContent)}),'Settings → About tells a tester, and that photos and the wardrobe are never sent');
     ok(!p.errs.length,'no page errors: '+p.errs.join(' | '));await p.context().close();
     for(const [role,what] of [['owner','the owner\'s phone'],[null,'a phone not connected']]){const o=await open(role);
-      await o.evaluate(()=>errNote(new Error('boom2'),'x'));await o.waitForTimeout(6500);
+      await o.evaluate(()=>HOOK.errNote(new Error('boom2'),'x'));await o.waitForTimeout(6500);
       ok(o.posts.length===0&&await o.evaluate(()=>HOOK.errList().some(x=>/boom2/.test(x.m)&&!x.s)),what+' sends nothing and keeps its log');await o.context().close()}
   }finally{await browser.close()}};

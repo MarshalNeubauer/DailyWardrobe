@@ -15,10 +15,10 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.goto(url);await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t')});await p.reload();await p.waitForFunction(()=>window.appReady);
     await p.evaluate(async()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
       HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
-      settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};
+      HOOK.settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};
       // a photo for the day: a 1024 px square with a grid, so zoom and pan can be measured
       const c=document.createElement('canvas');c.width=c.height=1024;const x=c.getContext('2d');x.fillStyle='#ccd';x.fillRect(0,0,1024,1024);x.strokeStyle='#333';for(let i=0;i<1024;i+=64){x.strokeRect(i,0,64,1024);x.strokeRect(0,i,1024,64)}
-      const o=planFor()[key(sel)];renders[comboKey(o)]={sig:comboSig(o),img:c.toDataURL('image/jpeg',.8),model:'m',t:1};show('today')});
+      const o=HOOK.planFor()[HOOK.key(HOOK.sel)];HOOK.renders[HOOK.comboKey(o)]={sig:HOOK.comboSig(o),img:c.toDataURL('image/jpeg',.8),model:'m',t:1};HOOK.show('today')});
     await p.waitForSelector('#mannequin-container img');
     const cdp=await ctx.newCDPSession(p);const T=(type,x,y)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:type==='touchEnd'?[]:[{x,y}]});
     const tap=async(x,y)=>{await T('touchStart',x,y);await T('touchEnd')};
@@ -30,32 +30,32 @@ module.exports=async({ok,chromium,url,settle})=>{
     const css=await p.evaluate(()=>getComputedStyle(document.querySelector('#mannequin-container')).touchAction);
     ok(css==='manipulation','the picture opts out of the browser\'s own double-tap zoom');
     await dtap(at.x,at.y);
-    const z=await p.evaluate(()=>({on:document.querySelector('#mannequin-container').classList.contains('zoomed'),tf:document.querySelector('#mannequin-container img').style.transform,z:{...zoom},
+    const z=await p.evaluate(()=>({on:document.querySelector('#mannequin-container').classList.contains('zoomed'),tf:document.querySelector('#mannequin-container img').style.transform,z:{...HOOK.zoom},
       marks:document.querySelector('.wornbar')?getComputedStyle(document.querySelector('.wornbar')).opacity:'0'}));
     ok(z.on&&/scale\(2\.5\)/.test(z.tf)&&Math.abs(z.z.x-box.w*(1-2.5)/2)<1&&z.z.y===0,`a double tap, wherever it lands, zooms in 2.5x on the tie and shirt: centred across, the collar at the top (${z.tf})`);
     // the same framing from a tap near a corner
-    await p.evaluate(()=>zoomOut());await dtap(Math.round(box.x+24),Math.round(box.y+24));   // (top left: the top right is the share button)
-    const z2=await p.evaluate(()=>({...zoom}));
+    await p.evaluate(()=>HOOK.zoomOut());await dtap(Math.round(box.x+24),Math.round(box.y+24));   // (top left: the top right is the share button)
+    const z2=await p.evaluate(()=>({...HOOK.zoom}));
     ok(Math.abs(z2.x-box.w*(1-2.5)/2)<1&&z2.y===0,'a double tap near a corner gives the same framing');
-    await p.evaluate(()=>zoomOut());await dtap(at.x,at.y);   // (zoomed again, as the checks below expect)
+    await p.evaluate(()=>HOOK.zoomOut());await dtap(at.x,at.y);   // (zoomed again, as the checks below expect)
     ok(z.marks==='0','the worn marks step aside while zoomed');
     const d0=await day();
     await T('touchStart',at.x,at.y);for(let k=1;k<=5;k++)await T('touchMove',at.x-12*k,at.y-8*k);await T('touchEnd');await settle(p,300);
-    const pan=await p.evaluate(()=>({...zoom}));
+    const pan=await p.evaluate(()=>({...HOOK.zoom}));
     ok(Math.abs(pan.x-(z.z.x-60))<1&&Math.abs(pan.y-(z.z.y-40))<1&&await day()===d0,`a drag pans the zoomed picture and doesn't change the day (moved ${Math.round(pan.x-z.z.x)}, ${Math.round(pan.y-z.z.y)})`);
     await T('touchStart',at.x,at.y);for(let k=1;k<=10;k++)await T('touchMove',at.x+200*k,at.y+200*k);await T('touchEnd');
-    const cl=await p.evaluate(()=>({...zoom}));
+    const cl=await p.evaluate(()=>({...HOOK.zoom}));
     ok(cl.x<=0&&cl.y<=0,'panning stops at the picture\'s edge');
     await dtap(at.x,at.y);
-    ok(await p.evaluate(()=>!zoom&&!document.querySelector('#mannequin-container').classList.contains('zoomed')&&!document.querySelector('#mannequin-container img').style.transform),'a second double tap zooms back out');
+    ok(await p.evaluate(()=>!HOOK.zoom&&!document.querySelector('#mannequin-container').classList.contains('zoomed')&&!document.querySelector('#mannequin-container img').style.transform),'a second double tap zooms back out');
     await p.waitForTimeout(750);await p.mouse.dblclick(at.x,at.y);await settle(p,300);
-    ok(await p.evaluate(()=>!!zoom),'a double click (computer) zooms too');
-    ok(await p.evaluate(()=>{renderToday();return document.querySelector('#mannequin-container').classList.contains('zoomed')}),'the zoom survives the page redrawing (a photo arriving)');
-    await p.evaluate(()=>stepDay(1));
-    ok(await p.evaluate(()=>!zoom&&!document.querySelector('#mannequin-container.zoomed')),'changing the day zooms back out');
-    await p.evaluate(()=>stepDay(-1));
+    ok(await p.evaluate(()=>!!HOOK.zoom),'a double click (computer) zooms too');
+    ok(await p.evaluate(()=>{HOOK.renderToday();return document.querySelector('#mannequin-container').classList.contains('zoomed')}),'the zoom survives the page redrawing (a photo arriving)');
+    await p.evaluate(()=>HOOK.stepDay(1));
+    ok(await p.evaluate(()=>!HOOK.zoom&&!document.querySelector('#mannequin-container.zoomed')),'changing the day zooms back out');
+    await p.evaluate(()=>HOOK.stepDay(-1));
     // ---- a swipe folds every open box, while the drag is still going
-    await p.evaluate(()=>{toggleScore();HOOK.toggleList();HOOK.toggleRow('tie');HOOK.pickPiece('shoes');toggleMonth()});await settle(p,400);
+    await p.evaluate(()=>{HOOK.toggleScore();HOOK.toggleList();HOOK.toggleRow('tie');HOOK.pickPiece('shoes');HOOK.toggleMonth()});await settle(p,400);
     const open=()=>p.evaluate(()=>['#sbox','#ibox','#mbox','#bbox'].filter(s=>{const e=document.querySelector(s);return e&&e.classList.contains('open')}).length+document.querySelectorAll('.ritem.open').length);
     ok(await open()>=5,'score, pieces list, a piece, a below-the-waist photo and the month are open');
     await p.evaluate(()=>scrollTo(0,0));const st=await p.evaluate(()=>{const b=document.querySelector('#stage').getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+Math.min(b.height/2,300)}});
@@ -63,11 +63,11 @@ module.exports=async({ok,chromium,url,settle})=>{
     await T('touchStart',st.x+80,st.y);for(let k=1;k<=3;k++)await T('touchMove',st.x+80-20*k,st.y+2);
     const mid=await open();
     for(let k=4;k<=8;k++)await T('touchMove',st.x+80-25*k,st.y+2);await T('touchEnd');await settle(p,500);
-    const after=await p.evaluate(()=>({scoreOpen,listOpen:HOOK.listOpen,monthOpen,belowOpen:HOOK.belowOpen,openRow:HOOK.openRow}));
+    const after=await p.evaluate(()=>({scoreOpen:HOOK.scoreOpen,listOpen:HOOK.listOpen,monthOpen:HOOK.monthOpen,belowOpen:HOOK.belowOpen,openRow:HOOK.openRow}));
     ok(mid===0,'the boxes fold as soon as the drag is known to be sideways (during the swipe)');
     ok(await day()!==d1&&await open()===0&&!after.scoreOpen&&!after.listOpen&&!after.monthOpen&&!after.belowOpen&&!after.openRow,'the next day comes in with everything folded');
     // the arrow buttons too
-    await p.evaluate(()=>{toggleScore();HOOK.toggleList()});await settle(p,300);await p.evaluate(()=>stepDay(1));
+    await p.evaluate(()=>{HOOK.toggleScore();HOOK.toggleList()});await settle(p,300);await p.evaluate(()=>HOOK.stepDay(1));
     ok(await open()===0,'stepping with the arrows folds them as well');
     // ---- working on it
     delay=600;
@@ -76,24 +76,24 @@ module.exports=async({ok,chromium,url,settle})=>{
     const during=await busy();await pr;await p.waitForFunction(()=>!document.querySelector('#busy.on'),null,{timeout:5000}).catch(()=>{});
     ok(/Claude is reading the pattern/.test(during)&&await p.evaluate(()=>!!document.querySelector('#busy .spin')),`a spinning pill shows while Claude works ("${during}")`);
     ok(await busy()==='','it goes away when the answer comes');
-    const tg=p.evaluate(()=>ask('data:image/png;base64,AA',{}));await p.waitForFunction(()=>/tagging/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});const tagging=await busy();await tg;
+    const tg=p.evaluate(()=>HOOK.ask('data:image/png;base64,AA',{}));await p.waitForFunction(()=>/tagging/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});const tagging=await busy();await tg;
     const iq=p.evaluate(()=>fetch('https://w.test/render',{method:'POST',body:JSON.stringify({mode:'item',key:'c2'})}));await p.waitForFunction(()=>/item picture/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});const itemPic=await busy();await iq;
     ok(/tagging/.test(tagging)&&/item picture/.test(itemPic),`tagging and making an item picture each say so ("${tagging}", "${itemPic}")`);
-    const two=[p.evaluate(()=>HOOK.claudePattern({image:'data:image/png;base64,AA',type:'tie'})),p.evaluate(()=>ask('data:image/png;base64,AA',{}))];await p.waitForFunction(()=>/\+1/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});const both=await busy();await Promise.all(two);
+    const two=[p.evaluate(()=>HOOK.claudePattern({image:'data:image/png;base64,AA',type:'tie'})),p.evaluate(()=>HOOK.ask('data:image/png;base64,AA',{}))];await p.waitForFunction(()=>/\+1/.test(document.querySelector('#busy.on')?.textContent||''),null,{timeout:5000}).catch(()=>{});const both=await busy();await Promise.all(two);
     ok(/\+1/.test(both),`two at once: the latest, with a count of the rest ("${both}")`);
     const qd=p.evaluate(()=>fetch('https://w.test/render',{method:'POST',body:JSON.stringify({image:'x',key:'c3'})}));await p.waitForTimeout(250);const other=await busy();await qd;
     const syncs=p.evaluate(()=>fetch('https://w.test/sync',{method:'GET'}));await p.waitForTimeout(250);const sync=await busy();await syncs;
     ok(other===''&&sync==='','a POST /render that is not an item picture (the retired outfit photo) or a sync shows nothing');
     delay=0;
-    const dz=await p.evaluate(()=>{const o=planFor()[key(sel)];delete renders[comboKey(o)];renderToday();const t=HOOK.zoomTarget(),r=t.getBoundingClientRect();HOOK.toggleZoom(r.x+r.width/2,r.y+r.height/3);
-      const out={tag:t.tagName,tf:t.style.transform};zoomOut();return out});
+    const dz=await p.evaluate(()=>{const o=HOOK.planFor()[HOOK.key(HOOK.sel)];delete HOOK.renders[HOOK.comboKey(o)];HOOK.renderToday();const t=HOOK.zoomTarget(),r=t.getBoundingClientRect();HOOK.toggleZoom(r.x+r.width/2,r.y+r.height/3);
+      const out={tag:t.tagName,tf:t.style.transform};HOOK.zoomOut();return out});
     ok(dz.tag==='svg'&&/translate\(-?[\d.]+px, ?-?[\d.]+px\) scale\(2\.5\)/.test(dz.tf),`the drawing (no photo yet) zooms too (${dz.tf})`);
     // ---- a textured shirt's photo key
-    const tx=await p.evaluate(async()=>{const sh=items.find(i=>i.type==='shirt'),o=planFor()[key(sel)];const plain=comboKey({...o,shirt:sh});
+    const tx=await p.evaluate(async()=>{const sh=HOOK.items.find(i=>i.type==='shirt'),o=HOOK.planFor()[HOOK.key(HOOK.sel)];const plain=HOOK.comboKey({...o,shirt:sh});
       const grid=['10000001','01000010','00100100','00011000','00011000','00100100','01000010','10000001'];
       const w={...sh,id:'shw',pattern:'woven',texture:'data:image/jpeg;base64,AA',sett:{v:4,tex:{kind:'diamond',grid,aspect:1.4,lighter:true,contrast:'subtle',rel:.2},a:0,cr:20,tr:45,src:'claude+pixels'}};
       const oo={...o,shirt:w},other={...w,sett:{...w.sett,tex:{...w.sett.tex,kind:'herringbone',grid:['10','01']}}};
-      return {plain,tex:comboKey(oo),other:comboKey({...o,shirt:other})}});
+      return {plain,tex:HOOK.comboKey(oo),other:HOOK.comboKey({...o,shirt:other})}});
     ok(tx.tex!==tx.plain&&tx.other!==tx.tex,'a shirt with a read weave texture gets its own photo (a plain white shirt\'s photo isn\'t reused), and each texture its own');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
     await ctx.close();

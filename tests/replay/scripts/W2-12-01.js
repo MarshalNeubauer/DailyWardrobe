@@ -20,7 +20,7 @@ async function restore(ph) {
   await ph.page.setInputFiles('#sc-backup input[type=file]', FILE); await L.sleep(2500);
   const msg = await ph.page.evaluate(() => document.body.innerText.match(/Restored\.[^\n]*/)?.[0] || null);
   await ph.page.keyboard.press('Escape'); await L.sleep(500);
-  if (await ph.page.locator('#settings-modal').isVisible().catch(() => false)) await ph.page.evaluate(() => closeSettings());
+  if (await ph.page.locator('#settings-modal').isVisible().catch(() => false)) await ph.page.evaluate(() => HOOK.closeSettings());
   return msg;
 }
 async function wardrobe(ph) { await ph.tap('#n-wardrobe'); await L.sleep(1200); return L.hits(ph) }
@@ -40,12 +40,12 @@ L.run(async () => {
   // 2) a connected phone A restores the same file and backs up; a fresh phone B joins with the same invitation link
   const a = await L.phone('a');
   ev.aRestore = await restore(a); await L.hits(a);
-  await a.page.evaluate(() => syncNow()).catch(() => {}); await L.sleep(4000);
+  await a.page.evaluate(() => HOOK.syncNow()).catch(() => {}); await L.sleep(4000);
   const kv = await L.mock('kv-dump');
   const wk = Object.keys(kv).find(k => /:wardrobe:v1$/.test(k)); const v = wk ? (typeof kv[wk] === 'string' ? kv[wk] : JSON.stringify(kv[wk])) : '';
   ev.serverKey = wk; ev.serverHasId = v.includes('__v12h(201)'); ev.serverHasPhoto = v.includes('__v12h(203)');
   const bp = await L.phone('b'); await L.sleep(3000);
-  ev.bItems = await bp.page.evaluate(() => items.length);
+  ev.bItems = await bp.page.evaluate(() => HOOK.items.length);
   ev.bWardrobe = await wardrobe(bp);
   ev.workerUrls = [await a.page.evaluate(() => localStorage.worker_url), await bp.page.evaluate(() => localStorage.worker_url)];
   ev.openaiCalls = (await L.mock('log')).openai;

@@ -1,7 +1,7 @@
 // W2-15-02: pasting the same sheet again with a Pattern column added offers the re-patterned rows as new pieces
 // ("Add 7 items", no hint that they match pieces already owned) and tapping it doubles them; there is no update path.
 const L = require('./lib-verify15.js');
-const BASE = [['Suit', 'charcoal', 'M&S', 'pinstripe'], ['Shirt', 'pink/white', '', 'gingham'], ['Shirt', 'blue & white', 'Hilditch', 'stripe'],
+const BASE = [['Suit', 'charcoal', 'M&HOOK.S', 'pinstripe'], ['Shirt', 'pink/white', '', 'gingham'], ['Shirt', 'blue & white', 'Hilditch', 'stripe'],
   ['Tie', 'navy', '', 'knit'], ['Tie', 'burgundy & navy', "Drake's", 'repp stripe'], ['Tie', 'gold', '', 'paisley'], ['Tie', 'navy', '', 'polka dot'],
   ['Trousers', 'khaki', 'Gap', ''], ['Shoes', 'oxblood', '', ''], ['Shoes', 'tan', '', '']];
 const first = 'Category\tColor\tBrand\n' + BASE.map(r => r.slice(0, 3).join('\t')).join('\n');

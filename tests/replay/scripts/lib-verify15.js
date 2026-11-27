@@ -45,7 +45,7 @@ async function paste(t) {
   return { prev, btn, rows };
 }
 async function addItems() { await ph.tap('#kit-imp'); await sleep(2500) }
-const itemsNow = () => ph.page.evaluate(() => items.map(i => ({ t: i.type, c: i.primaryColor, c2: i.secondaryColor, p: i.pattern, n: i.name || null, b: i.brand || null, notes: i.notes || null, k: i.trouserKind || null, s: i.shoeStyle || null })));
+const itemsNow = () => ph.page.evaluate(() => HOOK.items.map(i => ({ t: i.type, c: i.primaryColor, c2: i.secondaryColor, p: i.pattern, n: i.name || null, b: i.brand || null, notes: i.notes || null, k: i.trouserKind || null, s: i.shoeStyle || null })));
 function verdict(ok, ev) { console.log(ok ? 'REPRODUCED' : 'NOT REPRODUCED'); console.log(JSON.stringify(ev, null, 1)) }
 async function run(fn) { let code = 0; try { await fn() } catch (e) { console.log('ERROR', e && e.stack || e); code = 2 } finally { await stopAll() } process.exit(code) }
 module.exports = { PORT, sleep, mock, start, openImport, paste, addItems, itemsNow, verdict, run, get ph() { return ph } };
