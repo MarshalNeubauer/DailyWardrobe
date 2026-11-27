@@ -21,9 +21,9 @@ const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webmani
   await page.reload();await page.waitForFunction(()=>!!navigator.serviceWorker.controller,null,{timeout:5000}).catch(()=>{});
   ok(await page.evaluate(()=>!!navigator.serviceWorker.controller),'service worker controls the page');
   // one version at a time: the server's files change (a release), with and without a new version number
-  const v0=await page.evaluate(async()=>{while(appVersion()==null)await new Promise(r=>setTimeout(r,50));return appVersion()});
-  const seen=()=>page.evaluate(()=>({h:/v2/.test(document.querySelector('h1').textContent),core:window.__core||'',v:appVersion()}));
-  marker='v2';await page.reload();await page.waitForFunction(()=>window.appReady&&appVersion()!=null);
+  const v0=await page.evaluate(async()=>{while(HOOK.appVersion()==null)await new Promise(r=>setTimeout(r,50));return HOOK.appVersion()});
+  const seen=()=>page.evaluate(()=>({h:/v2/.test(document.querySelector('h1').textContent),core:window.__core||'',v:HOOK.appVersion()}));
+  marker='v2';await page.reload();await page.waitForFunction(()=>window.appReady&&HOOK.appVersion()!=null);
   let s=await seen();
   ok(!s.h&&!s.core&&s.v===v0,'a reload stays on the installed version: no file of a newer release is mixed in');
   bump=1;slow=/app\.js$/;   // the release gets its number, and one of its files is slow to come (the old 4 s race served a mix here)
@@ -34,20 +34,20 @@ const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webmani
   s=await seen();
   ok(await page.evaluate(()=>window.__same===1&&navigator.serviceWorker.getRegistration().then(g=>!!g.waiting&&g.active===navigator.serviceWorker.controller))&&!s.h&&s.v===v0,
     'the new version downloads and waits: the page is not reloaded and keeps its service worker');
-  await page.reload();await page.waitForFunction(()=>window.appReady&&appVersion()!=null);s=await seen();
+  await page.reload();await page.waitForFunction(()=>window.appReady&&HOOK.appVersion()!=null);s=await seen();
   ok(!s.h&&!s.core&&s.v===v0,'a plain reload while it waits is still the old version, whole');
   slow=null;await page.evaluate(()=>{window.__same=1;return HOOK.checkForUpdate()});
   await page.evaluate(()=>HOOK.updateNow());
-  await page.waitForFunction(()=>window.__same===undefined&&window.appReady&&appVersion()!=null,null,{timeout:20000}).catch(()=>{});s=await seen();
+  await page.waitForFunction(()=>window.__same===undefined&&window.appReady&&HOOK.appVersion()!=null,null,{timeout:20000}).catch(()=>{});s=await seen();
   ok(s.h&&s.core==='v2'&&s.v===v0+1,`Update switches to the new service worker and reloads: every file is the new release (version ${s.v})`);
   ok(await page.evaluate(async()=>{const ks=await caches.keys();return ks.filter(k=>/^dw-v/.test(k)).length===1&&navigator.serviceWorker.getRegistration().then(g=>!g.waiting&&!g.installing)}),'the old version\'s cache is gone');
   // a version that was left waiting takes over when the app is next started
   marker='v3';bump=2;await page.evaluate(()=>HOOK.checkForUpdate());
   await page.evaluate(async()=>{window.__reg=await navigator.serviceWorker.getRegistration()});await page.waitForFunction(()=>!!window.__reg.waiting,null,{timeout:30000}).catch(()=>{});
   await page.close();page=await ctx.newPage();
-  let v3=false;for(let i=0;i<20&&!v3;i++){await page.goto(url);await page.waitForFunction(()=>window.appReady&&appVersion()!=null);v3=await page.evaluate(()=>/v3/.test(document.querySelector('h1').textContent)&&window.__core==='v3');
+  let v3=false;for(let i=0;i<20&&!v3;i++){await page.goto(url);await page.waitForFunction(()=>window.appReady&&HOOK.appVersion()!=null);v3=await page.evaluate(()=>/v3/.test(document.querySelector('h1').textContent)&&window.__core==='v3');
     if(!v3){await page.goto('about:blank');await new Promise(r=>setTimeout(r,250))}}   // the browser activates the waiting worker shortly after the last page went
-  ok(v3&&await page.evaluate(v=>appVersion()===v,v0+2),'a version left waiting is the one running after the app was closed and opened again');
+  ok(v3&&await page.evaluate(v=>HOOK.appVersion()===v,v0+2),'a version left waiting is the one running after the app was closed and opened again');
   // a deep link (…/app/some/path) goes to the app's root, its query and #… kept, and every script runs once there (the restructure's
   // S5-0): index.html answered at the deep path ran a module twice, its tag's copy under the deep path and the root's for the imports
   const DEEP='some/deep/link?from=deep#x=1',deepRun=async()=>{const q=await ctx.newPage();await q.goto(url+DEEP).catch(()=>{});
@@ -64,7 +64,7 @@ const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webmani
   await ctx.setOffline(true);
   {const r=await deepRun();ok(deepOk(r),`offline, a deep link goes to the app's root with its query and #… and every page script runs once (${r.href}, ${r.n} scripts, twice: ${r.twice.join(' ')||'none'}${r.err?', '+r.err:''})`)}await page.reload();await page.waitForSelector('#n-today',{timeout:5000}).catch(()=>{});
   ok((await page.textContent('h1')).includes('Daily Wardrobe')&&await page.$('#n-today')!==null,'app loads offline from the cache');
-  ok(await page.evaluate(()=>typeof buildPlan==='function'&&typeof figureSvg==='function'&&typeof outfitMannequinSvg==='function'),'all scripts available offline');
+  ok(await page.evaluate(()=>'buildPlan' in HOOK&&typeof HOOK.buildPlan==='function'&&'figureSvg' in HOOK&&typeof HOOK.figureSvg==='function'&&typeof outfitMannequinSvg==='function'),'all scripts available offline');
   ok(await page.evaluate(()=>{const s=outfitMannequinSvg({kind:'vest',suit:{color:'#333'},shirt:{color:'#eee'},tie:{color:'#a00'}});return /viewBox="0 0 390 390"/.test(s)&&s.includes('fig-skin')}),'the traced mannequin\'s pose data comes from the cache offline (nothing fetched)');
   ok(await page.evaluate(()=>{const s=outfitMannequinSvg({kind:'vest',suit:{color:'#333'},shirt:{color:'#eee'},tie:{color:'#a00'}}),m=/class="fig-office" href="(data:image\/jpeg[^"]+)"/.exec(s);return m&&new Promise(r=>{const im=new Image();im.onload=()=>r(im.naturalWidth===200);im.onerror=()=>r(false);im.src=m[1]})}),'the office behind the mannequin comes with its pose offline (nothing fetched)');
   // a deep link offline: the app at its root, with its styles and scripts from this version's files
@@ -91,9 +91,9 @@ const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webmani
   // new worker of that same version takes over quietly, with no prompt and no reload
   {legacy=true;marker='';bump=0;const c2=await browser.newContext(),p2=await c2.newPage();
     await p2.goto(url);await p2.waitForFunction(()=>!!navigator.serviceWorker.controller,null,{timeout:10000}).catch(()=>{});
-    legacy=false;await p2.reload();await p2.waitForFunction(()=>window.appReady&&appVersion()!=null);
+    legacy=false;await p2.reload();await p2.waitForFunction(()=>window.appReady&&HOOK.appVersion()!=null);
     await p2.evaluate(()=>{window.__same=1});
-    const took=await p2.evaluate(async()=>{const t0=Date.now();while(Date.now()-t0<30000){const c=navigator.serviceWorker.controller;if(c&&await HOOK.aboutAsk(c)===appVersion())return true;await new Promise(r=>setTimeout(r,200))}return false});
+    const took=await p2.evaluate(async()=>{const t0=Date.now();while(Date.now()-t0<30000){const c=navigator.serviceWorker.controller;if(c&&await HOOK.aboutAsk(c)===HOOK.appVersion())return true;await new Promise(r=>setTimeout(r,200))}return false});
     ok(took&&await p2.evaluate(()=>window.__same===1&&!/new version/.test(document.querySelector('#toast').textContent)),'after the earlier service worker, the new one of the same version takes over without a prompt or a reload');
     await c2.close()}
   await browser.close();srv.close();

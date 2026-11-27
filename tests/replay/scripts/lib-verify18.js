@@ -59,13 +59,13 @@ async function addPhotoItems(ph, n, { closeups = false, from = 0, store = true }
     const TY = ['suit', 'blazer', 'pants', 'shirt', 'shirt', 'tie', 'tie', 'shoes'], COL = { suit: 'navy', blazer: 'brown', pants: 'grey', shirt: 'white', tie: 'burgundy', shoes: 'brown' };
     const list = [], per = [];
     for (let k = from; k < from + n; k++) {
-      const c = shrink(ims[k % ims.length], PH_MAX), g = c.getContext('2d');
+      const c = HOOK.shrink(ims[k % ims.length], HOOK.PH_MAX), g = c.getContext('2d');
       g.fillStyle = `rgb(${k % 256},${(k * 7) % 256},${(k * 13) % 256})`; g.fillRect((k * 37) % (c.width - 4), (k * 53) % (c.height - 4), 4, 4);
       const type = TY[k % TY.length];
       const it = { id: crypto.randomUUID(), type, primaryColor: COL[type], secondaryColor: 'none', thirdColor: 'none', pattern: 'solid', added: Date.now(), name: 'Photo item ' + (k + 1), photo: c.toDataURL('image/jpeg', .85) };
-      await makeSmall(it);
-      if (closeups && TEXTURE_TYPES.includes(type)) { const s = ims[(k + 5) % ims.length], t = document.createElement('canvas'); t.width = t.height = TEX_MAX;
-        const tg = t.getContext('2d'), w = Math.min(s.naturalWidth, s.naturalHeight) / 2; tg.drawImage(s, (s.naturalWidth - w) / 2, (s.naturalHeight - w) / 2, w, w, 0, 0, TEX_MAX, TEX_MAX);
+      await HOOK.makeSmall(it);
+      if (closeups && HOOK.TEXTURE_TYPES.includes(type)) { const s = ims[(k + 5) % ims.length], t = document.createElement('canvas'); t.width = t.height = HOOK.TEX_MAX;
+        const tg = t.getContext('2d'), w = Math.min(s.naturalWidth, s.naturalHeight) / 2; tg.drawImage(s, (s.naturalWidth - w) / 2, (s.naturalHeight - w) / 2, w, w, 0, 0, HOOK.TEX_MAX, HOOK.TEX_MAX);
         tg.fillStyle = '#123'; tg.fillRect(k % 1500, 7, 4, 4); it.texture = t.toDataURL('image/jpeg', .85) }
       // what this item adds to POST /sync: its record with references, plus each photo as "hash":"data…"
       const strs = [...HOOK.phStrings(it, HOOK.isPh)]; let ref = JSON.stringify(HOOK.phMap(it, s => strs.includes(s) ? 'dwph:' + '0'.repeat(20) : s)).length + 1;
@@ -73,7 +73,7 @@ async function addPhotoItems(ph, n, { closeups = false, from = 0, store = true }
       list.push(it);
     }
     const ok = store ? await HOOK.kitStore(list, null) : null;
-    return { ok, n: list.length, items: items.length, per, photoKB: Math.round(list.reduce((a, i) => a + i.photo.length, 0) / list.length / 1024), smKB: Math.round(list.reduce((a, i) => a + i.photoSm.length, 0) / list.length / 1024) };
+    return { ok, n: list.length, items: HOOK.items.length, per, photoKB: Math.round(list.reduce((a, i) => a + i.photo.length, 0) / list.length / 1024), smKB: Math.round(list.reduce((a, i) => a + i.photoSm.length, 0) / list.length / 1024) };
   }, [sampleUrls(), n, closeups, from, store]);
 }
 const reqs = ph => ph.page.evaluate(() => window.__mf.slice());

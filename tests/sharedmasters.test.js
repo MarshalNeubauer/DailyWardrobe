@@ -108,18 +108,18 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const res=await p.evaluate(async()=>{HOOK.asmAheadSoon=()=>{};HOOK.asmAhead=async()=>{};
       let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
       const W={watch:I('watch','silver',{metal:'silver'}),suit:I('suit','navy'),shirt:I('shirt','pink'),tie:I('tie','burgundy')};HOOK.items=Object.values(W);
-      const o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie},before=asmCmUse(o);await asmListGet(true);const listed=asmList&&asmList.has(asmCmKey('suit','master'))&&asmList.has(HOOK.asmCmMfKey());
-      await asmEnsure(o);for(let i=0;i<200&&(asmBusy.size||HOOK.asmPreGetting.size);i++)await new Promise(r=>setTimeout(r,50));
-      const f=asmFor(o),r=HOOK.asmOut[asmOutKey(o)];let px=null;
+      const o={shirt:W.shirt,watch:W.watch,top:W.suit,tie:W.tie},before=HOOK.asmCmUse(o);await HOOK.asmListGet(true);const listed=HOOK.asmList&&HOOK.asmList.has(HOOK.asmCmKey('suit','master'))&&HOOK.asmList.has(HOOK.asmCmMfKey());
+      await HOOK.asmEnsure(o);for(let i=0;i<200&&(HOOK.asmBusy.size||HOOK.asmPreGetting.size);i++)await new Promise(r=>setTimeout(r,50));
+      const f=HOOK.asmFor(o),r=HOOK.asmOut[HOOK.asmOutKey(o)];let px=null;
       if(f){const im=new Image();im.src=f.img;await im.decode();const c=document.createElement('canvas');c.width=c.height=im.width;const x=c.getContext('2d');x.drawImage(im,0,0);px=[...x.getImageData(Math.round(im.width*.5),Math.round(im.width*.62),1,1).data].slice(0,3)}
       // (2026-11-14, a tester's gold watch) the same look with a gold watch on leather: painted on the tester's phone too, its dial dark
-      const gw=I('watch','brown',{metal:'gold',dial:'charcoal',band:'leather'});items.push(gw);const o2={...o,watch:gw};let g2=null,gerr=null;
-      try{await asmEnsure(o2);for(let i=0;i<200&&(asmBusy.size||HOOK.asmPreGetting.size);i++)await new Promise(r=>setTimeout(r,50));
-        const f2=asmFor(o2);if(f2){const im=new Image();im.src=f2.img;await im.decode();const c=document.createElement('canvas');c.width=c.height=im.width;const x=c.getContext('2d');x.drawImage(im,0,0);
+      const gw=I('watch','brown',{metal:'gold',dial:'charcoal',band:'leather'});HOOK.items.push(gw);const o2={...o,watch:gw};let g2=null,gerr=null;
+      try{await HOOK.asmEnsure(o2);for(let i=0;i<200&&(HOOK.asmBusy.size||HOOK.asmPreGetting.size);i++)await new Promise(r=>setTimeout(r,50));
+        const f2=HOOK.asmFor(o2);if(f2){const im=new Image();im.src=f2.img;await im.decode();const c=document.createElement('canvas');c.width=c.height=im.width;const x=c.getContext('2d');x.drawImage(im,0,0);
           const g=HOOK.ASM_WATCH_GEO.suit,k=im.width/2048;g2={w:im.width,dial:[...x.getImageData(Math.round(g.cx*k),Math.round(g.cy*k),1,1).data].slice(0,3)}}
-        else if(window.WDEBUG){const j=await HOOK.asmJob(o2);let pg=null,wk=null;try{const r=await asmBuild(j);pg=r&&r.url?'ok '+r.url.length:'no url '+JSON.stringify(Object.keys(r||{}))}catch(e){pg='page error: '+(e&&e.message||e)}
-          try{const r=await asmRun(j,true);wk=r&&r.url?'ok':'no url'}catch(e){wk='worker error: '+(e&&e.message||e)}gerr='job '+!!j+' watch '+!!(j&&j.watch)+' | page '+pg+' | worker '+wk}}catch(e){gerr=String(e&&e.message||e)}
-      return {before,after:asmCmUse(o),listed,size:r&&r.blob&&r.blob.size,mf:Object.keys(asmCmMfNow().keys).length,px,gold:{use:asmCmUse(o2),key:asmOutKey(o2)!==asmOutKey(o),job:!!asmWatchJob(o2,asmCmUse(o2)),pic:g2,err:gerr}}});
+        else if(window.WDEBUG){const j=await HOOK.asmJob(o2);let pg=null,wk=null;try{const r=await HOOK.asmBuild(j);pg=r&&r.url?'ok '+r.url.length:'no url '+JSON.stringify(Object.keys(r||{}))}catch(e){pg='page error: '+(e&&e.message||e)}
+          try{const r=await HOOK.asmRun(j,true);wk=r&&r.url?'ok':'no url'}catch(e){wk='worker error: '+(e&&e.message||e)}gerr='job '+!!j+' watch '+!!(j&&j.watch)+' | page '+pg+' | worker '+wk}}catch(e){gerr=String(e&&e.message||e)}
+      return {before,after:HOOK.asmCmUse(o),listed,size:r&&r.blob&&r.blob.size,mf:Object.keys(HOOK.asmCmMfNow().keys).length,px,gold:{use:HOOK.asmCmUse(o2),key:HOOK.asmOutKey(o2)!==HOOK.asmOutKey(o),job:!!HOOK.asmWatchJob(o2,HOOK.asmCmUse(o2)),pic:g2,err:gerr}}});
     const masterGets=seen.filter(x=>x[1]==='/render'&&x[3]===ck('suit','master'));
     ok(seen.length&&seen.every(x=>x[0]===code),`the page is connected as the tester (${seen.length} requests)`);
     ok(res.listed&&res.mf>0,`the tester's list names the owner's master and manifest, and the manifest is read (${res.mf} records in it)`);

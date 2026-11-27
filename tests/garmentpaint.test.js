@@ -27,17 +27,22 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // (the looks' signatures with the painter's code fingerprint set aside: C3's planned repaint, 2026-11-24, changed asmCmCodeSig on
     // purpose, and with it every key; what this test guards is that the new garments changed nothing else in an existing look's key)
     const keysOf=async(p,mf)=>p.evaluate(([src,mf])=>{const L=new Function('return ('+src+')()')();HOOK.asmCmMf={keys:mf||{}};const code=HOOK.asmCmCodeSig();
-      return {keys:L.map(o=>HOOK.asmCmSig(o).split(code).join('<code>')),jeans:L.map(o=>!!(o.bot&&o.bot.trouserKind==='jeans')),code:HOOK.asmCmCodeSig(),src:HOOK.asmCmSrcSig(),kindsJson:JSON.stringify(ASM_CM_KINDS),btnJson:JSON.stringify(ASM_CM_BTN)}},[String(looksFn),mf]);
+      return {keys:L.map(o=>HOOK.asmCmSig(o).split(code).join('<code>')),jeans:L.map(o=>!!(o.bot&&o.bot.trouserKind==='jeans')),code:HOOK.asmCmCodeSig(),src:HOOK.asmCmSrcSig(),kindsJson:JSON.stringify(HOOK.ASM_CM_KINDS),btnJson:JSON.stringify(HOOK.ASM_CM_BTN)}},[String(looksFn),mf]);
     const origin=new URL(url).origin;
     const mctx=await browser.newContext({viewport:{width:390,height:844}});
     await mctx.route(origin+'/**',route=>{const f=decodeURIComponent(new URL(route.request().url()).pathname.slice(1))||'index.html';
       if(mainSrc[f]!=null)return route.fulfill({status:200,contentType:f.endsWith('.html')?'text/html':'text/javascript',body:mainSrc[f]});return route.continue()});
+    // the fixed plan (tests/fixedplan.js) reads the page through HOOK, which BASE's files don't fill: on this page its names are the
+    // page's globals, handed to HOOK before the app runs (a getter, read when the plan is made)
+    await mctx.addInitScript(()=>{globalThis.HOOK={__proto__:globalThis.HOOK||null,get todayDate(){return todayDate},get items(){return items},get inRotation(){return inRotation},
+      get isWorkday(){return isWorkday},get key(){return key},get dayRecs(){return dayRecs},get di(){return di},get occOf(){return occOf},get SLOTS(){return SLOTS},
+      get hasVest(){return hasVest},get settings(){return settings},get dayClimate(){return dayClimate}}});
     const mp=await mctx.newPage(),bp=await browser.newPage(),errs=[];bp.on('pageerror',e=>errs.push(e.message));
     await mp.goto(url);await mp.waitForFunction(()=>window.appReady);await bp.goto(url);await bp.waitForFunction(()=>window.appReady);
-    // mp runs the files of BASE, from before HOOK (tests/hook.js): there the four names keysOf reaches through HOOK are still the
+    // mp runs the files of BASE, from before HOOK (tests/hook.js): there the six names keysOf reaches through HOOK are still the
     // page's globals, so they are put on its HOOK for keysOf, which then runs the same on both pages
-    await mp.evaluate(()=>{globalThis.HOOK={__proto__:globalThis.HOOK,get asmCmMf(){return asmCmMf},set asmCmMf(v){asmCmMf=v},asmCmCodeSig,asmCmSig,asmCmSrcSig}});
-    const mfKeys=await bp.evaluate(()=>{const o={};for(const k of ['suit','vest','suit-open','shirt-tie','shirt-open'])for(const n of ['master','mask/shirt','geo/u','geo/v','light'])o[asmCmKey(k,n)]=1234;return o});
+    await mp.evaluate(()=>{globalThis.HOOK={__proto__:globalThis.HOOK,get asmCmMf(){return asmCmMf},set asmCmMf(v){asmCmMf=v},asmCmCodeSig,asmCmSig,asmCmSrcSig,ASM_CM_KINDS,ASM_CM_BTN}});
+    const mfKeys=await bp.evaluate(()=>{const o={};for(const k of ['suit','vest','suit-open','shirt-tie','shirt-open'])for(const n of ['master','mask/shirt','geo/u','geo/v','light'])o[HOOK.asmCmKey(k,n)]=1234;return o});
     const m=await keysOf(mp,mfKeys),b=await keysOf(bp,mfKeys);
     const diff=m.keys.map((k,i)=>k!==b.keys[i]?i:-1).filter(i=>i>=0);
     ok(Object.keys(mainSrc).length>0,`origin/main's versions of the changed app files are served to the first page (${Object.keys(mainSrc).sort().join(', ')})`);
@@ -53,9 +58,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const nk=await bp.evaluate(NEW=>{let n=0;const I=(type,primaryColor,x={})=>({id:'n'+type+(n++),type,primaryColor,pattern:'solid',...x});
       const shirt=I('shirt','white'),bot=I('pants','khaki',{trouserKind:'chinos'}),belt=I('belt','brown'),watch=I('watch','silver',{metal:'silver',dial:'white'}),tie=I('tie','navy'),suit=I('suit','navy');
       const r={};for(const t of NEW){const it=I(t,'navy');const jk=t==='cardigan'||t==='chore';const o=jk?{top:it,shirt,watch}:{shirt:it,bot,belt,watch};
-        r[t]={kind:asmCmKindOf(o),sig:HOOK.asmCmSig(o).split('|').slice(0,3).join('|'),key:asmCmOutKey(o),use:asmCmUse(o),
-          withTie:asmCmKindOf({...o,tie}),underJacket:jk?null:asmCmKindOf({...o,top:suit}),mannequin:HOOK.figKind(o)}}
-      r.base=asmCmOutKey({shirt,bot,belt,watch});r.cardOverTee=asmCmKindOf({top:I('cardigan','grey'),shirt:I('tee','white'),watch});return r},NEW);
+        r[t]={kind:HOOK.asmCmKindOf(o),sig:HOOK.asmCmSig(o).split('|').slice(0,3).join('|'),key:HOOK.asmCmOutKey(o),use:HOOK.asmCmUse(o),
+          withTie:HOOK.asmCmKindOf({...o,tie}),underJacket:jk?null:HOOK.asmCmKindOf({...o,top:suit}),mannequin:HOOK.figKind(o)}}
+      r.base=HOOK.asmCmOutKey({shirt,bot,belt,watch});r.cardOverTee=HOOK.asmCmKindOf({top:I('cardigan','grey'),shirt:I('tee','white'),watch});return r},NEW);
     ok(NEW.every(t=>nk[t].kind===t&&nk[t].sig.startsWith(t+'|')&&/\|nk/.test(nk[t].sig)),'each new garment is painted on its own master, its kind and the new painter code in its key');
     ok(new Set(NEW.map(t=>nk[t].key).concat(nk.base)).size===NEW.length+1,'the new kinds\' keys differ from each other and from the open-shirt look');
     ok(NEW.every(t=>nk[t].use===null),'a new kind whose master is not on the worker paints nothing (the day shows the drawing)');
@@ -65,7 +70,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const kn=await bp.evaluate(()=>{const ac=(T,dx,dy)=>{const {TW,TH,t}=T;let s=0,s2=0,c=0,n=TW*TH,y=new Float32Array(n);for(let k=0;k<n;k++){y[k]=t[3*k]+t[3*k+1]+t[3*k+2];s+=y[k];s2+=y[k]*y[k]}
         const m=s/n,v=s2/n-m*m;for(let yy=0;yy<TH;yy++)for(let x=0;x<TW;x++)c+=(y[yy*TW+x]-m)*(y[((yy+dy)%TH)*TW+(x+dx)%TW]-m);return c/n/v};
       const K=HOOK.ASM_NK_KNIT,it={id:'s',type:'sweater',primaryColor:'navy',pattern:'solid',material:'merino wool'},T=HOOK.asmNkKnitTile(it),C=HOOK.asmNkKnitTile({...it,pattern:'cable'}),S=HOOK.asmNkKnitTile({...it,pattern:'stripe',secondaryColor:'cream'});
-      const mean=T2=>{let a=[0,0,0];for(let k=0;k<T2.TW*T2.TH;k++)for(let q=0;q<3;q++)a[q]+=T2.t[3*k+q];return a.map(v=>v/(T2.TW*T2.TH))},lin=HOOK.asmNkLin(colOf(it)),mt=mean(T);
+      const mean=T2=>{let a=[0,0,0];for(let k=0;k<T2.TW*T2.TH;k++)for(let q=0;q<3;q++)a[q]+=T2.t[3*k+q];return a.map(v=>v/(T2.TW*T2.TH))},lin=HOOK.asmNkLin(HOOK.colOf(it)),mt=mean(T);
       return {one:ac(T,K.cw,0),half:ac(T,K.cw/2,0),row:ac(T,0,K.ch),mm:T.mm,mmL:HOOK.asmNkKnitTile({...it,material:'shetland wool'}).mm,mean:mt.map((v,q)=>v/lin[q]),cableDiff:C.t.some((v,k)=>Math.abs(v-T.t[k])>.02),stripe:S.t.some((v,k)=>Math.abs(v-T.t[k])>.05),
         fleece:HOOK.asmNkCloth({type:'hoodie',primaryColor:'grey',pattern:'solid'},'hoodie',{hex:'#888'}),tee:HOOK.asmNkCloth({type:'tee',primaryColor:'grey',pattern:'stripe',secondaryColor:'navy'},'tee',{hex:'#888'}).tile}});
     ok(kn.one>.5&&kn.row>.5&&kn.half<kn.one-.3,`the sweater knit repeats at one stitch across and one row down (correlation ${kn.one.toFixed(2)} / ${kn.row.toFixed(2)}, at half a stitch ${kn.half.toFixed(2)})`);
@@ -81,18 +86,18 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const recs={};const add=(kind,n,f)=>{recs[kind+'|'+n]={sig:'asm/cm test',img:`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(f).toString('base64'),model:'colormaster',t:1000}};
     for(const kind of ['shirt-open','suit-open',...NEW]){const d=path.join(FIX,kind);for(const f of fs.readdirSync(d))add(kind,f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/'),path.join(d,f))}
     for(const kind of ['shirt-open','tee'])add(kind,'master-jeans',path.join(FIX,'jeans',kind+'.jpg'));
-    const kmap=await p.evaluate(ks=>{const o={};for(const k of ks){const [kind,n]=k.split('|');o[k]=asmCmKey(kind,n)}return o},Object.keys(recs));
+    const kmap=await p.evaluate(ks=>{const o={};for(const k of ks){const [kind,n]=k.split('|');o[k]=HOOK.asmCmKey(kind,n)}return o},Object.keys(recs));
     for(const [k,r] of Object.entries(recs))served[kmap[k]]=r;
-    const mfk=await p.evaluate(()=>({mf:HOOK.asmCmMfKey(),j1:HOOK.asmJfKey('shirt-open'),j2:HOOK.asmJfKey('tee'),bg:asmCmBgKey()}));served[mfk.bg]={...recs['shirt-open|master'],sig:'asm/cm bg'};
+    const mfk=await p.evaluate(()=>({mf:HOOK.asmCmMfKey(),j1:HOOK.asmJfKey('shirt-open'),j2:HOOK.asmJfKey('tee'),bg:HOOK.asmCmBgKey()}));served[mfk.bg]={...recs['shirt-open|master'],sig:'asm/cm bg'};
     served[mfk.mf]={sig:'asm/cm-manifest '+JSON.stringify({keys:{[mfk.j1]:1000,[mfk.j2]:1000}}),img:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=',model:'manifest',t:1000};
     const res=await p.evaluate(async([h,NEW])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');self.ASM_CM_SIZE=512;HOOK.asmAheadSoon=()=>{};HOOK.asmAhead=async()=>{};
       let n=0;const I=(type,primaryColor,x={})=>({id:'p'+type+(n++),type,primaryColor,pattern:'solid',...x});
       const shirt=I('shirt','white'),chinos=I('pants','khaki',{trouserKind:'chinos'}),jeans=I('pants','denim',{trouserKind:'jeans'}),belt=I('belt','brown'),watch=I('watch','silver',{metal:'silver',dial:'white',band:'integrated'});
-      const px=async u=>{const d=await asmData(u,512);return d.data};
-      const out=[];await asmCmMfGet(true);
-      const paint=async(name,o)=>{const r={name};try{await HOOK.asmCmLook(o);const k=asmKindOf(o);r.kind=k;if(!await asmNkGet(o,k)){r.err='records not here';return r}
-          const job=await HOOK.asmJob(o);if(!job){r.err='no job';return r}r.mk=job.mk;r.cm=job.cm;r.tile=!!(job.cloth.shirt&&job.cloth.shirt.tile||job.cloth.jacket&&job.cloth.jacket.tile);r.gl=typeof asmGlWhy==='function'?asmGlWhy(job,{}):'';
-          const b=await asmRun(job,true);r.ok=!!(b&&(b.url||b.px));r.usedGl=!!(b&&b.gl);if(b&&b.gl&&b.url){const c=await asmRun({...job,gl:false},true);if(c&&c.url&&!c.gl){const x=await px(b.url),y=await px(c.url);let s=0;for(let k=0;k<x.length;k+=4)s+=Math.abs(x[k]-y[k])+Math.abs(x[k+1]-y[k+1])+Math.abs(x[k+2]-y[k+2]);r.glDiff=s/(x.length/4*3)}}if(b&&b.url){const z=job.cm,mz=ASM_NK[z]&&ASM_NK[z].base==='suit-open'?'jacket':'shirt',m=await px(renders[asmCmKey(z,'mask/'+mz)].img),d=await px(b.url);
+      const px=async u=>{const d=await HOOK.asmData(u,512);return d.data};
+      const out=[];await HOOK.asmCmMfGet(true);
+      const paint=async(name,o)=>{const r={name};try{await HOOK.asmCmLook(o);const k=HOOK.asmKindOf(o);r.kind=k;if(!await HOOK.asmNkGet(o,k)){r.err='records not here';return r}
+          const job=await HOOK.asmJob(o);if(!job){r.err='no job';return r}r.mk=job.mk;r.cm=job.cm;r.tile=!!(job.cloth.shirt&&job.cloth.shirt.tile||job.cloth.jacket&&job.cloth.jacket.tile);r.gl='asmGlWhy' in HOOK?HOOK.asmGlWhy(job,{}):'';
+          const b=await HOOK.asmRun(job,true);r.ok=!!(b&&(b.url||b.px));r.usedGl=!!(b&&b.gl);if(b&&b.gl&&b.url){const c=await HOOK.asmRun({...job,gl:false},true);if(c&&c.url&&!c.gl){const x=await px(b.url),y=await px(c.url);let s=0;for(let k=0;k<x.length;k+=4)s+=Math.abs(x[k]-y[k])+Math.abs(x[k+1]-y[k+1])+Math.abs(x[k+2]-y[k+2]);r.glDiff=s/(x.length/4*3)}}if(b&&b.url){const z=job.cm,mz=HOOK.ASM_NK[z]&&HOOK.ASM_NK[z].base==='suit-open'?'jacket':'shirt',m=await px(HOOK.renders[HOOK.asmCmKey(z,'mask/'+mz)].img),d=await px(b.url);
             let s=[0,0,0],c=0;for(let k=0;k<512*512;k++)if(m[4*k]>250){for(let q=0;q<3;q++)s[q]+=d[4*k+q];c++}r.mean=s.map(v=>Math.round(v/Math.max(1,c)))}}
         catch(e){r.err=String(e&&e.message||e)}return r};
       for(const t of NEW){const it=I(t,t==='chore'?'rust':'red',t==='sweater'?{material:'lambswool'}:{});const jk=t==='cardigan'||t==='chore';out.push(await paint(t,jk?{top:it,shirt,watch}:{shirt:it,bot:chinos,belt,watch}))}
@@ -115,7 +120,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       fs.copyFileSync(path.join(src,'master.jpg'),path.join(d,'colormaster-2880.png'));fs.copyFileSync(path.join(FIX,'jeans','tee.jpg'),path.join(d,'colormaster-jeans-2880.png'));
       for(const f of fs.readdirSync(src)){if(f.startsWith('mask-'))fs.copyFileSync(path.join(src,f),path.join(d,'alpha-'+f.slice(5)));if(f.startsWith('part-'))fs.copyFileSync(path.join(src,f),path.join(d,'sleeve-'+f.slice(5)))}
       const r=spawnSync(process.execPath,[path.join(__dirname,'..','tools','asm-cm-upload.js'),'--dir',tmp,'--dry','--kinds','tee'],{encoding:'utf8'});
-      const want=await bp.evaluate(()=>({m:asmCmKey('tee','master'),j:HOOK.asmJfKey('tee')}));
+      const want=await bp.evaluate(()=>({m:HOOK.asmCmKey('tee','master'),j:HOOK.asmJfKey('tee')}));
       ok(r.status===0&&r.stdout.includes('tee master -> '+want.m)&&r.stdout.includes('tee master-jeans -> '+want.j)&&(r.stdout.match(/^tee mask\//gm)||[]).length===8,`cm-upload puts a new kind's master, its 8 masks and its faded master under the app's keys (${(r.stdout.match(/^tee /gm)||[]).length} records; ${r.stderr.trim()})`);
       fs.rmSync(tmp,{recursive:true,force:true})}
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

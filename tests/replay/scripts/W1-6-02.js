@@ -12,12 +12,12 @@ L.main(async()=>{
   await L.openItem(A,'Pink shirt');await L.tapText(A,'Delete item');await L.sleep(800);await L.backup(A);
   // B: a minute later, background and back, sheet still open
   await L.later(B);await L.sleep(1500);
-  const mid=await B.page.evaluate(()=>({open:!document.querySelector('#item-view').hidden&&!!editing,title:(document.querySelector('#iv-title')||{}).textContent,count:(document.querySelector('#ivhead .pcount')||{}).textContent,inItems:items.some(i=>i.name==='Pink shirt'),n:items.length}));
+  const mid=await B.page.evaluate(()=>({open:!document.querySelector('#item-view').hidden&&!!HOOK.editing,title:(document.querySelector('#iv-title')||{}).textContent,count:(document.querySelector('#ivhead .pcount')||{}).textContent,inItems:HOOK.items.some(i=>i.name==='Pink shirt'),n:HOOK.items.length}));
   L.log('B sheet after sync',mid);
   const inp=L.nameInput(B);await inp.fill('Pink shirt (fav)');await inp.press('Tab');await L.sleep(500);
   const toastBefore=await B.page.evaluate(()=>(document.querySelector('#toast')||{}).innerText||'');
   await L.done(B);await L.sleep(800);
-  const after=await B.page.evaluate(()=>({names:items.map(i=>i.name),toast:(document.querySelector('#toast')||{}).innerText||'',body:document.body.innerText.includes('Pink shirt (fav)')}));
+  const after=await B.page.evaluate(()=>({names:HOOK.items.map(i=>i.name),toast:(document.querySelector('#toast')||{}).innerText||'',body:document.body.innerText.includes('Pink shirt (fav)')}));
   L.log('B after Done',after,'toast while typing',toastBefore);
   const told=/deleted|another (phone|device)/i.test(after.toast+toastBefore);
   await L.finish(mid.open&&!mid.inItems&&!after.names.some(n=>/Pink shirt/.test(n))&&!told,{sheetAfterSync:mid,afterDone:after.names.length+' items, no Pink shirt',toast:after.toast});
