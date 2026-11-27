@@ -379,7 +379,7 @@ function analyzeSett(src,sx,sy,sw,sh,opt={}){
     for(let q=0;q<M;q++)if(lvl[q]&&lvl[(q+M-1)%M]!==lvl[q]&&lvl[(q+1)%M]!==lvl[q])lvl[q]=0;   // a line is at least two steps wide
     // runs of one kind; each line run gets its own thread colour (a tattersall's red and green lines stay apart):
     // a crossing is about half band, half thread, so thread = 2 x pixel - band
-    const rid=new Int32Array(M).fill(-1),runs=[];for(let q=0;q<M;q++){if(q&&lvl[q]===lvl[q-1])rid[q]=runs.length-1;else{runs.push({l:lvl[q],w:0,s:[0,0,0,0],v:[0,0,0]});rid[q]=runs.length-1}runs[rid[q]].w++;
+    const rid=new Int32Array(M).fill(-1),runs=/** @type {{l: number, w: number, s: number[], v: number[], hex?: string, c?: any}[]} */([]);for(let q=0;q<M;q++){if(q&&lvl[q]===lvl[q-1])rid[q]=runs.length-1;else{runs.push({l:lvl[q],w:0,s:[0,0,0,0],v:[0,0,0]});rid[q]=runs.length-1}runs[rid[q]].w++;
       const ru=runs[rid[q]];ru.v[0]+=fl[0][q];ru.v[1]+=fl[1][q];ru.v[2]+=fl[2][q]}
     if(runs.length>1&&runs[0].l===runs[runs.length-1].l){const a=runs.pop();runs[0].w+=a.w;runs[0].v=runs[0].v.map((x,j)=>x+a.v[j]);for(let q=0;q<M;q++)if(rid[q]===runs.length)rid[q]=0}
     // the pixels under the lines are left out when the bands are measured; with lines nearly all across (a gingham's

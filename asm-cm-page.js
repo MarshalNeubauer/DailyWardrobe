@@ -36,7 +36,7 @@ async function asmCmMfApply(keys){let n=0;
   setAsmCmMf({keys});try{localStorage.setItem(ASM_CM_MF,JSON.stringify(asmCmMf))}catch{}
   if(n)console.info(`manifest: ${n} master photo${n===1?'':'s'} uploaded again, downloading them afresh`);return n}
 async function asmCmWarm(looks){if(asmCmWarming||(self.ASM_CM_SIZE||ASM_SIZE)>ASM_SIZE||typeof indexedDB==='undefined')return 0;
-  const cn=navigator.connection;if(cn&&(cn.saveData||/(^|-)2g$/.test(cn.effectiveType||'')))return 0;
+  const cn=/** @type {any} */(navigator).connection;if(cn&&(cn.saveData||/(^|-)2g$/.test(cn.effectiveType||'')))return 0;
   const kinds=[...new Set((looks||[]).map(o=>asmKindOf(o)).filter(k=>k&&!asmCmWarmed.has(k)))];if(!kinds.length)return 0;setAsmCmWarming(true);let n=0;
   try{for(const kind of kinds){if(document.hidden)break;asmCmWarmed.add(kind);if(!await asmCmGet(kind))continue;const job=asmCmBaseJob(kind);if(!job)continue;
       if(await asmCmDiskGet(asmCmDiskKey(job)))continue;await asmRun({...job,setupOnly:true},false);n++}}

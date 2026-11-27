@@ -141,7 +141,7 @@ const planCol=i=>colBase(primaryCol(i)),patOf=i=>i?patBase(i.pattern):undefined;
    (FNV-1a, base 36) so any script has a key of its own; keys stay ASCII (own[a-z0-9] / own-[a-z0-9-], OWN_COL_RE / OWN_PAT_RE). A Latin
    name without digits gets the key it always had; stored keys are never derived again (look a name up with ownColFind / ownPatFind) */
 const OWN_COL_RE=/^own[a-z0-9]{1,28}$/,OWN_PAT_RE=/^own-[a-z0-9-]{1,28}$/;
-const ownKeyNorm=s=>String(s==null?'':s).normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/[٠-٩]/g,d=>d.charCodeAt(0)-0x660).replace(/[۰-۹]/g,d=>d.charCodeAt(0)-0x6f0).replace(/ـ/g,'').replace(/\s+/g,' ').trim();
+const ownKeyNorm=s=>String(s==null?'':s).normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/[٠-٩]/g,d=>String(d.charCodeAt(0)-0x660)).replace(/[۰-۹]/g,d=>String(d.charCodeAt(0)-0x6f0)).replace(/ـ/g,'').replace(/\s+/g,' ').trim();
 const ownKeyHash=s=>{let h=0x811c9dc5;for(const ch of s){h^=ch.codePointAt(0);h=Math.imul(h,16777619)>>>0}return h.toString(36)};
 const ownKeyOther=n=>/[^\x00-\x7f]/.test(n.replace(/[^\p{L}\p{N}]/gu,''));   // letters (or digits) outside a-z 0-9 after accents are dropped
 const ownColKey=name=>{const n=ownKeyNorm(name),a=n.replace(/[^a-z0-9]/g,'');return 'own'+(ownKeyOther(n)?a.slice(0,20)+'x'+ownKeyHash(n):a).slice(0,28)};
@@ -834,7 +834,7 @@ async function acctCall(path,opt={},base=acctBase()){if(!base)return {status:0,j
 const hasInviteHash=()=>/(^#|&)invite=/.test(location.hash);
 /* (moved from account.js with its text unchanged, the restructure S6a) */
 const iosDevice=()=>/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-const standaloneApp=()=>navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+const standaloneApp=()=>/** @type {any} */(navigator).standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
 const iosInSafari=()=>iosDevice()&&!standaloneApp();
 const myInviteLink=()=>{const b=acctBase();return b&&b.tok?location.origin+location.pathname+'#invite='+b.tok+'&w='+encodeURIComponent(b.url):''};
 /* (moved from sync.js with its text unchanged, the restructure S6a) */
@@ -852,7 +852,7 @@ const yearDate=d=>d.getFullYear()===todayDate().getFullYear()?shortDate(d):d.toL
    after the first item is saved (or at the next start of a wardrobe that already has items). ---- */
 async function askPersist(){
   try{if(localStorage.getItem('persist_asked')||!navigator.storage||!navigator.storage.persist)return null;
-    localStorage.setItem('persist_asked',Date.now());
+    localStorage.setItem('persist_asked',String(Date.now()));
     const kept=(navigator.storage.persisted&&await navigator.storage.persisted())||await navigator.storage.persist();
     localStorage.setItem('persist_ok',kept?'1':'0');return kept}
   catch(e){console.warn('storage not made persistent',e);return null}}
@@ -872,7 +872,7 @@ const tourSeen=()=>{try{return localStorage.getItem(KIT_TOUR)==='1'}catch{return
    on the Home Screen opens full screen, and it is the only way iOS lets a web app show notifications (the morning reminder). It keeps its
    own storage apart from Safari's, so the step comes before anything is set up. window.DW_STANDALONE / DW_IOS: tests */
 const homeIOS=()=>window.DW_IOS===true||/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-const homeStandalone=()=>window.DW_STANDALONE===true||navigator.standalone===true||(typeof matchMedia==='function'&&matchMedia('(display-mode: standalone)').matches);
+const homeStandalone=()=>window.DW_STANDALONE===true||/** @type {any} */(navigator).standalone===true||(typeof matchMedia==='function'&&matchMedia('(display-mode: standalone)').matches);
 /* Android (2026-11-14, the owner: "the same thing for android with an install button"): Chrome and other Android browsers offer the install
    themselves (beforeinstallprompt, kept in homeEvt): the step's Install button opens the browser's own dialog; where the browser gives none
    (Firefox, an install dismissed, a browser that never offers it) the step shows the menu steps instead. The installed app shares the

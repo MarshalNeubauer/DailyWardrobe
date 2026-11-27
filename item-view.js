@@ -34,7 +34,7 @@ backOn('item',()=>{if(editing&&phEdit.crop){cropKeep();emit('wardrobe-changed');
 /* show or hide the sheet; while it is up the app behind it takes no taps or keyboard focus */
 function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)return;const was=v.classList.contains('on');
   v.classList.toggle('on',on);if(bd)bd.classList.toggle('on',on);document.body.classList.toggle('iv-on',on);
-  if(typeof layerInert==='function')layerInert();else for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on;   // (ui.js: counts Settings and the sheets too)
+  if(typeof layerInert==='function')layerInert();else for(const el of /** @type {NodeListOf<HTMLElement>} */(document.querySelectorAll('body>header,main,body>nav')))el.inert=on;   // (ui.js: counts Settings and the sheets too)
   if(was&&!on&&served('sync-later-run'))setTimeout(()=>askFor('sync-later-run','wardrobe'),0)}   // a sync's redraw that waited for the sheet (sync.js)
 /* ---- a sync changed the piece open in the sheet (fix round 3, 2026-11-16) ----
    The sync's redraw of the Wardrobe waits while the sheet is up (sync.js syncLater), so the sheet kept the old state and its buttons acted
@@ -49,7 +49,7 @@ function itemSynced(was){if(!editing)return;const id=editing,now=items.find(x=>x
     const b=$('#ivbody');if(b&&!b.querySelector('.ivgone'))b.insertAdjacentHTML('afterbegin','<p class="ivgone" role="status">This piece was deleted on another phone. Changes made here aren’t kept.</p>');return}
   if(was&&stamp(was)===stamp(now))return;
   const v=$('#item-view'),a=document.activeElement;
-  if(v&&a&&v.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!/^(button|checkbox|radio|range)$/.test(a.type||'')){a.addEventListener('blur',()=>setTimeout(()=>{if(editing===id&&!(v.contains(document.activeElement)&&/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)))renderItem()},0),{once:true});return}
+  if(v&&a&&v.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!/^(button|checkbox|radio|range)$/.test(/** @type {HTMLInputElement} */(a).type||'')){a.addEventListener('blur',()=>setTimeout(()=>{if(editing===id&&!(v.contains(document.activeElement)&&/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)))renderItem()},0),{once:true});return}
   if(!phEdit.crop)renderItem()}
 /* draws the open item (called by renderWardrobe, so every edit redraws it; the scroll position stays) */
 function renderItem(){
@@ -130,7 +130,7 @@ function stepItem(n,from){
   b.addEventListener('touchend',end,{passive:true});b.addEventListener('touchcancel',end,{passive:true});
   document.addEventListener('keydown',e=>{if(!editing)return;
     if(e.key==='Escape'){if(phEdit.crop){cropKeep();emit('wardrobe-changed')}else closeItem();return}   // Esc leaves the crop as Back does: a moved frame is kept
-    if(e.target.closest&&e.target.closest('input,select,textarea'))return;
+    if(/** @type {Element} */(e.target).closest&&/** @type {Element} */(e.target).closest('input,select,textarea'))return;
     if(e.key==='ArrowRight')stepItem(1);if(e.key==='ArrowLeft')stepItem(-1)});
 })();
 /* the markup's handlers (act.js): the item sheet's backdrop and Done, and its previous and next buttons (data-n: -1 or 1) */

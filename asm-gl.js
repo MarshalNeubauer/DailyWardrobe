@@ -61,7 +61,7 @@ let asmGlState=null,asmGlNone=false,asmGlEver=false,asmGlRetry=0,asmGlPageOk=nul
 const ASM_GL_KINDS=new Set(['suit','vest','suit-open','vest-open','shirt-tie','shirt-open']);
 /* (stage 5) two garments' cloth is the same (the waistcoat's is worked out from the jacket's item: the same values, maybe not the same
    object, and after a worker's structured clone never) */
-function asmGlSame(a,b){if(a===b)return true;if(ArrayBuffer.isView(a)&&ArrayBuffer.isView(b)){if(a.length!==b.length)return false;for(let i=0;i<a.length;i++)if(a[i]!==b[i]&&!(a[i]!==a[i]&&b[i]!==b[i]))return false;return true}
+function asmGlSame(a,b){if(a===b)return true;if(ArrayBuffer.isView(a)&&ArrayBuffer.isView(b)){if(/** @type {any} */(a).length!==/** @type {any} */(b).length)return false;for(let i=0;i</** @type {any} */(a).length;i++)if(a[i]!==b[i]&&!(a[i]!==a[i]&&b[i]!==b[i]))return false;return true}
   if(Array.isArray(a)&&Array.isArray(b))return a.length===b.length&&a.every((v,i)=>asmGlSame(v,b[i]));
   if(a&&b&&typeof a==='object'&&typeof b==='object'){const ka=Object.keys(a),kb=Object.keys(b);return ka.length===kb.length&&ka.every(k=>asmGlSame(a[k],b[k]))}return a!==a&&b!==b}
 /* (stage 5) the trousers' fold shifts (asmLegsPrep's du, dv: 1/16 px, at most ASM_LEG_FOLD_MAX px) fit a byte each: packed two to a
@@ -667,7 +667,7 @@ async function asmGlFinOff(job,fin){const hit=await asmCmSetup(job);return asmBu
    painted here was made */
 function asmGlUI(b){if(!b)return;let g=document.getElementById('gl-box');if(!g){g=document.createElement('div');g.id='gl-box';b.appendChild(g)}
   g.innerHTML=`<label class="srow">Graphics-chip painting <select id="cfg-gl" data-act-change="asmGlPick"><option value="on">On</option><option value="off">Off</option></select></label><p class="shelp" id="gl-status" role="status"></p>`;
-  document.getElementById('cfg-gl').value=asmGlPref()?'on':'off';asmGlStatus()}
+  /** @type {HTMLInputElement} */(document.getElementById('cfg-gl')).value=asmGlPref()?'on':'off';asmGlStatus()}
 function asmGlStatus(){const el=document.getElementById('gl-status');if(!el)return;
   const last=asmGlLast?` Last picture painted on this phone: ${asmGlLast.gl?'graphics chip':'processor'}${asmGlLast.ms!=null?`, ${asmGlLast.ms} ms`:''}.`:'';
   el.textContent=(asmGlPref()?'On: every outfit picture this phone paints is painted on the graphics chip (about ten times faster, the same picture within 2 levels); the processor paints only where the graphics chip is unavailable.'

@@ -50,7 +50,7 @@ const clipImages=dt=>[...(dt&&dt.items||[])].filter(x=>x.kind==='file'&&x.type.s
 /* Ctrl+V / ⌘V: a copied image anywhere in the app goes to Add; a pasted link goes in when the Add screen is open */
 const pasteUp=()=>typeof pagesOn!=='undefined'&&pagesOn;   // start-up has drawn Today (start.js): before that a paste or a drop is passed over (openAdd and the stored wardrobe aren't there yet)
 document.addEventListener('paste',e=>{if(!pasteUp())return;
-  const imgs=clipImages(e.clipboardData),tgt=e.target,inBox=tgt&&tgt.id==='photo-url';
+  const imgs=clipImages(e.clipboardData),tgt=/** @type {HTMLInputElement} */(e.target),inBox=tgt&&tgt.id==='photo-url';
   const typing=tgt&&/^(INPUT|TEXTAREA|SELECT)$/.test(tgt.tagName)&&!inBox;
   if(imgs.length){if(typing&&tgt.type!=='url'&&tgt.type!=='text')return;e.preventDefault();if($('#add').hidden)openAdd();addBlobs(imgs);return}
   const text=(e.clipboardData&&e.clipboardData.getData('text/plain')||'').trim();

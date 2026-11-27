@@ -24,6 +24,7 @@ import {CHECK_PATS,MOTIF_PATS,STRIPE_PATS} from './detect.js';
 import {acts} from './act.js';
 import {LOOK_COATS,LOOK_ENAMEL,LOOK_KS,LOOK_METALT,LOOK_METAL_COLS,LOOK_PAT_GROUPS,LOOK_PK,lookClipMetal,lookCur,lookHasPat,lookOn,lookPatGroupOf} from './look-base.js';
 import {closeTagImg} from './add-ids.js';
+/** @type {{src: string, ref: any, k: string, from?: any, cur?: string, sel?: string, view?: string, [k: string]: any}} */
 let colPick=null;   // {src:'q'|'e', ref: queue index or item id, k: field, cur, sel, view:'tex'|'photo'}
 const COL_FAMS=['Whites, grays & blacks','Creams, tans & browns','Greens & olives','Blues','Reds, pinks & purples'];
 function colFamily(c){const [,a,b]=labOf(c),C=Math.hypot(a,b);let h=Math.atan2(b,a)*180/Math.PI;if(h<0)h+=360;
@@ -394,15 +395,15 @@ function colNewBack(){const nc=colPick&&colPick.newc;if(!nc)return;if(nc.from===
    frame (requestAnimationFrame); about 3-4 ms in Chromium at 4× CPU throttling, 1 ms in WebKit (tests/colnew.test.js) */
 let cnFigRaf=0;
 function cnFigLive(){if(cnFigRaf)return;cnFigRaf=requestAnimationFrame(()=>{cnFigRaf=0;const nc=colPick&&colPick.newc,it=nc&&nc.kind==='colour'&&colTarget();
-  const d=it&&document.querySelector('#col-sheet .cpph.cpfig .cpdraw');if(!d||d.dataset.hex===nc.hex)return;d.dataset.hex=nc.hex;d.innerHTML=cnDrawn(it,nc.hex,colPick.src==='s'?'primaryColor':colPick.k)})}
-function cnLive(){const nc=colPick&&colPick.newc;if(!nc)return;const hx=nc.hex,q=s=>document.querySelector('#col-sheet '+s);
+  const d=it&&/** @type {HTMLElement} */(document.querySelector('#col-sheet .cpph.cpfig .cpdraw'));if(!d||d.dataset.hex===nc.hex)return;d.dataset.hex=nc.hex;d.innerHTML=cnDrawn(it,nc.hex,colPick.src==='s'?'primaryColor':colPick.k)})}
+function cnLive(){const nc=colPick&&colPick.newc;if(!nc)return;const hx=nc.hex,q=s=>/** @type {HTMLInputElement} */(document.querySelector('#col-sheet '+s));
   const sq=q('#cn-sq'),th=q('#cn-sq .cnthumb'),hu=q('#cn-hue i'),hi=q('#cn-hex'),big=q('.cpbig');
-  if(sq){sq.style.setProperty('--h',Math.round(nc.h));sq.setAttribute('aria-valuetext',hx.toUpperCase())}if(th){th.style.left=nc.s.toFixed(1)+'%';th.style.top=(100-nc.v).toFixed(1)+'%';th.style.background=hx}
-  if(hu){hu.style.left=(nc.h/360*100).toFixed(1)+'%';hu.style.background=`hsl(${Math.round(nc.h)},100%,50%)`;hu.parentNode.setAttribute('aria-valuenow',Math.round(nc.h))}
-  if(hi&&document.activeElement!==hi)hi.value=hx.toUpperCase();document.querySelectorAll('#col-sheet [data-cnsw]').forEach(e=>{e.style.background=hx});
+  if(sq){sq.style.setProperty('--h',String(Math.round(nc.h)));sq.setAttribute('aria-valuetext',hx.toUpperCase())}if(th){th.style.left=nc.s.toFixed(1)+'%';th.style.top=(100-nc.v).toFixed(1)+'%';th.style.background=hx}
+  if(hu){hu.style.left=(nc.h/360*100).toFixed(1)+'%';hu.style.background=`hsl(${Math.round(nc.h)},100%,50%)`;/** @type {Element} */(hu.parentNode).setAttribute('aria-valuenow',String(Math.round(nc.h)))}
+  if(hi&&document.activeElement!==hi)hi.value=hx.toUpperCase();/** @type {NodeListOf<HTMLElement>} */(document.querySelectorAll('#col-sheet [data-cnsw]')).forEach(e=>{e.style.background=hx});
   if(big){big.style.background=hx;const c=big.querySelector('figcaption');if(c&&!nc.name.trim())c.textContent=hx.toUpperCase()}cnFigLive()}
 function cnSetHsv(h,s,v,redraw){const nc=colPick&&colPick.newc;if(!nc)return;nc.h=Math.max(0,Math.min(359.9,h));nc.s=Math.max(0,Math.min(100,s));nc.v=Math.max(0,Math.min(100,v));nc.hex=cnFromHsv(nc.h,nc.s,nc.v);cnLive();if(redraw){cancelAnimationFrame(cnFigRaf);cnFigRaf=0;renderColPick(true)}}
-function cnDrag(e,el,at){e.preventDefault();const a=document.activeElement;if(a&&a.id==='cn-hex')a.blur();   // (preventDefault keeps the focus where it was: a hex being typed is left, so it follows the finger)
+function cnDrag(e,el,at){e.preventDefault();const a=/** @type {HTMLElement} */(document.activeElement);if(a&&a.id==='cn-hex')a.blur();   // (preventDefault keeps the focus where it was: a hex being typed is left, so it follows the finger)
 try{el.setPointerCapture(e.pointerId)}catch(x){}const r=el.getBoundingClientRect(),mv=ev=>at((ev.clientX-r.left)/r.width,(ev.clientY-r.top)/r.height,false);mv(e);
   const up=ev=>{el.removeEventListener('pointermove',mv);el.removeEventListener('pointerup',up);el.removeEventListener('pointercancel',up);at((ev.clientX-r.left)/r.width,(ev.clientY-r.top)/r.height,true)};
   el.addEventListener('pointermove',mv);el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up)}
@@ -590,7 +591,7 @@ async function rdWithClose(src,id,f){if(!f)return;const was=(rdItem(src,id)||{})
 function rdRetake(f){const me=rd;if(me)rdWithClose(me.src,me.id,f)}
 /* ask: {what:'both'} with the close-up as the New color sheet sends it (paperCopy: white-balanced from the paper, wb true; as taken, wb false) */
 async function rdRun(src,id){const it=rdItem(src,id);if(!it||!it.texture)return;if(rd&&rd.ac)try{rd.ac.abort()}catch{}
-  const me=rd={src,id,run:Date.now()+Math.random(),state:'busy',c:null,p:null,sent:null,ac:typeof AbortController==='function'?new AbortController():null};
+  const me=rd=/** @type {{src: any, id: any, run: number, state: string, c: any, p: any, sent: any, ac: AbortController, [k: string]: any}} */({src,id,run:Date.now()+Math.random(),state:'busy',c:null,p:null,sent:null,ac:typeof AbortController==='function'?new AbortController():null});
   rdOpen();rdRender();
   const body={what:'both',type:it.type,colours:{main:primaryCol(it),second:it.secondaryColor||null,third:it.tertiaryColor||null},pattern:normPat(it.type,it.pattern),custom:settings.custom||{}};
   const om=ownMats(it.type);if(om.length)body.ownMaterials={[it.type]:om};   // the person's own materials for this type (2026-11-16): Claude may name them
@@ -642,7 +643,7 @@ function rdPreview(it,me){const o={},c=me.c,p=me.p;
   if(c&&!c.na&&!c.done){const a=rdColMain(it,c);if(a==='new')o.hex=c.hex;else if(a==='existing')o.col=c.ex}
   if(p&&!p.na&&!p.done){const a=rdPatMain(it,p);if(a==='existing')o.pat=p.ex;else if(a==='new'){if(p.look){o.look=p.look;o.base=rdPatBase(it,p);o.name=p.name}else o.pat=rdPatBase(it,p)}}
   return o}
-function rdEls(){let b=document.querySelector('#rd-backdrop'),s=document.querySelector('#rd-sheet');
+function rdEls(){let b=/** @type {HTMLElement} */(document.querySelector('#rd-backdrop')),s=/** @type {HTMLElement} */(document.querySelector('#rd-sheet'));
   if(!s){b=document.createElement('div');b.id='rd-backdrop';b.onclick=()=>rdClose();
     s=document.createElement('div');s.id='rd-sheet';s.setAttribute('role','dialog');s.setAttribute('aria-modal','true');s.setAttribute('aria-labelledby','rd-title');s.tabIndex=-1;document.body.append(b,s);
     window.addEventListener('keydown',e=>{if(!rd||cuOpen||!document.querySelector('#rd-sheet.on'))return;   // Escape closes it (ahead of the item sheet's)
@@ -727,7 +728,7 @@ async function rdSetAcc(src,id,v){if(src==='q'){const i=queue.findIndex(x=>x&&x.
 const RD_HALVES=['c','p','m','a'];
 const rdMain=(it,me,h)=>h==='c'?rdColMain(it,me.c):h==='p'?rdPatMain(it,me.p):h==='a'?'use':rdMatMain(it,me.m);
 function rdBar(it,me){const left=RD_HALVES.filter(h=>me[h]&&!me[h].na&&!me[h].done),acts=left.map(h=>[h,rdMain(it,me,h)]).filter(a=>a[1]);
-  const lab=acts.length>=3?'Use all':acts.length===2?'Use both':acts.length===1?`Use ${esc(rdActName(it,me,acts[0]))}`:left.length?'Keep as it is':'Done';
+  const lab=acts.length>=3?'Use all':acts.length===2?'Use both':acts.length===1?`Use ${esc(rdActName(it,me,/** @type {[any, any]} */(acts[0])))}`:left.length?'Keep as it is':'Done';
   return `<div class="rdbar"><button type="button" class="pri" id="rd-both" data-act="rdBothTap"${me.applying?' disabled':''}>${lab}</button>${left.length?'<small>Nothing changes until you tap. You can undo it after.</small>':''}</div>`}
 function rdRender(top){const me=rd;if(!me)return;const {s}=rdEls(),it=rdItem(me.src,me.id);if(!it){rdClose();return}
   const y=s.scrollTop,pr=paperNow(it),res=me.state==='result';

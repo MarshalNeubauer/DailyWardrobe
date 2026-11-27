@@ -51,7 +51,7 @@ function asmWatchDo(px,S,W,M,T){const L=ASM_LIN,f=S/2048,g=W.g,pad=Math.ceil(14*
     const s=c=>{const o=4*(b*mn+a)+c,o2=o+4*mn;return ((md[o]*(1-fx)+md[o+4]*fx)*(1-fy)+(md[o2]*(1-fx)+md[o2+4]*fx)*fy)/255};D[q]=s(0);C[q]=s(1);SP[q]=s(2)}
   const out=Float32Array.from(lin),hex=hx=>[1,3,5].map(i=>L[parseInt(hx.slice(i,i+2),16)]),bl=(a,r)=>asmWatchBlur(a,w,h,r*f);
   // the metal: the master's light over the part's lit level (70th percentile); below toward a deep shadow, above toward the highlight
-  const metal=(mask,set)=>{const tn=ASM_WATCH_TONES[W.metal];if(!tn)return null;const [HI,G,LO]=tn.map(hex),m=new Uint8Array(N);for(let q=0;q<N;q++)m[q]=mask[q]>.5;const ref=asmWatchPct(Y,m,.7);
+  const metal=(mask,set)=>{const tn=ASM_WATCH_TONES[W.metal];if(!tn)return null;const [HI,G,LO]=tn.map(hex),m=new Uint8Array(N);for(let q=0;q<N;q++)m[q]=+(mask[q]>.5);const ref=asmWatchPct(Y,m,.7);
     for(let q=0;q<N;q++){const a=mask[q];if(a<.004)continue;const s=Math.min(3,Y[q]/ref);for(let c=0;c<3;c++){const lo=LO[c]*.6,v=s<=1?lo+(G[c]-lo)*Math.pow(s,1.7):G[c]+(HI[c]-G[c])*Math.pow(Math.min(1,(s-1)/.9),.8);set(q,c,v,a)}}};
   const chg=new Uint8Array(N),put=(q,c,v,a)=>{out[3*q+c]=out[3*q+c]*(1-a)+v*a;chg[q]=1};
   // the strap first (it lies under the case), then the case, then the dial
@@ -76,7 +76,7 @@ function asmWatchDo(px,S,W,M,T){const L=ASM_LIN,f=S/2048,g=W.g,pad=Math.ceil(14*
       for(let c=0;c<3;c++){let vv=LC[c]*k;vv+=(SH[c]*.3-vv)*sheen;if(stitch)vv=vv*.45+ST[c]*.55;put(q,c,vv,a)}}}
   else if(!ASM_WATCH_STRAPS.includes(W.band))metal(SP,put);   // a metal bracelet in the case's metal (silver: as the master)
   metal(C,put);
-  if(!W.white){const DC=hex(W.dial),MK=hex('#d9d4c4'),m=new Uint8Array(N);for(let q=0;q<N;q++)m[q]=D[q]>.5;const ref=asmWatchPct(Y,m,.75),big=bl(Y,9),sm=bl(Y,2.5);
+  if(!W.white){const DC=hex(W.dial),MK=hex('#d9d4c4'),m=new Uint8Array(N);for(let q=0;q<N;q++)m[q]=+(D[q]>.5);const ref=asmWatchPct(Y,m,.75),big=bl(Y,9),sm=bl(Y,2.5);
     for(let q=0;q<N;q++){const a=D[q];if(a<.004)continue;
       if(W.dark){const fine=Math.min(1,Math.max(0,(sm[q]-Y[q])/ref)),k=Math.min(1.15,Math.max(.7,big[q]/ref)),t=Math.min(.9,fine*2.6);for(let c=0;c<3;c++){const d=DC[c]*k;put(q,c,d+(MK[c]-d)*t,a)}}
       else{const k=Math.min(1.1,Math.max(.35,Y[q]/ref));for(let c=0;c<3;c++)put(q,c,DC[c]*k,a)}}}   // a light dial: its colour, the printing as dark as before
