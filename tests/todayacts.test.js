@@ -34,17 +34,17 @@ async function run(eng,browser,{ok,url,settle}){
     HOOK.items=[I('suit','navy',{vest:'yes'}),I('suit','charcoal',{vest:'yes'}),I('suit','grey',{vest:'yes'}),I('suit','brown',{vest:'yes'}),I('blazer','navy'),I('pants','grey'),I('pants','tan'),
       I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','lavender'),I('tie','burgundy'),I('tie','navy'),I('tie','green'),I('tie','gold'),I('tie','purple'),
       I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy'),I('socks','charcoal')];
-    settings.workdays=[0,1,2,3,4];settings.blazerDays=[];settings.vestMode='never';settings.vestDef=1;settings.setupDone=1;settings.location=null;CK_OPEN['*']=true;HOOK.weather={};HOOK.climate=null;
+    HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[];HOOK.settings.vestMode='never';HOOK.settings.vestDef=1;HOOK.settings.setupDone=1;HOOK.settings.location=null;HOOK.CK_OPEN['*']=true;HOOK.weather={};HOOK.climate=null;
     HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};
     // the days before: three the owner recorded (Nov 3, 4 and 9) and two the app recorded by itself (Nov 5, Nov 8: the missed-days card)
-    const pl=planMonth(2026,10),rec=(d,x)=>({date:d,ids:idsOf(pl[d]),suitDay:!!pl[d].suitDay,vestOn:false,...x}),K=n=>key(new Date(2026,10,n));
+    const pl=HOOK.planMonth(2026,10),rec=(d,x)=>({date:d,ids:HOOK.idsOf(pl[d]),suitDay:!!pl[d].suitDay,vestOn:false,...x}),K=n=>HOOK.key(new Date(2026,10,n));
     HOOK.dayRecs={[K(3)]:rec(K(3)),[K(4)]:rec(K(4)),[K(5)]:rec(K(5),{auto:true}),[K(8)]:rec(K(8),{auto:true}),[K(9)]:rec(K(9))};HOOK.cache={};
     try{localStorage.removeItem('missed_ok');localStorage.removeItem('missed_seen')}catch{}
-    HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};show('today')});
+    HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.show('today')});
   await settle(p,500);
-  const K=n=>ev(n=>key(new Date(2026,10,n)),n),k5=await K(5),k8=await K(8),k9=await K(9),k10=await K(10),k11=await K(11),k12=await K(12);
-  const day=()=>ev(()=>key(sel)),rec=k=>ev(k=>JSON.parse(JSON.stringify(dayRecs[k]||null)),k);
-  const out0=()=>ev(()=>{const o=planFor()[key(sel)];return o?idsOf(o):null});
+  const K=n=>ev(n=>HOOK.key(new Date(2026,10,n)),n),k5=await K(5),k8=await K(8),k9=await K(9),k10=await K(10),k11=await K(11),k12=await K(12);
+  const day=()=>ev(()=>HOOK.key(HOOK.sel)),rec=k=>ev(k=>JSON.parse(JSON.stringify(HOOK.dayRecs[k]||null)),k);
+  const out0=()=>ev(()=>{const o=HOOK.planFor()[HOOK.key(HOOK.sel)];return o?HOOK.idsOf(o):null});
 
   /* ---- the missed-days card ---- */
   let m=await ev(()=>{const b=document.querySelector('#missbox');return b?{btns:[...b.querySelectorAll('.missbtns:not(.missdays) button')].map(x=>x.textContent.trim()),days:b.querySelectorAll('.missone').length}:null});
@@ -66,29 +66,29 @@ async function run(eng,browser,{ok,url,settle}){
   const d1=await day();await tap('#today .nav.day button[aria-label="Previous day"]',600);
   ok(d1===k11&&await day()===k10,T+'› shows the next workday and ‹ the one before ('+d1+', '+await day()+')');
   await p.locator('#today .nav.day button[aria-label="Next day"]').first().focus();await p.keyboard.press('Enter');await settle(p,600);
-  const f=await ev(()=>{const a=document.activeElement;return {k:key(sel),ok:!!a&&a.isConnected&&a.getAttribute('aria-label')==='Next day'}});
+  const f=await ev(()=>{const a=document.activeElement;return {k:HOOK.key(HOOK.sel),ok:!!a&&a.isConnected&&a.getAttribute('aria-label')==='Next day'}});
   ok(f.k===k11&&f.ok,T+'Enter on › steps a day and the new › keeps the focus ('+JSON.stringify(f)+')');
   await tap('#today .nav.day button[aria-label="Previous day"]',600);
   await tap('#wpill',600);
-  const w1=await ev(()=>({worn:(dayRecs[key(sel)]||{}).worn,txt:document.querySelector('#wpill').textContent,toast:document.querySelector('#toast').textContent}));
+  const w1=await ev(()=>({worn:(HOOK.dayRecs[HOOK.key(HOOK.sel)]||{}).worn,txt:document.querySelector('#wpill').textContent,toast:document.querySelector('#toast').textContent}));
   await tap('#wpill',600);
-  const w2=await ev(()=>({worn:(dayRecs[key(sel)]||{}).worn,txt:document.querySelector('#wpill').textContent}));
+  const w2=await ev(()=>({worn:(HOOK.dayRecs[HOOK.key(HOOK.sel)]||{}).worn,txt:document.querySelector('#wpill').textContent}));
   ok(w1.worn===false&&/Didn/.test(w1.txt)&&/not worn/.test(w1.toast)&&w2.worn===undefined&&/Wore/.test(w2.txt),T+'the Wore pill marks the day not worn, and worn again ('+JSON.stringify([w1.worn,w1.txt,w2.txt])+')');
   await tap('#today .day h2 a.wxl',600);
-  ok(await ev(()=>settingsOpen())&&!/#/.test(p.url()),T+'"Set location" opens Settings and the link goes nowhere ('+p.url().replace(origin,'')+')');
-  await ev(()=>{closeSettings();settings.location={lat:1,lon:1,name:'Testville'};HOOK.weather={};renderToday()});await settle(p,500);
+  ok(await ev(()=>HOOK.settingsOpen())&&!/#/.test(p.url()),T+'"Set location" opens Settings and the link goes nowhere ('+p.url().replace(origin,'')+')');
+  await ev(()=>{HOOK.closeSettings();HOOK.settings.location={lat:1,lon:1,name:'Testville'};HOOK.weather={};HOOK.renderToday()});await settle(p,500);
   const n0=out;await tap('#today .day h2 a.wxretry',700);
   ok(out>n0&&!/#/.test(p.url()),T+'"No forecast · retry" asks for the forecast again and the link goes nowhere ('+(out-n0)+' request'+(out-n0===1?'':'s')+')');
-  await ev(()=>{settings.location=null;HOOK.weather={};renderToday()});await settle(p,400);
+  await ev(()=>{HOOK.settings.location=null;HOOK.weather={};HOOK.renderToday()});await settle(p,400);
 
   /* ---- the month: its head, a day, Fold away ---- */
   await tap('#mbox .month-link',900);
-  ok(await ev(()=>monthOpen&&document.querySelector('#mbox').classList.contains('open')&&document.querySelectorAll('#mpanel-in .mc[data-k]').length>=28),T+'a tap on the month box unfolds the month');
+  ok(await ev(()=>HOOK.monthOpen&&document.querySelector('#mbox').classList.contains('open')&&document.querySelectorAll('#mpanel-in .mc[data-k]').length>=28),T+'a tap on the month box unfolds the month');
   await tap(`#mpanel-in .mc[data-k="${k12}"]`,900);
-  ok(await day()===k12&&await ev(()=>!monthOpen),T+'a tap on a day of the month shows that day and folds the month ('+await day()+')');
+  ok(await day()===k12&&await ev(()=>!HOOK.monthOpen),T+'a tap on a day of the month shows that day and folds the month ('+await day()+')');
   await tap('#mbox .month-link',900);await tap('#mbox .foldbar',900);
-  ok(await ev(()=>!monthOpen&&document.querySelector('#mbox .month-link').getAttribute('aria-expanded')==='false'),T+'"Fold away" folds the month');
-  await ev(()=>goToday());await settle(p,600);
+  ok(await ev(()=>!HOOK.monthOpen&&document.querySelector('#mbox .month-link').getAttribute('aria-expanded')==='false'),T+'"Fold away" folds the month');
+  await ev(()=>HOOK.goToday());await settle(p,600);
 
   /* ---- the pieces list: its head, a row and its photo, − and +, the vest, ⇄ and the picker, Suggest another ---- */
   await tap('#ibox .month-link',900);
@@ -103,38 +103,38 @@ async function run(eng,browser,{ok,url,settle}){
   const off1=await rec(k10),offRow=await ev(()=>!!document.querySelector('#ri-tie.off-row'));
   await tap('#ri-tie.off-row .swap',700);
   const off2=await rec(k10);
-  ok(off1.off&&off1.off.tie===true&&offRow&&!(off2.off&&off2.off.tie)&&await ev(()=>!!planFor()[key(sel)].tie),T+'− takes the tie off for the day and + on its "Taken off" row puts it back');
+  ok(off1.off&&off1.off.tie===true&&offRow&&!(off2.off&&off2.off.tie)&&await ev(()=>!!HOOK.planFor()[HOOK.key(HOOK.sel)].tie),T+'− takes the tie off for the day and + on its "Taken off" row puts it back');
   await tap('#ibox .vest-row .swap',700);
-  const v1=await ev(()=>({v:(dayRecs[key(sel)]||{}).vest,on:!!planFor()[key(sel)].vest,txt:document.querySelector('#ibox .vest-row').textContent}));
+  const v1=await ev(()=>({v:(HOOK.dayRecs[HOOK.key(HOOK.sel)]||{}).vest,on:!!HOOK.planFor()[HOOK.key(HOOK.sel)].vest,txt:document.querySelector('#ibox .vest-row').textContent}));
   await tap('#ibox .vest-row .swap',700);
-  const v2=await ev(()=>({v:(dayRecs[key(sel)]||{}).vest,on:!!planFor()[key(sel)].vest}));
+  const v2=await ev(()=>({v:(HOOK.dayRecs[HOOK.key(HOOK.sel)]||{}).vest,on:!!HOOK.planFor()[HOOK.key(HOOK.sel)].vest}));
   ok(v1.v===true&&v1.on&&/Matching vest/.test(v1.txt)&&v2.v===false&&!v2.on,T+'the Vest row’s + wears the vest and − leaves it off ('+JSON.stringify([v1.v,v1.on,v2.v,v2.on])+')');
   await tap('#ri-tie .swap:not(.offb)',600);
   const sh=await ev(()=>({on:document.querySelector('#pick-sheet').classList.contains('on'),title:document.querySelector('#pick-title').textContent,n:document.querySelectorAll('#pick-sheet .pick-it').length}));
   ok(sh.on&&/tie/.test(sh.title)&&sh.n===5,T+'⇄ beside the tie opens the picker with every tie ('+JSON.stringify(sh)+')');
   await tap('#pick-sheet .pick-x',500);
-  ok(await ev(()=>!picker&&!document.querySelector('#pick-sheet').classList.contains('on')),T+'the picker’s × closes it');
+  ok(await ev(()=>!HOOK.picker&&!document.querySelector('#pick-sheet').classList.contains('on')),T+'the picker’s × closes it');
   const b0=await out0();
   await tap('#ri-tie .swap:not(.offb)',600);
   const want=await ev(()=>{const c=[...document.querySelectorAll('#pick-sheet > .pick-grid .pick-it:not(.cur)')].pop();return c.querySelector('.pick-nm').textContent});
   await tap('#pick-sheet > .pick-grid .pick-it:not(.cur) >> nth=-1',800);
-  const a1=await ev(()=>{const o=planFor()[key(sel)],r=dayRecs[key(sel)]||{};return {ids:idsOf(o),force:r.force&&r.force.tie,title:itemTitle(o.tie),open:document.querySelector('#pick-sheet').classList.contains('on')}});
+  const a1=await ev(()=>{const o=HOOK.planFor()[HOOK.key(HOOK.sel)],r=HOOK.dayRecs[HOOK.key(HOOK.sel)]||{};return {ids:HOOK.idsOf(o),force:r.force&&r.force.tie,title:HOOK.itemTitle(o.tie),open:document.querySelector('#pick-sheet').classList.contains('on')}});
   ok(a1.ids.tie!==b0.tie&&a1.force===a1.ids.tie&&a1.title===want&&!a1.open&&a1.ids.shirt===b0.shirt&&a1.ids.top===b0.top,T+'a tap on a tie in the picker wears exactly that tie and closes the picker ('+want+')');
 
   /* ---- the score card: its head, its panel, a tap among the swaps, a swap ---- */
   await tap('#sbox .month-link',900);
-  ok(await ev(()=>scoreOpen&&document.querySelector('#sbox').classList.contains('open')),T+'a tap on the score card unfolds it');
+  ok(await ev(()=>HOOK.scoreOpen&&document.querySelector('#sbox').classList.contains('open')),T+'a tap on the score card unfolds it');
   await p.waitForFunction(()=>!!document.querySelector('#sbox.ranked #sswaps .sfixbtn')).catch(()=>{});
   const sw=await ev(()=>({n:document.querySelectorAll('#sswaps .sfixbtn').length,head:(document.querySelector('#sswaps .ssec')||{}).textContent}));
   ok(sw.n>=1&&!!sw.head,T+'the open card offers swaps that rank higher ('+JSON.stringify(sw)+')');
   await tapAt('#sswaps .ssec',700);
-  ok(await ev(()=>scoreOpen&&document.querySelector('#sbox').classList.contains('open')),T+'a tap among the swaps, beside a button, leaves the card open');
+  ok(await ev(()=>HOOK.scoreOpen&&document.querySelector('#sbox').classList.contains('open')),T+'a tap among the swaps, beside a button, leaves the card open');
   await tapAt('#spanel #srank',900);
-  ok(await ev(()=>!scoreOpen&&!document.querySelector('#sbox').classList.contains('open')),T+'a tap on the open card’s words folds it');
+  ok(await ev(()=>!HOOK.scoreOpen&&!document.querySelector('#sbox').classList.contains('open')),T+'a tap on the open card’s words folds it');
   await tap('#sbox .month-link',900);await p.waitForFunction(()=>!!document.querySelector('#sbox.ranked #sswaps .sfixbtn')).catch(()=>{});
   const b1=await out0(),nm=await ev(()=>document.querySelector('#sswaps .sfixbtn .sfixnm').textContent);
   await tap('#sswaps .sfixbtn',900);
-  const a2=await ev(()=>({ids:idsOf(planFor()[key(sel)]),force:(dayRecs[key(sel)]||{}).force||{},open:scoreOpen&&document.querySelector('#sbox').classList.contains('open')}));
+  const a2=await ev(()=>({ids:HOOK.idsOf(HOOK.planFor()[HOOK.key(HOOK.sel)]),force:(HOOK.dayRecs[HOOK.key(HOOK.sel)]||{}).force||{},open:HOOK.scoreOpen&&document.querySelector('#sbox').classList.contains('open')}));
   const changed=Object.keys(a2.ids).filter(s=>a2.ids[s]!==b1[s]);
   ok(changed.length>=1&&changed.some(s=>a2.force[s]===a2.ids[s])&&a2.open,T+'a tap on a swap wears its piece, and the card stays open ('+nm+': '+changed.join()+')');
   await tap('#sbox .month-link',900);
@@ -142,7 +142,7 @@ async function run(eng,browser,{ok,url,settle}){
   /* ---- Suggest another, Reset, Add one, the list's own ground, the tiles ---- */
   const b2=await out0();
   await tap('#ri-shirt .swap',600);await tap('#pick-next',800);
-  const a3=await ev(()=>({ids:idsOf(planFor()[key(sel)]),open:document.querySelector('#pick-sheet').classList.contains('on'),skip:(dayRecs[key(sel)]||{}).skip||{}}));
+  const a3=await ev(()=>({ids:HOOK.idsOf(HOOK.planFor()[HOOK.key(HOOK.sel)]),open:document.querySelector('#pick-sheet').classList.contains('on'),skip:(HOOK.dayRecs[HOOK.key(HOOK.sel)]||{}).skip||{}}));
   ok(a3.ids.shirt!==b2.shirt&&!a3.open,T+'"Suggest another" closes the picker and brings another shirt ('+b2.shirt+' → '+a3.ids.shirt+')');
   await tap('#rbox .resetlink',800);
   const a4=await rec(k10);
@@ -151,7 +151,7 @@ async function run(eng,browser,{ok,url,settle}){
   await tap('#ibox .addone',700);
   const ad=await ev(()=>({add:!document.querySelector('#add').hidden,today:document.querySelector('#today').hidden,note:document.querySelector('#add-for').textContent,shown:!document.querySelector('#add-for').hidden}));
   ok(addTxt==='Watch'&&ad.add&&ad.today&&ad.shown&&/watch/i.test(ad.note),T+'"Add one" on the Watch row opens Add for a watch ('+ad.note+')');
-  await ev(()=>show('today'));await settle(p,500);
+  await ev(()=>HOOK.show('today'));await settle(p,500);
   ok(await ev(()=>HOOK.listOpen),T+'back on Today the list is still open');
   await tapAt('#ri-shirt .row > .mut',900);
   ok(await ev(()=>!HOOK.listOpen&&!document.querySelector('#ibox').classList.contains('open')),T+'a tap on the open list’s own ground (a piece’s label) folds the list');
@@ -170,7 +170,7 @@ async function run(eng,browser,{ok,url,settle}){
 
   /* ---- the painted picture: its load, and a cloth swatch ---- */
   await ev(PH=>{window.__fit=0;const raf=window.requestAnimationFrame;window.requestAnimationFrame=function(cb){if(cb&&cb.name==='fitNav')window.__fit++;return raf.call(window,cb)};
-    const o=planFor()[key(sel)];renders[comboKey(o)]={img:PH,sig:comboSig(o)};renderToday()},PH);
+    const o=HOOK.planFor()[HOOK.key(HOOK.sel)];HOOK.renders[HOOK.comboKey(o)]={img:PH,sig:HOOK.comboSig(o)};HOOK.renderToday()},PH);
   await p.waitForFunction(()=>window.__fit>=2).catch(()=>{});await settle(p,300);
   const f0=await ev(()=>({photo:!!document.querySelector('#mannequin-container.photo img'),fit:window.__fit,sw:document.querySelectorAll('#mannequin-container .ovsw').length}));
   await ev(()=>{window.__fit=0;const im=document.querySelector('#mannequin-container.photo img');im.src=im.src.replace('AAAAAElFTkSuQmCC','AAAAAElFTkSuQmCC ')});
@@ -187,27 +187,27 @@ async function run(eng,browser,{ok,url,settle}){
   await tap('#today .nav.day button[aria-label="Previous day"]',700);
   ok(await day()===k9&&await ev(()=>!!document.querySelector('#today .pastedit')&&!document.querySelector('#ibox .swap')),T+'the workday before is a past day: "Correct this day", and no ⇄ yet');
   await tap('#today .pastedit',700);
-  ok(await ev(()=>pastEdit===key(sel)&&HOOK.listOpen&&document.querySelector('#today .pastedit').getAttribute('aria-pressed')==='true'&&!!document.querySelector('#ri-tie .swap')),T+'"Correct this day" opens the list with ⇄ beside each piece');
+  ok(await ev(()=>HOOK.pastEdit===HOOK.key(HOOK.sel)&&HOOK.listOpen&&document.querySelector('#today .pastedit').getAttribute('aria-pressed')==='true'&&!!document.querySelector('#ri-tie .swap')),T+'"Correct this day" opens the list with ⇄ beside each piece');
   await tap('#ri-tie .swap',600);await tap('#pick-sheet .btns button',800);
   const c=await rec(k9);
   ok(c.ids.tie===null&&c.edited===true&&c.worn===true&&await ev(()=>!document.querySelector('#pick-sheet').classList.contains('on')),T+'"None: I didn’t wear one" records the day without a tie');
   await tap('#today .pastedit',700);
-  ok(await ev(()=>pastEdit===null&&document.querySelector('#today .pastedit').getAttribute('aria-pressed')==='false'),T+'Done ends the correcting');
+  ok(await ev(()=>HOOK.pastEdit===null&&document.querySelector('#today .pastedit').getAttribute('aria-pressed')==='false'),T+'Done ends the correcting');
 
   /* ---- the Add card's dropdowns (app.js S): the real dropdown, by finger and by key ---- */
-  await ev(()=>{goToday();openAdd()});await settle(p,400);await tap('#add-manual',600);
+  await ev(()=>{HOOK.goToday();HOOK.openAdd()});await settle(p,400);await tap('#add-manual',600);
   await p.selectOption('#nps-q section[data-ck="type"] select','shoes');await settle(p,500);
   const style='#nps-q label:has-text("Style") select:visible';
-  const st0=await ev(()=>({type:queue[0].type,style:!![...document.querySelectorAll('#nps-q label')].find(l=>/^Style/.test(l.textContent.trim()))}));
+  const st0=await ev(()=>({type:HOOK.queue[0].type,style:!![...document.querySelectorAll('#nps-q label')].find(l=>/^Style/.test(l.textContent.trim()))}));
   ok(st0.type==='shoes'&&st0.style,T+'the Add card’s Type dropdown makes the card a pair of shoes, with a Style dropdown');
   await p.selectOption(style,'loafer');await settle(p,500);
-  ok(await ev(()=>queue[0].shoeStyle==='loafer'),T+'a choice in the Style dropdown is taken');
+  ok(await ev(()=>HOOK.queue[0].shoeStyle==='loafer'),T+'a choice in the Style dropdown is taken');
   await p.locator(style).first().focus();await p.keyboard.press('Shift');await p.selectOption(style,'boot');await settle(p,500);
-  const st1=await ev(()=>{const a=document.activeElement,l=a&&a.closest('label');return {style:queue[0].shoeStyle,ok:!!a&&a.tagName==='SELECT'&&a.isConnected&&!!l&&/^Style/.test(l.textContent.trim())&&a.value==='boot'}});
+  const st1=await ev(()=>{const a=document.activeElement,l=a&&a.closest('label');return {style:HOOK.queue[0].shoeStyle,ok:!!a&&a.tagName==='SELECT'&&a.isConnected&&!!l&&/^Style/.test(l.textContent.trim())&&a.value==='boot'}});
   ok(st1.style==='boot'&&st1.ok,T+'picked by keyboard, the new Style dropdown keeps the focus ('+JSON.stringify(st1)+')');
 
   /* ---- "Today couldn't be shown": Try again loads the app again ---- */
-  await ev(()=>{queue.length=0;if('npsClose' in HOOK&&typeof HOOK.npsClose==='function')HOOK.npsClose();window.__mark=1;HOOK.startPlain()});await settle(p,300);
+  await ev(()=>{HOOK.queue.length=0;if('npsClose' in HOOK&&typeof HOOK.npsClose==='function')HOOK.npsClose();window.__mark=1;HOOK.startPlain()});await settle(p,300);
   ok(await ev(()=>/couldn’t be shown/.test(document.querySelector('#today').textContent)&&!document.querySelector('#today').hidden),T+'the plain card says Today couldn’t be shown');
   ok(!errs.length,T+`no page errors (${errs.join(' | ')})`);
   await Promise.all([p.waitForFunction(()=>!window.__mark&&window.appReady,null,{timeout:15000}).catch(()=>{}),p.locator('#today .sactions button').first().tap()]);

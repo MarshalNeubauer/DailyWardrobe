@@ -48,15 +48,15 @@ Belt,Black,,Black belt
 `;
 async function openImport(ph){await ph.tap('#n-wardrobe');await sleep(600);await ph.tap('#ward-add');await sleep(700);await ph.tap('#add-import');await sleep(700)}
 async function importRows(ph){await openImport(ph);await ph.page.fill('#kit-paste',CSV);await sleep(600);await ph.tap('#kit-imp');await sleep(1500);
-  const n=await ph.page.evaluate(()=>items.length);if(n<13)throw new Error('import gave '+n)}
+  const n=await ph.page.evaluate(()=>HOOK.items.length);if(n<13)throw new Error('import gave '+n)}
 // a tester's phone backs up when it goes to the background
 async function backup(ph){await ph.background();await sleep(2500);await ph.foreground();await sleep(1500)}
 // "a minute later": the phone's clock moves past the 60 s foreground-sync gap, then background and back
 async function later(ph){await ph.advance(70000);await backup(ph)}
-const names=ph=>ph.page.evaluate(()=>items.map(i=>i.name||i.type));
+const names=ph=>ph.page.evaluate(()=>HOOK.items.map(i=>i.name||i.type));
 async function openItem(ph,name){for(let k=0;k<4;k++){await ph.tap('#n-wardrobe');await sleep(700);if(await ph.page.evaluate(()=>!document.querySelector('#wardrobe').hidden&&document.querySelectorAll('.gi').length>0))break}
-  await ph.page.evaluate(()=>{if(typeof CK_OPEN!=='undefined')CK_OPEN['*']=true});   // #497: the sheet's fields are in folded sections; open them all (no-op before)
-  const id=await ph.page.evaluate(n=>{const i=items.find(x=>x.name===n);if(!i)return null;const e=document.querySelector(`#gi-${i.id} .giopen`);if(e)e.scrollIntoView({block:'center'});return i.id},name);
+  await ph.page.evaluate(()=>{if('CK_OPEN' in HOOK)HOOK.CK_OPEN['*']=true});   // #497: the sheet's fields are in folded sections; open them all (no-op before)
+  const id=await ph.page.evaluate(n=>{const i=HOOK.items.find(x=>x.name===n);if(!i)return null;const e=document.querySelector(`#gi-${i.id} .giopen`);if(e)e.scrollIntoView({block:'center'});return i.id},name);
   if(!id)throw new Error('no item '+name);await sleep(300);const b=await ph.page.locator(`#gi-${id} .giopen`).boundingBox();await ph.tapAt(b.x+b.width/2,b.y+b.height/3);await sleep(900);return id}
 // the sheet's Name field by its class (wardrobe.js fldRow, .wf-name since before 6f78b02): "the first text field" became the Price
 // field when #554 (cost.js) put it in Planning & care above Name & notes, so W1-6-06 typed "Blazer copy" into the price
