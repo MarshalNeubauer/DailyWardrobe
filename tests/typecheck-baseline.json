@@ -1,6 +1,6 @@
 {
  "note": "Type errors per file and scope (tests/typecheck.js). May only go down: fix errors, then `node tests/typecheck.js --update`.",
- "total": 228,
+ "total": 211,
  "files": {
   "page": {
    "about.js": 3,
@@ -48,9 +48,7 @@
   },
   "asm": {},
   "analysis": {},
-  "sw": {
-   "sw.js": 17
-  },
+  "sw": {},
   "server": {}
  }
 }

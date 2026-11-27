@@ -2777,6 +2777,7 @@ Static app served from `main` by GitHub Pages (no build step): classic scripts l
 - icons are 256-colour palette PNGs; the manifest has `id` "./" and separate `any`/`maskable` entries; one `theme_color` (#101820, the dark header in both themes)
 - `tests/assets.test.js`: every `ASSETS` file exists and every needed file is listed (one missing breaks every update)
 - `tests/sw.test.js`: reload stays put, a bump prompts and waits, Update switches, a waiting version runs on next open, takeover from the old network-first worker
+- sw.js reaches its scope through `sw`, `self` typed as `ServiceWorkerGlobalScope` in JSDoc (the same object): the type check's `sw` scope reads lib WebWorker, where `self` is a plain `WorkerGlobalScope` and `clients`, `skipWaiting`, `registration` and the events' `waitUntil`/`respondWith` were 17 errors (TCc, 2026-11-27); write `sw.`, not `self.`, in new code there
 
 ### `worker.js`
 
