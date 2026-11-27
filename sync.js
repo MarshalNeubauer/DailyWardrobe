@@ -3,7 +3,7 @@
    Its other parts (split 2026-11-17, the code review's sync plan): sync-status.js (what Backup & sync says; loaded right after this
    file since the restructure S3b, which moved the pause and the status here and an ended invitation to who.js), sync-photos.js (photos as references, batches), snapshots.js (daily backups, Roll back),
    backupfile.js (download and restore a file); what of the sample wardrobe goes up is kit.js kitShareFilter. */
-import {on,emit,serve,askFor} from './bus.js';
+import {emit,serve,askFor,slotsOf,register,runHooks} from './bus.js';
 import {$,CLOCK_AHEAD,CLOCK_MIN,applyCustom,cleanState,clockSkew,homeBrowser,homeIOS,homeStandalone,isoKey,itemName,items,mergeSettings,mergeState,nm,nowMs,setClockSkew,setWardrobe,settings,settingsOpen,syncMark,syncUrl,takeSettings} from './core.js';
 import {ENDED,addTombstones,atomic,connRestored,editing,endedAnswer,inviteEnded,metaGet,metaPut,storeFailText,storeFailure,tx,txs} from './app.js';
 import {planDirty} from './today-plan.js';
@@ -91,7 +91,7 @@ async function applyMerged(local,incoming){const m=mergeState(local,incoming);
   const now=await localState();
   if(stateSig(now)!==stateSig(local)){const open=editing&&items.find(i=>i.id===editing);
     setWardrobe({items:now.items});planDirty();onSyncedData(now);syncRedraw(['today','wardrobe','add','stats'].find(t=>!$('#'+t).hidden));syncSettingsRedraw();
-    if(open)askFor('item-synced',open)}   // the item sheet follows the new copy (item-view.js)
+    if(open)slotsOf('synced').itemSynced?.(open)}   // the item sheet follows the new copy (item-view.js)
   return now;
 }
 /* Settings open while a sync brought changes: its controls are drawn again from the merged settings (2026-11-15, the audit: the Suit vest
@@ -113,7 +113,7 @@ let syncLater=null;
   if((v==='wardrobe'&&editing)||(v==='today'&&(picker||askFor('today-busy')))){syncLater=v;return}   // (a finger on Today: today.js todayFree runs it when the gesture ends)
   return show(v)}
 /** @param {*} v */ function syncLaterRun(v){if(syncLater!==v)return;syncLater=null;if($('#'+v).hidden)return;
-  if(v==='today')refreshToday();else if(v==='wardrobe'&&!editing)emit('wardrobe-changed')}
+  if(v==='today')refreshToday();else if(v==='wardrobe'&&!editing)runHooks('wardrobe-changed')}
 /* ---- the first pull (2026-11-14): a connected device saves nothing at start-up until it has merged the backup once. On the owner's
    phone, two days behind, the week's locks (stamped 07:00) and the one-time photo upgrade (82 items re-saved at 07:45) were written on
    its old copy before it synced; stamped newest, they replaced a pick made on another device and 11 newer tags, and brought back 4
@@ -219,8 +219,8 @@ async function syncLite(remote,local,url,token,inline){
   if(lacks&&!remote.all)return {again:{all:true}};
   pullDone();   // this device now holds everything the backup does: start-up writers may run (before the upload: they save on a current copy)
   // what the backup lacks: records newer than its own, tombstones it doesn't have
-  const share=askFor('kit-share-filter',now,null,syncJoinAt());   // (not the sample wardrobe: kit.js)
-  const up={items:share.items.filter(i=>!(i.id in ix.i)||stamp(i)>ix.i[i.id]),days:share.days.filter(d=>!(d.date in ix.d)||askFor('kit-sent-stamp',d)>ix.d[d.date]||keptD(d)),
+  const K=slotsOf('sync-send'),share=K.kitShareFilter?.(now,null,syncJoinAt());   // (not the sample wardrobe: kit.js)
+  const up={items:share.items.filter(i=>!(i.id in ix.i)||stamp(i)>ix.i[i.id]),days:share.days.filter(d=>!(d.date in ix.d)||K.kitSentStamp?.(d)>ix.d[d.date]||keptD(d)),
     tombstones:Object.fromEntries(Object.entries(now.tombstones).filter(([id,t])=>!(id in tomb)||tomb[id]<t))};
   Object.assign(up,cleanState({items:up.items,days:up.days,tombstones:up.tombstones}));   // records as the server takes them (core.js cleanState)
   if(now.settings&&(now.settings.updated||0)>(ix.s??-1))up.settings=now.settings;
@@ -249,7 +249,7 @@ async function syncSaved(p,pr,token,now){
   if(p.status===429&&pr.what==='backup')return pauseTillTomorrow(backupFullMsg(pr));
   if(endedAnswer(p.status,pr)){inviteEnded(token,pr);setSyncStatus(ENDED);return false}
   if(!p.ok)throw new Error(pr.message||pr.error||'HTTP '+p.status);
-  setSyncMark(pr.rev,pr.saved,stateSig(now));askFor('kit-share-done');synced();restoreDone();
+  setSyncMark(pr.rev,pr.saved,stateSig(now));slotsOf('sync-send').kitShareDone?.();synced();restoreDone();
   if(stateSig(await localState())!==stateSig(mergeState(now,{})))scheduleSync();   // something changed while uploading
   return true}
 async function syncOnce(){
@@ -280,7 +280,7 @@ async function syncOnce(){
       if(remote.data)remote.data=cleanState(remote.data);   // records from outside (core.js)
       await adoptBackupSettings(local,remote.data);   // a device's first contact with a backup: the backup's settings win (safety.js)
       // upload what is actually stored now (it may include edits made during this sync)
-      const now=mergeState(await applyMerged(local,remote.data||{}),remote.data||{}),out=cleanState(askFor('kit-share-filter',now,remote.data,syncJoinAt()));pullDone();   // (out: what is sent, without the sample wardrobe)
+      const now=mergeState(await applyMerged(local,remote.data||{}),remote.data||{}),out=cleanState(slotsOf('sync-send').kitShareFilter?.(now,remote.data,syncJoinAt()));pullDone();   // (out: what is sent, without the sample wardrobe)
       if(remote.data&&stateSig(out)===stateSig(remote.data)){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
       if(syncPaused()){setSyncStatus(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.');return false}
       const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,day:isoKey(new Date(nowMs())),...(restoreWanted()?{reason:'restore'}:{}),data:out})});   // data last: the server reads a large backup's few leading fields without parsing the whole
@@ -322,9 +322,6 @@ async function adoptBackupSettings(local,data){
   if(!$('#today').hidden)refreshToday();return true}
 /* the socket the setup's Connection step asks for its words (bus.js; setup.js no longer names this file: the restructure S3f) */
 serve('backed-up-words',backedUpWords);
-/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
-on('settings-saved',()=>scheduleSync());   // a backup soon after the settings were saved
-on('connection-saved',()=>{syncNow().catch(e=>console.warn('sync not started',e))});   // Settings' Done: a backup now
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,TESTER_SYNC_MS,backupFullMsg,get syncDue(){return syncDue},set syncDue(v){syncDue=v},syncJoinAt,syncJoinMark,get syncLater(){return syncLater},syncTap,get syncing(){return syncing},set syncing(v){syncing=v},applyMerged,backedUpWords,localState,pulledYet,scheduleSync,syncNow,syncPaused,syncRedraw,get syncRun(){return syncRun},get syncTimer(){return syncTimer}};
 export {setSyncStatus,syncNetText,syncWaiting,pauseTillTomorrow,syncPaused,backupFullMsg,backedUpWords,tabBrowser,safariTab,restoring,syncing,syncTimer,syncRun,syncDue,localState,applyMerged,syncLater,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,syncTap,WIPED_SYNC,syncNow,syncJoinAt,syncJoinMark,TESTER_SYNC_MS,scheduleSync,setRestoring,adoptBackupSettings,SYNC_SEND_MAX};
@@ -340,4 +337,8 @@ function syncNowTap(){syncTap()}
 acts({syncNowTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('sync-soon',scheduleSync);serve('sync-now',syncNow);serve('sync-redraw',syncRedraw);serve('sync-needs-pull',syncNeedsPull);serve('sync-later-run',syncLaterRun);serve('sync-stop',()=>clearTimeout(syncTimer));serve('sync-running',()=>syncRun);
-serve('after-pull',afterPull);serve('pulled-yet',pulledYet);serve('sync-paused',syncPaused);   // the restructure S6f: what required and today-no-picture files ask of this file
+serve('after-pull',afterPull);serve('pulled-yet',pulledYet);   // the restructure S6f: what required and today-no-picture files ask of this file
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('sync',{'settings-rows':()=>({syncPaused}),   // the Backup line says Paused
+  'settings-saved':()=>scheduleSync(),   // a backup soon after the settings were saved
+  'connection-saved':()=>{syncNow().catch(e=>console.warn('sync not started',e))}});   // Settings' Done: a backup now

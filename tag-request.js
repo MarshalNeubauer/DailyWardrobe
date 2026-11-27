@@ -3,7 +3,7 @@
    kept on this device, what the tagger learns from the corrections, and what one tagging call costs. */
 
 import {CLOSE_MAX,COLORS,MATERIALS_BY,TAGIMG_CACHE,TAG_MAX,TAG_TYPES,TYPES,colName,ownMats,patName,settings,tagTypesNow,texSig,esc} from './core.js';
-import {serve} from './bus.js';
+import {serve,register} from './bus.js';
 /* the colours and patterns the owner added, when there are any (the worker adds them to what the tagger may answer) */
 const customForTag=()=>{const c=settings.custom||{};return (c.colors||[]).length||(c.patterns||[]).length?{colors:c.colors||[],patterns:c.patterns||[]}:undefined};
 /* the latest corrections (another item's only: the benchmark must not hand an item its own answer) */
@@ -64,5 +64,6 @@ function aiFields(ai){return {type:ai.type,primaryColor:COLORS[ai.primaryColor]?
   tertiaryColor:ai.tertiaryColor&&ai.tertiaryColor!=='none'?ai.tertiaryColor:null,pattern:ai.pattern||'solid'}}
 globalThis.HOOK={__proto__:globalThis.HOOK||null,keepCloseImg,keepTagImg,resignTagImg,sharpCloseOf,tagExtras,tagImgOf};
 export {customForTag,tagFixes,tagExtras,keepTagImg,tagImgOf,resignTagImg,keepCloseImg,sharpCloseOf,tagStatsCard,benchEstimate,describeEstimate,readEstimate,fieldLabel,valName,aiFields};
-serve('tag-stats-card',tagStatsCard);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
 serve('tag-extras',tagExtras);   // the restructure S6f: app.js's tag request (a data file, below this one in the layers)
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('tag-request',{'insights-cards':()=>({tagStatsCard})});   // Insights' tagging card

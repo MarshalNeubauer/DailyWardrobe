@@ -5,7 +5,7 @@
    between wears.
    The page's parts in other files (the setup's checklist, the sample wardrobe, What to buy's button, the favorites and cost-per-wear
    cards) are reached through bus.js (the restructure S3f): without the file nothing is asked, as the `typeof f==='function'` guards did. */
-import {emit,heard,ask,serve,need} from './bus.js';   // (this file reads nothing of app.js's own ask(), the server request)
+import {emit,heard,ask,serve,need,slotsOf,register} from './bus.js';   // (this file reads nothing of app.js's own ask(), the server request)
 import {$,COLORS,CUSTOM_COL,SHOP_WEEKS,SLOTS,TYPES,avgText,colName,dayRecs,di,dressOut,fmtDay,isHandPick,isWorkday,itemName,itemSeason,items,keyDate,listAnd,nameHtml,nm,phSm,prettyCols,primaryCol,sentence,settings,shortDesc,titleCls,todayDate,wearsJacket,wearsTie,esc} from './core.js';
 import {cache,hasOutfit,planMonth,planStartDay} from './today-plan.js';
 import {HARD_CAP,QWIN,beltFit,beltWait,clothesScore,darkShirt,finish,jacketGroup,pairScore,patternScore,planSim,planStart,rateOutfit,shirtGroup,shirtScore,shoeSuits,shoesWhyUnused,tieGroup} from './planner.js';
@@ -132,7 +132,7 @@ function statRowsHtml(S,t){const rs=statTypeRows(S,t),max=Math.max(1,...rs.map(r
 let statsLast=null;   // the numbers the page was last drawn from, with the plan they came from (a fold fills its rows from them)
 /* Insights drawn again keeps the focus where it was (What to buy's button lost it to <body> when a redraw came after its sheet closed: CR-9-04) */
 function renderStats(){const el=$('#stats');if(!el)return;keepFocus(el,statsDraw);}
-function statsDraw(){
+function statsDraw(){const C=slotsOf('insights-cards');   // Insights' cards of other features (bus.js slots), each where main drew it
   const el=$('#stats');if(!el)return;
   if(!items.length){el.innerHTML=`<div class="phead"><h2>Insights</h2></div><p class="mut empty">Your wardrobe is empty.</p>${emptyAdd()}`;return}
   const S=buildStats(),nPlan=S.plan.length,bar=statBar;statsLast={S,c:cache,n:items.length};
@@ -149,9 +149,9 @@ function statsDraw(){
   const mix=(title,list)=>!list.length?'':`<div class="st-mix"><small class="mut">${title}</small>${list.slice(0,7).map(([g,n])=>`<div class="st-mixrow"><span class="st-dot" style="background:${groupCol(g)}"></span><span class="st-mixnm">${esc(groupName(g))}</span>${bar(n,list[0][1])}<small class="mut">${Math.round(100*n/nPlan)}%</small></div>`).join('')}</div>`;
   const missList=Object.entries(S.miss).sort((a,b)=>b[1].lost-a[1].lost).slice(0,6);
   const planLine=S.short.length?'':` The plan for the next ${STATS_MONTHS} months averages ${nPlan?avgText(S.avg):'–'}${S.planHard?`, with ${S.planHard} day${S.planHard===1?'':'s'} your wardrobe can't get right`:''}.`;
-  el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${ask('shop-button')||''}
+  el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${C.shopButton?.()||''}
   <div class="st-tiles">${tile(items.length,items.length===1?'item':'items')}${tile(S.worn.length,`day${S.worn.length===1?'':'s'} worn${first?' since '+statDate(first):''}`)}${S.short.length?'':tile(nPlan,`outfit${nPlan===1?'':'s'} planned, next ${STATS_MONTHS} months`)+tile(S.looks,`different outfit${S.looks===1?'':'s'} planned`)+tile(nPlan?avgText(S.avg):'–','average outfit score')+tile(S.unused.length,`item${S.unused.length===1?'':'s'} never worn`)}</div>
-  ${ask('fav-stats-card',S)||''}
+  ${C.favStatsCard?.(S)||''}
   ${S.short.length?`<section class="card st-card" id="st-short"><h3>Not a full outfit yet</h3><p class="mut"><small>Your wardrobe still needs ${listAnd(S.short)} for a complete outfit. The plan for the next ${STATS_MONTHS} months, its scores and what is never worn show here once Today can dress a workday.</small></p><div class="btns"><button type="button" class="pri" data-act="emptyAddTap">Add an item</button></div></section>`:`
 
   <section class="card st-card" id="st-unused"><h3>Never worn</h3>
@@ -167,7 +167,7 @@ function statsDraw(){
 
   <section class="card st-card" id="st-wear"><h3>Wear counts</h3>
   <p class="mut"><small><span class="st-key w"></span>worn so far <span class="st-key p"></span>planned for the next ${STATS_MONTHS} months</small></p>${types.map(sect).join('')}</section>
-  ${ask('cpw-stats-card')||''}
+  ${C.cpwStatsCard?.()||''}
 ${S.short.length?'':`
   <section class="card st-card" id="st-points"><h3>Small deductions</h3>
   ${missList.length?`<p class="mut"><small>Over the ${nPlan} planned outfits: where the score is marked down most, and the usual reason.</small></p>${missList.map(([l,m])=>{const why=Object.entries(m.why).sort((a,b)=>b[1]-a[1])[0];
@@ -181,7 +181,7 @@ ${S.short.length?'':`
   ${S.pairs.length?`<p class="mut"><small>The jacket and tie pairings planned most often.</small></p>${S.pairs.map(p=>`<div class="st-pair"><span class="dot">${swatchSVG(p.a)}</span><span class="dot">${swatchSVG(p.b)}</span><span class="st-nm">${nameHtml(statName1(p.a))} · ${nameHtml(statName2(p.b))}</span><b>${p.n}×</b></div>`).join('')}`:''}
   <p class="mut" style="margin-top:10px"><small>${S.minRest!=null?`A jacket rests at least ${S.minRest} workday${S.minRest===1?'':'s'} before it is worn again. `:''}${S.b2b?`The same shoes are worn two days running ${S.b2b} time${S.b2b===1?'':'s'}: ${(w=>w?`your ${esc(nm(w))} would give them a rest with a ${beltWait(w)} to match.`:'another pair in that color would give them a rest.')(items.find(x=>x.type==='shoes'&&beltWait(x)))}`:'Shoes always get a day off between wears.'}</small></p></section>`}
 
-  ${need('tag-stats-card')}`;
+  ${C.tagStatsCard?.()??''}`;
 }
 /* unfolding a section fills in only its rows, from the numbers the page was drawn from while the plan is the same (it re-drew the whole
    page, W2-18-02); after a change it draws the page again */
@@ -210,7 +210,7 @@ function statsPlan(){if(statsWarm)return statsWarm;if(statsPlanned())return Prom
     idle(step)};idle(step)})}
 function statsShow(){const el=$('#stats');if(!el)return;
   if(!items.length||statsPlanned())return renderStats();
-  el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${ask('shop-button')||''}<p class="mut st-wait" role="status"><span class="spin" aria-hidden="true"></span> Planning your next ${STATS_MONTHS} months…</p>`;
+  el.innerHTML=`<div class="phead"><h2>Insights</h2></div>${slotsOf('insights-cards').shopButton?.()||''}<p class="mut st-wait" role="status"><span class="spin" aria-hidden="true"></span> Planning your next ${STATS_MONTHS} months…</p>`;
   statsPlan().then(()=>{if(!el.hidden&&el.querySelector('.st-wait'))renderStats()})}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,buildStats,get fitMemo(){return fitMemo},groupName,openStats,plannedDays,get statsOpen(){return statsOpen},statsToggle,whyUnused,renderStats,statDate,statName,wornDays};
@@ -225,5 +225,5 @@ function statsFold(el){statsToggle(el)}
 function statsDayTap(el,ev){openDay(+el.dataset.t);show('today');ev.preventDefault()}
 acts({emptyAddTap,emptySampleTap,statsFold,statsDayTap});
 serve('worn-days',wornDays);serve('stat-pic',statPic);   // (care.js, the restructure S6c: an import would leave care.js unrun without this file, where Today is then drawn with its picture)
-serve('stats-draw',renderStats);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
-serve('stats-show',statsShow);   // the restructure S6f: nav.js shows Insights
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('stats',{'page-shown':()=>({statsShow,renderStats})});   // nav.js shows Insights

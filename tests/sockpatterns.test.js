@@ -100,7 +100,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       let syncs=0;const was=window.setTimeout;window.setTimeout=(f,...a)=>{if(f===HOOK.syncNow){syncs++;return 0}return was.call(window,f,...a)};const n=await HOOK.sockToeMigrate(),again=await HOOK.sockToeMigrate();
       const st=await HOOK.tx('readonly',s=>s.getAll()),g=id=>st.find(x=>x.id===id);const after=['m1','m2','m3'].map(id=>fnv(HOOK.items.find(x=>x.id===id)));
       // a sock from an older app, synced in
-      await HOOK.putRaw(mk('m6',{secondaryColor:'navy',updated:9}));HOOK.items.push(mk('m6',{secondaryColor:'navy',updated:9}));HOOK.dressSynced({items:[mk('m6',{secondaryColor:'navy'})]});
+      await HOOK.putRaw(mk('m6',{secondaryColor:'navy',updated:9}));HOOK.items.push(mk('m6',{secondaryColor:'navy',updated:9}));{const m={items:[mk('m6',{secondaryColor:'navy'})]};HOOK.dressSynced(m);HOOK.wardSynced(m)}   // (start.js onSyncedData's 'synced' slots, in that order)
       await new Promise(r=>setTimeout(r,400));const m6=(await HOOK.tx('readonly',s=>s.getAll())).find(x=>x.id==='m6');window.setTimeout=was;
       return {n,again,syncs,m1:[g('m1').toeColor,'secondaryColor' in g('m1')].join(),m2:g('m2').toeColor,m3:[g('m3').toeColor,'tertiaryColor' in g('m3')].join(),m4:[g('m4').toeColor,g('m4').secondaryColor].join(),m5:'toeColor' in g('m5'),
         fs:g('m1').fs&&Object.keys(g('m1').fs.s||{}).sort().join(),stamped:g('m1').updated>5&&g('m4').updated===5,same:before.every((h,k)=>h===after[k]),m6:m6&&m6.toeColor}});
@@ -108,7 +108,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(m.m4==='none,red'&&!m.m5&&m.again===0&&m.syncs>=1,'a sock already moved and other types are left alone; a second run does nothing; it syncs');
     ok(m.stamped&&/secondaryColor/.test(m.fs)&&/toeColor/.test(m.fs),`only the moved fields are stamped (${m.fs}), by the corrected clock`);
     ok(m.same,'the socks are drawn exactly the same before and after the move');
-    ok(m.m6==='navy','a sock an older app syncs in is moved too (dressSynced)');
+    ok(m.m6==='navy','a sock an older app syncs in is moved too (the synced slots: dressSynced, then wardSynced)');
     // ---- the planner's rules (made-up outfits)
     const r=await p.evaluate(()=>{let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',added:1,...x});
       const chinos=I('pants','khaki',{trouserKind:'chinos'}),grey=I('pants','grey'),charcoal=I('pants','charcoal'),navySuit=I('suit','navy'),blazer=I('blazer','navy'),

@@ -8,8 +8,8 @@
    matched, gains held to 0.6-1.6. The sharp copy is kept again under the new close-up's signature. Another device has nothing to do. */
 /* a picture's mean colour in linear light (on a 64x64 copy), and a canvas's colours scaled so its mean matches another's, each channel's
    gain held to 0.6-1.6: the two remakes below (one copy: CR-2-15) */
-import {askFor,serve} from './bus.js';
-import {PH_MAX,TEX_MAX,colOf,isoKey,items} from './core.js';
+import {askFor,need,register} from './bus.js';
+import {$,PH_MAX,TEX_MAX,colOf,isoKey,items} from './core.js';
 import {fixupRedraw,imgOf,put,refreshSwatch,stillCur} from './app.js';
 import {planDirty} from './today-plan.js';
 import {cropSource,makeSmall} from './measure.js';
@@ -110,4 +110,9 @@ async function recolourSpecSetts(){if(localStorage.getItem('spec_recolour')==='3
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,REMAKE_DAY,fixBlackBackdrops,recolourSpecSetts,remakeLeft,remakeSpend,upgradeCloseups,upgradePhotos};
 export {upgradeCloseups,REMAKE_DAY,remakeLeft,remakeSpend,upgradePhotos,fixBlackBackdrops,recolourSpecSetts};
-serve('spec-recolour',recolourSpecSetts);serve('closeups-upgrade',upgradeCloseups);serve('photos-upgrade',upgradePhotos);serve('backdrops-fix',fixBlackBackdrops);   // the restructure S6f: start.js's one-time fix-ups
+/* start-up's one-time fix-ups once the backup is merged (start.js, after-pull-fixups, one after another in load order: these, then item-photo.js's
+   small photos): the read setts recolored (Today drawn again when one was), the close-ups, the photos, the cut-outs on black */
+async function remakeAfterPull(){const n=await recolourSpecSetts();if(n&&!$('#today').hidden)need('refresh-today');await upgradeCloseups();await upgradePhotos();await fixBlackBackdrops()}
+export {remakeAfterPull};
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('migrate',{'after-pull-fixups':remakeAfterPull});

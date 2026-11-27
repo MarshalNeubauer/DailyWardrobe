@@ -5,10 +5,10 @@
    accepts the code. Settings → Connection then says who is connected: a tester sees today's use against each daily limit, the
    owner gets "Invite testers" (make a link, see each tester's use today, revoke one).
    Server API used here: GET /me, GET/POST/DELETE /invites. An older server answers these 404 or 405: the box then stays empty. */
-import {on,askFor,served,serve,emit} from './bus.js';
+import {askFor,served,serve,emit,register} from './bus.js';
 import {backWanted} from './back.js';
 import {addGate,askConfirm,renderConnUI} from './ui.js';
-import {settingsPart,settingsSummaries} from './settings.js';
+import {settingsSummaries} from './settings.js';
 import {connKeep,connRestored,endedAnswer,inviteEnded,tx,txs} from './app.js';
 import {acctBase,acctCall,acctEsc,dayRecs,hasInviteHash,homeBrowser,inviteOver,iosInSafari,items,mergeState,myInviteLink,settingsOpen,syncMark} from './core.js';
 import {toast} from './toast.js';
@@ -269,13 +269,12 @@ async function purgeInvite(id){const v=(acct.invites||[]).find(x=>x.id===id);if(
   renderAccountUI()}
 /* start-up: Settings draws the box whenever it opens (its extras are redrawn there), and an invitation link in the address
    connects the app once the page's scripts are in */
-/* Settings' account box, drawn with the rest of Settings (settings.js settingsPart) */
+/* Settings' account box, drawn with the rest of Settings (its 'settings-parts' hook) */
 function acctSettingsPart(){if(!settingsOpen())acct.link=null;   // a new link is shown once: gone when Settings is opened again
   renderAccountUI();loadAccount()}
 function acctStart(){applyRole();
   // a connection localStorage lost comes back from the database after this first look (app.js connRestored): the classes are set again then
   try{connRestored.catch(()=>{}).then(()=>{try{applyRole()}catch(e){console.warn(e)}})}catch{}
-  settingsPart(acctSettingsPart);
   if(hasInviteHash()){const go=()=>connectFromLink(location.href,{address:true});document.readyState==='complete'?go():addEventListener('load',go,{once:true})}
   else if(acctBase()&&!acctRole())setTimeout(()=>{if(!acctRole())loadAccount()},4000);   // connected before roles were remembered: ask once
   // a link opened or pasted in the tab that already shows the app changes only the # part: no new page load, so nothing read it
@@ -286,10 +285,6 @@ function acctStart(){applyRole();
 function acctRetryLink(){if(acctWhy==='offline'&&hasInviteHash()&&!acctLinkRun)connectFromLink(location.href,{address:true})}
 /* the invitation has ended (switched off, or the account deleted; who.js inviteEnded announces 'invite-ended'): what said "Connected" is drawn again */
 function acctEndedUI(){setAcct({...acct,me:null,state:'',invites:null});try{applyRole();renderAccountUI();acctLinkDrawn();addGate()}catch(e){console.warn(e)}}
-/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
-on('settings-summaries',()=>applyRole());
-on('invite-ended',()=>acctEndedUI());   // an ended invitation (who.js inviteEnded): what said "Connected" is drawn again
-on('connection-typed',(url,code)=>acctTyped(url,code).catch(e=>console.warn('connection not changed',e)));   // another address or code typed in Settings → Connection
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get acctLinkRun(){return acctLinkRun},acctPending,dropInviteHash,homeScreenGuide,loadAccount,renderAccountUI,get inviteChecking(){return inviteChecking},set inviteChecking(v){inviteChecking=v},get acctWhy(){return acctWhy},connectFromLink};
 export {dropInviteHash,acctWhy,inviteChecking,acctLinkRun,acctFailText,connectFromLink,acctTyped,acctPending,homeScreenGuide,limitNote,loadAccount,renderAccountUI,acctEndedUI};
@@ -306,3 +301,7 @@ function acctRevokeTap(el){revokeInvite(el.dataset.id)}
 acts({acctMyLinkTap,acctCreateTap,acctLinkFocus,acctCopyTap,acctPurgeTap,acctReissueTap,acctRevokeTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('invite-checking',()=>inviteChecking);serve('acct-why',()=>acctWhy);serve('connect-link',connectFromLink);serve('acct-fail-text',acctFailText);serve('limit-note',limitNote);
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('account',{'settings-parts':acctSettingsPart,'settings-summary':()=>applyRole(),
+  'invite-ended':()=>acctEndedUI(),   // an ended invitation (app.js inviteEnded): what said "Connected" is drawn again
+  'connection-typed':(url,code)=>acctTyped(url,code).catch(e=>console.warn('connection not changed',e))});   // another address or code typed in Settings → Connection

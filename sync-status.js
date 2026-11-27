@@ -1,7 +1,7 @@
 /* Daily Wardrobe: what Backup & sync says (split from sync.js, 2026-11-17): the status line. Loaded right after sync.js since the
    restructure S3b (2026-11-26), which moved the backup's state (the status, the pause until the next UTC day, the words for an offline
    server and for Connection and the setup) into sync.js and an ended invitation into who.js; this file draws the line from them. */
-import {on} from './bus.js';
+import {on,register} from './bus.js';
 import {$,inviteOver,items,syncUrl} from './core.js';
 import {backupSummary} from './settings.js';
 import {WIPED_SYNC,safariTab,syncPaused,syncWaiting,tabBrowser} from './sync.js';
@@ -23,7 +23,8 @@ function showSyncStatus(){const sum=$('#sum-backup');if(sum)try{sum.textContent=
 const safariWord=()=>safariTab()?` ${tabBrowser()} can clear a website’s data when it isn’t opened for about a week or the phone runs short of space: Download backup now and then keeps a copy in Files.`:'';
 globalThis.HOOK={__proto__:globalThis.HOOK||null,showSyncStatus};
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
-on('settings-open',()=>showSyncStatus());   // the Backup line, as Settings opens
 on('backup-changed',()=>showSyncStatus());   // the backup's status changed (sync.js)
-on('invite-ended',()=>showSyncStatus());   // the invitation has ended (who.js inviteEnded): nothing backs up any more
 export {showSyncStatus};
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('sync-status',{'settings-open':()=>showSyncStatus(),   // the Backup line, as Settings opens
+  'invite-ended':()=>showSyncStatus()});   // the invitation has ended (app.js inviteEnded): nothing backs up any more

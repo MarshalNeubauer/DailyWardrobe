@@ -1,6 +1,6 @@
 /* Daily Wardrobe: Settings → About. The app's version and updates, feedback, deleting one's data, the privacy note.
    Loaded last (index.html's final file before startUp); an ES module since 2026-11-23. */
-import {on,askFor,serve} from './bus.js';
+import {askFor,serve,register} from './bus.js';
 import {$,inviteOver,isConnected,noBidi} from './core.js';
 import {toast} from './toast.js';
 import {ENDED,connKeep,connRestored,db,dbConn,dbUnhold,endedAnswer,inviteEnded,queue,setConnReady,setDbConn,setDbCur,setDbWiping} from './app.js';
@@ -272,8 +272,6 @@ function aboutStart(){
   aboutReadVersion().then(()=>checkForUpdate());
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-aboutLast>ABOUT_FRONT_MS)checkForUpdate()});
   setInterval(()=>{if(document.visibilityState==='visible')checkForUpdate()},ABOUT_CHECK_MS)}
-/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
-on('settings-category',k=>{if(k==='about')renderAbout()});   // only as About opens (CR-7-06)
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,ABOUT_KEYS,aboutAsk,aboutDeleteAccount,get aboutNew(){return aboutNew},aboutResetAt,get aboutUpdating(){return aboutUpdating},set aboutUpdating(v){aboutUpdating=v},askDelete,checkForUpdate,fbWithErrs,sendFeedback,updateNow,renderAbout,appVersion};
 export {aboutNew,aboutUpdating,appVersion,aboutAsk,checkForUpdate,updateNow,fbWithErrs,sendFeedback,aboutResetAt,ABOUT_KEYS,ABOUT_NOTE,askDelete,wipeDevice,aboutDeleteAccount,renderAbout};
@@ -290,3 +288,5 @@ function delCancelTap(){cancelDelete()}
 acts({updCheckTap,updNowTap,fbSendTap,delAskTap,delDeviceTap,delAllTap,delCancelTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('wipe-device',wipeDevice);serve('about-note',()=>ABOUT_NOTE);serve('app-version',appVersion);
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('about',{'settings-category':k=>{if(k==='about')renderAbout()}});   // only as About opens (CR-7-06)

@@ -14,9 +14,9 @@
    - read again at start-up and on coming back at most every CAL_EVERY, and by Read now; new matches are a small banner on Today
      ("2 new calendar events"), never applied by themselves
    - the last answer is kept on this phone only (localStorage cal_last), for the review list and Today's trip note */
-import {on,askFor,serve} from './bus.js';
+import {askFor,register} from './bus.js';
 import {$,DAY_NAMES,dayRecs,isConnected,isWorkday,isoKey,isoToDate,key,occOf,offName,settings,settingsOpen,todayDate,yearDate,esc} from './core.js';
-import {closeSettings,openSettings,refreshToday,saveUserSettings,settingsPart,settingsSummaries,todayDirty} from './settings.js';
+import {closeSettings,openSettings,refreshToday,saveUserSettings,settingsSummaries,todayDirty} from './settings.js';
 import {setOccasion,whenPulled} from './history.js';
 import {afterScripts,announce} from './app.js';
 import {toast} from './toast.js';
@@ -156,8 +156,6 @@ async function calSync(force){const url=calLink();if(!url||calBusy||!isConnected
   if(settingsOpen())renderCalUI();
   return n}
 const calAuto=()=>{if(calLink())calSync(false).catch(e=>console.warn('calendar not read',e))};
-/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
-on('settings-summaries',S=>{S.calendar=calSummary});
 whenPulled(()=>afterScripts(calAuto));
 addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')calAuto()});
 
@@ -210,7 +208,6 @@ ${gone.length?`<ul class="cal-list">${gone.map(x=>calRow(x,'gone')).join('')}</u
 <p class="shelp cal-priv">Anyone with a calendar link can read that calendar, so the app treats it like a password: it is kept in your settings (on your devices and in your backup) and shown here only by where it points. The server fetches the calendar when the app asks and keeps nothing; this phone reads it and uses only dates, titles and places.</p>`;
   box.innerHTML=h;const inp=$('#cal-link');if(inp&&typed)inp.value=typed;
   const sm=$('#sum-calendar');if(sm)sm.textContent=calSummary()}
-settingsPart(renderCalUI);
 
 /* ---- keeping and dismissing ---- */
 async function calSetSeen(id,v){const s={...calSeen()};if(v)s[id]=v;else delete s[id];settings.calSeen=s;await saveUserSettings()}
@@ -292,4 +289,5 @@ function calPackTap(){askFor('pack-open')}
 globalThis.HOOK={__proto__:globalThis.HOOK||null,CAL_GUIDES,CAL_X,get calBusy(){return calBusy},calGuide,calNew,calPlan,renderCalUI,calSummary};
 export {calBusy,CAL_X,calPlan,calNew,calSummary,renderCalUI,calBanner,CAL_GUIDES,calGuide};
 acts({calConnectTap,calReadTap,calOffTap,calGuideTap,calKeepTap,calDismissTap,calUndoTap,calReviewTap,calPackTap});
-serve('cal-banner',calBanner);   // the restructure S6f: Today's calendar banner (today.js)
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('calendar',{'settings-summary':S=>{S.calendar=calSummary},'settings-parts':renderCalUI,'today-parts':()=>({calBanner})});   // (Today's calendar banner)

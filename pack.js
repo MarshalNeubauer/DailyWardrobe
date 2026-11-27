@@ -233,9 +233,8 @@ function renderPack(){
       :`<p class="mut empty" id="pk-none">No outfits are planned for these days.</p>`)+
     (lock.of&&!light?`<div class="card pk-card" id="pk-lock"><h3>Keep these outfits</h3><p class="pk-note" id="pk-lockmsg">${allLocked?'<b>Locked.</b> These outfits stay as shown, whatever you change on other days.':lock.n?`<b>${lock.n} of ${lock.of} day${lock.of===1?'':'s'} locked.</b> The others can still change when another day changes or you add an item.`:'<b>Not locked.</b> The list is only right while the plan doesn’t move: a change on another day or a new item can still change these outfits.'}</p><div class="btns">${allLocked?'':`<button type="button" class="pri" id="pk-lockbtn" data-act="packKeepTap">Keep these outfits</button>`}${lock.n?`<button type="button" id="pk-release" data-act="packReleaseTap">Let the plan change again</button>`:''}</div><p class="mut pk-help">The app keeps today through Friday as shown by itself. A swap you make on one of these days re-plans that day only.</p></div>`:'');
   packProgress()}
-/* the socket nav.js asks as a page is shown (bus.js): the packing list page is shown or hidden */
-import {serve,askFor} from './bus.js';
-serve('pack-show',packShow);
+/* nav.js shows or hides the packing list page as a page is shown (bus.js register, at the end) */
+import {serve,askFor,register} from './bus.js';
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,PACK_TITLE,packComplete,packDefault,packLock,packLockState,packMark,get packNow(){return packNow},set packNow(v){packNow=v},packRelease,packSetCap,packSetDate,get packT(){return packT},set packT(v){packT=v},packTrip,packUses,packWear,renderPack,openPack,packSetTrip};
 export {PACK_TITLE,packT,packNow,packDefault,packTrip,packMark,packUses,packComplete,packLockState,packLock,packRelease,packSetDate,packSetTrip,packSetCap,packWear,packShow,openPack,renderPack};
@@ -258,3 +257,5 @@ function packReleaseTap(){packRelease()}
 acts({packOpenTap,packBackTap,packDatePick,packCapPick,packKeepTap,packNoCapTap,packTickPick,packWearTap,packWearDayTap,packCopyTap,packShareTap,packReleaseTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('pack-set-trip',packSetTrip);serve('pack-open',openPack);
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('pack',{'page-shown':()=>({packShow})});

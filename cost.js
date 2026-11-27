@@ -173,14 +173,13 @@ function cpwCareTap(){openSettings('care')}
 function cpwRowTap(el){cpwOpenItem(el.dataset.id)}
 function cpwCostDone(el){cpwSetCost(el.dataset.f,el.value)}
 function cpwCurPick(el){cpwSetCurrency(el.value)}
-/* the socket Insights asks for its cost-per-wear card (bus.js; stats.js no longer names this file) */
-import {serve,askFor} from './bus.js';
+/* Insights' cost-per-wear card and the other parts (bus.js register, at the end; stats.js no longer names this file) */
+import {askFor,register} from './bus.js';
 import {itemGoneTell} from './ui.js';
 import {APP_LOC} from './locale.js';
-serve('cpw-stats-card',cpwStatsCard);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,cpwCleanYear,cpwCur,cpwHint,cpwMoney,cpwOf,cpwParse,cpwQSet,cpwSetPrice,cpwText};
 export {cpwCur,cpwMoney,cpwParse,cpwOf,cpwCleanYear,cpwText,cpwHint,cpwSum,cpwBlock,cpwSetPrice,cpwQRow,cpwQSet,cpwSaveFields,cpwStatsCard,cpwSettingsUI};
 acts({cpwPriceType,cpwPriceDone,cpwBoughtPick,cpwCardField,cpwCareTap,cpwRowTap,cpwCostDone,cpwCurPick});
-/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('cpw-save-fields',cpwSaveFields);serve('cpw-q-row',cpwQRow);serve('cpw-settings-ui',cpwSettingsUI);serve('cpw-block',cpwBlock);serve('cpw-sum',cpwSum);
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('cost',{'settings-draw':()=>cpwSettingsUI(),'insights-cards':()=>({cpwStatsCard}),'item-sheet-parts':()=>({cpwBlock,cpwSum}),'add-card-sections':()=>({cpwQRow}),'card-saved':()=>({cpwSaveFields})});

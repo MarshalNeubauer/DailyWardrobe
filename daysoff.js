@@ -1,6 +1,6 @@
 /* Daily Wardrobe: Settings → Days off: public holidays, your own days off and the occasions (formal days)
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
-import {on,askFor,serve} from './bus.js';
+import {askFor,serve,register} from './bus.js';
 import {$,OCCASIONS,dayRecs,isoKey,isoToDate,key,keyDate,nameHtml,nowMs,occLabel,occOf,setStr,setWardrobe,settings,settingsOpen,shortDate,syncUrl,takeSettings,todayDate,trueToday,yearDate,esc} from './core.js';
 import {workerBase} from './photo-keys.js';
 import {saveUserSettings,settingsSummaries,todayDirty} from './settings.js';
@@ -153,15 +153,13 @@ function occClear(el){setOccasion(null,el.dataset.day)}
 function countryPick(el){setHolidayCountry(el.value)}
 function dayOffAddTap(){addDayOff()}
 function occAddTap(){addFormalDay()}
-/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
-on('settings-draw',()=>{renderFormalUI();renderDaysOffUI()});
-on('settings-summaries',S=>{S.country=countryName});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,addDayOff,builtinHolidays,holYears,get holidayMsg(){return holidayMsg},nagerKeep,toggleHoliday,refreshHolidays,setHolidayCountry,dayOffAdd};
 export {COUNTRY_CODES,countryName,holidayMsg,nagerKeep,builtinHolidays,holYears,setHolidayCountry,refreshHolidays,toggleHoliday,addDayOff,dayOffAdd,renderDaysOffUI,renderFormalUI};
 acts({occClear,countryPick,dayOffAddTap,occAddTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('day-off-add',dayOffAdd);
-serve('holidays-refresh',refreshHolidays);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
 serve('formal-ui',renderFormalUI);   // the restructure S6f: history.js redraws Settings' occasions
 serve('country-codes',()=>COUNTRY_CODES);serve('holiday-country-set',setHolidayCountry);   // the restructure S6g: setup.js's holidays (without this file the setup fetches none)
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('daysoff',{'start-jobs':()=>({refreshHolidays}),'settings-draw':()=>{renderFormalUI();renderDaysOffUI()},'settings-summary':S=>{S.country=countryName}});

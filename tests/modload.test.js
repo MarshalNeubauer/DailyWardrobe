@@ -54,6 +54,13 @@ module.exports=async({ok,engines,url,settle})=>{
   const nv=violations(C,np);
   ok(nv.length===2&&nv.some(l=>l.startsWith(fileOf(nNeed)+' '))&&nv.some(l=>l.startsWith(other+' ')),
     `planted imports and the needs: ${fileOf(nGroup)} (${nGroup}) → ${fileOf(nNeed)} (${nNeed}, needed) passes; the other way round, and ${other} → ${fileOf(nNeed)}, are caught (${nv.join('; ')})`);
+  // the owner's decision D1 (2026-11-27, N2): the parts that were `need` calls are their files' hooks (bus.js register), and no socket
+  // of that name is served or asked any more, so a missing file leaves them out and nothing throws there
+  {const ab=Object.entries(C.files).filter(([,e])=>e.absent),bad=[];let n=0;
+    for(const [f,e] of ab){const src=fs.readFileSync(path.join(ROOT,f),'utf8'),reg=src.slice(src.lastIndexOf('register('));
+      for(const a of e.absent){n++;if(!reg.includes(`'${a.hook}':`)||!new RegExp(`\\b${a.part}\\b`).test(reg))bad.push(`${f} does not register ${a.part} for ${a.hook}`)}}
+    const was=ab.flatMap(([,e])=>e.absent.map(a=>a.was)),still=page.filter(f=>was.some(w=>new RegExp(`\\b(?:serve|ask|askFor|served|need|needFn)\\('${w}'`).test(fs.readFileSync(path.join(ROOT,f),'utf8'))));
+    ok(n===15&&!bad.length&&!still.length,`D1: the ${n} parts that were \`need\` on main are their files' hooks (${ab.map(([f])=>f).join(', ')}), and none is a socket any more${bad.length?': '+bad.join('; '):''}${still.length?'; still a socket in '+still.join(', '):''}`)}
   for(const [eng,launch] of engines){let browser;
     try{browser=await launch()}catch(e){ok(false,`${eng}: the browser starts (${e.message.split('\n')[0]})`);continue}
     try{await run(eng,browser,{ok,url,settle});await survey(eng,browser,{ok,url,C,page,imports})}finally{await browser.close()}}
@@ -176,6 +183,21 @@ async function survey(eng,browser,{ok,url,C,page,imports}){
     for(const g of D){const ge=C.files[g];if(ge&&ge.group!==e.group&&((C.needs||{})[ge.group]||[]).includes(e.group))(needDown[ge.group+' ← '+f]=needDown[ge.group+' ← '+f]||[]).push(g)}}
   const needPairs=Object.entries(C.needs||{}).flatMap(([g,l])=>l.map(h=>[g,h])),shown=needPairs.filter(([g,h])=>Object.keys(needDown).some(k=>k.startsWith(g+' ← ')&&C.files[k.split(' ← ')[1]].group===h));
   ok(!downBad.length&&shown.length===needPairs.length,T+`an optional file's 404 stops just the files that import it, and a needed group's file takes the needing group's importers down with it (${Object.entries(needDown).map(([k,l])=>k+': '+l.join(', ')).join('; ')})${downBad.length?': '+downBad.join('; '):''}${shown.length<needPairs.length?'; no 404 shown taking down: '+needPairs.filter(x=>!shown.includes(x)).map(x=>x.join(' ← ')).join(', '):''}`);
+  /* D1 (the owner's decision, 2026-11-27; N2): each file whose parts are `absent` in the contract can't be loaded, and with Today drawn,
+     Settings opened and Insights shown no warning or page error names one of those parts' old sockets (main threw "… is not served"
+     there: Settings drawn in part, start-up's fix-ups stopped, Insights not drawn). Planted: start.js asking need('plan-rules-check')
+     again, with every file there, is caught */
+  {const partsCase=async(f,swap)=>{const ctx=await ctxFor(state,f,swap),said=[];
+      try{const p=await ctx.newPage();p.on('pageerror',e=>said.push(String(e.message)));p.on('console',m=>{if(m.type()==='warning'||m.type()==='error')said.push(m.text())});
+        await p.goto(url,{waitUntil:'load'});for(let i=0;i<80&&!(await p.evaluate(()=>!!window.appReady||!!document.querySelector('#start-fail')));i++)await wait(250);await wait(1500);
+        await p.evaluate(()=>{const g=document.querySelector('header .hbtns button[data-act="setOpenTap"]');if(g)g.click()});await wait(700);
+        await p.evaluate(()=>{try{HOOK.closeSettings()}catch(e){}const s=document.querySelector('#n-stats');if(s)s.click()});await wait(1500);return said}
+      catch(e){return ['(the case failed: '+e.message.split('\n')[0]+')']}finally{await ctx.close().catch(()=>{})}};
+    const ab=page.filter(f=>C.files[f].absent),was=ab.flatMap(f=>C.files[f].absent.map(a=>a.was)),named=said=>[...new Set(said.filter(t=>was.some(w=>t.includes(w+' is not served'))||/^\(the case failed/.test(t)).map(t=>t.split('\n')[0].slice(0,90)))];
+    const res={},q=[...ab];await Promise.all([0,1,2].map(async()=>{for(let f;(f=q.shift())!==undefined;)res[f]=named(await partsCase(f))}));
+    const pl=named(await partsCase('',{f:'start.js',body:fs.readFileSync(path.join(ROOT,'start.js'),'utf8').replace('function startChecks(){',"function startChecks(){need('plan-rules-check');")}));
+    const bad=ab.filter(f=>res[f].length);
+    ok(!bad.length&&pl.length>0,T+`D1: without ${ab.join(', ')} (each alone), Today, Settings and Insights show no error naming one of their absent parts${bad.length?': '+bad.map(f=>f+' '+res[f].join(' | ')).join('; '):''}; planted need('plan-rules-check') ${pl.length?'caught ('+pl[0]+')':'not caught'}`)}
   ok(!off.length,T+`each of the ${page.length} page scripts, when it can't be loaded (404), shows what the contract says (${Object.entries(tally).map(([k,v])=>k+' '+v).join(', ')}; painted only: ${page.filter(f=>expected(C,f,E)==='painted').map(f=>f+' '+got[f]).join(', ')})${off.length?': '+off.map(f=>`${f} shows ${got[f]}, the contract says ${expected(C,f,E)}`).join('; '):''}`);
 }
 async function run(eng,browser,{ok,url,settle}){

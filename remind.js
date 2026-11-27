@@ -7,11 +7,10 @@
    switch follows the morning reminder's until it is set by itself (remindPrefs().care: undefined = as the morning reminder).
    Needs the connection, a phone that can receive Web Push (on an iPhone: the app on the Home Screen, iOS 16.4 or later) and the
    VAPID keys on the server. The choice is this phone's own (localStorage.remind {on, care, time}); each phone subscribes for itself. */
-import {on,askFor,serve} from './bus.js';
+import {askFor,serve,register} from './bus.js';
 import {acctBase,acctCall,acctEsc,homeShareShort,iosInSafari,isWorkday,isoKey,key,sentence,todayDate} from './core.js';
 import {piecesLine} from './month.js';
 import {planMonth} from './today-plan.js';
-import {settingsPart} from './settings.js';
 import {acts} from './act.js';
 const REMIND_CACHE='dw-keep-remind',REMIND_URL='remind.json',CARE_URL='care.json',REMIND_DAYS=14,REMIND_POST_MS=20*3600000;
 const REMIND_CHECK_MS=12*3600000;   // how often a phone already told asks the server whether it still has its subscription
@@ -87,14 +86,11 @@ function renderRemindUI(){const el=document.querySelector('#remind-box');if(!el)
     <label class="srow">Time <input type="time" id="remind-time" value="${p.time}" data-act-change="remindTimePick"></label>`;
   el.innerHTML=`<div class="slabel">Morning reminder</div>${body}<p class="shelp remind-msg" role="status">${remindMsg?acctEsc(remindMsg):''}</p>`}
 async function remindTime(v){if(!/^\d\d:\d\d$/.test(v))return;const p={...remindPrefs(),time:v};remindSave(p);if(remindAny(p)){localStorage.removeItem('remind_sent');await remindRefresh();remindMsg=`Notifications at ${v}.`;renderRemindUI()}}
-/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
-on('settings-summaries',()=>remindSoon());
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,outfitLine,get remindBusy(){return remindBusy},remindCareOn,remindKeep,remindPrefs,remindRefresh,remindSave,remindSig,renderRemindUI};
 export {remindBusy,remindPrefs,remindCareOn,remindSave,outfitLine,remindKeep,remindSig,remindSoon,remindRefresh,renderRemindUI};
 /* start-up: draw with Settings' extras, and refresh once the app is up */
 (function remindStart(){
-  settingsPart(renderRemindUI);   // drawn with the rest of Settings (settings.js)
   const go=()=>setTimeout(remindRefresh,4000);document.readyState==='complete'?go():addEventListener('load',go,{once:true});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')remindSoon();else remindHidden()})})();
 /* the app goes to the background: the kept lines are written at once (on the phone, no request; the server is told on the next start).
@@ -108,3 +104,5 @@ function remindTimePick(el){remindTime(el.value)}
 acts({remindSwTap,careRemSwTap,remindTimePick});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('remind-soon',remindSoon);
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('remind',{'settings-summary':()=>remindSoon(),'settings-parts':renderRemindUI});   // (drawn with the rest of Settings)

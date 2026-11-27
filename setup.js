@@ -77,9 +77,9 @@ function setupBack(){if(!setupShown())return;if(setup.at>0){setupGo(-1);backPush
 /* the socket nav.js asks as a page is shown (bus.js): a setup that opened by itself steps aside; and the backup's words for the
    Connection step, which sync.js serves (without sync.js the step says the wardrobe is backed up, as ui.js's Connection line does;
    this file reads nothing of app.js's own ask(), the server request) */
-import {serve,ask,askFor,served} from './bus.js';
+import {serve,ask,askFor,served,register} from './bus.js';
 import {clearLocks} from './days.js';
-serve('setup-yield',setupYield);serve('setup-needs',setupNeeds);   // (and what the wardrobe still needs, for Insights: stats.js)
+serve('setup-needs',setupNeeds);   // (and what the wardrobe still needs, for Insights: stats.js)
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,setupCancel,setupClose,setupDress,setupGo,setupOpen,setupSearch,setupVestChosen,get setup(){return setup},set setup(v){setup=v},get SETUP_STEPS(){return SETUP_STEPS},setupDraw,setupFinish,setupShown,setupToday,tzCountry};
 export {SETUP_STEPS,setup,setupDress,setupShown,setupStart,setupVestChosen,setupOpen,setupClose,setupCancel,setupFinish,tzCountry,setupYield,setupGo,setupSample,setupDraw,setupSearch,setupNeeds,setupToday,setupWardEmpty};
@@ -287,5 +287,6 @@ acts({setupCancelTap,setupSkipTap,setupBackTap,setupNextTap,setupDayTap,setupSwT
   setupCityTap,setupUnitTap,setupLinkKey,setupConnectTap,setupAddTap,wemptyImportTap,wemptySampleTap,
   setupAgainTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('setup-shown',setupShown);serve('setup-finish',setupFinish);serve('setup-sample',setupSample);serve('setup-conn-draw',()=>{if(setupShown()&&/^(connect|done)$/.test(SETUP_STEPS[setup.at]))setupDraw()});serve('setup-ward-empty',setupWardEmpty);serve('tz-country',tzCountry);
-serve('setup-today',setupToday);serve('setup-start',setupStart);   // the restructure S6f: what required and today-no-picture files ask of this file
+serve('setup-shown',setupShown);serve('setup-finish',setupFinish);serve('setup-sample',setupSample);serve('setup-conn-draw',()=>{if(setupShown()&&/^(connect|done)$/.test(SETUP_STEPS[setup.at]))setupDraw()});serve('tz-country',tzCountry);
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('setup',{'start-jobs':()=>({setupStart}),'page-shown':()=>({setupYield}),'today-parts':()=>({setupToday}),'wardrobe-tile':()=>({setupWardEmpty})});

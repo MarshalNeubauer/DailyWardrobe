@@ -4,7 +4,7 @@
    photos.js, settings.js, start.js (the start-up
    chain), ui.js and the rest, about.js last.
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14.) */
-import {emit,serve,askFor,need,served} from './bus.js';   // the Wardrobe's redraw: itemsheet.js pins renderWardrobe for 'wardrobe-changed'
+import {serve,askFor,need,served,runHooks} from './bus.js';   // the Wardrobe's redraw: itemsheet.js pins renderWardrobe for 'wardrobe-changed'
 import {$,ACCENT_MAX,BELT_MATS,COLORS,FABRIC,LEATHERS,MATERIALS_BY,METAL,PATS_BY,SHOE_NAP,SHOE_STYLES,SHOE_TEXTILES,TAG_Q,TEXTURE_TYPES,TYPES,accentsFor,cleanDay,cleanRecord,cleanSettings,colOf,hexRgb,itemFields,items,labHex,matsFor,nextStamp,normCol,normColFor,normPat,ownMatName,rgbLab,settingsOpen,watchOpts,esc,inviteOver} from './core.js';
 let flt='all',queue=[];const now=new Date();let view={y:now.getFullYear(),m:now.getMonth()},sel=new Date(now.getFullYear(),now.getMonth(),now.getDate());
 
@@ -118,7 +118,7 @@ const putRaw=i=>tx('readwrite',s=>s.put(i));
 const stillCur=it=>items.find(x=>x.id===it.id)===it;
 /* and redraws the Wardrobe only when it is on screen and Settings is not open (renderWardrobe closes Settings; these now run after the first
    pull, which can be while Settings is open); the Wardrobe is drawn afresh when it is opened */
-const fixupRedraw=()=>{if(settingsOpen())return;const w=$('#wardrobe');if(w&&!w.hidden)emit('wardrobe-changed')};
+const fixupRedraw=()=>{if(settingsOpen())return;const w=$('#wardrobe');if(w&&!w.hidden)runHooks('wardrobe-changed')};
 const put=i=>{i.updated=nextStamp(stamp(i));askFor('kit-user-edit',i);   // (an edit in the item sheet makes a sample piece his: kit.js)
 // the fields changed since the stored copy get the edit's stamp, in the same transaction (core.js itemFields: two phones' changes to
 // different fields of one piece both stay, fix round 3; the stamp is nextStamp's, made one above the stored copy's only when it isn't)
@@ -405,7 +405,7 @@ const ENDED='Your invitation has ended. Your wardrobe stays on this phone, and t
    backs it up there instead of clearing it (account.js connectFromLink; 2026-11-15, the audit: nothing said how to recover) */
 function inviteEnded(token,j){if(j&&j.error==='forbidden token')try{localStorage.setItem('invite_lost',token)}catch{}
   if(localStorage.getItem('invite_ended')===token)return;localStorage.setItem('invite_ended',token);need('tell',endedTold(j));
-  emit('invite-ended')}   // what said "Connected" and "backed up" says so too: the Backup line (sync-status.js) and the account box (account.js), through bus.js
+  runHooks('invite-ended')}   // what said "Connected" and "backed up" says so too: the Backup line (sync-status.js) and the account box (account.js), through bus.js
 /* what the one-time message says (fix round 3): a link the owner replaced with a new one (worker/people.js, 'invite off' with replaced) says the
    new link opens the same wardrobe; an account deleted (W1-6-03: after Delete everything on another phone this phone only heard "Your
    invitation has ended") says the backup was deleted; else ENDED */

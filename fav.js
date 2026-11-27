@@ -47,7 +47,7 @@ function favLastWorn(){const out={},T=todayDate(),K=new Set(favLooks().map(favLo
 /* ---- favorite pieces: the item sheet's switch, the tiles' ♥, Wardrobe's chip ---- */
 /** @param {*} i */ function favItemRow(i){if(isHandPick(i))return '';const on=isFavItem(i.id);
   return `<button type="button" class="favtog${on?' on':''}" role="switch" aria-checked="${on}" aria-describedby="favhint" data-act="favItemTap" data-id="${esc(i.id)}">${on?FAV_HEART:FAV_HEART0}<span class="favtog-t">Favorite, wear it more</span><span class="favsw2" aria-hidden="true"></span></button><p class="shelp favhint" id="favhint">${on?'It comes round about a fifth sooner, and wins when outfits tie.':'A shorter rest, and it wins when outfits tie.'}</p>`}
-async function favToggleItem(id){const it=items.find(i=>i.id===id);if(!it)return;const set=async on=>{const n=favData();n.items=n.items.filter(x=>x!==id);if(on)n.items.push(id);await favSave(n);emit('wardrobe-changed')};
+async function favToggleItem(id){const it=items.find(i=>i.id===id);if(!it)return;const set=async on=>{const n=favData();n.items=n.items.filter(x=>x!==id);if(on)n.items.push(id);await favSave(n);runHooks('wardrobe-changed')};
   const had=isFavItem(id),name=sentence(itemTitle(it)||nm(it));await set(!had);
   toast(had?`${name} is no longer a favorite.`:`${name} is a favorite now.`,FAV_UNDO_MS,{label:'Undo',fn:()=>set(had)})}
 /** @param {*} i */ const favMark=i=>isFavItem(i.id)?`<span class="favmark" role="img" aria-label="Favorite">${FAV_HEART}</span>`:'';
@@ -80,9 +80,9 @@ const favOff=()=>{favWard=false};
 function favLookTap(){favToggleLook()}
 function favWearTap(el){wearFav(el.dataset.k)}
 function favItemTap(el){favToggleItem(el.dataset.id)}
-function favChipTap(){favWard=true;emit('wardrobe-changed')}
+function favChipTap(){favWard=true;runHooks('wardrobe-changed')}
 /* the socket Insights asks for its favorites card (bus.js; stats.js no longer names this file) */
-import {serve,emit,ask} from './bus.js';
+import {serve,ask,runHooks,register} from './bus.js';
 import {saveUserSettings} from './settings.js';
 import {renderToday} from './today.js';
 import {toast} from './toast.js';
@@ -90,11 +90,12 @@ import {dayOnly,dayWord} from './month.js';
 import {statDate,statName,statPic} from './stats.js';
 import {wearFav} from './history.js';
 import {acts} from './act.js';
-serve('fav-stats-card',favStatsCard);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,favData,favSave,favToggleItem,favWhy};
 export {FAV_UNDO_MS,favData,favSave,favPieces,favPillSeg,favLastIcon,favStrip,favItemRow,favToggleItem,favMark,favChip,favWhy,favStatsCard,favWard,favOff};
 acts({favLookTap,favWearTap,favItemTap,favChipTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('fav-ward',()=>!!(favWard&&favItemSet()));serve('fav-mark',favMark);serve('fav-item-row',favItemRow);serve('fav-chip',favChip);serve('fav-off',favOff);
-serve('fav-strip',favStrip);serve('fav-pieces',favPieces);serve('fav-undo-ms',()=>FAV_UNDO_MS);serve('fav-why',favWhy);serve('fav-last-icon',favLastIcon);serve('fav-pill-seg',favPillSeg);   // the restructure S6f: what today-no-picture files ask of this file
+serve('fav-ward',()=>!!(favWard&&favItemSet()));serve('fav-mark',favMark);serve('fav-chip',favChip);serve('fav-off',favOff);
+serve('fav-strip',favStrip);serve('fav-pieces',favPieces);serve('fav-undo-ms',()=>FAV_UNDO_MS);serve('fav-why',favWhy);   // the restructure S6f: what today-no-picture files ask of this file
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('fav',{'today-parts':()=>({favLastIcon,favPillSeg}),'insights-cards':()=>({favStatsCard}),'item-sheet-parts':()=>({favItemRow})});

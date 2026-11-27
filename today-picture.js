@@ -7,7 +7,7 @@
    OVL_LINE of a repeat, and a tie's pattern at half size (more repeats). Pictures only; it takes no touches and fades while zoomed. */
 import {CHECK_PATS,MOTIF_PATS,STRIPE_PATS,usableSett} from './detect.js';
 import {$,TEXTURE_TYPES,colOf,hexRgb,key,patBase} from './core.js';
-import {ask,served,askFor,serve} from './bus.js';
+import {ask,served,askFor,serve,register} from './bus.js';
 import {swatchSVG,texTileSmooth,texTileUrl,texTones} from './draw.js';
 import {srcOk} from './photo-keys.js';
 import {sel} from './app.js';
@@ -172,5 +172,6 @@ $('#today').addEventListener('click',e=>{if(!swOpen)return;const c=e.target.clos
 })();
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('zoomed',()=>zoom);
-serve('zoom-apply',applyZoom);serve('ovl-piece',ovlPiece);serve('sw-apply',swApply);serve('sw-tap',swTap);serve('zoom-out',zoomOut);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
-serve('sw-close',swClose);   // the restructure S6f: today.js closes an open swatch
+serve('zoom-apply',applyZoom);serve('ovl-piece',ovlPiece);serve('sw-tap',swTap);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('today-picture',{'today-parts':()=>({swApply}),'today-fold':()=>({zoomOut,swClose})});   // (Today's open swatch, and the zoom and swatch closed when the day folds)

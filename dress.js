@@ -4,7 +4,7 @@
    (outfit: without jackets every workday is a shirt and trousers, without ties none is picked; a formal day, a wedding
    or a funeral is still dressed in full from what is owned). This file holds the Settings switches and the one-time
    change of the waistcoat default. */
-import {on,askFor,serve} from './bus.js';
+import {askFor,serve,register} from './bus.js';
 import {$,items,settings,syncUrl,wearsJacket,wearsTie} from './core.js';
 import {saveUserSettings,settingsSummaries,todayDirty} from './settings.js';
 import {planDirty} from './today-plan.js';
@@ -75,18 +75,16 @@ function dressNewItem(){if(settings.vestDef||vestMigrating||items.some(legacyVes
    they don't have is dropped from memory too; then the suits that came in are looked at */
 /** @param {*} m */ function dressSynced(m){
   if(m&&m.settings){if(!m.settings.vestDef)delete settings.vestDef;if(!m.settings.dress)delete settings.dress}
-  if(!vestMigrating)migrateVests(true);
-  askFor('ward-synced',m)}   // a sock from an older app: its toe cap to toeColor (wardrobe.js)   // a shirt still "nylon/spandex" or "nylon" from another device (wardrobe.js)
+  if(!vestMigrating)migrateVests(true)}   // (then wardrobe.js's part of a sync: start.js onSyncedData)
 /* a dress-code switch (act.js; which one in data-k): a tap turns it the other way from what it shows */
 function dressSwTap(el){setDress(el.dataset.k,el.getAttribute('aria-checked')!=='true')}
-/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
-on('settings-draw',()=>renderDressUI());
-on('settings-summaries',S=>{S.dress=dressSummary});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get vestMigrating(){return vestMigrating},dressSynced,migrateVests,newSuitVest};
 export {renderDressUI,newSuitVest,dressSummary,dressWhyUnused,vestMigrating,migrateVests,dressNewItem,dressSynced};
 acts({dressSwTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('new-suit-vest',newSuitVest);serve('dress-new-item',dressNewItem);
+serve('dress-new-item',dressNewItem);
 serve('dress-why-unused',dressWhyUnused);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
-serve('vests-migrate',migrateVests);serve('dress-synced',dressSynced);   // the restructure S6f: start.js's start-up and a sync
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('dress',{'start-checks':()=>({migrateVests}),'synced':()=>({dressSynced}),'settings-draw':()=>renderDressUI(),'settings-summary':S=>{S.dress=dressSummary},
+  'add-card-sections':()=>({newSuitVest}),'card-saved':()=>({newSuitVest})});

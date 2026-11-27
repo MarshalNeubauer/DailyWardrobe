@@ -9,7 +9,7 @@
      one: the Care page shows them as one line with "All washed today".
    - the Care page (#care, from Settings), a quiet tag in the Wardrobe grid and one line on Today when today's wear reaches the limit.
    The shirt rule (settings.laundryDays) is in planner.js outfit(). */
-import {on,emit,serve,askFor} from './bus.js';
+import {serve,askFor,runHooks,register} from './bus.js';
 import {$,CARE_ABLE,CARE_MAX,TYPES,careLimit,careTimes,careWashed,careWord,dayRecs,fmtDay,isWorkday,isoKey,items,key,keyDate,nameHtml,sentence,settings,shortDesc,todayDate,esc} from './core.js';
 import {cache,planDirty,planFor,planMonth} from './today-plan.js';
 import {openSettings,refreshToday,saveUserSettings,todayDirty} from './settings.js';
@@ -54,7 +54,7 @@ const CARE_LOG=100;
     :`<div class="btns">${i.paused?'':first.map(w=>`<button type="button" class="caresend" data-why="${w}" data-act="careSendTap" data-id="${esc(id)}">${lab[w]}</button>`).join('')}${s.wears?`<button type="button" class="caredone" data-act="careDoneTap" data-id="${esc(id)}">${careWashed(i.type)?'Washed':'Cleaned'} today</button>`:''}</div>`;
   return `<section class="card ivsec ivcare" id="ivcare"><h3>Care</h3><p class="shelp carecount${s.due?' due':''}">${careWornLine(i)}${s.due?' · due now':''}</p>${body}</section>`}
 /* redraw whichever page the change was made on */
-function careRedraw(){askFor('remind-soon');/* the cleaning reminders follow a piece sent away or cleaned */careSum();const c=$('#sc-laundry');if(c&&c.classList.contains('open'))renderCare();else if($('#wardrobe')&&!$('#wardrobe').hidden)emit('wardrobe-changed');else if($('#today')&&!$('#today').hidden)refreshToday()}
+function careRedraw(){askFor('remind-soon');/* the cleaning reminders follow a piece sent away or cleaned */careSum();const c=$('#sc-laundry');if(c&&c.classList.contains('open'))renderCare();else if($('#wardrobe')&&!$('#wardrobe').hidden)runHooks('wardrobe-changed');else if($('#today')&&!$('#today').hidden)refreshToday()}
 /* upcoming days the piece was pinned to (a swap, a hand pick) let go of it, as when it is taken out of rotation: they are planned again */
 async function careRelease(id){const T=todayDate();let n=0;
   for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if(d<T||r.worn===true||!r.force)continue;const f={...r.force};let hit=false;
@@ -202,7 +202,7 @@ function renderCareUI(){const el=$('#care-limits');
     s.innerHTML=opts.map(n=>`<option value="${n}"${n===d?' selected':''}>${n?`${n} day${n===1?'':'s'}`:'Not at all'}</option>`).join('')}
   const sum=$('#sum-care');if(sum){const lim=t=>{const v=careLimit(t);return v?`${CARE_PLURAL[t].toLowerCase()} after ${v} wear${v===1?'':'s'}`:''},parts=[lim('suit'),lim('blazer')].filter(Boolean);
     const d=laundryDays();sum.textContent=cap1((parts.length?parts.join(', '):'no wear limits')+` · ${d?'a worn shirt waits '+d+' day'+(d===1?'':'s'):'worn shirts aren’t held back'}`)}
-  askFor('cpw-settings-ui')}   // the currency and what a cleaning costs (cost.js)
+}   // (the currency and what a cleaning costs: cost.js's own 'settings-draw', right after this file's)
 async function setCareLimit(t,v){if(!CARE_TYPES.includes(t))return;settings.care={...(settings.care||{}),[t]:Math.max(0,Math.min(CARE_MAX,Math.round(+v)||0))};await saveUserSettings();todayDirty();renderCareUI()}
 /* the shirt rule changes the plan: the days shown for the coming week are planned again with it */
 async function setLaundryDays(v){settings.laundryDays=Math.max(0,Math.min(14,Math.round(+v)||0));await clearLocks();await saveUserSettings();todayDirty();renderCareUI()}
@@ -221,14 +221,13 @@ function careLimitPick(el){setCareLimit(el.dataset.t,el.value)}
 function careDueTap(el,ev){openCare();ev.preventDefault()}
 function careBandKey(el,ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();careBandTap()}}
 /* the laundry's words and record, asked for by wardrobe.js and add-more.js (loaded before this file, of other groups: tests/bus.test.js SOCKETS) */
-serve('care-tag',careTag);serve('care-badge',careBadge);serve('care-log',careLog);serve('care-back-text',careBackText);
-/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
-on('settings-draw',()=>renderCareUI());
-on('settings-category',k=>{if(k==='laundry')renderCare()});   // Laundry & cleaning's lists, as it opens
+serve('care-log',careLog);serve('care-back-text',careBackText);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,careBack,careCleaned,careCounts,careDayState,careLists,careName,careSend,openCare,renderCare,careBadge,careReminders,careState};
 export {careName,careCounts,careState,careTag,careBadge,careBackText,careLog,careCard,careSend,careBack,careCleaned,careLists,renderCare,openCare,careNote,careDayState,careFrame,careBandSoon,careReminders,renderCareUI};
 acts({laundryPick,careSendTap,careDoneTap,careBackDate,careBackTap,careTypeDone,careLimitsTap,careLimitPick,careDueTap,careBandTap,careBandKey});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('care-band-soon',careBandSoon);serve('care-state',careState);serve('care-card',careCard);serve('care-reminders',careReminders);
-serve('care-frame',careFrame);serve('care-note',careNote);   // the restructure S6f: Today's cleaning frame and note (today.js)
+serve('care-band-soon',careBandSoon);serve('care-reminders',careReminders);
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('care',{'settings-draw':()=>renderCareUI(),'settings-category':k=>{if(k==='laundry')renderCare()},   // Laundry & cleaning's lists, as it opens
+  'today-parts':()=>({careFrame,careNote}),'item-sheet-parts':()=>({careState,careCard}),'wardrobe-tile':()=>({careTag,careBadge})});

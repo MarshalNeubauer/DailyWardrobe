@@ -5,12 +5,12 @@
    (Photo tagging → Beta features) turns it on for this phone only (localStorage beta_look, not synced); off, the app is exactly as before.
    Both UIs read and write the same item fields; the beta's own fields (lookOk, lookHint, leatherOwn, metalOwn) are ignored by the old UI.
    Loaded after checklist.js (an ES module since 2026-11-23); nothing runs at load but Settings' registration. */
-import {served,serve,emit,ask,askFor} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
+import {served,serve,ask,askFor,runHooks,register} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
 import {RD_LOOKUPS,SOCK_THIRD,SW_GRAB,closeColPick,cnHex,cnLeft,colHas,colNear,colPick,colPickSel,colTarget,lookShadeOk,openColForm,openColNew,openColPick,openPatForm,openPatNew,patChoices,patVar,rdCost,rdOff,renderColPick,useColPick} from './colpick.js';
 import {addTexture,renderAdd} from './add.js';
 import {addOwnMaterial,groupOf,matOffer,newColHex,removeOwnMaterial,renderOwnMatUI} from './own-lists.js';
 import {announce,cap1,cardAt,cardIx,editing,generateSwatch,put,qAt,queue,refreshSwatch} from './app.js';
-import {saveUserSettings,settingsPart,showCost} from './settings.js';
+import {saveUserSettings,showCost} from './settings.js';
 import {$,COLORS,CUSTOM_COL,DIAL_COLS,FABRIC,MATERIALS_BY,METAL,METAL_TONES,OWN_MAT_MAX,PATS_BY,SHADE_MAX,TYPES,clipMetal,colName,colsFor,isConnected,items,leatherWord,leathersFor,matTypeWord,matsFor,metalWord,normPat,ownMatName,paperCloth,patBase,patName,primaryCol,settings,shadeHex,shadeName,sockPatterned,sockToeKey,soleStyle,strapBand,watchOpts,esc} from './core.js';
 import {colourVerdicts,paperCopy,paperOf,undoMeasured} from './measure.js';
 import {ckLr,matGuessOf,matNewOf,setq} from './add-card.js';
@@ -33,7 +33,7 @@ import {LOOK_CLIP_METALS,LOOK_COATS,LOOK_CU,LOOK_ENAMEL,LOOK_LS,LOOK_METALT,LOOK
 function lookSet(on){on=!!on;try{if(on)localStorage.setItem(LOOK_LS,'1');else localStorage.removeItem(LOOK_LS)}catch{}setLookMemo(on);
   try{if(colPick)closeColPick()}catch{}
   try{renderAdd()}catch{}
-  try{if(editing)emit('wardrobe-changed')}catch{}
+  try{if(editing)runHooks('wardrobe-changed')}catch{}
   try{renderLookSetting();renderOwnMatUI()}catch{}
   announce(on?'New Look editor on.':'New Look editor off.')}
 function renderLookSetting(){const el=document.querySelector('#beta-list');if(!el)return;const on=lookOn();
@@ -41,7 +41,6 @@ function renderLookSetting(){const el=document.querySelector('#beta-list');if(!e
 /* the color sheet's beta parts, asked for by colpick.js (loaded before this file: tests/bus.test.js SOCKETS) */
 serve('look-use-pick',lookUsePick);serve('look-set-enamel',lookSetEnamel);serve('look-write',lookWrite);serve('look-pick-draw',renderLookPick);
 serve('look-sug-cols',lookSugCols);serve('look-sug-pats',lookSugPats);serve('look-shade-html',lookShadeHtml);
-settingsPart(renderLookSetting);
 
 /* ---- which types have what ---- */
 const LOOK_NOPAT=['shoes','belt','watch','tieclip','cufflinks'];   // the Pattern row is there, dimmed, so the three rows never move
@@ -165,13 +164,13 @@ const lookSnap=(it,fs)=>Object.fromEntries(fs.map(f=>[f,it[f]===undefined?undefi
 async function lookRestore(src,id,snap){const it=lookItem(src,id);if(!it)return;const pat=it.pattern,col=it.primaryColor;
   for(const [k,v] of Object.entries(snap)){if(v===undefined)delete it[k];else it[k]=v}
   if(src==='q'){if(it.pattern!==pat)try{readSett(it)}catch{}if(it.primaryColor!==col&&it.texCanvas)try{generateSwatch(it)}catch{}queueMicrotask(addKeep);renderAdd()}
-  else{if(it.sample)it.sampleMine=1;if(it.primaryColor!==col&&it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty();emit('wardrobe-changed')}}
+  else{if(it.sample)it.sampleMine=1;if(it.primaryColor!==col&&it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty();runHooks('wardrobe-changed')}}
 /* o: {field: value} (undefined or null: the field goes) */
 /** @param {*} src @param {*} id @param {*} o */ async function lookWrite(src,id,o){const it=lookItem(src,id);if(!it){if(src==='e')itemGoneTell(id);return null}
   for(const [k,v] of Object.entries(o)){if(v===undefined||v===null)delete it[k];else it[k]=v}
   if('primaryColor' in o)delete it.color;
   if(src==='q'){it.edited={...it.edited,...Object.fromEntries(Object.keys(o).map(k=>[k,true]))};queueMicrotask(addKeep);renderAdd()}
-  else{if(it.sample)it.sampleMine=1;await put(it);planDirty();emit('wardrobe-changed')}
+  else{if(it.sample)it.sampleMine=1;await put(it);planDirty();runHooks('wardrobe-changed')}
   return it}
 const LOOK_UNDO_F=['primaryColor','color','shade','secondaryColor','tertiaryColor','pattern','sett','stripes','patternSpec','weave','material','matSet','matAI','matGuess','matNew','leather','leatherOwn','leatherNone','metal','metalOwn','dial','lookHint','newColor','newPattern'];
 const LOOK_FIELD_WORD={primaryColor:'Color',pattern:'Pattern',material:'Material',leather:'Leather',metal:'Metal',buckle:'Buckle',dial:'Dial',enamel:'Enamel'};
@@ -350,7 +349,7 @@ function lookPatExtras(i){const id=i.id,fab=FABRIC.includes(i.type);
   const layout=fab&&(DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett)?`<div class="ivpat"><p class="shelp">Pattern layout: ${ask('pat-summary',i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" data-id="${esc(id)}" data-how="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?'reread':'detect'}" data-act="lkReread">Read pattern from photo</button>`}${i.stripes||i.sett?`<button data-id="${esc(id)}" data-act="lkClearStripes">Use generic</button>`:''}</div></div>`:'';
   return layout+(served('asm-gap-note')?ask('asm-gap-note',i):'')}
 /* the item sheet's "Looks right": kept on the item (lookOk, synced); a later edit leaves it (the owner's question 4: it stays) */
-async function lookCheck(id){const it=items.find(x=>x.id===id);if(!it){itemGoneTell(id);return}if(it.lookOk)delete it.lookOk;else it.lookOk=1;await put(it);emit('wardrobe-changed')}
+async function lookCheck(id){const it=items.find(x=>x.id===id);if(!it){itemGoneTell(id);return}if(it.lookOk)delete it.lookOk;else it.lookOk=1;await put(it);runHooks('wardrobe-changed')}
 /* the item sheet opens Look unfolded every time an item is opened (itemsheet.js itemBody, a new phEdit) */
 function lookOpenFresh(){CK_OPEN['e|lk']=true}
 
@@ -364,7 +363,7 @@ function lookSave(q,it){if(!lookOn())return;const t=q.type;
   if(t==='tieclip'&&LOOK_CLIP_METALS.includes(q.metal)&&!LOOK_CLIP_METALS.includes(it.primaryColor))it.metal=q.metal}
 
 /* ---- Read with Claude ---- */
-function lookRedraw(src,id){if(src==='q')renderAdd();else if(editing===id)emit('wardrobe-changed')}
+function lookRedraw(src,id){if(src==='q')renderAdd();else if(editing===id)runHooks('wardrobe-changed')}
 function lookReadStop(src,id){const me=LOOK_RD[src+'|'+id];if(me&&me.ac)try{me.ac.abort()}catch{}delete LOOK_RD[src+'|'+id];lookRedraw(src,id)}
 async function lookRead(src,id){const it=lookItem(src,id);if(!it)return;const key=src+'|'+id;if(LOOK_RD[key]&&LOOK_RD[key].busy)return;
   if(src==='q'&&cardReading(it)){tell('Claude is still reading this card.');return}
@@ -412,7 +411,7 @@ async function lookApplyRead(src,id,j,me){const it=lookItem(src,id);if(!it)retur
   if(Object.keys(h).length)it.lookHint=h;else delete it.lookHint;
   me.by=by;
   if(src==='q'){if(normPat(t,it.pattern)!==pat0)try{readSett(it)}catch{}if(it.primaryColor!==pc0&&it.texCanvas)try{generateSwatch(it)}catch{}queueMicrotask(addKeep);renderAdd()}
-  else{if(it.sample)it.sampleMine=1;if(it.primaryColor!==pc0&&it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty();emit('wardrobe-changed')}
+  else{if(it.sample)it.sampleMine=1;if(it.primaryColor!==pc0&&it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty();runHooks('wardrobe-changed')}
   const words=said.filter(Boolean).map(s=>String(s).toLowerCase());
   toast(words.length?`Claude read it: ${words.join(', ')}.${changed?'':' Nothing changed.'}`:'Claude couldn’t tell this time: nothing changed.',8000,changed?{label:'Undo',fn:async()=>{await lookRestore(src,id,snap);const x=LOOK_RD[src+'|'+id];if(x)delete x.by;lookRedraw(src,id)}}:undefined)}
 
@@ -452,4 +451,6 @@ globalThis.HOOK={__proto__:globalThis.HOOK||null,LOOK_OTHER,lookCheck,lookOwnMat
 export {lookSet,lookOwnMats,LOOK_OTHER,lookWrite,lookOwnMatUI,lookSetMat,lookSetEnamel,renderLookPick,lookUsePick,lookShadeHtml,lookShadeStep,lookSugCols,lookSugPats,lookSection,lookCheck,lookOpenFresh,lookSave};
 acts({lkSwitch,lkAddChip,lkUse,lkOwnRm,lkOwnAdd,lkOwnCancel,lkOwnOpen,lkSel,lkClose,lkOther,lkSaveOther,lkNewName,lkNewAdd,lkNewOpen,lkUsePick,lkShade,lkRow,lkUndoMeas,lkStop,lkRead,lkCheck,lkReread,lkClearStripes,lkNewCol,lkNewPat,lkCuFileQ});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('look-section',lookSection);serve('look-save',lookSave);serve('look-own-mat-ui',lookOwnMatUI);
+serve('look-own-mat-ui',lookOwnMatUI);
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('look',{'settings-parts':renderLookSetting,'add-card-sections':()=>({lookSection}),'card-saved':()=>({lookSave})});

@@ -1,6 +1,6 @@
 /* Daily Wardrobe: the weather: units, the location and its search, the 16-day forecast and the usual weather by month
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
-import {on,askFor,serve} from './bus.js';
+import {askFor,serve,register} from './bus.js';
 import {$,climate,key,setClimate,setWeather,settings,settingsOpen,weather,esc} from './core.js';
 import {refreshToday,renderSettingsExtras,saveUserSettings,settingsSummaries,todayDirty} from './settings.js';
 import {announce} from './app.js';
@@ -75,9 +75,6 @@ async function loadClimate(){
     setWeather(days);localStorage.setItem('wx',JSON.stringify({lat:L.lat,lon:L.lon,t:Date.now(),days}));planDirty();if(!$('#today').hidden)refreshToday()}
   catch(e){console.warn('weather unavailable',e)}
 }
-/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
-on('settings-draw',()=>{renderWxLoc();if($('#cfg-units'))$('#cfg-units').value=unit()});
-on('settings-summaries',S=>{S.unit=unit});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,geoName,findCity,setLocation,setUnits,unit};
 /* the city search's answers (findCity), for its results' taps here and the setup's own list (setup.js), cityFound: kept on window as _cities until the
@@ -94,5 +91,7 @@ function myLocTap(){useMyLocation()}
 function unitsPick(el){setUnits(el.value)}
 acts({cityPick,cityKey,citySearchTap,myLocTap,unitsPick});
 serve('weather-load',loadWeather);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
-serve('temp',temp);serve('wx-chip',wxChip);   // the restructure S6f: what today-no-picture files ask of this file
+serve('temp',temp);   // the restructure S6f: what today-no-picture files ask of this file
 serve('wx-unit',unit);serve('wx-units-set',setUnits);serve('wx-location-set',setLocation);serve('wx-locate',useMyLocation);serve('wx-city-find',findCity);serve('wx-city-found',()=>cityFound);serve('wx-city-found-set',setCityFound);   // the restructure S6h: setup.js's Weather step (without this file the step is left out)
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('weather',{'settings-draw':()=>{renderWxLoc();if($('#cfg-units'))$('#cfg-units').value=unit()},'settings-summary':S=>{S.unit=unit},'today-parts':()=>({wxChip})});

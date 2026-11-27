@@ -3,7 +3,8 @@
   "The load-failure contract (the restructure, step 2, 2026-11-26; RESTRUCTURE-PLAN.md section 6): what one page file that cannot be loaded may take down.",
   "Every page script in index.html is listed with its class and its feature group; tests/modload.test.js checks it (404 of each file on Chromium and WebKit, and the imports read from the files).",
   "on404: what its 404 shows where that is not its class's usual: \"card\" (the start-up card), \"no-picture\" (Today drawn without its outfit figure), \"picture\" (Today drawn with it: the mannequin or the painted picture) or \"painted\" (Today drawn, its only figure the painted picture: \"picture\" once painted, \"no-picture\" where the painter is late or does not paint); a string for both engines, or {chromium, webkit}.",
-  "needs (the owner's rule 3, 2026-11-27; the restructure S6c): a group -> the groups it may import from, which it then fails with: a 404 of a needed group's file takes the needing group's files that import it down too. Not handed on: a group may import only the groups it names itself."
+  "needs (the owner's rule 3, 2026-11-27; the restructure S6c): a group -> the groups it may import from, which it then fails with: a 404 of a needed group's file takes the needing group's files that import it down too. Not handed on: a group may import only the groups it names itself.",
+  "absent (the owner's decision D1, 2026-11-27; the notice board made clean, N2): the parts a file's 404 now leaves out where main threw (they were bus.js `need` calls; now the file's hooks, bus.js register): each one's moment (hook), the part, and the socket it was (was). A file that didn't load registered nothing, so core goes on without its parts: start-up, Settings, Insights and Today no longer stop there. tests/modload.test.js checks that each is the file's hook and no socket any more, and that the file's 404 shows no error naming it."
  ],
  "classes": {
   "required": {
@@ -155,7 +156,10 @@
   },
   "item-photo.js": {
    "class": "optional",
-   "group": "item-sheet"
+   "group": "item-sheet",
+   "absent": [
+    {"hook": "after-pull-fixups", "part": "smallPhotos", "was": "small-photos"}
+   ]
   },
   "item-view.js": {
    "class": "optional",
@@ -167,7 +171,12 @@
   },
   "history.js": {
    "class": "today-no-picture",
-   "group": "today"
+   "group": "today",
+   "absent": [
+    {"hook": "start-checks", "part": "checkPlanRules", "was": "plan-rules-check"},
+    {"hook": "start-checks", "part": "dropLearn", "was": "learn-drop"},
+    {"hook": "settings-rows", "part": "renderReplanUI", "was": "replan-ui"}
+   ]
   },
   "missed.js": {
    "class": "today-no-picture",
@@ -211,7 +220,11 @@
   },
   "photos.js": {
    "class": "today-no-picture",
-   "group": "today"
+   "group": "today",
+   "absent": [
+    {"hook": "settings-rows", "part": "renderItemPicUI", "was": "item-pic-ui"},
+    {"hook": "pictures-switched", "part": "schedulePrefetch", "was": "prefetch-soon"}
+   ]
   },
   "locale.js": {
    "class": "optional",
@@ -227,7 +240,10 @@
   },
   "weather.js": {
    "class": "optional",
-   "group": "weather"
+   "group": "weather",
+   "absent": [
+    {"hook": "today-parts", "part": "wxChip", "was": "wx-chip"}
+   ]
   },
   "toast.js": {
    "class": "required",
@@ -262,11 +278,20 @@
   },
   "tag-request.js": {
    "class": "optional",
-   "group": "add"
+   "group": "add",
+   "absent": [
+    {"hook": "insights-cards", "part": "tagStatsCard", "was": "tag-stats-card"}
+   ]
   },
   "migrate.js": {
    "class": "optional",
-   "group": "add"
+   "group": "add",
+   "absent": [
+    {"hook": "after-pull-fixups", "part": "remakeAfterPull", "was": "spec-recolour"},
+    {"hook": "after-pull-fixups", "part": "remakeAfterPull", "was": "closeups-upgrade"},
+    {"hook": "after-pull-fixups", "part": "remakeAfterPull", "was": "photos-upgrade"},
+    {"hook": "after-pull-fixups", "part": "remakeAfterPull", "was": "backdrops-fix"}
+   ]
   },
   "measure.js": {
    "class": "optional",
@@ -352,7 +377,10 @@
   },
   "stats.js": {
    "class": "today-no-picture",
-   "group": "stats"
+   "group": "stats",
+   "absent": [
+    {"hook": "page-shown", "part": "renderStats", "was": "stats-draw"}
+   ]
   },
   "pack.js": {
    "class": "optional",
@@ -422,7 +450,11 @@
   },
   "kit.js": {
    "class": "optional",
-   "group": "kit"
+   "group": "kit",
+   "absent": [
+    {"hook": "start-checks", "part": "kitFixOldImports", "was": "kit-fix-old"},
+    {"hook": "start-checks", "part": "kitSampleMigrate", "was": "kit-sample-migrate"}
+   ]
   },
   "calendar.js": {
    "class": "optional",

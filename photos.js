@@ -1,7 +1,7 @@
 /* Daily Wardrobe: outfit photos: kept photos and item pictures (the keys, the kept pictures' store and the escapes are photo-keys.js's
    since the restructure S3b, 2026-11-26)
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14.) */
-import {emit,ask,need,serve} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
+import {ask,need,serve,runHooks,register} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
 import {$,COLORS,colName,dayRecs,isCargo,items,key,keyDate,nm,patLabel,patName,primaryCol,settingsOpen,shoeStyle,sockPatterned,sockToe,todayDate,trouserKind,watchText} from './core.js';
 import {comboKey,comboSig,fnv64,keepRender,listPaused,picsDrawn,renders,shareRender,srcOk,workerBase,workerList} from './photo-keys.js';
 import {hasOutfit,planFor,planMonth} from './today-plan.js';
@@ -142,7 +142,7 @@ async function fetchItemPic(i,sure){const W=workerBase(),k=itemKey(i);if(!W||ren
 /* the Wardrobe drawn again for a picture that arrived in the background: while Settings or an item's sheet is open it waits for it to close,
    as a sync's redraw does (syncRedraw: viewStale, syncLater); renderWardrobe closes Settings and redraws the sheet (the 2026-11-24 review's
    R1 N1: Settings snapped shut by itself) */
-function wardRefresh(){if(settingsOpen()||editing)ask('sync-redraw','wardrobe');else emit('wardrobe-changed')}
+function wardRefresh(){if(settingsOpen()||editing)ask('sync-redraw','wardrobe');else runHooks('wardrobe-changed')}
 async function renderItemPic(i){
   const W=workerBase();if(!W)throw new Error('Connect in ⚙ Settings first.');
   const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'item',item:itemDesc(i),key:itemKey(i),...(i.photo?{ref:i.photo}:{})})});   // the item's own photo, when there is one, is the model to copy
@@ -197,4 +197,6 @@ function itemPicsTap(){startItemPics()}
 /* an item picture has loaded (data-act-load; its key in data-k): its background color is read from it once */
 function itemPicLoad(el){picBg(el,el.dataset.k)}
 acts({itemPicsTap,itemPicLoad});
-serve('asm-live',asmLive);serve('item-pic-ui',renderItemPicUI);serve('prefetch-soon',schedulePrefetch);serve('item-backdrops-fix',fixItemBackdrops);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
+serve('asm-live',asmLive);serve('item-backdrops-fix',fixItemBackdrops);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('photos',{'settings-rows':()=>({renderItemPicUI}),'pictures-switched':()=>({schedulePrefetch})});
