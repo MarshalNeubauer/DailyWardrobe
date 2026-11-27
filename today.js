@@ -136,8 +136,8 @@ function wornPill(o){const T=todayDate(),d=dayOnly(sel);if(+d>+T||!isWorkday(sel
 /* the date bar's weather line with the pill: the weather (or "Set location") sits centred between two pill-wide sides, unless that cuts
    it (Larger Text, page zoom: "Set loc…", then nothing; re-audit 2026-11-15); then it takes the line alone and the pill goes under it
    (.wxwrap). Measured after each drawing and when Today's size changes (the text size or the zoom changed) */
-let wxFitOn=false,wxFitW=0,wxFitRaf=0;
-function wxFit(){const w=document.querySelector('#today .day h2 .wx.haspill');
+let wxFitOn=false,wxFitW=/** @type {number|string} */(0),wxFitRaf=0;
+function wxFit(){const w=/** @type {HTMLElement} */(document.querySelector('#today .day h2 .wx.haspill'));
   // (from the observer: in the next frame, and only when the width changed; a class changed inside the observer's own callback was a
   // "ResizeObserver loop" error)
   if(!wxFitOn&&typeof ResizeObserver!=='undefined'){wxFitOn=true;new ResizeObserver(es=>{const x=Math.round(es[0].contentRect.width*100)+'|'+getComputedStyle(document.documentElement).fontSize;
@@ -187,7 +187,7 @@ function keepHome(){if(!dayShown||!dayShown.home||dayShown.k!==key(todayDate()))
   setSel(new Date(h));setView({y:h.getFullYear(),m:h.getMonth()});setMonthOpen(false)}
 function pickPiece(s){const o=planFor()[key(sel)],el=$('#bbox');if(!o||!el||!s||!o[s])return;const opening=belowOpen!==s,was=el.classList.contains('open');
   belowOpen=opening?s:null;
-  document.querySelectorAll('.below .tile').forEach(t=>{const on=opening&&t.getAttribute('data-s')===s;t.setAttribute('aria-expanded',on);
+  document.querySelectorAll('.below .tile').forEach(t=>{const on=opening&&t.getAttribute('data-s')===s;t.setAttribute('aria-expanded',String(on));
     t.setAttribute('aria-label',t.getAttribute('aria-label').replace(/(Show|Hide) the photo/,on?'Hide the photo':'Show the photo'))});
   const inn=el.querySelector('.rpanel-in');
   if(opening&&was){need('pic-stop',el);inn.innerHTML=rowPanel(o[s]);if(!noMotion())inn.animate([{opacity:0},{opacity:1}],{duration:200});return}   // another tile while one is open: its photo takes the place

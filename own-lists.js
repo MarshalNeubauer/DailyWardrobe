@@ -49,6 +49,7 @@ async function addCustomColor({name,hex,base,types,accent}){if(ownNameBad(name))
 /* a new pattern's "drawn like" from the words in its name and description (2026-11-13: the owner's "fine worsted twill" and "melange
    twill" were left drawn like solid, so the outfit pictures painted them plain): the longest listed pattern named in them, a few
    other words for one, else what the card was tagged */
+/** @type {[RegExp, string][]} */
 const PAT_WORDS=[[/prince of wales|glen ?plaid/i,'glen-check'],[/plaid|tartan/i,'check'],[/serge|gabardine|cavalry/i,'twill'],[/pin ?stripe/i,'pinstripe'],[/chalk ?stripe/i,'chalk-stripe'],[/dots?\b|spots?\b/i,'polka-dot'],[/neat|micro.?print/i,'foulard']];
 function guessPatBase(name,desc,type,fallback){const t=`${name||''} ${desc||''}`,ok=p=>(PATS_BY[type]||[]).includes(p)&&!CUSTOM_PAT[p];
   const list=(PATS_BY[type]||[]).filter(p=>p!=='solid'&&p!=='other'&&ok(p)).sort((a,b)=>b.length-a.length);

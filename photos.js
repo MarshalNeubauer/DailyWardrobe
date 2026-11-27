@@ -128,7 +128,7 @@ const itemImg=async u=>{const s=await shrinkUrl(u,400);return await greyBackdrop
 async function fixItemBackdrops(){let n=0;for(const [k,r] of Object.entries(renders))if(r&&r.sig==='item'&&!r.grey){const g=await greyBackdrop(r.img);
     await keepRender(k,{...r,...(g?{img:g}:{}),grey:1},false);if(g){n++;delete picBgs[k]}}return n}
 function picBg(img,k){if(picBgs[k]!==undefined)return;picBgs[k]=null;
-  readPicBg(img.src).then(c=>{if(!c)return;picBgs[k]=c;document.querySelectorAll(`img.item-pic[data-k="${k}"]`).forEach(i=>{const t=i.closest('.tile');if(t)t.style.background=c})})}
+  readPicBg(img.src).then(c=>{if(!c)return;picBgs[k]=c;document.querySelectorAll(`img.item-pic[data-k="${k}"]`).forEach(i=>{const t=/** @type {HTMLElement} */(i.closest('.tile'));if(t)t.style.background=c})})}
 const itemPicHtml=(i,fallback)=>{const p=itemPic(i);if(p)return `<img class="item-pic" src="${srcOk(p.img)}" alt="" data-k="${itemKey(i)}" data-act-load="itemPicLoad">`;if(i&&ITEM_PIC_TYPES.includes(i.type))setTimeout(()=>fetchItemPic(i),0);return fallback};
 /* sure: asked before paying for a new picture (startItemPics), so without a list the key is asked for even while lists are paused */
 /* in the Wardrobe, shoes, belts and socks show their realistic product picture when there is one (moved here from itemsheet.js, the
@@ -148,12 +148,12 @@ async function renderItemPic(i){
   const r=await fetch(W.url,{method:'POST',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({mode:'item',item:itemDesc(i),key:itemKey(i),...(i.photo?{ref:i.photo}:{})})});   // the item's own photo, when there is one, is the model to copy
   const j=await r.json().catch(()=>({}));
   // a refusal stops the batch (stop): the server's limits, its saves used up, no key; the next picture would only be refused too
-  if(!r.ok){const e=new Error(j.message||j.error||`HTTP ${r.status}`);e.stop=[401,403,429,501,503].includes(r.status);throw e}
+  if(!r.ok){const e=/** @type {Error & {stop?: boolean}} */(new Error(j.message||j.error||`HTTP ${r.status}`));e.stop=[401,403,429,501,503].includes(r.status);throw e}
   // made (and paid for) but the server couldn't keep it (its saves used up, worker/items.js): kept on this phone, marked local so it
   // is uploaded later (shareLocalPics), and the batch stops before paying for another that couldn't be kept either
   const local=j.stored===false;
   await keepRender(itemKey(i),{sig:'item',img:await itemImg(j.image),model:j.model||'',t:Date.now(),grey:1,...(local?{local:1}:{})},false);
-  if(local){const e=new Error(j.message||'The server can’t save more pictures today.');e.stop=true;e.kept=true;throw e}
+  if(local){const e=/** @type {Error & {stop?: boolean, kept?: boolean}} */(new Error(j.message||'The server can’t save more pictures today.'));e.stop=true;e.kept=true;throw e}
 }
 /* item pictures kept only on this phone (made while the server couldn't save): uploaded once the server takes them again; a refusal
    keeps the mark for the next try (a new batch, or the next start's list) */

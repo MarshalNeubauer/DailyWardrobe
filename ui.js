@@ -18,7 +18,7 @@ const ASK_NONE={ok:'OK',cancel:'Cancel',danger:false};
 const ASK_SETTLE=450;   // ms after a question opens in which a real tap outside it doesn't cancel it: it is the double tap's second tap (re-audit 2026-11-15)
 let asking=null;   // the question on screen: {done(answer), last (what had the focus)}
 const uiEsc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
-function askEls(){let b=document.querySelector('#ask-backdrop'),s=document.querySelector('#ask-sheet');
+function askEls(){let b=/** @type {HTMLElement} */(document.querySelector('#ask-backdrop')),s=/** @type {HTMLElement} */(document.querySelector('#ask-sheet'));
   if(!s){b=document.createElement('div');b.id='ask-backdrop';b.onclick=e=>{if(e.isTrusted&&asking&&performance.now()-asking.at<ASK_SETTLE)return;askAnswer(false)};   // (the second tap of a double tap on the button that asked)
     s=document.createElement('div');s.id='ask-sheet';s.setAttribute('role','alertdialog');s.setAttribute('aria-modal','true');s.setAttribute('aria-labelledby','ask-title');s.tabIndex=-1;
     s.addEventListener('keydown',askKey);document.body.append(b,s)}
@@ -26,10 +26,10 @@ function askEls(){let b=document.querySelector('#ask-backdrop'),s=document.query
 /* Escape answers no; Tab stays inside the sheet */
 function askKey(e){if(!asking)return;
   if(e.key==='Escape'){e.preventDefault();e.stopPropagation();askAnswer(false);return}
-  if(e.key!=='Tab')return;const f=[...document.querySelectorAll('#ask-sheet button')];if(!f.length)return;
-  const at=f.indexOf(document.activeElement),to=e.shiftKey?(at<=0?f.length-1:at-1):(at===f.length-1?0:at+1);e.preventDefault();f[to].focus()}
+  if(e.key!=='Tab')return;const f=[.../** @type {NodeListOf<HTMLElement>} */(document.querySelectorAll('#ask-sheet button'))];if(!f.length)return;
+  const at=f.indexOf(/** @type {HTMLElement} */(document.activeElement)),to=e.shiftKey?(at<=0?f.length-1:at-1):(at===f.length-1?0:at+1);e.preventDefault();f[to].focus()}
 /* fromBack: the phone's Back closed it (askBack): its history entry is gone already */
-function askAnswer(v,fromBack){const a=asking;if(!a)return;asking=null;const {b,s}=askEls();b.classList.remove('on');s.classList.remove('on');{const iv=document.querySelector('#item-view');if(iv&&iv.inert)layerInert()}   // (the item sheet made inert under it by another layer's call: given back; a question itself doesn't toggle inert, which is slow on WebKit and has its own Tab trap)
+function askAnswer(v,fromBack){const a=asking;if(!a)return;asking=null;const {b,s}=askEls();b.classList.remove('on');s.classList.remove('on');{const iv=/** @type {HTMLElement} */(document.querySelector('#item-view'));if(iv&&iv.inert)layerInert()}   // (the item sheet made inert under it by another layer's call: given back; a question itself doesn't toggle inert, which is slow on WebKit and has its own Tab trap)
   backReturn('ask',a.was,fromBack);   // the entry goes, or goes back to the page under the question; after Back the page gets a new one
   try{if(a.last&&a.last.isConnected)a.last.focus({preventScroll:true})}catch{}
   const w=backSettled();if(w)w.then(()=>a.done(!!v));else a.done(!!v)}   // (after the question's own step back has landed)
@@ -162,7 +162,7 @@ function askConfirm(message,opt){const o={...ASK_NONE,...(opt||{})};if(asking)as
   s.innerHTML=`<p class="ask-q" id="ask-title">${uiEsc(parts[0])}</p>${parts.slice(1).map(t=>`<p class="ask-more">${uiEsc(t)}</p>`).join('')}
 <div class="ask-btns">${o.cancel?`<button type="button" id="ask-cancel" data-act="askNoTap">${uiEsc(o.cancel)}</button>`:''}<button type="button" id="ask-ok" class="${o.danger?'ask-danger':'pri'}" data-act="askYesTap">${uiEsc(o.ok)}</button></div>`;
   return new Promise(done=>{asking={done,last:document.activeElement,at:performance.now(),was:backBorrow('ask')};b.classList.add('on');s.classList.add('on');
-    const f=s.querySelector(o.danger&&o.cancel?'#ask-cancel':'#ask-ok');if(f)f.focus({preventScroll:true})})}
+    const f=/** @type {HTMLElement} */(s.querySelector(o.danger&&o.cancel?'#ask-cancel':'#ask-ok'));if(f)f.focus({preventScroll:true})})}
 /* ---- the close-up chooser (2026-11-15, closeup-chooser-mockups variant A, the owner's choice): a close-up button went straight to the
    phone's own picture picker, with no clear way back out. On a touch screen it now opens a sheet from the bottom in the questions' style:
    the cloth-and-white-paper drawing, Take close-up (the camera: capture="environment"), Choose from photos, Remove close-up (a quiet red
@@ -193,7 +193,7 @@ function cuBtnTap(el){const d=el.dataset,file=ACTS[d.actChange],rm=d.rm?ACTS[d.r
 /* a close-up's file handler hands its file on: the chooser's (f), or without a touch screen the field's own, which is then emptied
    so the same picture can be chosen again */
 function cuGot(el,f,use){if(f){use(f);return}use(el.files[0]);el.value=''}
-function cuEls(){let b=document.querySelector('#cu-backdrop'),s=document.querySelector('#cu-sheet');
+function cuEls(){let b=/** @type {HTMLElement} */(document.querySelector('#cu-backdrop')),s=/** @type {HTMLElement} */(document.querySelector('#cu-sheet'));
   if(!s){b=document.createElement('div');b.id='cu-backdrop';b.onclick=e=>{if(e.isTrusted&&cuOpen&&performance.now()-cuOpen.at<ASK_SETTLE)return;closeupClose()};
     s=document.createElement('div');s.id='cu-sheet';s.setAttribute('role','dialog');s.setAttribute('aria-modal','true');s.setAttribute('aria-labelledby','cu-title');s.setAttribute('aria-describedby','cu-sub');s.tabIndex=-1;
     document.body.append(b,s)}
@@ -203,11 +203,11 @@ function closeupPick(o){if(cuOpen)closeupClose();const c=CU_COPY[o.mode]||CU_COP
 <label class="cu-btn pri">${CU_CAM}<span>Take close-up</span><input type="file" accept="image/*" capture="environment" class="vfile" id="cu-take"></label>
 ${o.mode==='retake'?'':'<p class="cu-tip">Lay white paper along one edge, then tap the paper on screen.</p>'}<label class="cu-btn">${CU_LIB}<span>Choose from photos</span><input type="file" accept="image/*" class="vfile" id="cu-lib"></label>
 ${o.remove?'<button type="button" class="cu-rm" id="cu-rm">Remove close-up</button>':''}<button type="button" class="cu-cancel" id="cu-cancel">Cancel</button>`;
-  for(const inp of s.querySelectorAll('input[type=file]'))inp.onchange=()=>{const f=inp.files&&inp.files[0];inp.value='';closeupClose();if(f&&o.file)o.file(f)};   // the same handler the button had (addTexture, replaceTexture, cnRetake)
-  const rm=s.querySelector('#cu-rm');if(rm)rm.onclick=()=>{closeupClose();o.remove()};
-  s.querySelector('#cu-cancel').onclick=()=>closeupClose();
+  for(const inp of /** @type {NodeListOf<HTMLInputElement>} */(s.querySelectorAll('input[type=file]')))inp.onchange=()=>{const f=inp.files&&inp.files[0];inp.value='';closeupClose();if(f&&o.file)o.file(f)};   // the same handler the button had (addTexture, replaceTexture, cnRetake)
+  const rm=/** @type {HTMLElement} */(s.querySelector('#cu-rm'));if(rm)rm.onclick=()=>{closeupClose();o.remove()};
+  /** @type {HTMLElement} */(s.querySelector('#cu-cancel')).onclick=()=>closeupClose();
   cuOpen={o,at:performance.now(),last:document.activeElement,was:backBorrow('cu')};b.classList.add('on');s.classList.add('on');layerInert();
-  try{s.querySelector('#cu-take').focus({preventScroll:true})}catch{}}
+  try{/** @type {HTMLElement} */(s.querySelector('#cu-take')).focus({preventScroll:true})}catch{}}
 /* fromBack: the phone's Back closed it: its history entry is gone already (as askAnswer) */
 function closeupClose(fromBack){const a=cuOpen;if(!a)return;cuOpen=null;const {b,s}=cuEls();b.classList.remove('on');s.classList.remove('on');layerInert();
   backReturn('cu',a.was,fromBack);
@@ -217,7 +217,7 @@ backOn('cu',()=>closeupBack());
 /* Escape closes it; Tab stays inside it (ahead of the item sheet's and the colour sheet's own keys) */
 window.addEventListener('keydown',e=>{if(!cuOpen||(e.key!=='Escape'&&e.key!=='Tab'))return;e.preventDefault();e.stopImmediatePropagation();
   if(e.key==='Escape'){closeupClose();return}
-  const f=[...document.querySelectorAll('#cu-sheet input,#cu-sheet button')],at=f.indexOf(document.activeElement);if(!f.length)return;
+  const f=[.../** @type {NodeListOf<HTMLElement>} */(document.querySelectorAll('#cu-sheet input,#cu-sheet button'))],at=f.indexOf(/** @type {HTMLElement} */(document.activeElement));if(!f.length)return;
   f[e.shiftKey?(at<=0?f.length-1:at-1):(at<0||at===f.length-1?0:at+1)].focus()},true);
 
 /* a notice: nothing to answer, so a toast, kept up long enough to read (about 15 characters a second, 4 to 9 seconds) */
@@ -237,10 +237,10 @@ function layerUp(){const l=LAYER_Q.map(q=>document.querySelector(q)).filter(Bool
   const iv=document.querySelector('#item-view.on');if(iv)l.push(iv);return l}
 function layerInert(){const up=layerUp(),on=up.length>0||!!document.querySelector('#setup.on,#nostore'),npsTop=!!up[0]&&up[0].id==='nps-sheet';
   // "Add without a photo" is inside main: on top, main stays reachable and npsInert closes off the rest of Add around it
-  for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on&&!(npsTop&&el.tagName==='MAIN');
+  for(const el of /** @type {NodeListOf<HTMLElement>} */(document.querySelectorAll('body>header,main,body>nav')))el.inert=on&&!(npsTop&&el.tagName==='MAIN');
   // the item sheet under a sheet of its own (the color sheet, the close-up chooser, the reading sheet, a question, the picker): out of
   // reach too (fix round 3, W2-19-03: 18 of 40 Tabs from the color sheet landed in the item sheet behind it)
-  const iv=document.querySelector('#item-view');if(iv)iv.inert=!!up.length&&up[0]!==iv&&iv.classList.contains('on');
+  const iv=/** @type {HTMLElement} */(document.querySelector('#item-view'));if(iv)iv.inert=!!up.length&&up[0]!==iv&&iv.classList.contains('on');
   if((!on||npsTop)&&need('nps-id'))need('nps-inert',true)}   // the "Add without a photo" sheet (in main) still up: the page around it stays out of reach (add-sheet.js)
 function layerOpen(el){if(!el)return;if(!layerFrom.has(el)){const a=document.activeElement;layerFrom.set(el,a);if(a&&a.id)layerFromId.set(el,a.id);else layerFromId.delete(el)}
   if(!el.hasAttribute('tabindex'))el.tabIndex=-1;layerInert();
@@ -292,7 +292,7 @@ function needConn(btn){if(!btn)return false;const off=!isConnected(),box=btn.clo
 function connSummary(){if(ask('invite-checking'))return 'Checking your invitation…';if(inviteOver())return 'Invitation ended';if(!isConnected())return 'Not connected';const m=ask('acct-me');
   return m?(m.role==='owner'?'Connected as the owner':'Connected as '+(m.name||'a tester')):'Connected'}
 let connMsg='',connBusy=false;
-function renderConnUI(){const el=document.querySelector('#conn-box');if(!el)return;const typed=el.querySelector('#conn-link')?el.querySelector('#conn-link').value:'';
+function renderConnUI(){const el=document.querySelector('#conn-box');if(!el)return;const typed=el.querySelector('#conn-link')?/** @type {HTMLInputElement} */(el.querySelector('#conn-link')).value:'';
   const checking=!!ask('invite-checking'),waiting=!checking&&ask('acct-why')==='offline'&&hasInviteHash();
   el.innerHTML=checking?'<p class="shelp" id="conn-state" role="status">Checking your invitation…</p>'
    :isConnected()?`<p class="shelp" id="conn-state"><span class="conn-tick" aria-hidden="true">✓</span> Photos of your clothes are read automatically, item pictures can be made, and ${served('backed-up-words')?ask('backed-up-words'):'your wardrobe is backed up'}.</p>`+
@@ -304,24 +304,24 @@ function renderConnUI(){const el=document.querySelector('#conn-box');if(!el)retu
 <div class="sform"><input type="text" id="conn-link" placeholder="Paste your invite link" aria-label="Invite link" autocomplete="off" autocapitalize="off" spellcheck="false" data-act-keydown="connLinkKey"><button type="button" class="pri" id="conn-go" data-act="connGoTap"${connBusy?' disabled':''}>${connBusy?'Connecting…':'Connect'}</button></div>
 <p class="shelp conn-msg" id="conn-msg" role="status">${uiEsc(connMsg)}</p>
 <p class="shelp conn-own" id="conn-own"><button type="button" class="linkbtn" data-act="connOwnTap">I run the server: connect with its address and code</button></p>`;
-  const f=el.querySelector('#conn-link');if(f)f.value=typed||(waiting?location.href:'');
-  for(const ph of document.querySelectorAll('.conn-off-note'))ph.innerHTML=isConnected()?'':`${uiEsc(ph.dataset.what||'This')} needs a connection. <button type="button" class="linkbtn" data-act="connOffTap">Connect</button>`;
+  const f=/** @type {HTMLInputElement} */(el.querySelector('#conn-link'));if(f)f.value=typed||(waiting?location.href:'');
+  for(const ph of /** @type {NodeListOf<HTMLElement>} */(document.querySelectorAll('.conn-off-note')))ph.innerHTML=isConnected()?'':`${uiEsc(ph.dataset.what||'This')} needs a connection. <button type="button" class="linkbtn" data-act="connOffTap">Connect</button>`;
   ask('apply-role')}
 /* not connected, the owner's fold (the server's address and code) stays out of sight until asked for: a new tester was invited to type
    into "Code" (audit 2026-11-14). The owner connecting a new phone taps this line (styles.css: body.nocon:not(.srv-open)) */
 function connOwn(){document.body.classList.add('srv-open');const f=document.querySelector('#adv-connection');if(f&&!f.classList.contains('open')){const b=f.querySelector('.adv-head');if(b)advToggle(b)}
-  const o=document.querySelector('#conn-own');if(o)o.hidden=true}
+  const o=/** @type {HTMLElement} */(document.querySelector('#conn-own'));if(o)o.hidden=true}
 /* from a section that needs the server: open Connection and put the cursor in the invite-link field */
 function goConnect(){const c=document.querySelector('#sc-connection');if(c&&!c.classList.contains('open'))need('cat-toggle','connection');
-  setTimeout(()=>{const f=document.querySelector('#conn-link');if(f){f.scrollIntoView({block:'center',behavior:'smooth'});f.focus({preventScroll:true})}},350)}
+  setTimeout(()=>{const f=/** @type {HTMLElement} */(document.querySelector('#conn-link'));if(f){f.scrollIntoView({block:'center',behavior:'smooth'});f.focus({preventScroll:true})}},350)}
 /* the Add tab: "Several items" finds the items in one photo on the server, so it is switched off (with the reason) while not connected */
 const ADD_GROUP_SUB='One photo of a rail, a pile or a few on hangers';
 function addGate(){const l=document.querySelector('#add-group'),s=document.querySelector('#add-group-sub'),inp=l&&l.querySelector('input');if(!l||!s||!inp)return;const off=!isConnected();
   l.classList.toggle('connhide',off);l.classList.remove('needconn');l.removeAttribute('aria-disabled');inp.disabled=off;s.textContent=ADD_GROUP_SUB;   // not connected: the card is not shown
   // ...and a line says why, before any photo is picked (audit 2026-11-13: a new user found out only after picking one)
-  let n=document.querySelector('#add-group-off');if(!n&&off){n=document.createElement('p');n.id='add-group-off';n.className='mut addoff';l.parentElement.after(n)}
+  let n=/** @type {HTMLElement} */(document.querySelector('#add-group-off'));if(!n&&off){n=document.createElement('p');n.id='add-group-off';n.className='mut addoff';l.parentElement.after(n)}
   if(n){n.hidden=!off;n.innerHTML=off?'Several items in one photo are found by the server, so that needs a connection. <button type="button" class="linkbtn" data-act="addConnTap">Connect</button>':''}}
-async function connPaste(){const inp=document.querySelector('#conn-link'),t=(inp&&inp.value||'').trim();if(!t||connBusy)return;
+async function connPaste(){const inp=/** @type {HTMLInputElement} */(document.querySelector('#conn-link')),t=(inp&&inp.value||'').trim();if(!t||connBusy)return;
   connBusy=true;connMsg='';renderConnUI();let ok=false;
   try{ok=served('connect-link')&&!!(await ask('connect-link',t))}catch(e){ok=false}
   // why it didn't connect, in this line (offline isn't a wrong link; a kept connection was said by its toast)

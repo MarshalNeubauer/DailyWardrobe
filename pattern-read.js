@@ -125,6 +125,7 @@ async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
 /* patternFail: the last reading failed on the server's side (an error status, no answer) rather than finding no pattern; rereadSett says so (2026-11-18:
    the server refused every reading for two days with a 502 and the item sheet said "No clear pattern found") */
 let patternFail=false;
+/** @param {{image: any, closeup: any, type: any, wb?: any, signal?: AbortSignal}} o */
 async function claudePattern({image,closeup,type,wb,signal}){const w=localStorage.getItem('worker_url');patternFail=false;if(!w||!image||inviteOver())return null;
   try{const r=await fetch(new URL('pattern',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},
       body:JSON.stringify({image,...(closeup?{closeup}:{}),type,...(typeof wb==='boolean'?{wb}:{})}),...(signal?{signal}:{})});   // wb: both pictures white-balanced (worker.js); signal: Skip or a newer close-up calls it off (readBegin)
