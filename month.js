@@ -27,7 +27,7 @@ function stackSVG(o,cls='',rep=false){
 function dayMarks(d,o){const k=key(d),m=cache.marks||(cache.marks={});if(m[k])return m[k];const r=dayRecs[k];let v={rep:false,bad:false};
   if(o&&hasOutfit(o)&&!(r&&r.worn===false))v={rep:pairSeen(o,recentWork(d))>=0,bad:(window.TEST_PLAN?TEST_PLAN.rate(o):rateOutfit(o)).hard.length>0};
   return m[k]=v}
-const planOn=d=>planMonth(d.getFullYear(),d.getMonth())[key(d)];
+/** @param {*} d */ const planOn=d=>planMonth(d.getFullYear(),d.getMonth())[key(d)];
 /* the next workday after d (dir -1: the one before), at most NEXT_CAP days away; null when there is none (no workdays at all). The one
    step rule for the home day, ‹ and › and the formal-day form (CR-4-06: it gave up after 7 days, so a vacation or a long Eid break of
    own days off opened Today on a day off and stopped › inside it) */

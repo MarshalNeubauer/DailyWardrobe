@@ -46,7 +46,7 @@ const ASM_NK_KNIT={fine:3,mid:3.8,chunky:4.6,cols:8,rows:8,cw:12,ch:9,amp:.42,li
 /* a jersey or fleece stripe (a Breton: about 12 mm a repeat, a third of it the stripe) and a heather's flecks (light and dark fibres,
    about a mm, ±`amp`) */
 const ASM_NK_STRIPE={mm:12,share:.36},ASM_NK_HEATHER={T:64,mm:14,amp:.16,fleck:.5};
-const asmNkBase=k=>ASM_NK[k]?ASM_NK[k].base:k;
+/** @param {*} k */ const asmNkBase=k=>ASM_NK[k]?ASM_NK[k].base:k;
 /* the masters that show trousers: jeans there are painted on the faded copy */
 const ASM_JF_BASES=['shirt-open','shirt-tie'];
 /* ---- the cloths ---- */

@@ -43,7 +43,7 @@ function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)retu
    said in a toast and a line at the top of the sheet; the sheet stays until closed (redrawn it would vanish under the finger), and a
    change made in it says it wasn't kept (itemGoneTell). was: the copy shown before the sync */
 let itemGone=null;
-function itemSynced(was){if(!editing)return;const id=editing,now=items.find(x=>x.id===id);
+/** @param {*} was */ function itemSynced(was){if(!editing)return;const id=editing,now=items.find(x=>x.id===id);
   if(!now){if(itemGone===id)return;itemGone=id;const n=was&&(itemName(was)||nm(was));
     tell(n?`“${n}” was deleted on another phone.`:'This piece was deleted on another phone.');
     const b=$('#ivbody');if(b&&!b.querySelector('.ivgone'))b.insertAdjacentHTML('afterbegin','<p class="ivgone" role="status">This piece was deleted on another phone. Changes made here aren’t kept.</p>');return}
@@ -62,7 +62,7 @@ function renderItem(){
   $('#iv-prev').disabled=k<=0;$('#iv-next').disabled=k<0||k>=l.length-1;
   itemShown(true)}
 const sheetSlides=()=>innerWidth<600;   // a phone: the sheet slides up from the bottom; wider, the panel fades in
-function openItem(id){
+/** @param {*} id */ function openItem(id){
   if(!items.some(i=>i.id===id))return;const v=$('#item-view'),bd=$('#item-backdrop'),was=editing;
   setEditing(id);itemGone=null;if(!was)itemFrom=id;if(lookOn())lookOpenFresh();/* (the Look beta: Look opens unfolded on every item opened) */histPush();ivSwipe();renderItem();$('#ivbody').scrollTop=0;if(!was)layerOpen(v);   // the focus goes into the sheet and comes back on closing (W2-19-02)
   for(const el of [v,bd]){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}

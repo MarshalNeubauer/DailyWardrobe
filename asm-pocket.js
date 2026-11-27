@@ -26,10 +26,10 @@ const ASM_POCKET_MASTER={'suit-open':'suit','vest-open':'vest'};
 const ASM_POCKET_SHAPE={t0:.12,t1:.94,h:27};
 const ASM_POCKET_LIT=.84;   // the strip's light against the chest's just above it (a white square read as a white sticker at .96)
 /* the strip's corners at 2048: b0, b1 its bottom (on the welt's opening, left and right), t0, t1 its top; null on a master with no pocket */
-function asmPocketQuad(kind){const g=ASM_POCKET_GEO[ASM_POCKET_MASTER[kind]||kind];if(!g)return null;const S=ASM_POCKET_SHAPE,at=t=>[g.l[0]+(g.r[0]-g.l[0])*t,g.l[1]+(g.r[1]-g.l[1])*t];
+/** @param {*} kind */ function asmPocketQuad(kind){const g=ASM_POCKET_GEO[ASM_POCKET_MASTER[kind]||kind];if(!g)return null;const S=ASM_POCKET_SHAPE,at=t=>[g.l[0]+(g.r[0]-g.l[0])*t,g.l[1]+(g.r[1]-g.l[1])*t];
   const b0=at(S.t0),b1=at(S.t1);return {b0,b1,t0:[b0[0],b0[1]-S.h],t1:[b1[0],b1[1]-S.h]}}
 /* paint the square on a finished picture: res {url} (a JPEG) or {px, S} (raw RGBA); returns res with the square painted */
-async function asmPocketPaint(res,J){if(!res||!J)return res;let img=null,px,S;
+/** @param {*} res @param {*} J */ async function asmPocketPaint(res,J){if(!res||!J)return res;let img=null,px,S;
   if(res.px){px=res.px;S=res.S}else if(res.url){img=await asmData(res.url);px=img.data;S=img.width}else return res;
   asmPocketDo(px,S,J);
   if(img)res.url=await asmJpeg(img);return res}

@@ -14,7 +14,7 @@ function undoFab(t,ms,act){const b=$('#undo-fab'),e=$('#toast');if(e&&e.classLis
   b.setAttribute('aria-label','Undo: '+t);b.tabIndex=0;b.style.setProperty('--ud',ms+'ms');b.classList.remove('on');void b.offsetWidth;b.classList.add('on');
   b.onclick=()=>{undoOff(true);act.fn()};clearTimeout(undoTimer);undoTimer=setTimeout(function off(){if(b.contains(document.activeElement)){undoTimer=setTimeout(off,1500);return}undoOff()},ms)}
 function undoOff(now){const b=$('#undo-fab');if(!b)return;clearTimeout(undoTimer);if(document.activeElement===b)b.blur();b.classList.remove('on');b.tabIndex=-1;b.onclick=null}
-function toast(t,ms=2500,act){if(act&&act.label==='Undo'&&undoHere())return undoFab(t,Math.max(ms,TOAST_ACT_MS),act);
+/** @param {*} [t] @param {*} [act] */ function toast(t,ms=2500,act){if(act&&act.label==='Undo'&&undoHere())return undoFab(t,Math.max(ms,TOAST_ACT_MS),act);
   const e=$('#toast');if(!e)return;e.textContent=t;e.classList.toggle('act',!!act);if(act)ms=Math.max(ms,TOAST_ACT_MS);
   if(act){const b=document.createElement('button');b.type='button';b.textContent=act.label;b.onclick=()=>{clearTimeout(toastTimer);e.classList.remove('on','act');e.textContent='';act.fn()};e.append(' ',b)}
   e.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastOff(e),ms)}

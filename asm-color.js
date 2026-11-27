@@ -27,11 +27,11 @@ const ASM_CM='asm_cm';   // localStorage: '0' = this phone puts pictures togethe
 const asmCmPref=()=>{try{return localStorage.getItem(ASM_CM)!=='0'}catch{return true}};
 try{localStorage.removeItem(ASM_CM)}catch{}   // (its Settings switch is gone, 2026-11-13: a phone that had it off paints again; asmCmSet stays for the tests)
 /* which master an outfit is painted on, or null (the earlier assembler, or the outfit's own photo) */
-function asmCmKind(o){if(!o||!o.shirt||!asmCmPref())return null;
+/** @param {*} o */ function asmCmKind(o){if(!o||!o.shirt||!asmCmPref())return null;
   if(o.top)return o.tie?(o.vest?'vest':'suit'):(o.vest?'vest-open':'suit-open');
   if(!o.bot||!o.belt)return null;   // the shirt masters show the trousers and the belt
   return o.tie?'shirt-tie':'shirt-open'}
-const asmNkBaseOf=k=>served('asm-nk-base')?ask('asm-nk-base',k):k;
+/** @param {*} k */ const asmNkBaseOf=k=>served('asm-nk-base')?ask('asm-nk-base',k):k;
 /* the cloth of each garment, as it goes into the picture's key: a new colour, reading or drawing makes a new picture */
 const ASM_CM_PAINTV=9;   // 2: jackets and trousers without a stripe or check reading are their colour; 3: a plain twill jacket has its ribs (asmTwillTex); 4: woven shirts at full swing, measured repeat, 3x3 points; 5: the sleeves reach the jacket's outer edge (ASM_CM_RIM); 6: the cloth look (#304, rolled back: its pictures are still on the worker under p6); 7: the cloth look and lighting as chosen (ASM_CM_LOOK, ASM_CM_LIGHT); 8: the same on trousers, the shirt's buttons drawn (ASM_CM_BTN), the tie's sheen dialled back (the owner: too glossy), the half-hidden button drawn as a button, no purple skin edge (the button smudge); 9: (2026-11-14 audit) the tie sheen, hand edge and trousers lighting shipped under 8 without a bump: repainted; since then the painter's code is hashed into every key (asmCmCodeSig), so a forgotten bump can't leave old pictures
 /* the cloth look (the owner's choice, 2026-11-13, after several rounds of mockups against an OpenAI picture of his black suit, which the
@@ -71,7 +71,7 @@ const ASM_CM_BTN={'shirt-open':[[1029,428,10.5],[1015,835,10.5],[1014,1031,10.5]
 // ASM_CM_BTN_MIX of the shirt in display (sRGB) values, so it is darker as well as coloured and sits with the shirt; a first version kept the
 // pearl's brightness and added 15% of the shirt's hue, which the owner found too light
 const ASM_CM_BTN_PEARL=[.86,.84,.80],ASM_CM_BTN_MIX=.55,ASM_CM_BTNV=3;
-const asmCmBtnCol=shirt=>{const g=linSrgb,lg=srgbLin;   // (srgb.js)
+/** @param {*} shirt */ const asmCmBtnCol=shirt=>{const g=linSrgb,lg=srgbLin;   // (srgb.js)
   return ASM_CM_BTN_PEARL.map((v,q)=>lg(g(v)*(1-ASM_CM_BTN_MIX)+g(Math.max(0,Math.min(1,shirt[q])))*ASM_CM_BTN_MIX))};
 function asmCmButtons(o,P,shirt,L,gam){const pts=ASM_CM_BTN[P.kind];if(!pts)return;const S=P.S,A=P.A,f=S/2048;
   // (2026-11-13, the owner: "buttons should be white, just tinted the main color"): every shirt's buttons are pearl white mixed with the

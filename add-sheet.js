@@ -46,7 +46,7 @@ function npsOpen(id){const s=$('#nps-sheet'),b=$('#nps-backdrop');if(!s)return;c
   const body=$('#nps-q');if(body&&!again)body.scrollTop=0;
   if(!again)try{s.focus({preventScroll:true})}catch{}}
 /* the page under the sheet (header, the tab bar, the rest of Add) can't be reached while it is up */
-function npsInert(on){for(const el of /** @type {NodeListOf<HTMLElement>} */(document.querySelectorAll('body>header,body>nav')))el.inert=on;const a=$('#add');if(!a)return;
+/** @param {*} on */ function npsInert(on){for(const el of /** @type {NodeListOf<HTMLElement>} */(document.querySelectorAll('body>header,body>nav')))el.inert=on;const a=$('#add');if(!a)return;
   for(const el of a.children)if(el.id!=='nps-sheet'&&el.id!=='nps-backdrop')el.inert=on}
 /* the card and its bar; the card gone (saved, or taken away) closes the sheet */
 function npsDraw(){const q=npsCard(),s=$('#nps-sheet');if(!s)return;if(!q){npsClose();return}const i=queue.indexOf(q),body=$('#nps-q'),bar=$('#nps-bar');

@@ -44,7 +44,7 @@ const asmCmLightKeys=kind=>{const l=asmCmKey(kind,'light'),M=asmCmMfNow().keys;r
 const asmCmGeoKeys=kind=>{const u=asmCmKey(kind,'geo/u'),v=asmCmKey(kind,'geo/v'),M=asmCmMfNow().keys;return M[u]&&M[v]?[u,v]:[]};
 /* (2026-11-16) the master a look is painted on, the new garments' kinds included (asm-kinds.js asmCmKindOf); asmCmKind (in the painter's
    fingerprint) is unchanged. asmNkBaseOf: a new kind's base master (its cloth and trousers/jacket zones), else the kind itself */
-const asmKindOf=o=>typeof asmCmKindOf==='function'?asmCmKindOf(o):asmCmKind(o);
+/** @param {*} o */ const asmKindOf=o=>typeof asmCmKindOf==='function'?asmCmKindOf(o):asmCmKind(o);
 /* only the ties it changes get a new picture key */
 const asmCmTieTag=(z,i)=>{if(z!=='tie'||typeof colOf!=='function')return '';const h=String(colOf(i)).replace('#',''),L=ASM_LIN||null;if(!L)return '';
   const y=.2126*L[parseInt(h.slice(0,2),16)||0]+.7152*L[parseInt(h.slice(2,4),16)||0]+.0722*L[parseInt(h.slice(4,6),16)||0];return asmTieSheenK(y)<1?'/tsh1':''};
@@ -69,7 +69,7 @@ const asmCmWeaveTag=(z,i)=>{if(z==='shirt'&&asmHbShirt(i))return '/hbs'+ASM_HB_S
   if((z==='jacket'||z==='waistcoat')&&asmCmRoute(i,z).how==='tweed'&&!asmSuitTweed(i))return '/ttweed';   // an own pattern named tweed
   if((z!=='jacket'&&z!=='waistcoat')||!asmSuitTwill(i))return '';
   const w=asmSuitWeave(i);return w==='herringbone'?'/hb'+ASM_HB_MM+'-'+ASM_HB_AMP+'-'+ASM_HB_RIB+'-'+ASM_HB_FLECK+'-'+ASM_HB_YARN+'-'+ASM_HB_BREAK+'s'+ASM_HB_THIN+'m'+ASM_HB_MOTTLE+'f'+ASM_HB_FLOAT+'/'+ASM_HB_FLOATL+'o'+ASM_HB_SOFT+'g'+ASM_HB_GRAIN+'n'+ASM_HB_SNAP+'p'+ASM_HB_PBRK:patBase(i.pattern)!=='twill'?'/tw':''};
-function asmCmRoute(i,z){if(!i)return {how:'flat',gap:'',why:''};const s=typeof usableSett==='function'?usableSett(i):null,b=patBase(i.pattern)||'solid',pn=(typeof patName==='function'?patName(i.pattern):b).toLowerCase();
+/** @param {*} i @param {*} z */ function asmCmRoute(i,z){if(!i)return {how:'flat',gap:'',why:''};const s=typeof usableSett==='function'?usableSett(i):null,b=patBase(i.pattern)||'solid',pn=(typeof patName==='function'?patName(i.pattern):b).toLowerCase();
   const w=asmSuitWeave(i),canRead=served('pattern-readable')?ask('pattern-readable',i.type,i.pattern,i.weave):false;
   const plain=(gap,why)=>({how:'plain',gap,why}),needs=()=>plain('reading',`its ${pn} is painted once its pattern is read (Read pattern from photo)`);
   if(z==='belt')return {how:'flat',gap:'',why:''};
@@ -110,8 +110,8 @@ function asmCmSig(o){const k=asmKindOf(o);if(!k)return '';const b=asmNkBaseOf(k)
   const bg=renders[asmCmBgKey()];if(bg)s.push('bg:'+bg.t+'/'+ASM_CM_BG_SHADOW);
   const jf=asmJfWants(o,k);if(jf)s.push('jf'+jf.t);   // jeans on the faded master (asm-kinds.js), once it is on the worker
   return s.join('|')}
-const asmCmOutKey=o=>asmKey('out/cm'+ASM_CMV+'/'+fnv64(asmCmSig(o)));
-const asmCmStamp=o=>{const k=asmKindOf(o);return k?asmCmAssets(k).reduce((t,key)=>Math.max(t,renders[key]&&renders[key].t||0),0):0};
+/** @param {*} o */ const asmCmOutKey=o=>asmKey('out/cm'+ASM_CMV+'/'+fnv64(asmCmSig(o)));
+/** @param {*} o */ const asmCmStamp=o=>{const k=asmKindOf(o);return k?asmCmAssets(k).reduce((t,key)=>Math.max(t,renders[key]&&renders[key].t||0),0):0};
 /* the background behind every master (2026-11-13, the owner's choice: a blurred office the colour of his earlier masters, made with
    ChatGPT as an empty room and its desk carried further left so its end hides behind the trousers on the shirt masters): one picture on
    the worker (`npm run cm-upload -- --bg <file>`), shared by the four masters; without it the wall is the flat ASM_CM_WALL as before.
@@ -167,7 +167,7 @@ async function asmCrTile1(i,all){const L=ASM_LIN,im=new Image();im.src=i.texture
   return {t,TW,TH,mm,fine:true,cr}}
 /* one repeat of the app's drawing of an item (fabricDef), in linear light, softened toward its ground (each channel's median), and how
    many mm one repeat is on the cloth -> {t, TW, TH, mm} or null */
-async function asmCmTile(i,role){const s=usableSett(i),pat=patBase(i.pattern)||'solid';if(pat==='solid'&&!s)return null;
+/** @param {*} i @param {*} role */ async function asmCmTile(i,role){const s=usableSett(i),pat=patBase(i.pattern)||'solid';if(pat==='solid'&&!s)return null;
   const def=fabricDef('cmt',i,role).replace(/ patternTransform="[^"]*"/,'').replace(/<path [^>]*stroke="#fff"[^>]*\/>/g,''),num=a=>+((def.match(new RegExp(' '+a+'="([\\d.]+)"'))||[])[1]||0),w=num('width'),h=num('height');
   if(!w||!h)return null;const TW=128,TH=Math.max(4,Math.min(512,Math.round(TW*h/w))),L=ASM_LIN;
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${3*TW}" height="${3*TH}" viewBox="0 0 ${3*w} ${3*h}"><defs>${def}</defs><rect width="${3*w}" height="${3*h}" fill="url(#cmt)"/></svg>`;
@@ -184,7 +184,7 @@ async function asmCmTile(i,role){const s=usableSett(i),pat=patBase(i.pattern)||'
   if(fine)mm=wv.hb?wv.mm:await asmTexMm(i);
   if(asmHbShirt(i)&&role==='shirt')asmHbShirtLook(t,TW,TH,i,s);
   return {t,TW,TH,mm,fine}}
-const asmHbShirt=i=>!!i&&i.type==='shirt'&&(patBase(i.pattern)==='herringbone'||(()=>{const s=typeof usableSett==='function'?usableSett(i):null;return !!(s&&s.tex&&s.tex.kind==='herringbone')})());
+/** @param {*} i */ const asmHbShirt=i=>!!i&&i.type==='shirt'&&(patBase(i.pattern)==='herringbone'||(()=>{const s=typeof usableSett==='function'?usableSett(i):null;return !!(s&&s.tex&&s.tex.kind==='herringbone')})());
 function asmHbShirtLook(t,TW,TH,i,s){const L=ASM_LIN,h=String(colOf(i)).replace('#',''),tag=[0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0]),m=[0,0,0],n=TW*TH;
   for(let k=0;k<n;k++)for(let q=0;q<3;q++)m[q]+=t[3*k+q];
   const g=m.map((v,q)=>v>1e-6?ASM_HB_SHIRT_Y*tag[q]*n/v:1);for(let k=0;k<n;k++)for(let q=0;q<3;q++)t[3*k+q]=Math.min(1,t[3*k+q]*g[q]);
@@ -228,9 +228,9 @@ const asmCuDark=i=>{const h=String(colOf(i)).replace('#',''),c=[0,2,4].map(k=>AS
    (the same day, from mocks at triple with single, double and triple sleeves: "triple on the body, double on the sleeves": triple read
    rough and streaky on the sleeves) a jacket's sleeves show the detail at ASM_CU.hbs times life: the tile carries slv = hbs/hb, and both
    painters pull a sleeve pixel's tile colour that far toward the tile's colour (suitCol; the shader's uSlv) */
-const asmCuWants=(i,how)=>!!(i&&i.texture&&(how==='flat'||how==='twill'||how==='plain'||how==='herringbone')&&!asmCuDark(i));
+/** @param {*} i @param {*} how */ const asmCuWants=(i,how)=>!!(i&&i.texture&&(how==='flat'||how==='twill'||how==='plain'||how==='herringbone')&&!asmCuDark(i));
 const asmCuTag=(z,i)=>(z==='jacket'||z==='waistcoat'||z==='trousers')&&asmCuWants(i,asmCmRoute(i,z).how)?'/cu'+ASM_CU.v+'.'+i.texture.length+i.texture.slice(-12).replace(/[^A-Za-z0-9]/g,''):'';
-function asmCuTile(i){if(!i||!i.texture||typeof document==='undefined')return Promise.resolve(null);const key=i.id+'|'+colOf(i)+'|'+i.texture.length+i.texture.slice(-12);let p=asmCuMem.get(key);
+/** @param {*} i */ function asmCuTile(i){if(!i||!i.texture||typeof document==='undefined')return Promise.resolve(null);const key=i.id+'|'+colOf(i)+'|'+i.texture.length+i.texture.slice(-12);let p=asmCuMem.get(key);
   if(!p){if(asmCuMem.size>24)asmCuMem.clear();p=asmCuTile1(i).catch(()=>null);asmCuMem.set(key,p)}return p}
 async function asmCuTile1(i){const L=ASM_LIN,h=String(colOf(i)).replace('#',''),base=[0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0]),im=new Image();im.src=i.texture;await im.decode();
   const FW=im.naturalWidth,FH=im.naturalHeight,cv=(w,hh)=>{const c=document.createElement('canvas');c.width=w;c.height=hh;return c};if(!FW||!FH)return null;
@@ -259,9 +259,9 @@ async function asmLookSuit(i){const s=usableSett(i);if(!s||!s.look)return null;c
 /* the look's part of a garment's key: its recipe's signature and repeats, so a re-described pattern repaints (an item changed to an own
    pattern already has a new key by its pattern) */
 const asmLookTag=(z,i)=>{if(!i||!['jacket','waistcoat','trousers','shirt','tie'].includes(z))return '';const s=typeof usableSett==='function'?usableSett(i):null;return s&&s.look?'/lk'+ASM_LOOK.v+s.look+'x'+s.tr:''};
-const asmWtWants=(i,z)=>!!i&&(z==='jacket'||z==='waistcoat'||z==='trousers')&&(i.type==='suit'||i.type==='blazer'||(i.type==='pants'&&!(typeof trouserKind==='function'&&trouserKind(i))))&&asmCmRoute(i,z).how==='twill';
+/** @param {*} i @param {*} z */ const asmWtWants=(i,z)=>!!i&&(z==='jacket'||z==='waistcoat'||z==='trousers')&&(i.type==='suit'||i.type==='blazer'||(i.type==='pants'&&!(typeof trouserKind==='function'&&trouserKind(i))))&&asmCmRoute(i,z).how==='twill';
 const asmWtTag=(z,i)=>asmWtWants(i,z)&&!asmCuWants(i,'twill')?'/wt'+ASM_WT.v:'';
-function asmWorstedTile(i){const L=ASM_LIN,lin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])},base=lin(colOf(i)),c2=COLORS[i.secondaryColor]?lin(COLORS[i.secondaryColor]):null;
+/** @param {*} i */ function asmWorstedTile(i){const L=ASM_LIN,lin=h=>{h=String(h).replace('#','');return [0,2,4].map(k=>L[parseInt(h.slice(k,k+2),16)||0])},base=lin(colOf(i)),c2=COLORS[i.secondaryColor]?lin(COLORS[i.secondaryColor]):null;
   const key=JSON.stringify([base,c2,ASM_WT]);let det=asmWtMem.get('d');const T=ASM_WT.T,n=T*T,[kx,ky]=ASM_WT.k;
   if(!det){let s=12345;const rnd=()=>(s=(Math.imul(s,1103515245)+12345)&0x7fffffff)/0x7fffffff;
     const pn=(f,c)=>{const w=[];for(let q=0;q<c;q++)w.push([1+Math.floor(rnd()*f),Math.floor(rnd()*(2*f+1))-f,rnd()*6.283,.5+rnd()]);return (x,y)=>{let v=0,m=0;for(const [a,b,p,g] of w){v+=g*Math.sin(6.283*(a*x+b*y)/T+p);m+=g}return v/m}};   // smooth noise of whole cycles over the tile
@@ -354,7 +354,7 @@ function asmCmBaseJob(kind,size){const K=ASM_CM_KINDS[kind];if(!K)return null;co
   const gks=asmCmGeoKeys(kind),geo=gks.length?{geoU:renders[gks[0]].img,geoV:renders[gks[1]].img,gt:renders[gks[0]].t+'.'+renders[gks[1]].t}:{};
   return {cm:kind,size:size||self.ASM_CM_SIZE||ASM_SIZE,mk:keys[0],mt:renders[keys[0]].t,rev:asmCmHash(keys.filter(k=>!gks.includes(k)).map(k=>renders[k].t||0).join(',')),master:renders[keys[0]].img,masks,parts,...geo}}
 /* the item sheet's line when the pictures paint this piece plain or generic (none with "Drawing only": nothing is painted) */
-function asmGapNote(i){if(!ASM_ON||asmDrawn())return '';const z=ASM_CM_ZONE[i.type];if(!z)return '';const r=asmCmRoute(i,z);
+/** @param {*} i */ function asmGapNote(i){if(!ASM_ON||asmDrawn())return '';const z=ASM_CM_ZONE[i.type];if(!z)return '';const r=asmCmRoute(i,z);
   return r.gap?`<p class="shelp asmgap">Outfit pictures: ${esc(i.photo||i.texture?r.why:r.why.replace('(Read pattern from photo)','(add a photo, then Read pattern from photo)'))}.</p>`:''}   // (no photo: Read pattern from photo isn't offered yet)
 const asmJfKey=k=>asmCmKey(k,'master-jeans');
 /* the look's faded master, when its trousers are jeans and the manifest lists one for its kind: {key, t}, else null */
@@ -461,7 +461,7 @@ function asmOcpDecal(it){if(typeof document==='undefined'||typeof blouseTapes!==
   if(T.rank&&typeof OCP_RANK_SVG!=='undefined'&&OCP_RANK_SVG[T.rank])mk(ASM_OCP_BOX.rank,(g,w,h)=>{const p=new Path2D(OCP_RANK_SVG[T.rank]),s=Math.min(w,h)/100;g.translate((w-100*s)/2,(h-100*s)/2);g.scale(s,s);g.fill(p)});
   return {ink:ASM_OCP_INK,boxes}}
 /* everything the painting needs, as plain data (photos as data URLs), or null: a look with no colour-coded master (asm-color.js asmCmJob) */
-async function asmJob(o){const k=asmCmUse(o);if(!k)return null;const ob=typeof asmOcpBase==='function'?asmOcpBase(o,k):o;let j=/** @type {any} */(await asmCmJob(ob));   // (the blouse's master is built on the open-shirt master's items: asm-ocp.js)
+/** @param {*} o */ async function asmJob(o){const k=asmCmUse(o);if(!k)return null;const ob=typeof asmOcpBase==='function'?asmOcpBase(o,k):o;let j=/** @type {any} */(await asmCmJob(ob));   // (the blouse's master is built on the open-shirt master's items: asm-ocp.js)
   if(j)j=await asmNkJob(j,ob,k);   // a new garment's master and cloth, the faded master for jeans (asm-kinds.js)
   if(j&&typeof asmWatchJob==='function'){const w=asmWatchJob(o,asmNkBaseOf(k));if(w)j.watch=w}
   if(j&&typeof asmPocketJob==='function'){const q=asmPocketJob(o,asmNkBaseOf(k));if(q)j.pocket=q}

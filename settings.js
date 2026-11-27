@@ -25,7 +25,7 @@ function setCatOpen(key,open,instant){const el=$('#sc-'+key);if(!el)return;el.cl
   if(open)emit('settings-category',key)}
 // a category unfolds where it is: no scroll to show what opened (the owner, 2026-11-17: "I want it to unfold and not scroll automatically at all")
 // the summaries (what was changed inside) are written once the fold has finished moving, not in its first frames
-function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.classList.contains('open');setCatOpen(key,open);
+/** @param {*} key */ function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.classList.contains('open');setCatOpen(key,open);
   const tc=/** @type {typeof toggleCat & {t?: number}} */(toggleCat);clearTimeout(tc.t);tc.t=setTimeout(()=>{try{settingsSummaries()}catch(e){console.warn(e)}},480)}
 /* the Backup line in Settings says what really happened: the last backup's time, or that the last try failed (sync.js keeps
    sync_status while a try fails and last_sync when one works) */
@@ -72,7 +72,7 @@ const weekFirst=(l=settings.workdays)=>{const has=new Set(l||[]);return [0,1,2,3
 function scheduleWear(days,S){const j=wearsJacket(),t=wearsTie();
   if(!j)return S.dress?S.dress():'no jackets';const bl=settings.blazerDays.filter(d=>settings.workdays.includes(d));
   return [bl.length?'blazers '+days(bl):'suits every day',t?'vest '+({auto:'on cooler suit days',always:'every suit day',never:'never'})[settings.vestMode||'auto']:'no ties'].join(' · ')}
-function openSettings(section){
+/** @param {*} [section] */ function openSettings(section){
   const already=settingsOpen(),subUnder=!already&&backKind()==='sub'&&subShown();
   const cat=section==='wx'?'weather':section;
   for(const k of SET_CATS)setCatOpen(k,k===cat,true);

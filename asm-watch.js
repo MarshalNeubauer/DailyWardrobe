@@ -36,7 +36,7 @@ function asmWatchBlur(a,w,h,r){if(r<=0)return a;const k=Math.max(1,Math.round(r*
   for(let q=0;q<3;q++){pass(s,t,true);pass(t,s,false)}return s}
 const asmWatchPct=(a,m,p)=>{const v=[];for(let i=0;i<a.length;i++)if(m[i])v.push(a[i]);if(!v.length)return 1;v.sort((x,y)=>x-y);return v[Math.min(v.length-1,Math.floor(p*v.length))]||1e-3};
 /* paint the watch on a finished picture: res {url} (a JPEG) or {px, S} (raw RGBA); returns res with the watch painted */
-async function asmWatchPaint(res,W){if(!res||!W)return res;let img=null,px,S;
+/** @param {*} res @param {*} W */ async function asmWatchPaint(res,W){if(!res||!W)return res;let img=null,px,S;
   if(res.px){px=res.px;S=res.S}else if(res.url){img=await asmData(res.url);px=img.data;S=img.width}else return res;
   const [M,T]=await Promise.all([asmWatchImg(W.mask),W.band==='leather'?asmWatchImg(W.leather):null]);
   asmWatchDo(px,S,W,M,T);

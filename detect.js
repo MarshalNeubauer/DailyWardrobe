@@ -24,7 +24,7 @@ const ownSett=i=>{const s=i&&i.sett,p=patBase(i&&i.pattern)||'';if(!s||(MOTIF_PA
    drawing recipe, settings.custom.patterns[].look), on any kind of item: so the drawings, the swatches and the painted pictures all
    draw a new pattern as described, in the item's own colours (2026-11-15; the rule "texture readings only on shirts and ties" is for
    readings, not for an own pattern's look) */
-const usableSett=i=>{const o=ownSett(i);return o&&o.camo?camoTag(i,o):settToTag(i,o)||lookOf(i)||camoLook(i)};
+/** @param {*} i */ const usableSett=i=>{const o=ownSett(i);return o&&o.camo?camoTag(i,o):settToTag(i,o)||lookOf(i)||camoLook(i)};
 /* a camouflage is drawn in the item's tagged colours, never the photo's (2026-11-16: the owner's shirt close-up measured grey, and its
    colours read from the pixels drew a coyote-brown shirt lavender; colours come from the tags everywhere else in the app too): the main
    colour, its second and third, a step darker and a step lighter of the main (its cream and its deep brown). A reading of the close-up
@@ -100,7 +100,7 @@ function lookSett(i,look){const main=colOf(i),sec=i.secondaryColor&&COLORS[i.sec
   else if(look.motif&&Array.isArray(look.motif.figs))s={v:3,motif:{grid:look.motif.grid==='diagonal'?'diagonal':'straight',ground:main,figs:look.motif.figs.map(f=>({shape:f.shape,place:f.place,size:f.size,cols:[role(f.colour)],...(f.bmp?{bmp:f.bmp}:{})})),aspect:look.motif.aspect||1,off:!!look.motif.off},a:look.motif.grid==='diagonal'?45:0,cr,tr,look:sig};
   if(lookMemo.size>200)lookMemo.clear();lookMemo.set(key,s);return s}
 /* what a pattern reading looks like, for photo keys: the band colours, or the motif's ground, figures and colours */
-const settSig=s=>!s?'':s.camo?'c'+s.camo.cols.join('')+s.camo.shares.map(v=>Math.round(v*100)).join('.')+'/'+s.camo.seed+'/'+(s.tr||''):s.tex?'t'+s.tex.grid.join('')+Math.round(s.tex.rel*100)+'/'+(s.tex.aspect||''):s.motif?'m'+[s.motif.grid,s.motif.ground,s.motif.aspect||1,s.motif.off||0,...s.motif.figs.map(f=>[f.shape,f.place,Math.round(f.size*100),...f.cols,f.centre||'',(f.bmp||[]).join('/')].join(','))].join(';'):(s.bands||[]).map(b=>b[0]).join('');
+/** @param {*} s */ const settSig=s=>!s?'':s.camo?'c'+s.camo.cols.join('')+s.camo.shares.map(v=>Math.round(v*100)).join('.')+'/'+s.camo.seed+'/'+(s.tr||''):s.tex?'t'+s.tex.grid.join('')+Math.round(s.tex.rel*100)+'/'+(s.tex.aspect||''):s.motif?'m'+[s.motif.grid,s.motif.ground,s.motif.aspect||1,s.motif.off||0,...s.motif.figs.map(f=>[f.shape,f.place,Math.round(f.size*100),...f.cols,f.centre||'',(f.bmp||[]).join('/')].join(','))].join(';'):(s.bands||[]).map(b=>b[0]).join('');
 
 /* region -> luminance grid (downscaled to at most 256px) */
 function lumGrid(src,sx,sy,size){

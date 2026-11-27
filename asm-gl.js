@@ -617,7 +617,7 @@ async function asmGlEncode(o,S){let img=new ImageData(o,S,S);
   if(S>ASM_SIZE){const big=asmCmCanvas(S,S);big.getContext('2d').putImageData(img,0,0);const sm=asmCmCanvas(ASM_SIZE,ASM_SIZE),x=sm.getContext('2d',{willReadFrequently:true});
     x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';x.drawImage(big,0,0,ASM_SIZE,ASM_SIZE);img=x.getImageData(0,0,ASM_SIZE,ASM_SIZE)}
   return asmJpeg(img)}
-async function asmGlTry(job,hit){const P=hit.P;if(!P.lx&&hit.lx)P.lx=hit.lx;const why=asmGlWhy(job,P);asmGlNot=why;if(why)return null;
+/** @param {*} job @param {*} hit */ async function asmGlTry(job,hit){const P=hit.P;if(!P.lx&&hit.lx)P.lx=hit.lx;const why=asmGlWhy(job,P);asmGlNot=why;if(why)return null;
   const G=asmGlInit(P.S);if(!G){asmGlNot='no WebGL2 context at '+P.S;return null}
   try{const t0=performance.now();
     const o=await asmGlDraw(G,job,P,hit.key,()=>asmGlPack(P),hit.key+'|'+(hit.gk||''),()=>asmGlGeoPack(hit.uv,P.S));
@@ -657,7 +657,7 @@ async function asmGlPrepOff(job,have){const hit=await asmCmSetup(job),P=hit.P;if
   if(have.key!==hit.key){res.pk=asmGlPack(P);for(const v of Object.values(res.pk))if(ArrayBuffer.isView(v))tr.push(v.buffer)}
   if(have.key!==hit.key||have.gk!==gk){const g=asmGlGeoPack(hit.uv,P.S);res.geo=g&&{g16:g.g16,h:g.h,f:g.f,R:g.R.slice()};if(g)tr.push((g.h||g.f).buffer)}   // (R is the worker's own: copied)
   return {res,tr}}
-let asmGlPage=async function asmGlPage(job,prep){const G=asmGlInit(prep.lite.S);if(!G){asmGlNot='no WebGL2 context at '+prep.lite.S;return null}
+/** @param {*} [job] @param {*} [prep] */ let asmGlPage=async function asmGlPage(job,prep){const G=asmGlInit(prep.lite.S);if(!G){asmGlNot='no WebGL2 context at '+prep.lite.S;return null}
   try{const t0=performance.now();
     const o=await asmGlDraw(G,job,prep.lite,prep.key,()=>prep.pk,prep.gk,()=>{if(!('geo' in prep))throw Object.assign(new Error('the solved positions were not sent'),{again:true});return prep.geo},true);
     prep.pk=prep.geo=null;asmGlErr=null;return {o,ms:Math.round(performance.now()-t0),renderer:G.renderer}}

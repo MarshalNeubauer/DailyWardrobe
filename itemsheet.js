@@ -31,7 +31,7 @@ import {ARRIVE_PAST,arriveVal,checkArrivals,orderHint} from './add-more.js';
 const E=(id,k,list,v,lab)=>`<label>${lab?lab:k==='primaryColor'?'Color':k==='secondaryColor'?'Second color':k==='tertiaryColor'?'Third color':k==='watchStyle'||k==='shoeStyle'?'Style':k==='trouserKind'?'Kind':k[0].toUpperCase()+k.slice(1)} <select data-act-change="itemPick" data-id="${esc(id)}" data-f="${k}">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${cap1(x[1])}</option>`).join('')}</select></label>`;
 /* the item page's body (see "Wardrobe item page" below): the photo beside the drawn swatch with the row of photo tools under it, the
    "Color & texture" card (fabrics), then a card for the tags, one for rotation, and Delete on its own at the very end */
-function itemBody(i){
+/** @param {*} i */ function itemBody(i){
   if(phEdit.id!==i.id)setPhEdit({id:i.id,undo:[],crop:null});
   const pic=i.photo||wardPic(i);
   // the photo beside the split swatch (drawing | close-up), plain pictures: the comparison lives in Look & compare (2026-11-16, the
@@ -101,7 +101,7 @@ function ivCareSum(i,s){const r=(i.paused?(i.order?'On the way':i.away?'Away bei
 const tapeIn=(id,k,lab,ph)=>`<label>${lab} <input type="text" maxlength="${BLOUSE_TAPE_MAX}" autocapitalize="characters" spellcheck="false" value="${esc(tapeText(items.find(x=>x.id===id)&&items.find(x=>x.id===id)[k]))}" placeholder="${ph}" data-act-change="tapeSet" data-id="${esc(id)}" data-k="${k}"></label>`;
 function tapeSet(el){sete(el.dataset.id,el.dataset.k,tapeText(el.value)||'none')}   // (act.js: a tape's text field)
 const blouseFields=(id,i)=>tapeIn(id,'tapeName','Name tape','e.g. SMITH')+tapeIn(id,'tapeService','Service tape','e.g. U.S. AIR FORCE')+E(id,'rank',OCP_RANKS,i.rank||'none','Rank');
-async function sete(id,k,v){
+/** @param {*} id @param {*} k @param {*} v */ async function sete(id,k,v){
   const it=items.find(x=>x.id===id);if(!it){itemGoneTell(id);return}
   it[k]=v==='none'&&k!=='toeColor'?null:v;   // (a sock's toe cap keeps 'none': a sock with no toeColor at all is from before, core.js sockToe)
   if(k==='shoeStyle'&&!leathersFor(it).includes(it.leather))it.leather='calf';   // a sneaker can't be cordovan: back to plain leather
@@ -125,7 +125,7 @@ function typeTidy(it){const t=it.type;for(const [f,ok] of Object.entries(TYPE_FI
 /* (2026-11-16, the owner's camouflage shirt: the sheet wouldn't open, so it couldn't be deleted either: a pattern drawn from a fallback
    (a camouflage with no reading of its own, camoLook; an own pattern's look) has no i.sett, and this described i.sett. It describes what is
    drawn, and a camouflage drawn in its own colors says how to get its real ones) */
-function patSummary(i){const u=usableSett(i);
+/** @param {*} i */ function patSummary(i){const u=usableSett(i);
   if(u&&u.camo&&!(i.sett&&i.sett.camo))return 'camouflage drawn in its own colors (Read pattern from photo takes the real colors from the close-up)';
   if(u)return settSummary(u);
   if(i.sett&&i.sett.tex)return `generic (the weave texture read earlier is for a ${TEX_WORDS[i.sett.tex.kind]||'woven'} pattern)`;
@@ -134,7 +134,7 @@ function patSummary(i){const u=usableSett(i);
   if(st.kind==='check')return `check read from photo (${st.b.length}×${st.v.length} bands)`;
   return `stripes read from photo (${st.b.length} bands, ${Math.abs(st.a)}°)`;
 }
-async function redetect(id){
+/** @param {*} id */ async function redetect(id){
   const it=items.find(x=>x.id===id);if(!it)return;
   const load=src=>new Promise(r=>{if(!src)return r(null);const im=new Image();im.onload=()=>r(im);im.onerror=()=>r(null);im.src=src});
   let st=null;
@@ -161,7 +161,7 @@ async function togglePause(id,want){const it=items.find(x=>x.id===id);if(!it){it
   // out of rotation doesn't make a sample piece his (kit.js kitNoMine; put reads it at once)
   askFor('kit-no-mine',true);const pw=put(it);askFor('kit-no-mine',false);await pw;planDirty();renderWardrobe();
   toast(it.paused?`Out of rotation: the planner won't pick it${n?`, and ${n} upcoming day${n===1?' was':'s were'} planned again without it`:''}.`:'Back in rotation.')}
-async function clearStripes(id){const it=items.find(x=>x.id===id);if(!it)return;delete it.stripes;delete it.sett;await put(it);planDirty();renderWardrobe()}
+/** @param {*} id */ async function clearStripes(id){const it=items.find(x=>x.id===id);if(!it)return;delete it.stripes;delete it.sett;await put(it);planDirty();renderWardrobe()}
 async function rm(id){return wardDelete(id)}   // at once, with Undo in a toast (wardrobe.js)
 
 

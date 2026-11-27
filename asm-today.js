@@ -43,7 +43,7 @@ async function asmBlobUp(){for(const [k,a] of Object.entries(asmOut)){if(!a||a.b
 /* bring what this outfit needs onto the device, paint its picture, keep it and show it (asm-color.js asmCmEnsure: the worker's
    picture first). Not for an outfit whose own photo wins (asmFullWins): asmFor gives null for it, and taking that as "not made yet"
    painted it and redrew Today again and again after a Regenerate, which kept the phone busy and cut off every swipe and scroll */
-async function asmEnsure(o,ahead){if(asmDrawn())return;await asmCmLook(o);if(!asmCmUse(o))return;if(!ahead)asmAheadSoon();return ask('asm-cm-ensure',o,ahead)}
+/** @param {*} o @param {*} [ahead] */ async function asmEnsure(o,ahead){if(asmDrawn())return;await asmCmLook(o);if(!asmCmUse(o))return;if(!ahead)asmAheadSoon();return ask('asm-cm-ensure',o,ahead)}
 /* the day on screen's picture is ready: Today is redrawn, but not under a finger (a redraw removes what the touch started on and the
    swipe or scroll stops); then it waits for the finger to lift */
 let asmTouch=0,asmLate=false;

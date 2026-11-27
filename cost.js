@@ -126,7 +126,7 @@ function cpwQRow(q){const T=isoKey(todayDate());
   return `<div class="cpwf cpwq"><label class="cpwprice">Price <span class="cpwin"><span class="cpwsym" aria-hidden="true">${esc(cpwSym())}</span><input type="text" inputmode="decimal" class="wf-price" autocomplete="off" maxlength="14" aria-label="Price (${esc(cpwCur())})" value="${esc(q.price||'')}" placeholder="Optional" data-act-input="cpwCardField" ${cardAt(q)} data-f="price"></span></label>`+
     `<label class="cpwbought">Bought <input type="date" class="wf-bought" value="${esc(q.bought||'')}" max="${T}" data-act-change="cpwCardField" ${cardAt(q)} data-f="bought"></label></div>`}
 function cpwQSet(i,k,v){const q=cardOf(i);if(!q||(k!=='price'&&k!=='bought'))return;v=String(v??'').slice(0,20);if(v.trim())q[k]=v;else delete q[k];askFor('add-keep-soon')}
-function cpwSaveFields(q,it){const n=q.price!=null&&String(q.price).trim()?cpwParse(q.price):null;if(n!=null)it.price=n;
+/** @param {*} q @param {*} it */ function cpwSaveFields(q,it){const n=q.price!=null&&String(q.price).trim()?cpwParse(q.price):null;if(n!=null)it.price=n;
   if(/^\d{4}-\d{2}-\d{2}$/.test(q.bought||'')&&q.bought<=isoKey(todayDate()))it.bought=q.bought}
 /* ---- Insights: the Cost per wear card, once at least CPW_MIN pieces have a price ---- */
 function cpwOpenItem(id){if(!items.some(i=>i.id===id))return;show('wardrobe');askFor('item-show',id)}   // (the Wardrobe's type filter is left as it is: app.js owns it)

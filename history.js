@@ -25,7 +25,7 @@ import {askConfirm,layerClose,layerOpen} from './ui.js';
 let swapMsg='';
 /* start-up writers wait for the first pull (sync.js afterPull; sync.js loads after this file, so through afterScripts) */
 let todayPullWait=false;
-const whenPulled=f=>afterScripts(()=>served('after-pull')?need('after-pull',f):Promise.resolve().then(f));   // (without sync.js nothing is pulled: f runs as when not connected, the restructure S6h)
+/** @param {*} f */ const whenPulled=f=>afterScripts(()=>served('after-pull')?need('after-pull',f):Promise.resolve().then(f));   // (without sync.js nothing is pulled: f runs as when not connected, the restructure S6h)
 /* remember what each day showed: past days become fixed, and today's record follows the screen until the day ends */
 async function recordDays(p){
   const T=todayDate(),tk=key(T),mine=dayRecs,out=[],first=firstReal();
@@ -192,7 +192,7 @@ async function replanButton(){const T=todayDate(),n=replanCount();
   const tw=isWorkday(T)&&!(dayRecs[key(T)]&&dayRecs[key(T)].worn===false)?' Today’s outfit may change too, even though it shows ✓ Wore: if you are already wearing it, tap Cancel.':'';
   if(!await askConfirm(`Start the plan over?\n\nToday and every coming day are planned afresh: the week's locks and ${n?`your changes on ${n} day${n===1?'':'s'} (swaps, picks, the vest, pieces taken off)`:'any changes'} are thrown out.${tw} Occasions, days off, days marked worn and the past stay as they are.`,{ok:'Start over'}))return;
   const m=await replanFuture();renderReplanUI(m?`Started over: ${m} day${m===1?'':'s'} with changes planned afresh, and the week unlocked.`:'Started over: the week was unlocked and planned afresh.');need('today-dirty')}
-function renderReplanUI(msg){const el=$('#replan-status');if(!el)return;const n=replanCount();
+/** @param {*} [msg] */ function renderReplanUI(msg){const el=$('#replan-status');if(!el)return;const n=replanCount();
   el.textContent=msg||((n?`${n} day${n===1?' has':'s have'} your changes (swaps, picks, the vest, pieces taken off).`:'Today and the coming days follow the planner.')+' Plans afresh from today, throwing out the week\'s locks and your changes; occasions, days off and days marked worn stay.')}
 async function setVest(v){const k=key(sel),o=planFor()[k];if(!o)return;
   if(o.frozen){const r0=dayRecs[k];if(pastEdit!==k||!r0)return;await saveDay({...r0,vestOn:!!v,worn:true,edited:true});emit('day-changed');return}

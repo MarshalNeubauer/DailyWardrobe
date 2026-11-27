@@ -46,16 +46,16 @@ const ADD_MIN_PX=32;
 /* the fabric close-up for an Add card: corrected with the same light reading as the card's item photo (taken together) */
 /* read: the close-up came through "Add close-up and read texture/color" (colpick.js rdStart), whose reading replaces the automatic
    re-tag (the owner: no second paid call); the color is still measured from it (measureCard) */
-async function addTexture(i,f,read){const q=cardOf(i);if(!q||!f)return;
+/** @param {*} i @param {*} f @param {*} [read] */ async function addTexture(i,f,read){const q=cardOf(i);if(!q||!f)return;
   try{const img=await loadImg(f);
     if(Math.min(img.width,img.height)<TEX_MIN_PX){toast(`That close-up is too small to show the weave (${img.width}×${img.height} pixels). Take it close to the cloth, at full size.`,6000);return}
     q.raw=q.raw||{};delete q.texDone;delete q.refineCut;delete q.patternCut;q.raw.tex=shrink(img,Math.max(TEX_MAX,CLOSE_MAX));q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85);q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);q.refineNote='';renderAdd();
     if(read){measureCard(q);renderAdd();if(typeof addKeep==='function')addKeep();return}
     refineFromCloseup(queue.indexOf(q))}   // tag again with both photos (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
-function dropTexture(i){const q=cardOf(i);if(!q)return;if(typeof readAbort==='function')readAbort(q);delete q.texture;delete q.texCanvas;delete q.texDone;delete q.refineCut;delete q.patternCut;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw)delete q.raw.tex;q.refineNote='';measureCard(q);renderAdd()}
+/** @param {*} i */ function dropTexture(i){const q=cardOf(i);if(!q)return;if(typeof readAbort==='function')readAbort(q);delete q.texture;delete q.texCanvas;delete q.texDone;delete q.refineCut;delete q.patternCut;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw)delete q.raw.tex;q.refineNote='';measureCard(q);renderAdd()}
 /* (the close-up step of a card, "Step 2 · Fabric close-up", is now the checklist's Texture match section: addCkSecs below) */
-const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colors.':'Colors corrected for the light.'}</small> <button type="button" class="linkbtn" data-act="cardWb" ${cardAt(q)}>${q.wbOff?'Correct them':'Show original'}</button></p>`
+/** @param {*} q @param {*} i */ const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colors.':'Colors corrected for the light.'}</small> <button type="button" class="linkbtn" data-act="cardWb" ${cardAt(q)}>${q.wbOff?'Correct them':'Show original'}</button></p>`
   :q.wbWas&&q.photo?'<p class="wbnote mut"><small>Colors corrected for the light.</small></p>':'';   // a card brought back after a kill: still corrected, no original kept (addRevive)
 /* Add: "One item" (multi false; also paste and drag) makes one card per photo; "Several items" finds every item in it */
 async function addFiles(files,multi){
