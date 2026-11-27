@@ -90,8 +90,10 @@ var glbErrors=[];
    current files, whatever app version this phone has cached; run in order on the page, and joined into the Worker's one script */
 var GLB_WORKER_SRC='',GLB_APP_VERSION=null;
 (async function(){
-  var PAGE=['../srgb.js','../merge.js','../core.js','../detect.js','../draw.js','../asm-keys.js','../assemble.js','../asm-color.js','../asm-gl.js','gl-bench-run.js','gl-bench.js'];
-  var WORKER=['../srgb.js','../asm-keys.js','../assemble.js','../asm-color.js','../asm-gl.js','gl-bench-run.js'];
+  // (the restructure S6p, 2026-11-27: the painter's files hand nothing to globalThis; a look's job is worked out in asm-look.js and asm-cm-job.js,
+  //  which read photo-keys.js's kept pictures and draw.js, which reads asm-keys.js and assemble.js; the worker's files talk through bus.js)
+  var PAGE=['../srgb.js','../merge.js','../bus.js','../core.js','../detect.js','../photo-keys.js','../asm-keys.js','../assemble.js','../asm-watch.js','../asm-pocket.js','../asm-color.js','../asm-gl.js','../asm-kinds.js','../draw.js','../asm-ocp.js','../asm-look.js','../asm-cm-job.js','gl-bench-run.js','gl-bench.js'];
+  var WORKER=['../srgb.js','../bus.js','../asm-keys.js','../assemble.js','../asm-color.js','../asm-gl.js','gl-bench-run.js'];
   try{
     var src={};
     await Promise.all(PAGE.map(async function(u){var r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(u+': HTTP '+r.status);src[u]=await r.text()}));
@@ -105,8 +107,12 @@ var GLB_WORKER_SRC='',GLB_APP_VERSION=null;
       //  an import of a file this page already ran from a blob, the painter's of core.js, srgb.js … since the restructure S5c, is given that blob, so no second copy runs)
       var text=src[u].replace(/^(import [^\n]*? from )'\.\/([^']+)';/mg,function(m,a,f){var d=u.replace(/[^\/]*$/,'')+f;return a+"'"+(blob[d]||new URL(d,location.href).href)+"';"});
       blob[u]=URL.createObjectURL(new Blob([text+'\n//# sourceURL='+u.replace('../','')],{type:'text/javascript'}));
+      // (an app file that is an ES module, core.js since 2026-11-24, is imported: the painter's files hand nothing to globalThis since the
+      //  restructure S6p, so this page puts what gl-bench-run.js and gl-bench.js call on its own globals, a setter where an export has one)
+      if(/^export \{/m.test(src[u])){let ns;try{ns=await import(blob[u])}catch(e){throw new Error('could not run '+u+': '+(e&&e.message||e))}
+        if(/\/(assemble|asm-[\w-]+)\.js$/.test(u))Object.keys(ns).forEach(function(k){if(k in window)return;var set=ns['set'+k[0].toUpperCase()+k.slice(1)];
+          Object.defineProperty(window,k,{configurable:true,get:function(){return ns[k]},set:function(v){if(typeof set!=='function')throw new Error(k+' has no setter');set(v)}})});continue}
       await new Promise(function(ok,no){var s=document.createElement('script');s.src=blob[u];
-        if(/^export \{/m.test(src[u]))s.type='module';   // (an app file that is an ES module, core.js since 2026-11-24: its bridge hands the others its names; 'load' comes after it ran)
         s.onload=ok;s.onerror=function(){no(new Error('could not run '+u))};document.head.appendChild(s)})}
   }catch(e){document.getElementById('boot').textContent='Could not load the bench: '+(e&&e.message||e);glbErrors.push(String(e&&e.message||e))}
 })();

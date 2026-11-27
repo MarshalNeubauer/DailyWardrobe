@@ -1,3 +1,4 @@
+
 /* Daily Wardrobe: the color-coded masters' version, their kinds and their records' keys, read by both assemble.js and asm-color.js
    (the restructure S4, 2026-11-26: moved out of asm-color.js with their text unchanged, so the painter's fingerprint is unchanged too;
    ASM_CM_KINDS is in asmCmPrepCode). It loads before both, on the page (index.html) and in the painting worker (asm-worker.js). */
@@ -10,10 +11,6 @@ const ASM_CM_KINDS={
   // a jacket with no tie (Today's "Take off" on the tie, 2026-11-13), made like the suit and waistcoat masters
   'suit-open':{zones:['jacket','background','skin','shirt','dark','watch'],sleeves:1,lapels:1,pxmm:1},
   'vest-open':{zones:['jacket','waistcoat','background','skin','shirt','dark','watch'],sleeves:1,lapels:1,pxmm:1}};
-// (pxmm: the shirt masters are framed wider; measured: the tie 116 px wide at 2048 against 174 on the suit master, the open collar's
-// shirt about 5% wider again)
-const asmCmKey=(kind,name)=>asmKey('cm'+ASM_CMV+'/'+kind+'/'+name);
-/* the bridge: what the other files, asm-worker.js and the tests use as globals (tests/bridge.test.js lists who) */
-Object.assign(globalThis,{ASM_CMV,ASM_CM_KINDS,asmCmKey});
-globalThis.HOOK={__proto__:globalThis.HOOK||null,ASM_CMV,ASM_CM_KINDS,asmCmKey};
-export {ASM_CMV,ASM_CM_KINDS,asmCmKey};
+/* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
+globalThis.HOOK={__proto__:globalThis.HOOK||null,ASM_CMV,ASM_CM_KINDS};
+export {ASM_CMV,ASM_CM_KINDS};

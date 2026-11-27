@@ -21,6 +21,8 @@
      ask(name, ...args)     call what is served under name with args and give back its answer; when nothing is served (the feature's
                             file didn't load), nothing is called and the answer is undefined, as the `typeof f==='function'` guards did.
                             An error the served fn throws reaches the caller, as a direct call's would
+     served(name)           whether anything is served under name (where the code asked `typeof f==='function'` before a call it
+                            makes with other arguments, or to choose another way; the restructure S6p, 2026-11-27)
    Every socket, who serves it and who asks, is listed in tests/bus.test.js (SOCKETS).
    This file reads no other file and is read by nothing at load: it can sit first in the list. */
 const BOARD=new Map();   // topic -> [fn], in pin order
@@ -32,5 +34,6 @@ function emit(topic,...args){const l=BOARD.get(topic);if(!l)return 0;let err,bad
 const SOCKETS=new Map();   // name -> fn
 function serve(name,fn){if(typeof fn==='function')SOCKETS.set(name,fn)}
 function ask(name,...args){const fn=SOCKETS.get(name);return fn?fn(...args):undefined}
+function served(name){return SOCKETS.has(name)}
 const askFor=ask;   // the same, for a file that also uses app.js's own ask() (the server request): colpick.js
-export {on,heard,emit,serve,ask,askFor};
+export {on,heard,emit,serve,ask,askFor,served};

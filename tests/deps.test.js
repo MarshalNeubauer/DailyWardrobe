@@ -64,6 +64,7 @@ function measure(ROOT){
   const info=f=>{if(!parsed[f]){const m=mods.has(f),src=fs.readFileSync(path.join(ROOT,f),'utf8');
     const ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:m?'module':'script',ranges:true});
     const g=escope.analyze(ast,{ecmaVersion:2024,sourceType:m?'module':'script'}).globalScope,own=new Set(g.variables.map(v=>v.name));
+    // (a module worker's named imports are its uses too: asm-worker.js since the restructure S6p, 2026-11-27)
     parsed[f]={top:m?[...modscope.bridged(ast,src).names.keys()]:topNames(ast),free:[...new Set(g.through.map(r=>r.identifier.name))].filter(n=>!own.has(n)),
       imports:m?modscope.imports(ast,f):[]}}
     return parsed[f]};
@@ -74,7 +75,7 @@ function measure(ROOT){
     if(s.name==='page')names=owner.size;
     for(const f of s.rows){const u=uses[f]={};
       for(const n of info(f).free){const o=owner.get(n);if(o&&o!==f)(u[o]=u[o]||[]).push(n)}
-      if(s.name==='page')for(const i of info(f).imports)if(i.from!==f)u[i.from]=[...new Set([...(u[i.from]||[]),...i.names])];
+      if(s.name==='page'||WORKERS.includes(f))for(const i of info(f).imports)if(i.from!==f&&i.names.length)u[i.from]=[...new Set([...(u[i.from]||[]),...i.names])];
       for(const o of Object.keys(u))u[o].sort()}
   }
   return {scopes:S,names,uses};

@@ -122,20 +122,16 @@ const BRIDGE={
   // history.js, a classic script, swaps, picks and draws the picker with these; slotPool, fitOf, fitTag and pickSub are also called by
   // the care, onorder, planner-rules and rotation-pause tests
   'pickscore.js':['BELT_STUCK','FOLLOW','beltless','bootsOff','fitOf','fitTag','handPool','handWhy','keepHand','keepOff','pickSub','pocketOn','slotPool','suggestClean','suitPants'],
-// the painter (the restructure S4, 2026-11-26: moved from asm-color.js): assemble.js, asm-color.js, asm-kinds.js, asm-ocp.js, draw.js, today-picture.js and asm-worker.js read these
-  'asm-keys.js':['ASM_CMV','ASM_CM_KINDS','asmCmKey'],
-// the painter (C3, 2026-11-24): Today (asmFor, asmShown, asmEnsure), photos, settings, start, today-picture, colpick and the other painter files read these; asm-worker.js replaces asmData and asmJpeg and the tests stub asmAhead, asmAheadSoon and asmPhoto (lets with setters); ASM_ON, ASM_IDLE_MS, asmList, asmOut and asmW are assigned by tests (setters)
-  'assemble.js':['ASM_AHEAD','ASM_BAR_AT','ASM_BAR_LEN','ASM_BAR_MM','ASM_CLOSEUP_MM','ASM_CREASE_DEG','ASM_FLOW','ASM_FORE_K','ASM_HB_AMP','ASM_HB_BREAK','ASM_HB_FLECK','ASM_HB_FLOAT','ASM_HB_FLOATL','ASM_HB_GRAIN','ASM_HB_MM','ASM_HB_MOTTLE','ASM_HB_PBRK','ASM_HB_RIB','ASM_HB_SNAP','ASM_HB_SOFT','ASM_HB_THIN','ASM_HB_TR','ASM_HB_YARN','ASM_LIN','ASM_LINE_PX','ASM_METAL','ASM_MICRO','ASM_MICRO_KINDS','ASM_ON','ASM_PX_MM','ASM_RETRY_MS','ASM_SHIRT_MM','ASM_SIZE','ASM_SLEEVE_FLOW','ASM_STRIPE','ASM_STRIPE_PX','ASM_SUITV','ASM_TEX_MIN_MM','ASM_TIEV','ASM_TIE_FIG_MAX','ASM_TIE_TEX_MAX','ASM_TR_CAP','ASM_TUBE_K','ASM_TWEED','ASM_TWILL','asmAreas','asmBarDraw','asmBarRgb','asmBarSig','asmBodyFlow','asmBuild','asmBuildAfter','asmBusy','asmClothOf','asmCmUse','asmData','asmDrawn','asmEnsure','asmFlowAt','asmFor','asmFullWins','asmGet','asmGetPre','asmHbCw','asmImg','asmJpeg','asmKeepOut','asmKey','asmLinen','asmLinenTile','asmList','asmListAt','asmListGet','asmLoad','asmLookId','asmMicroGrid','asmMicroKind','asmMicroTex','asmMotif','asmOutKey','asmPhoto','asmPolyAt','asmRepeatPx','asmRun','asmShow','asmShown','asmSleeveFlow','asmSleeveSegs','asmStamp','asmStripeCount','asmSuitBands','asmSuitSig','asmSuitTex','asmSuitTweed','asmSuitTwill','asmSuitWeave','asmSync','asmTexMm','asmTieFor','asmTieSig','asmTieTile','asmTq','asmTqn','asmTqr','asmTried','asmTubeAt','asmTubePart','asmTubePartQ','asmTubeRaw','asmTubeTabs','asmTweedTex','asmTweedTile','asmTwillTex','asmWeave','renderAsmUI','setAsmOut'],
-// the painter (C3, 2026-11-24): assemble.js and asm-color.js paint the watch through these; the rest: tests
-  'asm-watch.js':['asmWatchJob','asmWatchPaint','asmWatchPaints','asmWatchSig'],
-// the painter (C3, 2026-11-24): assemble.js, asm-color.js and mannequin.js (asmPocketQuad); the rest: tests
-  'asm-pocket.js':['asmPocketJob','asmPocketPaint','asmPocketQuad','asmPocketSig'],
-// the painter (C3, 2026-11-24): the item sheet (asmGapNote), Settings (asmCmUI), today-picture (asmCmTile, asmCuTile) and the other painter files; asm-worker.js wraps asmCmPack and asmCmDiskPut, the tests stub asmCmPrep, asmCmSetup, asmCmBuild and asmCmHandEdge and clear asmCmMem, asmCmMf, asmCmCodeH and asmCmSrc (lets with setters)
-  'asm-color.js':['ASM_CELL_FADE','ASM_CM_AA','ASM_CM_AA_CUT','ASM_CM_AA_FADE','ASM_CM_BG_SHADOW','ASM_CM_BTN','ASM_CM_LIGHT','ASM_CM_LOD0','ASM_CM_LOOK','ASM_CM_MIPS','ASM_CM_U16','ASM_CM_WINK','ASM_CM_WLIGHT','ASM_CU','ASM_HB_COL_LIFT','ASM_HB_SHIRT_Y','ASM_TIE_LIT','ASM_WT','asmCmBaseJob','asmCmBgGet','asmCmBgKey','asmCmBtnCol','asmCmBuild','asmCmButtons','asmCmCanvas','asmCmCodeSig','asmCmCodeText','asmCmDiskGet','asmCmDiskKey','asmCmDiskPut','asmCmEnsure','asmCmFinish','asmCmGet','asmCmHash','asmCmJob','asmCmKind','asmCmLightKeys','asmCmLightPrep','asmCmMem','asmCmMf','asmCmMfGet','asmCmMfNow','asmCmMips','asmCmMp','asmCmOutKey','asmCmPack','asmCmPrep','asmCmRoute','asmCmSetup','asmCmSig','asmCmSrcSig','asmCmStamp','asmCmTile','asmCmUI','asmCmWarm','asmCmWarming','asmCuTile','asmCuWants','asmGapNote','asmHbShirt','asmKindOf','asmNkBaseOf','asmTieSheenK','asmWorstedTile','asmWtWants'],
-// the painter (C3, 2026-11-24): assemble.js and asm-color.js route to the graphics chip, asm-worker.js answers its steps (asmGlPrepOff, asmGlFinOff, asmGlProbe); lab/gl-bench-run.js draws with asmGlContext, asmGlProgram, asmGlRenderer, asmGlPack, asmGlUpload and asmGlUploadGeo and clears asmGlState, asmGlNot (a getter) says in the console why the last look went to the CPU; the tests stub asmGlPaint and asmGlPage and set asmGlRetry (setters)
-  'asm-gl.js':['ASM_GL_KINDS','asmGlContext','asmGlFinOff','asmGlFree','asmGlNot','asmGlNote','asmGlOnPage','asmGlPack','asmGlPage','asmGlPaint','asmGlPref','asmGlPrepOff','asmGlProbe','asmGlProgram','asmGlRenderer','asmGlState','asmGlTry','asmGlUI','asmGlUpload','asmGlUploadGeo','asmGlWhy'],
-// the painter (C3, 2026-11-24): assemble.js and asm-color.js build the new garments' jobs and keys with these; the rest: tests
-  'asm-kinds.js':['ASM_NK','asmCmKindOf','asmJfWants','asmNkBase','asmNkGet','asmNkJob','asmNkSig'],
+// the painter (the restructure S6p, 2026-11-27): the painter's files bridge nothing. Each reads what it uses with import, or through a bus.js
+// socket where the classes forbid the import; asm-worker.js imports and sets through the owners' setters; lab/gl-bench.html imports the
+// modules itself and puts what its scripts call on its own globals; the tests use HOOK
+  'asm-keys.js':[],
+  'assemble.js':[],
+  'asm-watch.js':[],
+  'asm-pocket.js':[],
+  'asm-color.js':[],
+  'asm-gl.js':[],
+  'asm-kinds.js':[],
 // the painter (C3, 2026-11-24): mannequin.js puts outfitMannequinSvg and mqData on self itself, and each pose file its MQ_RAW entry: nothing to bridge
   'mannequin.js':[],
   'mq/vest.js':[],
@@ -143,10 +139,12 @@ const BRIDGE={
   'mq/suit-open.js':[],
   'mq/shirt-tie.js':[],
   'mq/shirt-open.js':[],
-// the painter (C3, 2026-11-24): the drawings for every screen (itemThumb, swatchSVG, figureSvg, fabricDef), the tiles the painter's shirts and ties are made from, the mannequin's cloth (figCuKey, figWay, FIG_CU); swN, thumbN and figBgMemo have setters (tests assign them); the rest: tests
-  'draw.js':['OCP_RANK_SVG','TIE_DARK_L','TIE_DARK_X','TIE_TEX_K','fabricDef','figureSvg','itemThumb','swatchSVG','texPlainBand','texTileSmooth','texTileUrl','texTones'],
-// the painter (C3, 2026-11-24): assemble.js builds the blouse's job (asmOcpBase, asmOcpJob, asmOcpPaint), asm-color.js its key (asmOcpSig); asmOcpPhotoTex: tests
-  'asm-ocp.js':['asmOcpBase','asmOcpJob','asmOcpPaint','asmOcpSig'],
+  'draw.js':[],
+  'asm-ocp.js':[],
+  'asm-look.js':[],
+  'asm-cm-job.js':[],
+  'asm-today.js':[],
+  'asm-cm-page.js':[],
   // the router (the restructure S3f, 2026-11-26, out of start.js): the screens move between pages (show, subOpen, subBack, openAdd),
   // add-paste and settings ask whether start-up lets a page be shown yet (pagesOn, a getter), settings whether a page is over it
   // (subShown); start.js sets pagesOn and drops a page asked for too early (setPagesOn, setPageWant), shows it (showWanted) and
@@ -355,7 +353,6 @@ const GROWN={
   'photos.js':['setRemoteKeys','wardPic'],
   'settings.js':['setSetSeen','setViewStale'],
   'safety.js':['setStoreToldAt'],
-  'assemble.js':['setAsmOut'],
   // and restructure S3b (2026-11-26): the backup's state (the pause, the status words) moved down from sync-status.js into sync.js
   'sync.js':['backedUpWords','safariTab','setRestoring','syncPaused','syncWaiting','tabBrowser'],
   'kit.js':['setKitNoMine'],
@@ -712,7 +709,7 @@ function measure(ROOT){
   /* a global use of a name only a module has, kept to itself */
   const unbridged=[],plat=platform();
   for(const f of page)if(info[f])for(const n of info[f].free){const o=kept.get(n);if(o&&o!==f&&!plat.has(n))unbridged.push(`${f} uses ${n}, which ${o} declares and doesn't bridge`)}
-  /* a classic worker can't importScripts a module; a module worker (analysis-worker.js) imports its files by plain relative paths, and
+  /* a classic worker can't importScripts a module; a module worker (analysis-worker.js, asm-worker.js) imports its files by plain relative paths, and
      what its files read as globals there must be some file's of its own list: a classic one's top-level name or a module's bridge */
   const wfiles={};
   for(const w of WORKERS){if(!fs.existsSync(path.join(ROOT,w)))continue;
@@ -723,8 +720,7 @@ function measure(ROOT){
     for(const i of modscope.imports(ast,w)){
       if(i.odd)problems.push(`${w}: its import from ${i.from} is ${i.odd}`);
       else if(!page.includes(i.from))problems.push(`${w} imports ${i.from}, which is not a page script (the worker's files are the page's, cached under their tags' names)`);
-      else if(i.names.length)problems.push(`${w} imports names from ${i.from}: a worker's files hand theirs over on globalThis (the bridge), as on the page`);
-      else (spelled[i.from]=spelled[i.from]||new Set()).add(i.from)}
+      else (spelled[i.from]=spelled[i.from]||new Set()).add(i.from)}   // (named imports too: since the restructure S6p, 2026-11-27, asm-worker.js imports the painter's names it calls, its files bridge nothing)
     if(modscope.bridged(ast,src).names.size)problems.push(`${w} bridges names: a worker's own names are its own`);
     const g=escope.analyze(ast,{ecmaVersion:2024,sourceType:'module'}).globalScope,own=new Set(g.variables.map(v=>v.name));
     info[w]={top:[],free:[...new Set(g.through.map(r=>r.identifier.name))].filter(n=>!own.has(n))};

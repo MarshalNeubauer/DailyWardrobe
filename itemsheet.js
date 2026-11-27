@@ -3,7 +3,7 @@
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14, and by
    job on 2026-11-17: item-photo.js the photo tools, item-view.js the sheet itself. Since the restructure S3d, 2026-11-26, it loads after
    wardrobe.js, care.js and cost.js, whose parts it draws.) */
-import {on,serve} from './bus.js';
+import {on,serve,ask,served} from './bus.js';
 import {esc,srcOk} from './photo-keys.js';
 import {cap1,flt,keepFocus,put,refreshSwatch,setFlt} from './app.js';
 import {cropEditor,paperCloth,paperHint,paperLine,paperRetake,phEdit,phSm,photoTools,setPhEdit} from './item-photo.js';
@@ -49,7 +49,7 @@ function itemBody(i){
   const cr=L?'':colRows('e',id,i),shade=!L&&COLORS[primaryCol(i)]&&colShows(i,'primaryColor')?shadeRow(i,'e',id,!tex&&!!(i.meas&&i.meas.src==='closeup')):'';
   const color=cr||shade?ckSec(scope,'color',{mark:'good',title:'Color',sum:ckColSum(i,primaryCol(i))+(i.shade?` · drawn ${esc(shadeName(i.shade).toLowerCase())}`:''),body:cr+accRow('e',id,i)+shade}):'';
   const layout=fab&&(DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett)?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" data-act="itemReadPat" data-id="${esc(id)}" data-how="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?'reread':'detect'}">Read pattern from photo</button>`}${i.stripes||i.sett?`<button data-act="itemGeneric" data-id="${esc(id)}">Use generic</button>`:''}</div></div>`:'';
-  const gap=typeof asmGapNote==='function'?asmGapNote(i):'';
+  const gap=served('asm-gap-note')?ask('asm-gap-note',i):'';
   const pattern=!L&&hasPat(i.type)?ckSec(   // (a pocket square or a casual garment too: its pattern, no layout reading)
 scope,'pattern',{mark:'good',title:'Pattern',sum:esc(cap1(patName(normPat(i.type,i.pattern))))+(usableSett(i)?' · layout read':''),body:EP(id,i)+layout+gap}):'';
   const mat=!L&&MATERIALS_BY[i.type]?ckSec(scope,'material',{mark:i.material?'good':'opt',title:'Material',sum:i.material?esc(matLabel(i.material)):'Not set',body:matRow(i.type,i.material,matOnItem(id))}):'';

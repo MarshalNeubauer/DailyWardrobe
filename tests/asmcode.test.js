@@ -1,6 +1,7 @@
 // The colour-coded painter's code is in every picture's key (asm-color.js asmCmCode / asmCmCodeSig) and in the kept setup's key
 // (asmCmPrepCode / asmCmSrcSig), so a change to how pictures are painted repaints them without anyone remembering ASM_CM_PAINTV
-// (2026-11-14 audit: three changes shipped without the bump). This reads asm-keys.js, assemble.js and asm-color.js, follows every top-level function
+// (2026-11-14 audit: three changes shipped without the bump). This reads asm-keys.js, assemble.js, asm-color.js and the page's asm-look.js and asm-cm-job.js (the restructure S6p moved the
+// painter's page parts there), follows every top-level function
 // and constant the painting reaches (asmCmJob, asmCmPrep, asmCmBuild, and asmCmLightPrep for the setup) and fails when one is missing
 // from its list; then, in the page, a changed painter function changes the look's key and the setup's key.
 const fs=require('fs'),path=require('path');
@@ -47,11 +48,11 @@ function reach(D,roots){const seen=new Set(),q=[...roots];
     const t=D.get(n).text.replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g,'');for(const id of t.match(/[A-Za-z_$][\w$]*/g)||[])if(D.has(id)&&!seen.has(id))q.push(id)}
   return seen}
 module.exports=async({ok,chromium,url})=>{
-  const color=fs.readFileSync(path.join(ROOT,'asm-color.js'),'utf8'),D=new Map();
-  for(const f of ['asm-keys.js','assemble.js','asm-color.js'])for(const [k,v] of decls(fs.readFileSync(path.join(ROOT,f),'utf8')))D.set(k,v);
+  const FILES=['asm-keys.js','assemble.js','asm-color.js','asm-look.js','asm-cm-job.js'],color=FILES.map(f=>fs.readFileSync(path.join(ROOT,f),'utf8')).join('\n'),D=new Map();
+  for(const f of FILES)for(const [k,v] of decls(fs.readFileSync(path.join(ROOT,f),'utf8')))D.set(k,v);
   const listOf=name=>{const m=new RegExp('const '+name+'=\\(\\)=>\\[([^\\]]*)\\]').exec(color);return new Set(m?m[1].split(',').map(s=>s.trim()).filter(Boolean):[])};
   const code=listOf('asmCmCode'),prep=listOf('asmCmPrepCode');
-  ok(D.size>300&&D.has('asmCmBuild')&&D.has('ASM_CM_RIM')&&D.has('asmCmHandEdge'),`the declarations of asm-keys.js, assemble.js and asm-color.js are read (${D.size})`);
+  ok(D.size>300&&D.has('asmCmBuild')&&D.has('ASM_CM_RIM')&&D.has('asmCmHandEdge'),`the declarations of ${FILES.join(', ')} are read (${D.size})`);
   const miss=[...reach(D,['asmCmJob','asmCmPrep','asmCmBuild'])].filter(n=>!code.has(n)),missP=[...reach(D,['asmCmPrep','asmCmLightPrep'])].filter(n=>!prep.has(n));
   ok(code.size>100&&!miss.length,`every function and constant the painting reaches is in asmCmCode, the picture key's code hash (${code.size}; missing: ${miss.join(', ')||'none'})`);
   ok(prep.size>20&&!missP.length&&['asmCmHandEdge','asmCmBlur','asmTubeTabs','ASM_CM_RIM','ASM_LEG_K'].every(n=>prep.has(n)),`every function and constant the master's setup reaches is in asmCmPrepCode, the kept setup's key (${prep.size}; missing: ${missP.join(', ')||'none'})`);

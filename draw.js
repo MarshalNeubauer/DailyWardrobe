@@ -1,8 +1,10 @@
 /* Daily Wardrobe: SVG drawings (procedural fabrics, accessories, thumbnails, glue for the torso figure) */
-import {emit} from './bus.js';
+import {emit,serve,ask,served} from './bus.js';
 import {CAMO_V,COLORS,FABRIC,HANDPICK_TYPES,METAL_TONES,OCP_CAMO,OCP_V,STRAP_BANDS,TEXTURE_TYPES,TYPES,accentOf,blouseTapes,camoImage,clipMetal,colOf,hexRgb,isCargo,labHex,linkFace,lum,mix,nm,ocpImage,patBase,rgbLab,shoeStyle,sockPatterned,sockToe,strapBand,thirdOf,trouserKind,watchOpts} from './core.js';
-import {CAMO_TR,CHECK_PATS,STRIPE_PATS} from './detect.js';
+import {CAMO_TR,CHECK_PATS,STRIPE_PATS,usableSett} from './detect.js';
 import {linSrgb,srgbLin8} from './srgb.js';
+import {ASM_CM_KINDS} from './asm-keys.js';
+import {ASM_PX_MM} from './assemble.js';
 
 /* a herringbone stripe's plain band, read from Claude's one-repeat bitmap: columns the same all the way down (all 1: a shiny satin
    line; all 0: plain ground) are not twill. Its share of the repeat, and whether it shines; null for plain herringbone. */
@@ -1189,7 +1191,7 @@ function figStripeLift(i){const s=i&&usableSett(i),sp=i&&i.patternSpec&&i.patter
    a tie has no master, so it is the waistcoat mannequin with the tie's place in the shirt; an outfit with no master (no shirt, or no
    trousers or belt without a jacket) takes the pose its pieces would have: a jacket with or without a tie, else the shirt masters, whose
    missing trousers and belt are a plain dark grey and a dark brown, and a missing shirt a plain off-white */
-const figKind=o=>{let k=typeof asmCmKind==='function'?asmCmKind(o):null;
+const figKind=o=>{let k=served('asm-cm-kind')?ask('asm-cm-kind',o):null;
   if(!k)k=o.top?(o.tie?(o.vest?'vest':'suit'):'suit-open'):(o.tie?'shirt-tie':'shirt-open');
   return k==='vest-open'?'vest':k};
 const FIG_NO_SHIRT={color:'#F2F0EB'};
@@ -1232,12 +1234,12 @@ const figLum=i=>{const h=String(colOf(i)).replace('#','');return figY(...[0,2,4]
 function figLiftK(y){const L=FIG_LIFT;if(!(y<FIG_DARK))return 1;if(y<=L[0][0])return L[0][1];
   for(let j=1;j<L.length;j++)if(y<=L[j][0]){const [a,ka]=L[j-1],[b,kb]=L[j];return ka+(kb-ka)*(y-a)/(b-a)}return 1}
 /* which fill a jacket's or trousers' cloth gets: drawn (as before), lift (the drawn tile, lifted), block (asmCuTile), hb (H2), wt (B2) */
-function figWay(i,z){if(!i||typeof asmCmRoute!=='function')return {way:'drawn',k:1};
-  const how=asmCmRoute(i,z).how,s=usableSett(i),b=patBase(i.pattern)||'solid';
+function figWay(i,z){if(!i||!served('asm-cm-route'))return {way:'drawn',k:1};
+  const how=ask('asm-cm-route',i,z).how,s=usableSett(i),b=patBase(i.pattern)||'solid';
   if(how==='bands'||how==='tile'||(s&&(s.bands||s.motif||s.figure))||STRIPE_PATS.includes(b)||CHECK_PATS.includes(b))return {way:'drawn',k:1,how};
   const k=figLiftK(figLum(i)),own=/^(data|blob):/.test(String(i.texture||''));
-  if(own&&asmCuWants(i,how))return {way:asmSuitWeave(i)==='herringbone'?'hb':'block',k,how};
-  if(k>1&&asmWtWants(i,z)&&!asmCuWants(i,'twill'))return {way:'wt',k,how};
+  if(own&&ask('asm-cu-wants',i,how))return {way:ask('asm-suit-weave',i)==='herringbone'?'hb':'block',k,how};
+  if(k>1&&ask('asm-wt-wants',i,z)&&!ask('asm-cu-wants',i,'twill'))return {way:'wt',k,how};
   return {way:k>1?'lift':'drawn',k,how}}
 /* the drawn tile with every colour lifted k times in linear light (black and white stay) */
 const figLiftHex=(p,k)=>p.replace(/((?:fill|stroke|stop-color)=")#([0-9a-fA-F]{6})"/g,(m,a,h)=>a+'#'+[0,2,4].map(q=>Math.round(figGam(Math.min(1,figLin(parseInt(h.slice(q,q+2),16))*k))).toString(16).padStart(2,'0')).join('')+'"');
@@ -1245,7 +1247,7 @@ function figLifted(i,role,k){const f=figFabric(i,role);return {def:(id,rot)=>fig
 /* the device pixels of one viewBox unit on Today's figure (the Duo upright's is 688 css px, not 390), in quarters */
 function figScale(){const st=typeof document!=='undefined'&&document.getElementById('stage'),w=(st&&st.clientWidth)||Math.min(self.innerWidth||390,688);
   return Math.round(Math.min(688,Math.max(200,w))/390*Math.min(3,Math.max(1,self.devicePixelRatio||1))*4)/4}
-const figCuKey=(i,way,k,kp,sc)=>JSON.stringify([i.id,colOf(i),i.shade||0,(i.texture||'').length,(i.texture||'').slice(-12),typeof ASM_CU!=='undefined'?ASM_CU.v:0,way==='wt'?[ASM_WT.v,i.secondaryColor||'']:0,way,+k.toFixed(3),kp,sc,FIG_CUV]);
+const figCuKey=(i,way,k,kp,sc)=>JSON.stringify([i.id,colOf(i),i.shade||0,(i.texture||'').length,(i.texture||'').slice(-12),served('asm-cu-v')?ask('asm-cu-v'):0,way==='wt'?[ask('asm-wt-v'),i.secondaryColor||'']:0,way,+k.toFixed(3),kp,sc,FIG_CUV]);
 /* a tile's mean held at k x its colour */
 function figNorm(T,k){const n=T.TW*T.TH,c=T.c,t=new Float32Array(T.t);let s=0;for(let j=0;j<n;j++)s+=figY(t[3*j],t[3*j+1],t[3*j+2]);
   const f=figY(c[0],c[1],c[2])*k/(s/n||1e-6);for(let j=0;j<3*n;j++)t[j]*=f;return {...T,t,c:new Float32Array([c[0]*k,c[1]*k,c[2]*k])}}
@@ -1269,7 +1271,7 @@ function figTileUrl(T,N,slv){const S=T.TW,f=S/N,c=T.c,cv=document.createElement(
       for(let xx=Math.floor(x0);xx<Math.ceil(x1);xx++){const wx=Math.min(x1,xx+1)-Math.max(x0,xx);if(wx<=0)continue;const j=3*((yy%S)*S+xx%S),ww=wx*wy;s[0]+=ww*T.t[j];s[1]+=ww*T.t[j+1];s[2]+=ww*T.t[j+2];w+=ww}}
     for(let q=0;q<3;q++){let v=s[q]/w;if(slv!=null)v=c[q]+slv*(v-c[q]);d.data[4*(y*N+x)+q]=figGam(Math.max(0,Math.min(1,v)))}d.data[4*(y*N+x)+3]=255}
   g.putImageData(d,0,0);return cv.toDataURL('image/jpeg',.9)}
-async function figCuMake(i,way,k,kp,sc){let T=way==='wt'?asmWorstedTile(i):await asmCuTile(i);if(!T||!T.t)return null;
+async function figCuMake(i,way,k,kp,sc){let T=way==='wt'?ask('asm-worsted-tile',i):await ask('asm-cu-tile',i);if(!T||!T.t)return null;
   T=way==='hb'?figHbTile(T,k):k!==1?figNorm(T,k):T;
   const W=T.mm*ASM_PX_MM*kp*390/2048,N=Math.max(16,Math.min(T.TW,Math.round(W*sc)));
   return {W,N,way,k,url:figTileUrl(T,N),sleeveUrl:T.slv?figTileUrl(T,N,T.slv):null}}
@@ -1338,8 +1340,8 @@ const cbNap=(id,fine)=>{let s=fine?7:3,h='';const r=()=>(s=(s*16807)%2147483647)
     back+front+'</g>';
 }
 
-/* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
-Object.assign(globalThis,{texPlainBand,TIE_TEX_K,TIE_DARK_L,TIE_DARK_X,texTones,texTileUrl,texTileSmooth,fabricDef,swatchSVG,OCP_RANK_SVG,itemThumb,figureSvg});
+/* sockets (bus.js; the restructure S6p, 2026-11-27): a piece's swatch for the favorites (fav.js, a logic file, may not import the painter) */
+serve('swatch-svg',swatchSVG);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,BLAZER_D,CB_SOLE_DARK,COAT_D,FIG_CU,FIG_NO_SHIRT,RAIN_D,SHOE_CB,SOCK_D,SUIT_D,TEX_TILES,camoTileUrl,figBg,get figBgMemo(){return figBgMemo},set figBgMemo(v){figBgMemo=v},figCuKey,figFabric,figHbTile,figKind,figLiftK,figLum,figNorm,figStripeLift,figWay,figY,get swN(){return swN},set swN(v){swN=v},get thumbN(){return thumbN},set thumbN(v){thumbN=v},itemThumb,OCP_RANK_SVG,TIE_DARK_X,TIE_TEX_K,fabricDef,figureSvg,swatchSVG,texPlainBand,texTileSmooth,texTileUrl,texTones};
 export {texPlainBand,TIE_TEX_K,TIE_DARK_L,TIE_DARK_X,texTones,TEX_TILES,texTileUrl,texTileSmooth,camoTileUrl,fabricDef,SOCK_D,swatchSVG,SUIT_D,BLAZER_D,RAIN_D,OCP_RANK_SVG,COAT_D,itemThumb,figFabric,figBg,figStripeLift,figKind,FIG_NO_SHIRT,figureSvg,FIG_CU,figY,figLum,figLiftK,figWay,figCuKey,figNorm,figHbTile,SHOE_CB,CB_SOLE_DARK,swN,thumbN,figBgMemo};
