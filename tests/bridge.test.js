@@ -609,6 +609,11 @@ const BARE_READS_CHECK=false;
 /* the files that read a bridged name on an older build (tests/replay R.old(sha), which has no HOOK), and the names: they stay bare
    there. The groups fill this in for the uses that really run on an old build; every other use is rewritten */
 const READS_KEPT={
+  'tests/garmentpaint.test.js':['ASM_CM_BTN','ASM_CM_KINDS','SLOTS','asmCmCodeSig','asmCmMf','asmCmSig','asmCmSrcSig','dayClimate','dayRecs','di',
+    'hasVest','inRotation','isWorkday','items','key','occOf','settings','todayDate'],   // S6t2: the page of #511's base (before HOOK) gets a HOOK of its own from its globals, for keysOf and the fixed plan
+  'tests/replay/scripts/W1-1-02.js':['appVersion'],   // S6t2: the first open after the update runs the old cached app (12 Nov, no HOOK)
+  'tests/replay/scripts/lib-verify1.js':['items'],   // S6t2: buildOld counts the pieces on the old build (26cd8b1, no HOOK)
+  'tools/fill-material.js':['itemFields'],   // S6t2: not the page's: the string handed to Function declares itemFields (core.js's text) and returns it
   /* S6t3: its old phone runs 26cd8b1, 7a28f96 and c4a549b (RP.old), which have no HOOK; today's phone reads them through HOOK */
   'tests/replay/scripts/CR-6-12.js':['items','syncNow','syncRun'],
 };

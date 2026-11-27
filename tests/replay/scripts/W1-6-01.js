@@ -1,14 +1,14 @@
 // W1-6-01: the owner's "Delete everything" on phone A is undone by his second owner phone B on its next sync.
 const L=require('./_verify6-lib.js');
 async function ownerConnect(ph){
-  await ph.page.evaluate(()=>openSettings('connection'));await L.sleep(800);
+  await ph.page.evaluate(()=>HOOK.openSettings('connection'));await L.sleep(800);
   await L.tapText(ph,'I run the server');await L.sleep(400);
   await ph.page.fill('#cfg-url',L.W);await ph.page.fill('#cfg-token','owner-secret');
-  await ph.page.evaluate(()=>saveSettings());   // (as tests/connkeep.test.js does; Done saves the same fields)
-  await ph.page.evaluate(()=>typeof closeSettings==='function'&&closeSettings()).catch(()=>{});await L.sleep(3000);await L.checkWorker(ph);
+  await ph.page.evaluate(()=>HOOK.saveSettings());   // (as tests/connkeep.test.js does; Done saves the same fields)
+  await ph.page.evaluate(()=>'closeSettings' in HOOK&&HOOK.closeSettings()).catch(()=>{});await L.sleep(3000);await L.checkWorker(ph);
 }
 async function deleteEverything(ph){
-  await ph.page.evaluate(()=>openSettings());await L.sleep(900);
+  await ph.page.evaluate(()=>HOOK.openSettings());await L.sleep(900);
   if(await ph.page.evaluate(()=>document.querySelector('#sc-about .scat-head').getAttribute('aria-expanded'))!=='true'){await ph.page.evaluate(()=>document.querySelector('#sc-about .scat-head').scrollIntoView({block:'center'}));await ph.tap('#sc-about .scat-head');await L.sleep(1200)}
   for(let k=0;k<4&&await ph.page.evaluate(()=>document.querySelector('#del-confirm').hidden);k++){await L.tapText(ph,'Delete my data','#sc-about');await L.sleep(700)}
   const card=await ph.page.evaluate(()=>document.querySelector('#del-confirm').innerText);

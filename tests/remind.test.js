@@ -56,13 +56,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner');HOOK.rememberRole({role:'owner'});
       let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
       HOOK.items=[I('suit','navy'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','navy'),I('shoes','black',{leather:'calf'})];
-      settings.workdays=[0,1,2,3,4];HOOK.TODAY_OVERRIDE='2026-11-12T08:00:00';HOOK.dayRecs={};HOOK.cache={};
+      HOOK.settings.workdays=[0,1,2,3,4];HOOK.TODAY_OVERRIDE='2026-11-12T08:00:00';HOOK.dayRecs={};HOOK.cache={};
       // a phone that can receive pushes, without a real push service
       const sub={endpoint:'https://web.push.apple.com/me',unsubscribe:async()=>true};let have=null;
       window.Notification.requestPermission=async()=>'granted';
       const reg={addEventListener(){},removeEventListener(){},update:async()=>{},installing:null,waiting:null,active:null,pushManager:{getSubscription:async()=>have,subscribe:async o=>{window.__appKey=o.applicationServerKey.length;have=sub;return sub}}};
       Object.defineProperty(navigator.serviceWorker,'ready',{get:()=>Promise.resolve(reg),configurable:true});navigator.serviceWorker.getRegistration=async()=>reg},HOST);
-    await p.evaluate(()=>openSettings('schedule'));await p.waitForSelector('#remind-sw');
+    await p.evaluate(()=>HOOK.openSettings('schedule'));await p.waitForSelector('#remind-sw');
     const box=await p.textContent('#remind-box');
     await p.click('#remind-sw');await p.waitForFunction(()=>HOOK.remindPrefs().on&&!HOOK.remindBusy);
     const after=await p.evaluate(async()=>{const c=await caches.open('dw-keep-remind'),j=await (await c.match('remind.json')).json();return {lines:j,msg:document.querySelector('.remind-msg').textContent,key:window.__appKey,sw:document.querySelector('#remind-sw').getAttribute('aria-checked')}});
@@ -79,7 +79,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     {const c0=await p.evaluate(()=>({care:HOOK.remindCareOn(HOOK.remindPrefs()),sw:document.querySelector('#care-rem-sw').getAttribute('aria-checked')}));
       ok(c0.care===false&&c0.sw==='false','with the morning reminder off, the cleaning reminders are off too (they follow it until set)');
       await p.evaluate(()=>{const ids={top:'suit0',bot:'suit0',shirt:'shirt2',tie:'tie4',shoes:'shoes6'};
-        for(const d of [2,3,4,5,8])dayRecs[key(new Date(2026,10,d))]={date:key(new Date(2026,10,d)),ids,suitDay:true,worn:true};localStorage.removeItem('care_told');HOOK.cache={}});
+        for(const d of [2,3,4,5,8])HOOK.dayRecs[HOOK.key(new Date(2026,10,d))]={date:HOOK.key(new Date(2026,10,d)),ids,suitDay:true,worn:true};localStorage.removeItem('care_told');HOOK.cache={}});
       const n0=posted.length;await p.click('#care-rem-sw');await p.waitForFunction(()=>HOOK.remindCareOn(HOOK.remindPrefs())&&!HOOK.remindBusy);
       const c1=await p.evaluate(async()=>{const c=await caches.open('dw-keep-remind');return {care:await (await c.match('care.json')).json(),lines:await (await c.match('remind.json')).json(),msg:document.querySelector('.remind-msg').textContent}});
       const ps2=posted.slice(n0).at(-1)||{},cd=Object.keys(c1.care).sort();
@@ -91,12 +91,12 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // fix round A (2026-11-17; the code review's CR-4-09 and CR-4-10): a change just before the app is closed reaches the kept lines at
     // once (iOS suspends a page within seconds, before the 3 s refresh); a phone the server no longer has is told again; a phone that
     // lost its push subscription says so and its switches go off, instead of reading On
-    {await p.click('#remind-sw');await p.waitForFunction(()=>HOOK.remindPrefs().on&&!HOOK.remindBusy);await p.evaluate(()=>closeSettings());
+    {await p.click('#remind-sw');await p.waitForFunction(()=>HOOK.remindPrefs().on&&!HOOK.remindBusy);await p.evaluate(()=>HOOK.closeSettings());
       const kept=iso=>p.evaluate(async iso=>{const c=await caches.open('dw-keep-remind');return (await (await c.match('remind.json')).json())[iso]||''},iso);
-      const nx=await p.evaluate(()=>{const T=todayDate();for(let i=1;i<10;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(isWorkday(d)){HOOK.sel=d;HOOK.view={y:d.getFullYear(),m:d.getMonth()};HOOK.listOpen=false;show('today');return isoKey(d)}}});
+      const nx=await p.evaluate(()=>{const T=HOOK.todayDate();for(let i=1;i<10;i++){const d=new Date(T.getFullYear(),T.getMonth(),T.getDate()+i);if(HOOK.isWorkday(d)){HOOK.sel=d;HOOK.view={y:d.getFullYear(),m:d.getMonth()};HOOK.listOpen=false;HOOK.show('today');return HOOK.isoKey(d)}}});
       const line0=await kept(nx);
-      await p.click('#ibox .month-link');await p.click('#ibox .row button[aria-label="Change tie"]');await p.click('#pick-next');await p.waitForFunction(()=>planFor()[key(sel)].overrides);
-      const want=await p.evaluate(()=>HOOK.outfitLine(planFor()[key(sel)]));
+      await p.click('#ibox .month-link');await p.click('#ibox .row button[aria-label="Change tie"]');await p.click('#pick-next');await p.waitForFunction(()=>HOOK.planFor()[HOOK.key(HOOK.sel)].overrides);
+      const want=await p.evaluate(()=>HOOK.outfitLine(HOOK.planFor()[HOOK.key(HOOK.sel)]));
       await p.evaluate(()=>{Object.defineProperty(document,'visibilityState',{value:'hidden',configurable:true});document.dispatchEvent(new Event('visibilitychange'))});
       const t0=Date.now();let line1='';while(Date.now()-t0<1500){line1=await kept(nx);if(line1===want)break;await p.waitForTimeout(50)}
       await p.evaluate(()=>{delete document.visibilityState});
@@ -108,20 +108,20 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       await p.evaluate(async()=>{await HOOK.remindRefresh()});
       ok(posted.length===n0+1,'…and then not again: it was asked and told just now');
       // the subscription is gone (the Home Screen app removed and added again, notifications switched off)
-      await p.evaluate(async()=>{navigator.serviceWorker.getRegistration=async()=>({pushManager:{getSubscription:async()=>null}});await HOOK.remindRefresh();openSettings('schedule')});
+      await p.evaluate(async()=>{navigator.serviceWorker.getRegistration=async()=>({pushManager:{getSubscription:async()=>null}});await HOOK.remindRefresh();HOOK.openSettings('schedule')});
       const lost=await p.evaluate(()=>({on:HOOK.remindPrefs().on,sw:document.querySelector('#remind-sw').getAttribute('aria-checked'),msg:document.querySelector('.remind-msg').textContent}));
       ok(!lost.on&&lost.sw==='false'&&/Reminders stopped on this phone/.test(lost.msg),`with no push subscription any more the switch goes off and says so ("${lost.msg}")`)}
     // Round D (2026-11-24, after the code review's R3 N2): a cleaning reminder that throws never stops the morning reminder's lines
     // from being kept (careReminders was called outside remindKeep's try, so one bad day left remind.json as it was)
     {const r=await p.evaluate(async()=>{const P={on:true,care:true,time:'07:00'},c=await caches.open('dw-keep-remind');
         await HOOK.remindKeep(P);await c.put('remind.json',new Response('{}',{headers:{'content-type':'application/json'}}));   // the plan is worked out; the kept lines emptied
-        const trap={type:'suit',get id(){throw new Error('a piece that cannot be read')}};items.push(trap);
-        let err='',dates=null;try{dates=await HOOK.remindKeep(P)}catch(e){err=e.message}items.splice(items.indexOf(trap),1);
+        const trap={type:'suit',get id(){throw new Error('a piece that cannot be read')}};HOOK.items.push(trap);
+        let err='',dates=null;try{dates=await HOOK.remindKeep(P)}catch(e){err=e.message}HOOK.items.splice(HOOK.items.indexOf(trap),1);
         const lines=await (await c.match('remind.json')).json(),care=await (await c.match('care.json')).json();
         return {err,dates,lines:Object.keys(lines).length,care:Object.keys(care).length}});
       ok(!r.err&&r.lines>0&&r.dates&&r.dates.length===r.lines&&r.care===0,`a cleaning reminder that throws: the morning reminder's lines are kept anyway and their dates sent (${r.err||r.lines+' lines, '+(r.dates||[]).length+' dates, '+r.care+' cleaning'})`)}
     // not connected: not shown
-    await p.evaluate(()=>{closeSettings();localStorage.removeItem('worker_url');localStorage.removeItem('app_token');openSettings('schedule')});
+    await p.evaluate(()=>{HOOK.closeSettings();localStorage.removeItem('worker_url');localStorage.removeItem('app_token');HOOK.openSettings('schedule')});
     ok(!(await p.isVisible('#remind-box')),'not connected: no reminder switch');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}

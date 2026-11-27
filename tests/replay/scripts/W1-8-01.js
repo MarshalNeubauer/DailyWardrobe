@@ -3,9 +3,9 @@
 const V=require('./_verify8-lib.js');
 V.run('W1-8-01',async(phones)=>{
   const ph=await V.phone('hol');phones.push(ph);
-  const look=()=>ph.page.evaluate(()=>{const h=settings.holidays||{},r=dayRecs['2027-1-5'];return {
+  const look=()=>ph.page.evaluate(()=>{const h=HOOK.settings.holidays||{},r=HOOK.dayRecs['2027-1-5'];return {
     country:h.country,listFirst:(h.list||[])[0],jan5InList:(h.list||[]).some(x=>x.d==='2027-01-05'),
-    jan5off:offName(new Date(2027,0,5)),jan5rec:r?{auto:!!r.auto,ids:!!r.ids,worn:r.worn}:null,jan5worn:wornDays().some(w=>w.date==='2027-1-5')}});
+    jan5off:HOOK.offName(new Date(2027,0,5)),jan5rec:r?{auto:!!r.auto,ids:!!r.ids,worn:r.worn}:null,jan5worn:HOOK.wornDays().some(w=>w.date==='2027-1-5')}});
   await V.setWorldTime(ph,V.PORT,'2026-12-27T07:30:00+03:00');await ph.page.goto(V.URL);await ph.ready();await V.sleep(1500);
   await ph.tapText(/^Skip$/,'#setup button');await V.sleep(1200);await ph.tapText(/Try a sample wardrobe/);await V.sleep(2500);await ph.guard();
   const s1=await look();

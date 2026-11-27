@@ -6,7 +6,7 @@ L.main(async()=>{
   const A=await L.open('04-A',link);await L.importRows(A);await L.backup(A);
   // A: Today "✓ Wore" -> "✕ Didn't", backed up
   await A.tap('#n-today');await L.sleep(800);await A.tap('#wpill');await L.sleep(1000);await L.backup(A);
-  const rec=ph=>ph.page.evaluate(()=>{const r=dayRecs['2026-11-15'];const nm=id=>{const i=items.find(x=>x.id===id);return i?(i.name||i.type):id};
+  const rec=ph=>ph.page.evaluate(()=>{const r=HOOK.dayRecs['2026-11-15'];const nm=id=>{const i=HOOK.items.find(x=>x.id===id);return i?(i.name||i.type):id};
     return r?{ids:r.ids?Object.values(r.ids).filter(Boolean).map(nm):null,worn:r.worn,noOutfit:r.noOutfit||0}:null});
   const a0=await rec(A);L.log('A 15th recorded',a0);
   // B: a new phone, not connected: Skip, Try a sample wardrobe

@@ -16,14 +16,14 @@ const syncs = l => l.recent.filter(r => /\/sync/.test(r));
   await a.open(); await setWorldTime(a, L.PORT, '2026-11-22T07:30:00+03:00'); await mock('count-reset', {});
   // (1) first open: the phone still runs the 12 Nov app from its service worker
   await a.page.goto(APP); await a.ready().catch(() => {}); await sleep(6000);
-  out.firstOpenVersion = await a.page.evaluate(() => typeof appVersion === 'function' ? appVersion() : '?');
+  out.firstOpenVersion = await a.page.evaluate(() => typeof appVersion === 'function' ? appVersion() : '?');   // the old cached app: no HOOK (READS_KEPT)
   await a.background(); await sleep(4000);
   let l = await mock('log'); out.firstOpen = { kvPut: l.kvPut, byPrefix: l.kvByPrefix, syncs: syncs(l) };
   await mock('count-reset', {});
   // (2) close and reopen: today's app (dw-v376), upgradePhotos/smallPhotos, then the backup on going to the background
   await a.reopen(APP); await a.ready().catch(() => {});
   out.toasts = await toastWatch(a, 10000);
-  out.version = await a.page.evaluate(() => typeof appVersion === 'function' ? appVersion() : '?');
+  out.version = await a.page.evaluate(() => typeof HOOK === 'object' && 'appVersion' in HOOK ? HOOK.appVersion() : '?');
   await a.background(); await sleep(6000); await a.foreground(); await sleep(1000); await a.background(); await sleep(4000);
   l = await mock('log'); out.afterUpdate = { kvPut: l.kvPut, byPrefix: l.kvByPrefix, syncs: syncs(l) };
   const kv = await mock('kv'); out.kvKeys = kv.keys.length; out.phKeys = kv.keys.filter(k => /:ph:|^ph:|dwph/.test(k)).length;

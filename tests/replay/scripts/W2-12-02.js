@@ -18,7 +18,7 @@ L.run(async () => {
   await ph.swipe(350, y, 50, y); await L.sleep(400);
   const afterSwipe = await pg.evaluate(() => Math.round(document.querySelector('#off-list .fchip button').getBoundingClientRect().left));
   await ph.tapAt(geo.vw - 3, y); await L.sleep(700);
-  const stillThere = await pg.evaluate(() => (settings.daysOff || []).some(x => x.d === '2026-12-21'));
+  const stillThere = await pg.evaluate(() => (HOOK.settings.daysOff || []).some(x => x.d === '2026-12-21'));
   const ok = geo && geo.xLeft >= geo.vw - 2 && stillThere && afterSwipe >= geo.vw - 2;
-  L.verdict(ok, { ...geo, buttonLeftAfterSwipe: afterSwipe, dayOffStillThereAfterEdgeTap: stillThere, stored: await pg.evaluate(() => settings.daysOff) });
+  L.verdict(ok, { ...geo, buttonLeftAfterSwipe: afterSwipe, dayOffStillThereAfterEdgeTap: stillThere, stored: await pg.evaluate(() => HOOK.settings.daysOff) });
 });
