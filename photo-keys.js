@@ -5,9 +5,8 @@
    right after srgb.js, before the painter, which reads the keys, and before every screen. */
 /* ---- kept outfit photos (made by the retired photo generator, worker /render): saved per outfit combination, not per day, so any
    day that wears the same pieces shows the photo; the worker keeps a copy (KV) so every device can show it. ---- */
-import {serve,ask,need,served} from './bus.js';   // (the restructure S6f: app.js's store and an ended invitation, files that run after this one)
+import {serve,ask,need,served} from './bus.js';   // (the restructure S6f: detect.js's readings, app.js's store and an ended invitation, files that run after this one)
 import {REC_PHOTO,patBase,primaryCol,settings,esc,inviteOver} from './core.js';
-import {CHECK_PATS,STRIPE_PATS,settSig,usableSett} from './detect.js';   // (N5: detect.js's readings, an earlier today-no-picture file, where it asked their sockets)
 function setRenders(v){renders=v}   // (lab/gl-bench.js starts the kept pictures afresh: the restructure S6f, where it assigned the bridged name)
 let renders={};   // kept pictures by key: outfit photos made before 2026-11-14 (renderFor shows them), item pictures, assembled pictures
 /* (fix round 3, W2-13-02) a value inside a quoted JS string inside an inline handler (an onclick calling f('…')): the browser decodes the attribute
@@ -22,7 +21,7 @@ const srcOk=s=>{s=String(s??'');return /^(?:data:image\/[\w.+-]+;base64,[A-Za-z0
    is, so identical items share too. */
 const LOOK_FIELDS=['primaryColor','secondaryColor','tertiaryColor','pattern','metal','dial','band','bezel','watchStyle'];
 /* how one piece looks, for photo keys: a shirt by its colour (and its pattern or read texture), anything else by its look fields, details and read pattern */
-const lookSig=(s,i)=>s==='shirt'?'shirt/'+primaryCol(i)+(shirtPatterned(i)?'/'+i.pattern+(i.sett?'/'+settSig(i.sett):'')+(i.patternText?'/'+i.patternText:''):shirtTextured(i)?'/tex/'+settSig(i.sett):''):[i.type,...LOOK_FIELDS.map(f=>i[f]??'')].join('/')+(i.details?'/'+i.details:'')+(i.sett?'/'+settSig(i.sett):'')+(i.patternText?'/'+i.patternText:'');
+const lookSig=(s,i)=>s==='shirt'?'shirt/'+primaryCol(i)+(shirtPatterned(i)?'/'+i.pattern+(i.sett?'/'+need('sett-sig',i.sett):'')+(i.patternText?'/'+i.patternText:''):shirtTextured(i)?'/tex/'+need('sett-sig',i.sett):''):[i.type,...LOOK_FIELDS.map(f=>i[f]??'')].join('/')+(i.details?'/'+i.details:'')+(i.sett?'/'+need('sett-sig',i.sett):'')+(i.patternText?'/'+i.patternText:'');
 const comboSig=o=>(o.vest?'vest|':'')+(!o.top&&o.bot?'nojacket/'+[o.bot.type,...LOOK_FIELDS.map(f=>o.bot[f]??'')].join('/')+'|':'')+['top','shirt','tie','clip','watch'].map(s=>o[s]?lookSig(s,o[s]):'-').join('|');
 const fnvMemo=new Map();   // the same looks are hashed over and over (every render, every history record): remember them
 const fnv64=t=>{let v=fnvMemo.get(t);if(v)return v;let h=0xcbf29ce484222325n;for(const c of new TextEncoder().encode(t)){h^=BigInt(c);h=(h*0x100000001b3n)&0xffffffffffffffffn}
@@ -70,9 +69,9 @@ function workerList(force){const W=workerBase();if(!W)return Promise.resolve(nul
   return listP}
 async function loadRenders(){try{const all=await need('txs','meta','readonly',s=>s.getAll(IDBKeyRange.bound('render:','render;',false,true)));renders={};for(const x of all||[])renders[String(x.k).slice(7)]=x.v}catch(e){console.warn(e)}}   // (only the photos' key range: the kept assembled pictures are read by asmLoad)
 /* a striped or checked shirt has its own photo key (a plain or finely woven one counts by its colour alone) */
-const shirtPatterned=i=>!!i&&([...STRIPE_PATS,...CHECK_PATS,'houndstooth'].includes(patBase(i.pattern))||!!(usableSett(i)||{}).motif);
+const shirtPatterned=i=>!!i&&([...need('stripe-pats'),...need('check-pats'),'houndstooth'].includes(patBase(i.pattern))||!!(need('usable-sett',i)||{}).motif);
 /* a shirt whose weave texture was read (dobby diamonds, herringbone…): it has its own photo key too */
-const shirtTextured=i=>!!i&&!shirtPatterned(i)&&!!(usableSett(i)||{}).tex;
+const shirtTextured=i=>!!i&&!shirtPatterned(i)&&!!(need('usable-sett',i)||{}).tex;
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get listKeys(){return listKeys},set listKeys(v){listKeys=v},get renders(){return renders},set renders(v){renders=v},get listAt(){return listAt},set listAt(v){listAt=v},shirtPatterned,comboKey,comboSig,keepRender,workerBase,workerList,esc,picsDrawn};
 export {renders,setRenders,jsq,srcOk,comboSig,fnv64,comboKey,keepRender,shareRender,workerBase,picsDrawn,listKeys,listAt,workerList,listPaused,loadRenders,shirtPatterned,shirtTextured};

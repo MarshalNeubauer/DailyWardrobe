@@ -219,7 +219,8 @@ async function survey(eng,browser,{ok,url,C,page,imports}){
       try{const p=await ctx.newPage();p.on('pageerror',e=>said.push(String(e.message)));p.on('console',m=>{if(m.type()==='warning'||m.type()==='error')said.push(m.text())});
         await p.goto(url,{waitUntil:'load'});for(let i=0;i<80&&!(await p.evaluate(()=>!!window.appReady||!!document.querySelector('#start-fail')));i++)await wait(250);await wait(1500);
         await p.evaluate(()=>{const g=document.querySelector('header .hbtns button[data-act="setOpenTap"]');if(g)g.click()});await wait(700);
-        await p.evaluate(()=>{try{HOOK.closeSettings()}catch(e){}const s=document.querySelector('#n-stats');if(s)s.click()});await wait(1000);
+        await p.keyboard.press('Escape');await wait(500);   // (ui.js's Escape: Settings closes, and the layers' inert state is set again)
+        await p.evaluate(()=>{const s=document.querySelector('#n-stats');if(s)s.click()});await wait(1000);
         await p.evaluate(()=>{const t=document.querySelector('#n-today');if(t)t.click()});await wait(700);
         await p.evaluate(()=>{const n=document.querySelector('#today .nav.day button[data-n="1"]');if(n)n.click()});await wait(1500);
         return [...new Set(said.filter(t=>names.some(s=>t.includes(s+' is not served'))||/^\(the case failed/.test(t)).map(t=>t.split('\n')[0].slice(0,90)))]}

@@ -17,6 +17,14 @@ export interface Sockets {
   'plan-sim': typeof import('../planner.js').planSim;
   /** the workdays Insights and What to buy measure (horizonKeys) (analysis.js) */
   'horizon-keys': typeof import('../analysis.js').horizonKeys;
+  /** a reading's key (settSig), in a shirt's or a piece's picture key (the restructure S6f) (detect.js) */
+  'sett-sig': typeof import('../detect.js').settSig;
+  /** a piece's reading if it can be drawn (usableSett), for a shirt's picture key (the restructure S6f) (detect.js) */
+  'usable-sett': typeof import('../detect.js').usableSett;
+  /** the striped patterns (STRIPE_PATS), for a shirt's picture key (the restructure S6f) (detect.js) */
+  'stripe-pats': () => typeof import('../detect.js').STRIPE_PATS;
+  /** the checked patterns (CHECK_PATS), for a shirt's picture key (the restructure S6f) (detect.js) */
+  'check-pats': () => typeof import('../detect.js').CHECK_PATS;
   /** the role this phone is connected as: owner, tester or null (acctRole) (who.js) */
   'acct-role': typeof import('../who.js').acctRole;
   /** the account the server answered (acct.me), whose lookups count is kept up to date (who.js) */
@@ -527,6 +535,10 @@ export interface Needs {
   'plan-build': Sockets['plan-build'];
   'plan-sim': Sockets['plan-sim'];
   'horizon-keys': Sockets['horizon-keys'];
+  'sett-sig': Sockets['sett-sig'];
+  'usable-sett': Sockets['usable-sett'];
+  'stripe-pats': Sockets['stripe-pats'];
+  'check-pats': Sockets['check-pats'];
   'pics-drawn': Sockets['pics-drawn'];
   'renders-load': Sockets['renders-load'];
   'renders': Sockets['renders'];
