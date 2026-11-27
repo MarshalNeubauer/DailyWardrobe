@@ -68,11 +68,11 @@ module.exports=async({ok,chromium,url})=>{
   ok(!open.length||srgbH===SRGB_PIN,open.length?`srgb.js is pinned (${srgbH}${srgbH===SRGB_PIN?'':', pinned '+SRGB_PIN}): the painter calls ${open.join(', ')}, which no picture key covers. A change to srgb.js changes every painted pixel without changing any key, so phones would keep old pictures beside new ones. Change it only together with a planned repaint: bump ASM_CM_PAINTV in asm-color.js (or add ${open.join(', ')} to asmCmCode; either way every phone repaints every look), then update SRGB_PIN here`:'srgb.js\'s names the painter calls are all in asmCmCode: no pin needed');
   const browser=await chromium.launch();const p=await (await browser.newContext()).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   try{await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    const r=await p.evaluate(()=>{renders[asmCmKey('suit','master')]={t:1,img:'',sig:''};let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
-      const o={top:I('suit','navy'),shirt:I('shirt','white'),tie:I('tie','burgundy'),watch:I('watch','silver')},out={use:asmCmUse(o),k0:asmOutKey(o),s0:HOOK.asmCmSrcSig(),c0:HOOK.asmCmCodeSig(),again:asmOutKey(o)};
+    const r=await p.evaluate(()=>{HOOK.renders[HOOK.asmCmKey('suit','master')]={t:1,img:'',sig:''};let n=0;const I=(type,primaryColor,x={})=>({id:type+(n++),type,primaryColor,pattern:'solid',...x});
+      const o={top:I('suit','navy'),shirt:I('shirt','white'),tie:I('tie','burgundy'),watch:I('watch','silver')},out={use:HOOK.asmCmUse(o),k0:HOOK.asmOutKey(o),s0:HOOK.asmCmSrcSig(),c0:HOOK.asmCmCodeSig(),again:HOOK.asmOutKey(o)};
       const keep=HOOK.asmCmHandEdge;HOOK.asmCmHandEdge=function(A,M,S,N){return keep(A,M,S,N)};   // the same painting, other source
-      HOOK.asmCmCodeH=null;HOOK.asmCmSrc=null;out.k1=asmOutKey(o);out.s1=HOOK.asmCmSrcSig();
-      HOOK.asmCmHandEdge=keep;HOOK.asmCmCodeH=null;HOOK.asmCmSrc=null;out.k2=asmOutKey(o);out.s2=HOOK.asmCmSrcSig();
+      HOOK.asmCmCodeH=null;HOOK.asmCmSrc=null;out.k1=HOOK.asmOutKey(o);out.s1=HOOK.asmCmSrcSig();
+      HOOK.asmCmHandEdge=keep;HOOK.asmCmCodeH=null;HOOK.asmCmSrc=null;out.k2=HOOK.asmOutKey(o);out.s2=HOOK.asmCmSrcSig();
       out.sig=HOOK.asmCmSig(o);return out});
     ok(r.use==='suit'&&r.k0===r.again&&new RegExp('^suit\\|p'+'\\d+\\.'+r.c0).test(r.sig),`the look's key carries the painter's code hash and is stable (${r.sig.slice(0,24)}…)`);
     ok(r.k1!==r.k0&&r.s1!==r.s0&&r.k2===r.k0&&r.s2===r.s0,'a changed painter function (asmCmHandEdge) changes the look\'s key and the setup\'s key; put back, both are as before');

@@ -10,12 +10,12 @@ module.exports=async({ok,chromium,url,settle})=>{
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     // a suit whose close-up is a broken picture and has no measurement of its own
-    await p.evaluate(()=>{CK_OPEN['*']=true;HOOK.items=[{id:'suit001',type:'suit',primaryColor:'navy',pattern:'solid',texture:'data:image/jpeg;base64,AAAA',added:1}];HOOK.cache={};show('wardrobe');openItem('suit001')});
+    await p.evaluate(()=>{HOOK.CK_OPEN['*']=true;HOOK.items=[{id:'suit001',type:'suit',primaryColor:'navy',pattern:'solid',texture:'data:image/jpeg;base64,AAAA',added:1}];HOOK.cache={};HOOK.show('wardrobe');HOOK.openItem('suit001')});
     await settle(p,500);
     const line=await p.waitForFunction(()=>{const e=document.querySelector('#item-view .cmpmt');return e&&!/Measuring/.test(e.textContent)?e.textContent:null},null,{timeout:5000}).then(h=>h.jsonValue(),()=>p.evaluate(()=>(document.querySelector('#item-view .cmpmt')||{}).textContent||''));
     ok(/Couldn’t measure the close-up/.test(line),`a close-up that can't be measured says so ("${line}"), not "Measuring the close-up…" for good`);
     const n0=await p.evaluate(()=>window.__ro.live);
-    for(let i=0;i<6;i++)await p.evaluate(()=>renderItem());
+    for(let i=0;i<6;i++)await p.evaluate(()=>HOOK.renderItem());
     await p.setViewportSize({width:380,height:844});await settle(p,400);await p.setViewportSize({width:390,height:844});await settle(p,400);
     const n1=await p.evaluate(()=>window.__ro.live);
     ok(n1<=n0+1,`six redraws of the sheet leave no extra size observer watching (${n0} before, ${n1} after a resize)`);

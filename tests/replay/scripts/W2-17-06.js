@@ -17,7 +17,7 @@ V.run(async () => {
   await V.step(ph, 1); const wedShown = await V.dateShown(ph);
   const wed1 = await ph.page.evaluate(() => __day('2026-11-18'));
   const warn = await ph.page.evaluate(() => [...document.querySelectorAll('#today .warn')].map(e => e.textContent));
-  const suits = await ph.page.evaluate(() => items.filter(i => i.type === 'suit').length);
+  const suits = await ph.page.evaluate(() => HOOK.items.filter(i => i.type === 'suit').length);
   V.verdict(tue1.top === wed0.top && wed1.top === wed0.top && warn.some(t => /Add more suits/.test(t)),
     { tueShown, tueBefore: tue0.top, tueAfter: tue1.top, wedShown, wedBefore: wed0.top, wedAfter: wed1.top, wedVariety: wed1.miss.filter(m => /Variety/.test(m)), warn, suitsOwned: suits });
 });

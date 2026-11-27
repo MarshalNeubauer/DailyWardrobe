@@ -10,9 +10,9 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
       const pin={id:'pin',type:'suit',primaryColor:'navy',secondaryColor:'lightgrey',pattern:'pinstripe',sett:{v:2,a:0,bands:[['#1b2a4a',.97],['#2d3550',.03]],tr:30,src:'claude+pixels'},
         patternSpec:{across:{bands:[{role:'ground',hex:'#1b2a4a',w:.97},{role:'line',hex:'#c8cbd2',w:.03}]}}};
       const tie={id:'tt',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'polka-dot'},shirt={id:'sh',type:'shirt',primaryColor:'lightblue',pattern:'solid'};
-      const ov=HOOK.ovlItem(pin),line=ov.sett.bands.find(b=>b[0]!=='#1b2a4a'),tsv=HOOK.ovlSvg(tie),plain=swatchSVG(tie,true);
+      const ov=HOOK.ovlItem(pin),line=ov.sett.bands.find(b=>b[0]!=='#1b2a4a'),tsv=HOOK.ovlSvg(tie),plain=HOOK.swatchSVG(tie,true);
       const full=HOOK.swatchStack({top:pin,shirt,tie},false),noTie=HOOK.swatchStack({top:pin,shirt,tie:null},true),none=HOOK.swatchStack({},false);
-      const shot=d=>{HOOK.sel=d;const o=planOn(d);renders[comboKey(o)]={img:'${PH}',sig:comboSig(o)};return HOOK.figureStage(o)};   // a kept photo for the day, so the picture is drawn
+      const shot=d=>{HOOK.sel=d;const o=HOOK.planOn(d);HOOK.renders[HOOK.comboKey(o)]={img:'${PH}',sig:HOOK.comboSig(o)};return HOOK.figureStage(o)};   // a kept photo for the day, so the picture is drawn
       const past=shot(new Date(2026,10,10)),fut=shot(new Date(2026,10,16));
       return {lineHex:line&&line[0],lineW:line&&line[1],sum:ov.sett.bands.reduce((a,b)=>a+b[1],0),orig:pin.sett.bands[1][0],scaled:/scale\\(\\.5\\)/.test(tsv)&&!/scale\\(\\.5\\)/.test(plain),
         n:(full.match(/class="ovsw"/g)||[]).length,nNo:(noTie.match(/class="ovsw"/g)||[]).length,up:/swstack up/.test(noTie)&&!/swstack up/.test(full),none,label:/Tie: /.test(full)&&!/Tie: /.test(noTie),
@@ -22,7 +22,7 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
     ok(r.n===3&&r.nNo===2&&r.none===''&&r.label,'one swatch per piece worn: jacket, shirt, tie; none without them');
     ok(r.pastFlat&&r.futFlat,'the stack sits in the corner on every day (the ✕ / ✓ circles it stepped up for are gone, 2026-11-14)');
     // the real cloth where it reads: a tie's and a plain or finely woven jacket's close-up swatch; a shirt and a striped jacket stay drawn
-    const pick=await p.evaluate(ph=>{const cu={swatch:ph,swSrc:'tex',texture:ph},kind=i=>{const v=ovlPiece(i);return v.includes(ph)?'close-up':/^<img src="data:image\/png/.test(v)?'painted':'drawn'};
+    const pick=await p.evaluate(ph=>{const cu={swatch:ph,swSrc:'tex',texture:ph},kind=i=>{const v=HOOK.ovlPiece(i);return v.includes(ph)?'close-up':/^<img src="data:image\/png/.test(v)?'painted':'drawn'};
       return {tie:kind({id:'a',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'stripe',...cu}),pin:kind({id:'b',type:'suit',primaryColor:'navy',pattern:'pinstripe',...cu}),
         twill:kind({id:'c',type:'suit',primaryColor:'brown',pattern:'twill',...cu}),dobby:kind({id:'d',type:'shirt',primaryColor:'white',pattern:'dobby',...cu}),
         gingham:kind({id:'e',type:'shirt',primaryColor:'lightblue',pattern:'gingham',...cu}),bare:kind({id:'f',type:'tie',primaryColor:'navy',pattern:'solid'}),photo:kind({id:'g',type:'suit',primaryColor:'navy',pattern:'solid',swatch:ph,swSrc:'photo'})}},PH);
@@ -30,7 +30,7 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
     ok(pick.twill==='drawn',"a twill suit with a close-up waits for the painter's tile (a plain patch first: tests/twillswatch.test.js)");
     ok(pick.dobby==='drawn',"a shirt is always drawn, even with a close-up (the owner's choice)");
     ok(pick.photo==='painted',"a suit with no close-up is its painted cloth");
-    const pinCu=await p.evaluate(ph=>ovlPiece({id:'pc',type:'suit',primaryColor:'navy',pattern:'pinstripe',swatch:ph,swSrc:'tex',texture:ph,sett:{v:2,a:0,bands:[['#1b2a4a',.95],['#c8cbd2',.05]],tr:30}}),PH);
+    const pinCu=await p.evaluate(ph=>HOOK.ovlPiece({id:'pc',type:'suit',primaryColor:'navy',pattern:'pinstripe',swatch:ph,swSrc:'tex',texture:ph,sett:{v:2,a:0,bands:[['#1b2a4a',.95],['#c8cbd2',.05]],tr:30}}),PH);
     ok(!pinCu.includes(PH)&&/^<img src="data:image\/png/.test(pinCu),'a read pinstripe suit with a close-up stays painted (its close-up loses the stripes)');
     ok(pick.pin==='drawn'&&pick.gingham==='drawn'&&pick.bare==='drawn','a pinstripe suit with no reading keeps the drawn tile, as does a gingham shirt and a tie with no close-up');
     // the painted suit: read bands as stripes in Claude's colours, a windowpane's crossing line, and the cloth's grain
@@ -48,7 +48,7 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
     // a shirt's figured weave is drawn at higher fidelity in the overlay only (the owner's choice: smooth shapes with a thread grain)
     const wv=await p.evaluate(async()=>{const grid=['10000001','01000010','00100100','00011000','00011000','00100100','01000010','10000001'];
       const sh={id:'dw',type:'shirt',primaryColor:'lightblue',pattern:'dobby',sett:{v:4,tex:{kind:'diamond',grid,lighter:'raised',contrast:.3,rel:.12}}};
-      const [lo,hi]=texTones(colOf(sh),sh.sett.tex,1.7),soft=texTileUrl(grid,lo,hi),sm=texTileSmooth(grid,lo,hi),ov=HOOK.ovlSvg(sh),list=swatchSVG(sh,true);
+      const [lo,hi]=HOOK.texTones(HOOK.colOf(sh),sh.sett.tex,1.7),soft=HOOK.texTileUrl(grid,lo,hi),sm=HOOK.texTileSmooth(grid,lo,hi),ov=HOOK.ovlSvg(sh),list=HOOK.swatchSVG(sh,true);
       const im=new Image();im.src=sm;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);
       const d=x.getImageData(0,0,c.width,c.height).data,ls=new Set();for(let k=0;k<d.length;k+=4)ls.add(d[k]+','+d[k+1]+','+d[k+2]);
       const hb={...sh,id:'hb',pattern:'herringbone',sett:{v:4,tex:{kind:'herringbone',grid:['10','01'],rel:.1}}};
@@ -56,7 +56,7 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
     ok(wv.smooth&&wv.list,'a shirt weave in the overlay is the smooth tile; the pieces list keeps its own');
     ok(wv.w===8*24&&wv.tones>40,`the smooth tile is 24 px a cell with anti-aliased, grained tones (${wv.w} px, ${wv.tones} tones)`);
     ok(wv.hb,'a herringbone shirt is drawn as before');
-    const css=await p.evaluate(()=>{const d=document.createElement('div');d.className='fig';d.innerHTML=HOOK.swatchStack({top:items.find(i=>i.type==='suit'),shirt:items.find(i=>i.type==='shirt'),tie:items.find(i=>i.type==='tie')},true);
+    const css=await p.evaluate(()=>{const d=document.createElement('div');d.className='fig';d.innerHTML=HOOK.swatchStack({top:HOOK.items.find(i=>i.type==='suit'),shirt:HOOK.items.find(i=>i.type==='shirt'),tie:HOOK.items.find(i=>i.type==='tie')},true);
       document.body.appendChild(d);const s=getComputedStyle(d.querySelector('.swstack')),b=d.querySelector('.ovsw').getBoundingClientRect(),c=getComputedStyle(d.querySelector('.ovsw'));
       const o={pe:s.pointerEvents,bottom:s.bottom,w:Math.round(b.width),border:c.borderTopWidth};d.remove();return o});
     ok(css.pe==='none'&&css.bottom==='58px'&&css.w===64&&css.border==='0px',`64 px, no rim, takes no touches, above ✕ (${JSON.stringify(css)})`);

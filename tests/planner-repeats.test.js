@@ -9,23 +9,23 @@ const tiegap=async({ok,chromium,url,WARDROBES})=>{
   try{
     const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    const r=await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.dayRecs={};HOOK.cache={};
+    const r=await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.settings.workdays=[1,2,3,4,5];HOOK.settings.blazerDays=[4];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.dayRecs={};HOOK.cache={};
       // (each key once: planMonth gives the shared simulation's whole plan, so a later month holds the earlier months' days too, and
       // without the check the sequence ran Nov 30, then Nov 11 again, and compared those)
-      const seq=[],seen=new Set();for(const [y,m] of [[2026,10],[2026,11],[2027,0]]){const P=planMonth(y,m);for(const k of Object.keys(P).sort((a,b)=>keyDate(a)-keyDate(b)))if(!seen.has(k)&&keyDate(k)>=todayDate()&&P[k].tie){seen.add(k);seq.push({k,o:P[k]})}}
+      const seq=[],seen=new Set();for(const [y,m] of [[2026,10],[2026,11],[2027,0]]){const P=HOOK.planMonth(y,m);for(const k of Object.keys(P).sort((a,b)=>HOOK.keyDate(a)-HOOK.keyDate(b)))if(!seen.has(k)&&HOOK.keyDate(k)>=HOOK.todayDate()&&P[k].tie){seen.add(k);seq.push({k,o:P[k]})}}
       const near=[];for(let a=0;a<seq.length;a++)for(let g=1;g<=3&&a+g<seq.length;g++)if(seq[a].o.tie.id===seq[a+g].o.tie.id)near.push(seq[a].k+'+'+g);
       const ties=new Set(seq.map(x=>x.o.tie.id)).size;
       // the score: a tie worn three workdays back
-      const o=seq[5].o,s=rateOutfit({...o,ctx:{...o.ctx,prev:[o.ctx.prev[0],o.ctx.prev[1]],prev3:{tid:o.tie.id}}}).checks.find(c=>c.label==='Variety');
+      const o=seq[5].o,s=HOOK.rateOutfit({...o,ctx:{...o.ctx,prev:[o.ctx.prev[0],o.ctx.prev[1]],prev3:{tid:o.tie.id}}}).checks.find(c=>c.label==='Variety');
       // the case that repeated on the owner's wardrobe: a day's own best tie worn two or three workdays before it (fixed there by hand)
-      const wd=seq.map(x=>x.k),pin=[];for(const [i,g] of [[12,2],[20,2],[28,3],[36,3]]){HOOK.dayRecs={};HOOK.cache={};const b0=planMonth(2026,11);const a=wd[i],b=wd[i-g],x=(b0[a]||planMonth(2027,0)[a]).tie.id;
-        dayRecs[b]={date:b,force:{tie:x}};HOOK.cache={};const pl={...planMonth(2026,10),...planMonth(2026,11),...planMonth(2027,0)};pin.push({a,g,kept:pl[b].tie.id===x,again:pl[a].tie.id===x})}
+      const wd=seq.map(x=>x.k),pin=[];for(const [i,g] of [[12,2],[20,2],[28,3],[36,3]]){HOOK.dayRecs={};HOOK.cache={};const b0=HOOK.planMonth(2026,11);const a=wd[i],b=wd[i-g],x=(b0[a]||HOOK.planMonth(2027,0)[a]).tie.id;
+        HOOK.dayRecs[b]={date:b,force:{tie:x}};HOOK.cache={};const pl={...HOOK.planMonth(2026,10),...HOOK.planMonth(2026,11),...HOOK.planMonth(2027,0)};pin.push({a,g,kept:pl[b].tie.id===x,again:pl[a].tie.id===x})}
       // few ties (four: just enough for three workdays apart): the rule has to hold the strongest match back
       const keep=W.realistic.filter(i=>i.type==='tie').slice(0,4).map(i=>i.id);HOOK.items=W.realistic.filter(i=>i.type!=='tie'||keep.includes(i.id));HOOK.dayRecs={};HOOK.cache={};
-      const s4=[];for(const [y,m] of [[2026,10],[2026,11]]){const P=planMonth(y,m);for(const k of Object.keys(P).sort((a,b)=>keyDate(a)-keyDate(b)))if(keyDate(k)>=todayDate()&&P[k].tie)s4.push(P[k].tie.id)}
+      const s4=[];for(const [y,m] of [[2026,10],[2026,11]]){const P=HOOK.planMonth(y,m);for(const k of Object.keys(P).sort((a,b)=>HOOK.keyDate(a)-HOOK.keyDate(b)))if(HOOK.keyDate(k)>=HOOK.todayDate()&&P[k].tie)s4.push(P[k].tie.id)}
       let few=0;for(let a=0;a<s4.length;a++)for(let g=1;g<=3&&a+g<s4.length;g++)if(s4[a]===s4[a+g])few++;
       HOOK.items=W.realistic;HOOK.dayRecs={};HOOK.cache={};
-      return {days:seq.length,near,ties,pin,few,fewDays:s4.length,owned:items.filter(i=>i.type==='tie').length,why:s&&s.why,pts:s&&s.pts}})()`);
+      return {days:seq.length,near,ties,pin,few,fewDays:s4.length,owned:HOOK.items.filter(i=>i.type==='tie').length,why:s&&s.why,pts:s&&s.pts}})()`);
     ok(r.days>40&&r.near.length===0,`over ${r.days} workdays no tie comes back within three workdays (${r.near.join(', ')||'none'})`);
     for(const x of r.pin)ok(x.kept&&!x.again,`a day's best tie, worn ${x.g} workdays before it, is not planned again on ${x.a}`);
     // (16 before the rule; a few stay: not every tie suits every jacket, and a hard mismatch costs more than a repeat)
@@ -36,8 +36,8 @@ const tiegap=async({ok,chromium,url,WARDROBES})=>{
     // and the plan settled into A A B B, yesterday's tie again on 41 of 103 workdays
     const two=await p.evaluate(()=>{let k=0;const I=(type,c,x={})=>({id:type+(k++),type,primaryColor:c,pattern:'solid',...x});
       HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('shirt','lightblue'),I('tie','burgundy'),I('tie','green'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'})];
-      settings.workdays=[1,2,3,4,5];settings.blazerDays=[];HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.dayRecs={};HOOK.weather={};HOOK.cache={};
-      const P=planSim(planStart(2026,10)).upTo(new Date(2027,2,31)),ks=Object.keys(P).filter(k=>keyDate(k)>=new Date(2026,10,9)).sort((a,b)=>keyDate(a)-keyDate(b));
+      HOOK.settings.workdays=[1,2,3,4,5];HOOK.settings.blazerDays=[];HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.dayRecs={};HOOK.weather={};HOOK.cache={};
+      const P=HOOK.planSim(HOOK.planStart(2026,10)).upTo(new Date(2027,2,31)),ks=Object.keys(P).filter(k=>HOOK.keyDate(k)>=new Date(2026,10,9)).sort((a,b)=>HOOK.keyDate(a)-HOOK.keyDate(b));
       let rep=0;for(let i=1;i<ks.length;i++)if(P[ks[i]].tie.id===P[ks[i-1]].tie.id)rep++;return {rep,days:ks.length}});
     ok(two.days>90&&two.rep===0,`with two suits and two ties yesterday's tie never comes back the next workday (${two.rep} of ${two.days}; 41 before)`);
     ok(!errs.length,'no page errors: '+errs.join('; '));
@@ -55,15 +55,15 @@ const planahead=async({ok,chromium,url,WARDROBES})=>{
     const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     // as a drag in the month does: the outfit pinned on the next workday (moveRecs), the day it left planned afresh (planWith)
-    const r=await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;settings.workdays=[1,2,3,4,5];settings.blazerDays=[4];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.dayRecs={};HOOK.cache={};
-      const base=planMonth(2026,10),out=[];
-      for(const [a,b] of [['2026-11-16','2026-11-17'],['2026-11-23','2026-11-24'],['2026-11-24','2026-11-25']]){const pl=planWith(HOOK.moveRecs(a,b,base),2026,10),prev=pl[a],fixed=pl[b];
-        out.push({a,held:fixed.tie.id===base[a].tie.id,tie:prev.tie.id===fixed.tie.id,tieGroup:tieGroup(prev.tie)===tieGroup(fixed.tie),shirt:prev.shirt.id===fixed.shirt.id,
+    const r=await p.evaluate(`(()=>{const W=${WARDROBES};HOOK.items=W.realistic;HOOK.settings.workdays=[1,2,3,4,5];HOOK.settings.blazerDays=[4];HOOK.TODAY_OVERRIDE='2026-11-11T12:00:00';HOOK.dayRecs={};HOOK.cache={};
+      const base=HOOK.planMonth(2026,10),out=[];
+      for(const [a,b] of [['2026-11-16','2026-11-17'],['2026-11-23','2026-11-24'],['2026-11-24','2026-11-25']]){const pl=HOOK.planWith(HOOK.moveRecs(a,b,base),2026,10),prev=pl[a],fixed=pl[b];
+        out.push({a,held:fixed.tie.id===base[a].tie.id,tie:prev.tie.id===fixed.tie.id,tieGroup:HOOK.tieGroup(prev.tie)===HOOK.tieGroup(fixed.tie),shirt:prev.shirt.id===fixed.shirt.id,
           was:base[a].tie.id+'/'+base[a].shirt.id,now:prev.tie.id+'/'+prev.shirt.id})}
       // the case that repeated on the owner's wardrobe: the next day fixed to exactly the tie and shirt this day would choose (its best
       // match), so only the forward check keeps it off them
-      const pin=[];for(const [a,b] of [['2026-11-17','2026-11-18'],['2026-11-24','2026-11-25'],['2026-11-10','2026-11-11']]){HOOK.dayRecs={};HOOK.cache={};const b0=planMonth(2026,10),x=b0[a].tie.id,y=b0[a].shirt.id;
-        dayRecs[b]={date:b,force:{tie:x,shirt:y}};HOOK.cache={};const pl=planMonth(2026,10);pin.push({a,keep:pl[b].tie.id===x&&pl[b].shirt.id===y,tie:pl[a].tie.id===x,shirt:pl[a].shirt.id===y,was:x+'/'+y,now:pl[a].tie.id+'/'+pl[a].shirt.id})}
+      const pin=[];for(const [a,b] of [['2026-11-17','2026-11-18'],['2026-11-24','2026-11-25'],['2026-11-10','2026-11-11']]){HOOK.dayRecs={};HOOK.cache={};const b0=HOOK.planMonth(2026,10),x=b0[a].tie.id,y=b0[a].shirt.id;
+        HOOK.dayRecs[b]={date:b,force:{tie:x,shirt:y}};HOOK.cache={};const pl=HOOK.planMonth(2026,10);pin.push({a,keep:pl[b].tie.id===x&&pl[b].shirt.id===y,tie:pl[a].tie.id===x,shirt:pl[a].shirt.id===y,was:x+'/'+y,now:pl[a].tie.id+'/'+pl[a].shirt.id})}
       HOOK.dayRecs={};HOOK.cache={};
       return {out,pin}})()`);
     for(const x of r.out)ok(x.held&&!x.tie&&!x.tieGroup&&!x.shirt,`moved ${x.a} onto the next day: that day keeps the tie, the day it left plans another tie (not even its colour) and another shirt (${x.was} -> ${x.now})`);
@@ -86,16 +86,16 @@ const planaudit=async({ok,chromium,url,WARDROBES})=>{
   try{
     const p=await (await browser.newContext({viewport:{width:390,height:844}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    const r=await p.evaluate(`(()=>{const W=${WARDROBES};const kd=k=>keyDate(k);
-      const base=()=>{settings.workdays=[0,1,2,3,4];settings.blazerDays=[4];settings.daysOff=[];settings.holidays=null;delete settings.laundryDays;delete settings.darkShirts;delete settings.dress;HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE='2026-11-13T12:00:00';HOOK.dayRecs={};HOOK.cache={}};
-      const plan=()=>{HOOK.cache={};return {...planMonth(2026,10),...planMonth(2026,11),...planMonth(2027,0)}};
+    const r=await p.evaluate(`(()=>{const W=${WARDROBES};const kd=k=>HOOK.keyDate(k);
+      const base=()=>{HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[4];HOOK.settings.daysOff=[];HOOK.settings.holidays=null;delete HOOK.settings.laundryDays;delete HOOK.settings.darkShirts;delete HOOK.settings.dress;HOOK.weather={};HOOK.climate=null;HOOK.TODAY_OVERRIDE='2026-11-13T12:00:00';HOOK.dayRecs={};HOOK.cache={}};
+      const plan=()=>{HOOK.cache={};return {...HOOK.planMonth(2026,10),...HOOK.planMonth(2026,11),...HOOK.planMonth(2027,0)}};
       const out={};
       // 1. a tie pinned 2 or 3 workdays ahead, a shirt pinned 2 days ahead with laundry 3
-      HOOK.items=W.realistic.map(i=>({...i}));base();let P0=plan();const ks=Object.keys(P0).filter(k=>kd(k)>=todayDate()).sort((a,b)=>kd(a)-kd(b));
+      HOOK.items=W.realistic.map(i=>({...i}));base();let P0=plan();const ks=Object.keys(P0).filter(k=>kd(k)>=HOOK.todayDate()).sort((a,b)=>kd(a)-kd(b));
       out.tie2=0;out.tie3=0;out.shirt2=0;out.nShirt=0;
       for(let i=2;i<12;i++)for(const g of [2,3]){const a=ks[i],b=ks[i+g],x=P0[a].tie.id;HOOK.dayRecs={[b]:{date:b,force:{tie:x}}};const Q=plan();if(Q[a].tie.id===x)out['tie'+g]++}
-      HOOK.dayRecs={};settings.laundryDays=3;P0=plan();
-      for(let i=2;i<12;i++){const a=ks[i],b=ks[i+2];if(di(kd(b))-di(kd(a))>3)continue;const x=P0[a].shirt.id;HOOK.dayRecs={[b]:{date:b,force:{shirt:x}}};const Q=plan();out.nShirt++;if(Q[a].shirt.id===x)out.shirt2++}
+      HOOK.dayRecs={};HOOK.settings.laundryDays=3;P0=plan();
+      for(let i=2;i<12;i++){const a=ks[i],b=ks[i+2];if(HOOK.di(kd(b))-HOOK.di(kd(a))>3)continue;const x=P0[a].shirt.id;HOOK.dayRecs={[b]:{date:b,force:{shirt:x}}};const Q=plan();out.nShirt++;if(Q[a].shirt.id===x)out.shirt2++}
       // 2. and 3. a big wardrobe: every tie comes round in a year, never within 3 workdays; formal days in white
       let seed=7;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff},pick=a=>a[Math.floor(rnd()*a.length)];let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++).toString().padStart(3,'0'),type,primaryColor,pattern:'solid',...x});
       const huge=[];
@@ -109,21 +109,21 @@ const planaudit=async({ok,chromium,url,WARDROBES})=>{
       for(const [c,m,b] of [['grey','silver','bracelet'],['brown','gold','leather'],['black','silver','leather'],['grey','other','integrated']])huge.push(I('watch',c,{metal:m,band:b}));
       for(const c of ['navy','charcoal','brown','grey','burgundy','tan','black','olive'])huge.push(I('socks',c));
       huge.push(I('cufflinks','silver',{metal:'silver'}),I('cufflinks','gold',{metal:'gold'}),I('tieclip','silver'),I('tieclip','gold'),I('overcoat','charcoal'),I('overcoat','tan'),I('raincoat','tan'));
-      HOOK.items=huge;base();const t0=performance.now();const Y=planSim(planStart(2026,10)).upTo(new Date(2027,10,0));out.ms=Math.round(performance.now()-t0);
+      HOOK.items=huge;base();const t0=performance.now();const Y=HOOK.planSim(HOOK.planStart(2026,10)).upTo(new Date(2027,10,0));out.ms=Math.round(performance.now()-t0);
       const used={};let prev=[];out.rep=0;let sum=0,n=0;
-      for(const [k,o] of Object.entries(Y).filter(([k])=>kd(k)>=todayDate()).sort((a,b)=>kd(a[0])-kd(b[0]))){if(!o.tie)continue;used[o.tie.id]=1;if(prev.includes(o.tie.id))out.rep++;prev=[o.tie.id,...prev].slice(0,3);sum+=rateOutfit(o).score;n++}
+      for(const [k,o] of Object.entries(Y).filter(([k])=>kd(k)>=HOOK.todayDate()).sort((a,b)=>kd(a[0])-kd(b[0]))){if(!o.tie)continue;used[o.tie.id]=1;if(prev.includes(o.tie.id))out.rep++;prev=[o.tie.id,...prev].slice(0,3);sum+=HOOK.rateOutfit(o).score;n++}
       out.unusedTies=huge.filter(i=>i.type==='tie'&&!used[i.id]).length;out.avg=sum/n;
-      const P1=planMonth(2026,11),fk=Object.keys(P1).filter(k=>kd(k)>=todayDate()).sort((a,b)=>kd(a)-kd(b)).slice(0,20);out.notWhite=0;
-      for(const k of fk){HOOK.dayRecs={[k]:{date:k,formal:true}};HOOK.cache={};const o=planMonth(2026,11)[k];if(planCol(o.shirt)!=='white')out.notWhite++}
+      const P1=HOOK.planMonth(2026,11),fk=Object.keys(P1).filter(k=>kd(k)>=HOOK.todayDate()).sort((a,b)=>kd(a)-kd(b)).slice(0,20);out.notWhite=0;
+      for(const k of fk){HOOK.dayRecs={[k]:{date:k,formal:true}};HOOK.cache={};const o=HOOK.planMonth(2026,11)[k];if(HOOK.planCol(o.shirt)!=='white')out.notWhite++}
       // 4. "Not worn" past day; a deleted piece on a past day
       HOOK.items=W.realistic.map(i=>({...i}));base();HOOK.TODAY_OVERRIDE='2026-11-20T12:00:00';
-      const tie=items.find(i=>i.type==='tie'),ids={top:items.find(i=>i.type==='suit').id,shirt:items.find(i=>i.type==='shirt').id,tie:tie.id,shoes:items.find(i=>i.type==='shoes').id};
+      const tie=HOOK.items.find(i=>i.type==='tie'),ids={top:HOOK.items.find(i=>i.type==='suit').id,shirt:HOOK.items.find(i=>i.type==='shirt').id,tie:tie.id,shoes:HOOK.items.find(i=>i.type==='shoes').id};
       HOOK.dayRecs={'2026-11-16':{date:'2026-11-16',ids,suitDay:true,worn:false},'2026-11-17':{date:'2026-11-17',ids:{...ids,tie:'gone-tie'},suitDay:true,worn:true}};HOOK.cache={};
-      const N=planMonth(2026,10);out.notWornPrev=N['2026-11-17'].ctx.prev.some(p=>p&&p.n===di(new Date(2026,10,16)));
-      const R=rateOutfit(N['2026-11-17']);out.goneLabel=R.label;out.goneHard=R.hard.join();
+      const N=HOOK.planMonth(2026,10);out.notWornPrev=N['2026-11-17'].ctx.prev.some(p=>p&&p.n===HOOK.di(new Date(2026,10,16)));
+      const R=HOOK.rateOutfit(N['2026-11-17']);out.goneLabel=R.label;out.goneHard=R.hard.join();
       // 5. the what-to-buy signature
-      const s0=HOOK.shopSig();settings.laundryDays=3;const s1=HOOK.shopSig();settings.darkShirts='often';const s2=HOOK.shopSig();
-      dayRecs['2026-12-1']={date:'2026-12-1',occasion:'wedding'};const s4=HOOK.shopSig();settings.daysOff=[{d:'2026-12-3',n:'x'}];const s5=HOOK.shopSig();settings.dress={jeans:true};const s6=HOOK.shopSig();
+      const s0=HOOK.shopSig();HOOK.settings.laundryDays=3;const s1=HOOK.shopSig();HOOK.settings.darkShirts='often';const s2=HOOK.shopSig();
+      HOOK.dayRecs['2026-12-1']={date:'2026-12-1',occasion:'wedding'};const s4=HOOK.shopSig();HOOK.settings.daysOff=[{d:'2026-12-3',n:'x'}];const s5=HOOK.shopSig();HOOK.settings.dress={jeans:true};const s6=HOOK.shopSig();
       out.sigs=new Set([s0,s1,s2,s4,s5,s6]).size;
       base();return out})()`);
     ok(r.tie2===0&&r.tie3===0,`a tie fixed two or three workdays ahead is not planned the day before (${r.tie2} and ${r.tie3} of 10; before 20 of 20 each)`);
@@ -152,63 +152,63 @@ const reviewfixes=async({ok,chromium,url,settle:settleFor})=>{
     await p.evaluate(()=>{window.confirm=()=>true;let k=0;window.I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
       window.base=()=>[I('suit','navy'),I('suit','charcoal'),I('suit','brown'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('tie','burgundy'),I('tie','navy'),I('tie','green'),
         I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','navy')];
-      HOOK.items=base();settings.workdays=[0,1,2,3,4];settings.blazerDays=[];HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};show('today')});
-    await settle();await p.evaluate(()=>renderToday());await settle();
+      HOOK.items=base();HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[];HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.show('today')});
+    await settle();await p.evaluate(()=>HOOK.renderToday());await settle();
     // deleting the tie planned for today: Today must plan again without it
-    const del=await p.evaluate(async()=>{const id=planFor()[key(sel)].tie.id;await HOOK.rm(id);await new Promise(r=>setTimeout(r,300));show('today');const o=planFor()[key(sel)];
-      return {gone:!items.some(i=>i.id===id),planned:o.tie&&o.tie.id!==id,shown:!Object.values(planFor()).some(x=>x.tie&&x.tie.id===id&&!x.frozen)}});
+    const del=await p.evaluate(async()=>{const id=HOOK.planFor()[HOOK.key(HOOK.sel)].tie.id;await HOOK.rm(id);await new Promise(r=>setTimeout(r,300));HOOK.show('today');const o=HOOK.planFor()[HOOK.key(HOOK.sel)];
+      return {gone:!HOOK.items.some(i=>i.id===id),planned:o.tie&&o.tie.id!==id,shown:!Object.values(HOOK.planFor()).some(x=>x.tie&&x.tie.id===id&&!x.frozen)}});
     ok(del.gone&&del.planned&&del.shown,'after deleting an item, Today plans again without it');
     // adding an item: the plan is built again, and the new piece gets worn
     await settle();
-    const add=await p.evaluate(async()=>{const before=planFor();HOOK.queue=[{id:'newtie',type:'tie',primaryColor:'gold',pattern:'solid',manual:true}];await save(0);await new Promise(r=>setTimeout(r,300));show('today');
-      return {rebuilt:planFor()!==before,worn:Object.values(planMonth(2026,11)).some(o=>o.tie&&o.tie.id==='newtie')}});
+    const add=await p.evaluate(async()=>{const before=HOOK.planFor();HOOK.queue=[{id:'newtie',type:'tie',primaryColor:'gold',pattern:'solid',manual:true}];await HOOK.save(0);await new Promise(r=>setTimeout(r,300));HOOK.show('today');
+      return {rebuilt:HOOK.planFor()!==before,worn:Object.values(HOOK.planMonth(2026,11)).some(o=>o.tie&&o.tie.id==='newtie')}});
     ok(add.rebuilt&&add.worn,'after adding an item, the plan is built again and uses it');
     // a blazer day with no blazer in the wardrobe gets a suit (and a suit day with only blazers a blazer), not a bare shirt
-    const jk=await p.evaluate(()=>{settings.blazerDays=[4];HOOK.cache={};const th=buildPlan(2026,10)['2026-11-12'];
-      const keep=items;HOOK.items=[...items.filter(i=>i.type!=='suit'),I('blazer','navy'),I('pants','grey')];settings.blazerDays=[];const mo=buildPlan(2026,10)['2026-11-16'];HOOK.items=keep;HOOK.cache={};
+    const jk=await p.evaluate(()=>{HOOK.settings.blazerDays=[4];HOOK.cache={};const th=HOOK.buildPlan(2026,10)['2026-11-12'];
+      const keep=HOOK.items;HOOK.items=[...HOOK.items.filter(i=>i.type!=='suit'),I('blazer','navy'),I('pants','grey')];HOOK.settings.blazerDays=[];const mo=HOOK.buildPlan(2026,10)['2026-11-16'];HOOK.items=keep;HOOK.cache={};
       return {th:th.top&&th.top.type,thSuit:th.suitDay,mo:mo.top&&mo.top.type,moPants:!!mo.bot&&mo.bot.type==='pants'}});
     ok(jk.th==='suit'&&jk.thSuit===true,`a blazer day with no blazers gets a suit (${jk.th})`);
     ok(jk.mo==='blazer'&&jk.moPants,`a suit day with only blazers gets a blazer and trousers (${jk.mo})`);
     // the box on Today counts this month's outfits only, also a year ahead (the plan then holds two Novembers)
-    const cnt=await p.evaluate(()=>{settings.blazerDays=[];HOOK.cache={};HOOK.sel=new Date(2027,10,15);HOOK.view={y:2027,m:10};renderToday();return +document.querySelector('#mbox .mltxt small').textContent.match(/(\d+) outfit/)[1]});
+    const cnt=await p.evaluate(()=>{HOOK.settings.blazerDays=[];HOOK.cache={};HOOK.sel=new Date(2027,10,15);HOOK.view={y:2027,m:10};HOOK.renderToday();return +document.querySelector('#mbox .mltxt small').textContent.match(/(\d+) outfit/)[1]});
     ok(cnt>=20&&cnt<=23,`the month box counts one month's outfits, a year ahead too (${cnt})`);
     // one shared simulation: the same outfits as planning each month on its own, and each day planned once. The days dressed are
     // counted where outfit() reads the day's waistcoat setting (planner.js: settings.vestMode, once a call, read nowhere else in
-    // planning): planner.js is an ES module (2026-11-24), so its own calls of outfit() no longer go through a wrapped window.outfit,
+    // planning): planner.js is an ES module (2026-11-24), so its own calls of outfit() no longer go through a wrapped HOOK.outfit,
     // which this counted until then (on main the two counts were the same: C:\code\c2-core-lab\simcount.ps1)
-    const sim=await p.evaluate(()=>{HOOK.cache={};const s0=settings;let calls=0;
+    const sim=await p.evaluate(()=>{HOOK.cache={};const s0=HOOK.settings;let calls=0;
       HOOK.settings=Object.defineProperty({...s0},'vestMode',{get(){calls++;return s0.vestMode},set(v){s0.vestMode=v},enumerable:true,configurable:true});
       const months=[[2026,10],[2026,11],[2027,0],[2027,1],[2027,2]],diff=[];
-      for(const [y,m] of months)planMonth(y,m);const shared=calls;calls=0;
-      for(const [y,m] of months){const a=planMonth(y,m),b=buildPlan(y,m);for(const k of Object.keys(b)){const d=keyDate(k);if(d.getMonth()!==m||d.getFullYear()!==y)continue;if(JSON.stringify(idsOf(a[k]))!==JSON.stringify(idsOf(b[k])))diff.push(k)}}
+      for(const [y,m] of months)HOOK.planMonth(y,m);const shared=calls;calls=0;
+      for(const [y,m] of months){const a=HOOK.planMonth(y,m),b=HOOK.buildPlan(y,m);for(const k of Object.keys(b)){const d=HOOK.keyDate(k);if(d.getMonth()!==m||d.getFullYear()!==y)continue;if(JSON.stringify(HOOK.idsOf(a[k]))!==JSON.stringify(HOOK.idsOf(b[k])))diff.push(k)}}
       const separate=calls;HOOK.settings=s0;
       // a month from before the shared start is still planned on its own, the same as buildPlan
-      const old=planMonth(2026,5),oldB=buildPlan(2026,5),oldDiff=Object.keys(oldB).filter(k=>JSON.stringify(idsOf(old[k]))!==JSON.stringify(idsOf(oldB[k]))).length;
-      const future=Object.keys(planMonth(2027,2)).filter(k=>keyDate(k)>=todayDate()).length;
+      const old=HOOK.planMonth(2026,5),oldB=HOOK.buildPlan(2026,5),oldDiff=Object.keys(oldB).filter(k=>JSON.stringify(HOOK.idsOf(old[k]))!==JSON.stringify(HOOK.idsOf(oldB[k]))).length;
+      const future=Object.keys(HOOK.planMonth(2027,2)).filter(k=>HOOK.keyDate(k)>=HOOK.todayDate()).length;
       return {diff,shared,separate,future,oldDiff,oldN:Object.keys(oldB).length}});
     ok(sim.diff.length===0,`months planned from the shared simulation match months planned on their own (${sim.diff.slice(0,4).join(' ')})`);
     ok(sim.shared<=sim.future+2&&sim.separate>sim.shared*2,`stepping through five months plans each day once (${sim.shared} outfits for ${sim.future} days; ${sim.separate} when every month starts over)`);
     ok(sim.oldDiff===0&&sim.oldN>0,'a month from before the shared start is still planned correctly');
     // a new day while the app stayed open: it moves on to today; a day the user was browsing is left alone
-    const day=await p.evaluate(()=>{HOOK.cache={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};renderToday();
-      HOOK.TODAY_OVERRIDE='2026-11-11T08:00:00';document.dispatchEvent(new Event('visibilitychange'));const a=key(sel);
-      HOOK.sel=new Date(2026,10,17);renderToday();HOOK.TODAY_OVERRIDE='2026-11-12T08:00:00';document.dispatchEvent(new Event('visibilitychange'));const b=key(sel);
+    const day=await p.evaluate(()=>{HOOK.cache={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.renderToday();
+      HOOK.TODAY_OVERRIDE='2026-11-11T08:00:00';document.dispatchEvent(new Event('visibilitychange'));const a=HOOK.key(HOOK.sel);
+      HOOK.sel=new Date(2026,10,17);HOOK.renderToday();HOOK.TODAY_OVERRIDE='2026-11-12T08:00:00';document.dispatchEvent(new Event('visibilitychange'));const b=HOOK.key(HOOK.sel);
       // Thursday evening on Today, opened again on Friday (a day off): the next workday
-      HOOK.sel=new Date(2026,10,12);renderToday();HOOK.TODAY_OVERRIDE='2026-11-13T08:00:00';document.dispatchEvent(new Event('visibilitychange'));const c=key(sel);
+      HOOK.sel=new Date(2026,10,12);HOOK.renderToday();HOOK.TODAY_OVERRIDE='2026-11-13T08:00:00';document.dispatchEvent(new Event('visibilitychange'));const c=HOOK.key(HOOK.sel);
       return {a,b,c,head:document.querySelector('#today h2').textContent}});
     ok(day.a==='2026-11-11',`left open overnight, the app moves on to the new day (${day.a})`);
     ok(day.b==='2026-11-17','a day the user was looking at is not taken away');
     ok(day.c==='2026-11-15'&&/Sunday/.test(day.head),`when the new day is a day off, it shows the next workday (${day.c})`);
     // "Last worn": a record dated before a piece was added is the planner's warm-up, not something worn
-    const lw=await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-16T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};const o=planFor()[key(sel)];
-      const rec=d=>({date:d,ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest,worn:true});HOOK.dayRecs={'2026-9-3':rec('2026-9-3')};HOOK.cache={};
-      items.forEach(i=>i.added=1);const real=lastWorn(o);items.forEach(i=>i.added=+new Date(2026,10,7));const warm=lastWorn(o);items.forEach(i=>i.added=1);HOOK.dayRecs={};HOOK.cache={};
-      return {real:real&&key(real),warm}});
+    const lw=await p.evaluate(()=>{HOOK.TODAY_OVERRIDE='2026-11-16T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};const o=HOOK.planFor()[HOOK.key(HOOK.sel)];
+      const rec=d=>({date:d,ids:HOOK.idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest,worn:true});HOOK.dayRecs={'2026-9-3':rec('2026-9-3')};HOOK.cache={};
+      HOOK.items.forEach(i=>i.added=1);const real=HOOK.lastWorn(o);HOOK.items.forEach(i=>i.added=+new Date(2026,10,7));const warm=HOOK.lastWorn(o);HOOK.items.forEach(i=>i.added=1);HOOK.dayRecs={};HOOK.cache={};
+      return {real:real&&HOOK.key(real),warm}});
     ok(lw.real==='2026-9-3'&&lw.warm===null,`"Last worn" ignores days from before the pieces were in the wardrobe (${lw.real}, ${lw.warm})`);
     // the what-to-buy analysis gets the tags, not the pictures
-    const pay=await p.evaluate(()=>{items[0].photo='data:image/jpeg;base64,AAAA';items[0].swatch='data:image/png;base64,BBBB';let sent=null;const W=window.Worker;
+    const pay=await p.evaluate(()=>{HOOK.items[0].photo='data:image/jpeg;base64,AAAA';HOOK.items[0].swatch='data:image/png;base64,BBBB';let sent=null;const W=window.Worker;
       window.Worker=function(){this.postMessage=d=>{sent=d};this.terminate=()=>{}};HOOK.analyzeWardrobe();window.Worker=W;HOOK.shopBusy=null;
-      return {n:sent.list.length,pics:sent.list.some(i=>i.photo||i.swatch),kept:!!items[0].photo,tags:sent.list.every(i=>i.type&&i.primaryColor)}});
+      return {n:sent.list.length,pics:sent.list.some(i=>i.photo||i.swatch),kept:!!HOOK.items[0].photo,tags:sent.list.every(i=>i.type&&i.primaryColor)}});
     ok(pay.n>0&&!pay.pics&&pay.kept&&pay.tags,'the what-to-buy analysis is sent the tags only, no pictures');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{await browser.close()}

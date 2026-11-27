@@ -398,6 +398,7 @@ function freeNames(src,module){
 }
 const ON_GLOBAL=/\b(?:window|self|globalThis)\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*['"]([A-Za-z_$][\w$]*)['"]\s*\])/g;
 const VIA_HOOK=/\bHOOK\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*['"]([A-Za-z_$][\w$]*)['"]\s*\])/g;
+const IN_HOOK=/['"]([A-Za-z_$][\w$]*)['"]\s+in\s+HOOK\b(?!\s*[.[])/g;
 const ASSIGN_AFTER=/^\s*(?:=(?!=)|\+\+|--|[-+*\/%&|^]=|\*\*=|<<=|>>>?=|&&=|\|\|=|\?\?=)/;   // (what follows window.name when it is assigned)
 const HOOK_WRITE=/\bHOOK\s*(?:\.\s*([A-Za-z_$][\w$]*)|\[\s*['"]([A-Za-z_$][\w$]*)['"]\s*\])\s*(?:=(?!=)|\+\+|--|[-+*\/%&|^]=|\*\*=|<<=|>>>?=|&&=|\|\|=|\?\?=)/g;
 /* T2 phase 3 (2026-11-25): strings that are not code though they parse as code: a file name ('shop.js' is `shop.js`), a host name
@@ -471,6 +472,7 @@ function testUses(src,words){
   try{ast=acorn.parse(src,{...o,sourceType:'script',allowReturnOutsideFunction:true})}catch(e){cm=[];try{ast=acorn.parse(src,{...o,sourceType:'module'})}catch(e2){cm=[]}}
   let code=src;for(const [a,z] of cm)code=code.slice(0,a)+code.slice(a,z).replace(/[^\r\n]/g,' ')+code.slice(z);   // (HOOK.name in a comment is no use)
   for(const m of code.matchAll(VIA_HOOK))out.hook.add(m[1]||m[2]);
+  for(const m of code.matchAll(IN_HOOK))out.hook.add(m[1]);   // (S6t4: `'name' in HOOK`, what a typeof read becomes, uses the name too)
   for(const m of code.matchAll(HOOK_WRITE))out.hookWrites.add(m[1]||m[2]);
   if(!ast)return out;
   const lexical=new Set(),strs=[];
@@ -606,7 +608,14 @@ function bareReads(r,allowed=READS_KEPT){const P=platformAll(),out={};
 const BARE_READS_CHECK=false;
 /* the files that read a bridged name on an older build (tests/replay R.old(sha), which has no HOOK), and the names: they stay bare
    there. The groups fill this in for the uses that really run on an old build; every other use is rewritten */
-const READS_KEPT={};
+const READS_KEPT={
+  /* S6t4: phone P runs the 15 Nov c4a549b app (no HOOK) and Q today's: sync() and rules() read HOOK when the page has one, else
+     these globals; P's Add steps and setLaundry run on the old app alone */
+  'tests/replay/scripts/W1-4-01.js':['PLAN_RULES','items','metaGet','openSettings','queue','settings','syncNow','syncRun','syncing'],
+  /* S6t4: oldAddCards runs on the 14 Nov 7a28f96 app (no HOOK); reopenNew reads PLAN_RULES bare only while the page is still that app */
+  'tests/replay/scripts/_verify2-lib.js':['PLAN_RULES','items','queue','settings'],
+  /* S6t4: origin/main's draw.js run in a scope of its own (new Function): the two names are that source's own declarations, not the page's */
+  'tests/garmentdraw.test.js':['itemThumb','swatchSVG']};
 /* the names a test also uses on an older build, which has no HOOK (T2 phase 3): they stay globals there, so --to-hook leaves them */
 const OLD_BUILD=new Set(['syncing','kitEdited','asmCmMf','asmCmCodeSig','asmCmSig','asmCmSrcSig']);
 /* of those, the ones a test assigns there, and the file (S1f): garmentpaint.test.js gives origin/main's page a HOOK of its own whose

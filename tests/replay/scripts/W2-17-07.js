@@ -10,7 +10,7 @@ V.run(async () => {
   const top0 = await ph.page.evaluate(k => __day(k).top, K);
   if (top0 !== 'Navy chalk stripe') await V.pickByName(ph, 'Suit', /^Navy chalk stripe$/);
   const top1 = await ph.page.evaluate(k => __day(k).top, K); if (top1 !== 'Navy chalk stripe') throw new Error('suit pick failed: ' + top1);
-  const votes = () => ph.page.evaluate(() => Object.values((settings.learn && settings.learn.p) || {}).filter(v => v < 0).length);
+  const votes = () => ph.page.evaluate(() => Object.values((HOOK.settings.learn && HOOK.settings.learn.p) || {}).filter(v => v < 0).length);
   const v0 = await votes();
   const seq = [{ ...(await ph.page.evaluate(k => { const d = __day(k); return { shirt: (d.o.match(/shirt=([^,]+)/) || [])[1], score: d.score, hard: d.hard } }, K)) }];
   let mistake = null;
@@ -20,7 +20,7 @@ V.run(async () => {
     seq.push(s);
     if (s.hard.length) {   // were clean shirts left that hadn't been shown?
       const seen = seq.map(x => x.shirt);
-      const left = await ph.page.evaluate(([k, seen]) => items.filter(i => i.type === 'shirt' && !seen.includes(i.name || nm(i))).map(i => ({ n: i.name || nm(i), r: __sim(k, 'shirt', i.id) })).map(x => ({ n: x.n, score: x.r.score, hard: x.r.hard })), [K, seen]);
+      const left = await ph.page.evaluate(([k, seen]) => HOOK.items.filter(i => i.type === 'shirt' && !seen.includes(i.name || HOOK.nm(i))).map(i => ({ n: i.name || HOOK.nm(i), r: __sim(k, 'shirt', i.id) })).map(x => ({ n: x.n, score: x.r.score, hard: x.r.hard })), [K, seen]);
       mistake = { at: i + 1, shirt: s.shirt, score: s.score, hard: s.hard, cleanLeft: left.filter(x => !x.hard.length) };
     }
   }

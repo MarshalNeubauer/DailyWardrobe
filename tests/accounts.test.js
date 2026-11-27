@@ -231,30 +231,30 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       await p.goto('about:blank');await p.goto(url+'#invite='+T+'&w='+encodeURIComponent(HOST));   // a fresh load (a hash change alone connects at once)
       await p.waitForFunction(t=>localStorage.getItem('app_token')===t,T);await p.waitForFunction(()=>window.appReady&&/Connected as Tess/.test(document.querySelector('#toast').textContent));
       ok(await p.evaluate(h=>localStorage.getItem('worker_url')===h&&!location.hash&&document.querySelector('#toast').classList.contains('on'),HOST),`opening an invitation link connects the app: address and code stored, "Connected as Tess", the link gone from the address bar (${vp.width}px)`);
-      ok(await p.evaluate(async t=>typeof connectFromLink==='function'&&(await connectFromLink('#invite='+t+'&w='+encodeURIComponent(localStorage.getItem('worker_url'))))===true&&(await connectFromLink('nonsense'))===false,T),'connectFromLink(text) answers true for a good link and false for anything else');
-      await p.evaluate(()=>openSettings('connection'));await p.waitForFunction(()=>/Connected as Tess/.test(document.querySelector('#acct-box').textContent));
+      ok(await p.evaluate(async t=>'connectFromLink' in HOOK&&typeof HOOK.connectFromLink==='function'&&(await HOOK.connectFromLink('#invite='+t+'&w='+encodeURIComponent(localStorage.getItem('worker_url'))))===true&&(await HOOK.connectFromLink('nonsense'))===false,T),'connectFromLink(text) answers true for a good link and false for anything else');
+      await p.evaluate(()=>HOOK.openSettings('connection'));await p.waitForFunction(()=>/Connected as Tess/.test(document.querySelector('#acct-box').textContent));
       let box=await p.evaluate(()=>({t:document.querySelector('#acct-box').innerText.replace(/\s+/g,' '),w:document.querySelector('#settings-modal').scrollWidth<=document.querySelector('#settings-modal').clientWidth,inv:!!document.querySelector('#acct-create')}));
       ok(!/Outfit photos/.test(box.t)&&/Item pictures today: 0 of 0/.test(box.t)&&/Photo readings today: [01] of 1/.test(box.t)&&/Pattern readings today: 0 of 0/.test(box.t)&&box.w&&!box.inv&&!/worker|token|KV|endpoint/i.test(box.t),`Settings → Connection shows who is connected and today\'s use against each cap (${box.t})`);
-      await p.evaluate(()=>closeSettings());
+      await p.evaluate(()=>HOOK.closeSettings());
       if(vp.width===390){
         // a limit reaches the user: Add card, pattern reading, item picture (the app makes no outfit photo since 2026-11-14)
         await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
           HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
-          settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};show('today')});
-        const itemErr=await p.evaluate(()=>HOOK.renderItemPic(items.find(i=>i.type==='shoes')).then(()=>'',e=>e.message));
+          HOOK.settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.show('today')});
+        const itemErr=await p.evaluate(()=>HOOK.renderItemPic(HOOK.items.find(i=>i.type==='shoes')).then(()=>'',e=>e.message));
         ok(/limit of 0 item pictures is used up/.test(itemErr),`an item picture over the cap fails with the sentence (${itemErr})`);
-        await p.evaluate(()=>show('add'));
+        await p.evaluate(()=>HOOK.show('add'));
         const add=async()=>{await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=300;const x=c.getContext('2d');x.fillStyle='#234';x.fillRect(0,0,300,300);
-          const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.9));await addFiles([new File([b],'s.jpg',{type:'image/jpeg'})])})};
+          const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.9));await HOOK.addFiles([new File([b],'s.jpg',{type:'image/jpeg'})])})};
         await add();await add();
         await p.waitForFunction(()=>/limit of 1 photo readings is used up/.test(document.querySelector('#note').textContent),null,{timeout:15000});
         ok(await p.evaluate(()=>document.querySelector('#note').textContent.includes('Today’s limit of 1 photo readings is used up. It starts again at midnight UTC.')&&/limit of 1 photo readings/.test(document.querySelector('#queue').textContent)),'the Add card says a reading limit in the server\'s words');
         await p.evaluate(u=>{document.querySelector('#toast').textContent='';HOOK.claudePattern({image:u,type:'tie'})},PNG);
         ok(await until(p,()=>/limit of 0 pattern readings is used up/.test(document.querySelector('#toast').textContent)&&document.querySelector('#toast').classList.contains('on')),'a pattern reading over the cap says so in a toast');
-        await p.evaluate(()=>openSettings('connection'));
+        await p.evaluate(()=>HOOK.openSettings('connection'));
         ok(await until(p,()=>/Photo readings today: 1 of 1/.test(document.querySelector('#acct-box').innerText.replace(/\s+/g,' '))),'and Settings shows the day\'s use going up')}
       // the owner: invite, copy, revoke
-      await p.evaluate(()=>{closeSettings();localStorage.setItem('app_token','owner-secret')});await p.evaluate(()=>openSettings('connection'));
+      await p.evaluate(()=>{HOOK.closeSettings();localStorage.setItem('app_token','owner-secret')});await p.evaluate(()=>HOOK.openSettings('connection'));
       await p.waitForFunction(()=>document.querySelector('#acct-create')&&document.querySelector('#acct-list .acct-inv'));
       box=await p.evaluate(()=>document.querySelector('#acct-box').innerText.replace(/\s+/g,' '));
       ok(/Connected as the owner/.test(box)&&/Invite testers/.test(box)&&/Tess/.test(box)&&/Photo readings today: \d of 1/.test(box),`the owner sees "Invite testers" and each tester\'s use today (${vp.width}px)`);
@@ -269,12 +269,12 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
       ok(await until(p,()=>/copied|copy it/i.test(document.querySelector('#toast').textContent)),'Copy copies it (or says to select it)');
       await p.click('#acct-list .acct-inv:last-child button.danger');await p.click('#ask-ok');await p.waitForFunction(()=>/Switched off/.test(document.querySelector('#acct-list .acct-inv:last-child').textContent));
       ok((await call('GET','me',lp.get('invite'))).status===403&&(await call('GET','me',T)).status===200,'Revoke switches that tester off, and only that one');
-      await p.evaluate(()=>{closeSettings()});await p.evaluate(()=>openSettings('connection'));await p.waitForFunction(()=>document.querySelector('#acct-create'));
+      await p.evaluate(()=>{HOOK.closeSettings()});await p.evaluate(()=>HOOK.openSettings('connection'));await p.waitForFunction(()=>document.querySelector('#acct-create'));
       ok(await p.evaluate(()=>!document.querySelector('#acct-link-url')),'the link is shown once: it is gone when Settings is opened again');
       ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
       // an older server (no /me): the box stays empty
-      await p.evaluate(()=>{closeSettings();localStorage.setItem('worker_url','https://old.test/')});await ctx.route('https://old.test/**',r=>r.request().method()==='OPTIONS'?r.fulfill({status:204,headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*'}}):r.fulfill({status:405,headers:{'access-control-allow-origin':'*'},body:'{"error":"method not allowed"}'}));
-      await p.evaluate(()=>{acct.at=0;openSettings('connection')});await p.waitForFunction(()=>acct.state==='old');
+      await p.evaluate(()=>{HOOK.closeSettings();localStorage.setItem('worker_url','https://old.test/')});await ctx.route('https://old.test/**',r=>r.request().method()==='OPTIONS'?r.fulfill({status:204,headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*'}}):r.fulfill({status:405,headers:{'access-control-allow-origin':'*'},body:'{"error":"method not allowed"}'}));
+      await p.evaluate(()=>{HOOK.acct.at=0;HOOK.openSettings('connection')});await p.waitForFunction(()=>HOOK.acct.state==='old');
       ok(await p.evaluate(()=>document.querySelector('#acct-box').hidden),'with an older server the Connection page shows nothing extra');
       await ctx.close()}
   }finally{globalThis.fetch=realFetch;Date.now=realNow;await browser.close()}
