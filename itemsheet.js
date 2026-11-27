@@ -197,7 +197,7 @@ on('wardrobe-changed',renderWardrobe);serve('wardrobe-draw',renderWardrobe);
       setTimeout(()=>stepType(n,(dx<0?1:-1)*w*.6),160);
     }else{sl.style.transition='transform .2s ease-out,opacity .2s';sl.style.transform='translateX(0)';sl.style.opacity='1'}};
   el.addEventListener('touchend',end,{passive:true});el.addEventListener('touchcancel',end,{passive:true});
-  document.addEventListener('keydown',e=>{if(el.hidden||editing||e.target.closest('input,select,textarea'))return;if(e.key==='ArrowRight')stepType(1);if(e.key==='ArrowLeft')stepType(-1)});
+  document.addEventListener('keydown',/** @param {KeyboardEvent & {target: Element}} e */e=>{if(el.hidden||editing||e.target.closest('input,select,textarea'))return;if(e.key==='ArrowRight')stepType(1);if(e.key==='ArrowLeft')stepType(-1)});
 })();
 function renderWardrobe(){
   closeSettings();if(editing!==phEdit.id)setPhEdit({id:null,undo:[],crop:null});   // undo lasts while the item stays open
@@ -207,7 +207,7 @@ function renderWardrobe(){
   const ft=wardFlt(),chips=['all',...Object.keys(TYPES).filter(t=>!HANDPICK_TYPES.includes(t)||ft===t||items.some(i=>i.type===t))].map(t=>`<button class="chip ${ft===t?'on':''}" aria-pressed="${ft===t}" data-act="wardChip" data-t="${t}">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`+(t==='all'?askFor('fav-chip')??'':'')).join('');   // (the ♥ Favorites chip after All, once a piece is a favorite: fav.js)
   const list=wardFresh();
   keepFocus($('#wardrobe'),()=>{$('#wardrobe').innerHTML=`<h2 class="vh">Wardrobe</h2><span class="vh" id="wcount" role="status">${wardCount(list)}</span>${items.length?wardBar()+`<div class="chips">${chips}</div>`:''}<div class="wslide" id="wslide">`+wardGrid(list)+'</div>'});   // (the chip or field pressed keeps the focus: W2-19-01)
-  const on=document.querySelector('#wardrobe .chip.on');if(on){const c=on.parentElement;c.scrollLeft=Math.max(0,on.offsetLeft-c.offsetLeft-(c.clientWidth-on.offsetWidth)/2)}
+  const on=/** @type {HTMLElement} */(document.querySelector('#wardrobe .chip.on'));if(on){const c=on.parentElement;c.scrollLeft=Math.max(0,on.offsetLeft-c.offsetLeft-(c.clientWidth-on.offsetWidth)/2)}
   renderItem();wardBack(wf);
 }
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */

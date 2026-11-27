@@ -628,7 +628,7 @@ const asmCmPrepCode=()=>[ASM_CM_FOLD_KEEP,ASM_CM_CUFF_PX,ASM_CM_CUFF_STEP,ASM_CM
    OffscreenCanvas, the same pixels), so the page and the worker computed different setup keys, and a setup kept on the page was never
    found by the worker that paints. It stays in asmCmCode (pictures' keys are
    made on the page only) */
-const asmCmCodeText=list=>list.map(v=>typeof v==='function'?String(v):JSON.stringify(v,(k,x)=>typeof x==='function'?String(x):x instanceof Set||x instanceof Map?[...x]:ArrayBuffer.isView(x)?Array.from(x):x)).join('|');
+const asmCmCodeText=list=>list.map(v=>typeof v==='function'?String(v):JSON.stringify(v,(k,x)=>typeof x==='function'?String(x):x instanceof Set||x instanceof Map?[...x]:ArrayBuffer.isView(x)?Array.from(/** @type {any} */(x)):x)).join('|');
 let asmCmSrc=null;
 const asmCmSrcSig=()=>asmCmSrc||(asmCmSrc=asmCmHash(asmCmCodeText(asmCmPrepCode())));
 function asmCmDb(){return new Promise((ok,no)=>{const q=indexedDB.open('dw-asm-prep',1);q.onupgradeneeded=()=>q.result.createObjectStore('p');q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)})}
@@ -641,7 +641,7 @@ let asmCmDiskPut=async function asmCmDiskPut(k,P,prefix){try{const db=await asmC
 const ASM_CM_PACKV=2,ASM_CM_BIG=65536;   // 2: with the lighting (P.lx, 16-bit)
 let asmCmPack=async function asmCmPack(P){if(typeof CompressionStream==='undefined')return null;
   try{const bufs=[];let n=0;
-    const walk=x=>{if(ArrayBuffer.isView(x)){if(x.byteLength<ASM_CM_BIG)return x;const off=n;n+=(x.byteLength+7)&~7;bufs.push([off,x]);return {__b:[x.constructor.name,off,x.length]}}
+    const walk=x=>{if(ArrayBuffer.isView(x)){if(x.byteLength<ASM_CM_BIG)return x;const off=n;n+=(x.byteLength+7)&~7;bufs.push([off,x]);return {__b:[x.constructor.name,off,/** @type {any} */(x).length]}}
       if(Array.isArray(x))return x.map(walk);if(x&&typeof x==='object'&&Object.getPrototypeOf(x)===Object.prototype){const o={};for(const [k,v] of Object.entries(x))o[k]=walk(v);return o}return x};
     const meta=walk({...P,M:null}),all=new Uint8Array(n);for(const [off,x] of bufs)all.set(new Uint8Array(x.buffer,x.byteOffset,x.byteLength),off);
     const gz=await new Response(new Blob([all]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();return {meta,gz,n}}

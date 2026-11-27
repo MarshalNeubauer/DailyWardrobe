@@ -21,10 +21,11 @@ import {swatchSVG} from './draw.js';
 import {openAdd,show} from './nav.js';
 import {clearLocks} from './days.js';
 import {acts} from './act.js';
+/** @type {{cards: any[], at: number, then: any, from?: any, hist?: any, [k: string]: any}} */
 let kit=null;   // {cards, at, then}
 let kitImpBusy=false;   // an import being written (kitImportGo)
 function kitEl(){let e=$('#kitsheet');if(!e){e=document.createElement('div');e.id='kitsheet';e.setAttribute('role','dialog');e.setAttribute('aria-modal','true');e.setAttribute('aria-labelledby','kit-title');document.body.appendChild(e)}return e}
-function kitInert(on){for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on;if(!on)layerInert()}
+function kitInert(on){for(const el of /** @type {NodeListOf<HTMLElement>} */(document.querySelectorAll('body>header,main,body>nav')))el.inert=on;if(!on)layerInert()}
 /* the phone's Back closes the sheet (fix round 2, 2026-11-15: it left the app from the tour and the Home Screen sheet, and closed Add
    under the import sheet): the sheet takes a history entry (back.js kind 'kit'), or borrows Add's (kitHist keeps whose it was) */
 function kitHist(){if(kit&&kit.hist===undefined)kit.hist=backBorrow('kit')}
@@ -50,7 +51,7 @@ function kitClose(fromBack){if(kitImpBusy){if(fromBack)backPush('kit');return}  
 /* a tap on Next or Back within KIT_TAP_MS of the last one is the second tap of a double tap (fix round 3, W2-14-06: a double tap skipped
    the close-up card, a second one closed the tour); keys and taps from code are not held back */
 const KIT_TAP_MS=350;
-function kitGo(n){if(!kit)return;const ev=window.event,tap=!!(ev&&ev.isTrusted&&ev.type==='click'&&ev.detail>0),now=performance.now();
+function kitGo(n){if(!kit)return;const ev=/** @type {MouseEvent} */(window.event),tap=!!(ev&&ev.isTrusted&&ev.type==='click'&&ev.detail>0),now=performance.now();
   if(tap){if(now-(kit.tapAt||-1e9)<KIT_TAP_MS)return;kit.tapAt=now}
   const at=kit.at+n;if(at>=kit.cards.length)return kitClose();if(at<0)return;kit.at=at;kitDraw();const t=$('#kit-next');if(t)t.focus({preventScroll:true})}
 function kitDraw(){if(!kit)return;const c=kit.cards[kit.at],n=kit.cards.length,last=kit.at===n-1;
@@ -65,7 +66,7 @@ function kitBackTap(){kitGo(-1)}
 function kitNextTap(){kitGo(1)}
 function kitGuideTap(){kitClose();kitCloseupGuide()}
 // ← → step the cards only: not in the import (no cards: → closed it and lost the pasted rows) nor while typing in a field (re-audit 2026-11-15)
-addEventListener('keydown',e=>{if(!kit)return;if(e.key==='Escape'){e.preventDefault();kitClose();return}
+addEventListener('keydown',/** @param {KeyboardEvent & {target: Element}} e */e=>{if(!kit)return;if(e.key==='Escape'){e.preventDefault();kitClose();return}
   if(!kit.cards.length||(e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable]')))return;
   if(e.key==='ArrowRight')kitGo(1);else if(e.key==='ArrowLeft')kitGo(-1)});
 
@@ -226,9 +227,10 @@ KIT_TYPE_WORDS.pants.push('cargos','cargo pants','cargo trousers','cargo');   //
 const KIT_PLANS='suits, blazers, pants, shirts, ties, tie clips, pocket squares, shoes, belts, socks, watches, cufflinks and coats';
 const kitNorm=s=>String(s??'').normalize('NFKC').trim().toLowerCase().replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي')
   .replace(/[٠-٩]/g,d=>String(d.charCodeAt(0)-0x660)).replace(/[_\s]+/g,' ').replace(/grey|gray/g,'grey');
+/** @typedef {string[] & {ln?: number}} KitRow */
 /* rows of cells; each row keeps its place in the text (r.ln, from 1, empty rows counted: "Row 23" is the 23rd row pasted, W2-15-04) */
 function kitSplit(text){text=String(text||'').replace(/^﻿/,'').replace(/\r\n?/g,'\n');const first=text.split('\n',6).join('\n');   // (the first lines: a title above the column names has no tab)
-  const d=first.includes('\t')?'\t':(first.split(';').length>first.split(',').length?';':',');const rows=[];let row=[],f='',q=false;
+  const d=first.includes('\t')?'\t':(first.split(';').length>first.split(',').length?';':',');const rows=/** @type {KitRow[]} */([]);let row=[],f='',q=false;
   for(let i=0;i<text.length;i++){const c=text[i];if(q){if(c==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=c;continue}
     if(c==='"'&&f==='')q=true;else if(c===d){row.push(f);f=''}else if(c==='\n'){row.push(f);rows.push(row);row=[];f=''}else f+=c}
   if(f!==''||row.length){row.push(f);rows.push(row)}rows.forEach((r,i)=>{r.ln=i+1});return rows.filter(r=>r.some(v=>String(v).trim()))}
@@ -595,14 +597,14 @@ const KIT_OWN=['force','lock','occasion','formal','kind','skip','off','trip'];
 const kitDayOwn=c=>!!(c.ids&&Object.values(c.ids).some(Boolean))||KIT_OWN.some(k=>c[k]&&(typeof c[k]!=='object'||Object.keys(c[k]).length));
 const kitSampleSig=i=>[i.type,i.primaryColor,i.secondaryColor||'',hasPat(i.type)?i.pattern||'solid':'solid',i.cuff==='french'?'f':''].join('|');
 function kitSampleCards(){const l=KIT_SAMPLE.filter(x=>!dressOut(x[0]));if(!wearsJacket())l.push(...KIT_SAMPLE_NOJKT);
-  return l.map(([type,c,c2,p,x])=>({id:crypto.randomUUID(),manual:true,type,primaryColor:c,secondaryColor:c2,tertiaryColor:null,pattern:hasPat(type)?p:'solid',metal:'silver',leather:'calf',sample:true,...x}))}
+  return l.map(([type,c,c2,p,x])=>({id:crypto.randomUUID(),manual:true,type,primaryColor:c,secondaryColor:c2,tertiaryColor:null,pattern:hasPat(type)?p:'solid',metal:'silver',leather:'calf',sample:true,.../** @type {object} */(x)}))}
 let kitSampling=false;
 /* items another tab stored that this one doesn't hold yet (each tab keeps its own `items`): taken in before the sample is counted */
 async function kitAdopt(){let all=[];try{all=await tx('readonly',s=>s.getAll())||[]}catch(e){console.warn('wardrobe not read',e);return}
   const have=new Set(items.map(i=>i.id)),add=all.filter(i=>i&&i.id&&!have.has(i.id));if(!add.length)return;
   let tomb={};try{tomb=await metaGet('tombstones')||{}}catch{}
   const live=add.filter(i=>!(tomb[i.id]>=(i.updated||0)));if(live.length){items.push(...live);planDirty();todayDirty()}}
-function kitSampleBusy(on){for(const b of document.querySelectorAll('#kit-sample-link,[onclick^="kitSampleLoad"],#kit-sample button')){b.disabled=on;if(on)b.setAttribute('aria-busy','true');else b.removeAttribute('aria-busy')}}
+function kitSampleBusy(on){for(const b of /** @type {NodeListOf<HTMLButtonElement>} */(document.querySelectorAll('#kit-sample-link,[onclick^="kitSampleLoad"],#kit-sample button'))){b.disabled=on;if(on)b.setAttribute('aria-busy','true');else b.removeAttribute('aria-busy')}}
 async function kitSampleLoad(){if(kitSampling)return;kitSampling=true;kitSampleBusy(true);
   try{await kitAdopt();   // what another tab of the app stored meanwhile (re-audit 2026-11-15: a stale second tab loaded a second sample, 48 pieces)
     const have=new Set(items.filter(i=>i.sample).map(kitSampleSig)),missing=kitSampleCards().filter(c=>!have.has(kitSampleSig(c)));
@@ -738,7 +740,7 @@ let homeEvt=null;
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();homeEvt=e;homeSync()});
 addEventListener('appinstalled',()=>{homeEvt=null;homeSync();toast('Installed. Open Daily Wardrobe from its new icon.')});
 /* the Install button where the browser offers it, the menu steps where it doesn't (updated in place: the offer can come after the step is drawn) */
-function homeSync(){const can=!!homeEvt;document.querySelectorAll('.home-install').forEach(b=>b.hidden=!can);document.querySelectorAll('.home-manual').forEach(m=>m.hidden=can)}
+function homeSync(){const can=!!homeEvt;/** @type {NodeListOf<HTMLElement>} */(document.querySelectorAll('.home-install')).forEach(b=>b.hidden=!can);/** @type {NodeListOf<HTMLElement>} */(document.querySelectorAll('.home-manual')).forEach(m=>m.hidden=can)}
 async function homeInstall(){const e=homeEvt;if(!e)return homeSync();homeEvt=null;   // (the browser's offer can be used once)
   try{await e.prompt();const r=await e.userChoice;if(r&&r.outcome==='accepted'){toast('Installing… open Daily Wardrobe from its new icon.')}}catch(_){}
   homeSync()}
@@ -770,7 +772,7 @@ const homeTester=()=>askFor('acct-role')==='tester'&&!!myInviteLink();
 const homeCopyBtn=()=>'<p class="home-cta"><button type="button" class="pri home-copy" data-act="homeCopyTap">Copy my invitation link</button></p><input type="text" class="home-mylink" readonly hidden aria-label="Your invitation link">';
 async function homeCopy(){const l=myInviteLink();if(!l)return false;
   try{await navigator.clipboard.writeText(l);toast('Your invitation link is copied. Paste it in the Home Screen app.',4500);return true}
-  catch{document.querySelectorAll('.home-mylink').forEach(f=>{f.hidden=false;f.value=l;f.select()});toast('Copy the link shown under the button.',5000);return false}}
+  catch{/** @type {NodeListOf<HTMLInputElement>} */(document.querySelectorAll('.home-mylink')).forEach(f=>{f.hidden=false;f.value=l;f.select()});toast('Copy the link shown under the button.',5000);return false}}
 function homeNote(){const conn=isConnected(),b=homeBrowser();
   if(homeTester())return '<p class="su-note home-note"><b>'+b+' is connected already.</b> The Home Screen app keeps its own storage, apart from '+b+'\'s, so it starts empty: paste your invitation link when it asks, and your wardrobe comes across.</p>';
   if(conn)return '<p class="su-note home-note"><b>'+b+' is connected already.</b> The Home Screen app keeps its own storage, apart from '+b+'\'s: connect it too, in its Settings → Connection.</p>';
@@ -796,7 +798,7 @@ function safariRemind(){try{if(!homeIOS()||homeStandalone()||isConnected())retur
   if(Date.now()-(+localStorage.getItem('safari_remind')||0)<SAFARI_EVERY)return false;
   if(askFor('setup-shown'))return false;
   const t=$('#toast');if(t&&t.classList.contains('on')){setTimeout(safariRemind,6000);return false}   // (not over another message)
-  localStorage.setItem('safari_remind',Date.now());
+  localStorage.setItem('safari_remind',String(Date.now()));
   toast(`Your ${items.filter(i=>!i.sample).length} items are only in ${homeBrowser()} on this ${homeIPad()?'iPad':'iPhone'}, and ${homeBrowser()} can clear a website’s data. Download a backup to keep a copy in Files.`,12000,{label:'Download backup',fn:()=>askFor('backup-download')});return true}
   catch{return false}}
 const homeLabel=()=>homeAndroid()?'Install the app':'Add to Home Screen';

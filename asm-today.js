@@ -47,7 +47,7 @@ async function asmEnsure(o,ahead){if(asmDrawn())return;await asmCmLook(o);if(!as
 /* the day on screen's picture is ready: Today is redrawn, but not under a finger (a redraw removes what the touch started on and the
    swipe or scroll stops); then it waits for the finger to lift */
 let asmTouch=0,asmLate=false;
-function asmTouchWatch(){if(asmTouchWatch.on)return;asmTouchWatch.on=true;
+function asmTouchWatch(){if(/** @type {any} */(asmTouchWatch).on)return;/** @type {any} */(asmTouchWatch).on=true;
   addEventListener('touchstart',e=>{asmTouch=e.touches.length},{passive:true,capture:true});
   const up=e=>{asmTouch=e.touches.length;if(!asmTouch&&asmLate){asmLate=false;setTimeout(()=>{if(!$('#today').hidden)ask('refresh-today')},250)}};
   addEventListener('touchend',up,{passive:true,capture:true});addEventListener('touchcancel',up,{passive:true,capture:true})}

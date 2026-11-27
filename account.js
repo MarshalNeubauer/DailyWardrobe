@@ -53,7 +53,7 @@ function acctFailText(){return acctWhy==='bad'?INVITE_BAD:acctWhy==='refused'?(a
 /* what shows the connection's state is drawn again: Settings' Connection, the setup's Connection and All set steps, Add's note */
 function acctLinkDrawn(){try{renderConnUI();settingsSummaries();
   askFor('setup-conn-draw');
-  if(document.querySelector('#add')&&!document.querySelector('#add').hidden)emit('card-changed')}catch(e){console.warn(e)}}
+  if(document.querySelector('#add')&&!/** @type {HTMLElement} */(document.querySelector('#add')).hidden)emit('card-changed')}catch(e){console.warn(e)}}
 /* connect from an invitation link -> true when the server accepted the code. Only then are the address and the code stored (a
    link that doesn't work leaves an existing connection alone); the #invite part is dropped from the address bar either way,
    except when the server couldn't be reached, so the link is tried again when the phone is back online or the app is opened again.
@@ -134,8 +134,8 @@ async function acctJoin(p,opt){const say=t=>{if((opt.address||opt.typed)&&t)acct
   }
   localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);for(const k of ['sync_pause','sync_pause_msg','invite_ended','invite_lost','list_pause'])localStorage.removeItem(k);connKeep();
   setAcct({...acct,me:r.j,state:'ok',invites:null,link:null,msg:''});rememberRole(r.j);
-  if(document.querySelector('#cfg-url'))document.querySelector('#cfg-url').value=p.url;
-  if(document.querySelector('#cfg-token'))document.querySelector('#cfg-token').value=p.code;
+  if(document.querySelector('#cfg-url'))/** @type {HTMLInputElement} */(document.querySelector('#cfg-url')).value=p.url;
+  if(document.querySelector('#cfg-token'))/** @type {HTMLInputElement} */(document.querySelector('#cfg-token')).value=p.code;
   acctToast(r.j.role==='owner'?'Connected as the owner':'Connected as '+name+(toldSame?': the same wardrobe as before':''));
   renderAccountUI();acctLinkDrawn();
   syncNow();
@@ -191,7 +191,7 @@ async function acctLocal(){let n=0,d=0,s=0;
    told to add the app to the Home Screen and paste their link there; the link can be copied from Connection any time. ---- */
 async function copyInviteLink(){const l=myInviteLink();if(!l)return false;
   try{await navigator.clipboard.writeText(l);acctToast('Your invitation link is copied.');return true}
-  catch{const f=document.querySelector('#acct-mylink');if(f){f.hidden=false;f.value=l;f.select()}acctToast('Copy the link shown under the button.',5000);return false}}
+  catch{const f=/** @type {HTMLInputElement} */(document.querySelector('#acct-mylink'));if(f){f.hidden=false;f.value=l;f.select()}acctToast('Copy the link shown under the button.',5000);return false}}
 /* (audit 2026-11-15, H12) one explanation, kit.js's (with Copy my invitation link): never over the setup, which has its own Home Screen step */
 function homeScreenGuide(){if(askFor('setup-shown'))return;if(askFor('kit-shown'))return;
   if(served('home-open')){homeTold(true);askFor('home-open')}}
@@ -214,8 +214,8 @@ async function loadAccount(){const b=acctBase();
   if(acct.me&&acct.me.role==='owner'){const l=await acctCall('invites');if(l.status===200&&Array.isArray(l.j.invites))acct.invites=l.j.invites}
   acct.at=0;renderAccountUI();applyRole()}
 const acctUse=(used,caps)=>ACCT_CAPS.map(([k,name])=>`<div class="acct-use"><span>${name} today:</span> <b>${+(used&&used[k])||0} of ${+(caps&&caps[k])||0}</b></div>`).join('');
-function renderAccountUI(){const el=document.querySelector('#acct-box');if(!el)return;
-  const m=acct.me,typed=el.querySelector('#acct-name')?el.querySelector('#acct-name').value:'';let h='';
+function renderAccountUI(){const el=/** @type {HTMLElement} */(document.querySelector('#acct-box'));if(!el)return;
+  const m=acct.me,typed=el.querySelector('#acct-name')?/** @type {HTMLInputElement} */(el.querySelector('#acct-name')).value:'';let h='';
   if(acct.state==='wait')h='<p class="shelp">Checking the connection…</p>';
   else if(inviteOver())h='';   // said in the box above (ui.js renderConnUI)
   else if(acct.state==='no')h=`<p class="shelp acct-bad">${acctEsc(acct.msg||(isTester()?'The server didn’t accept your invitation. Ask the person who invited you for a new link.':'The server didn’t accept this connection. Check the server address and the code under Advanced, below.'))}</p>`;
@@ -235,15 +235,15 @@ function renderAccountUI(){const el=document.querySelector('#acct-box');if(!el)r
     <p class="shelp" id="acct-msg">${acctEsc(acct.msg)}</p>
     ${acct.link?`<div class="acct-link" id="acct-link"><div class="slabel">${acct.link.again?'New link':'Link'} for ${acctEsc(acct.link.name)}</div><input type="text" readonly id="acct-link-url" value="${acctEsc(acct.link.url)}" aria-label="Invitation link" data-act-focus="acctLinkFocus"><div class="sactions"><button type="button" id="acct-copy" data-act="acctCopyTap">Copy</button></div><p class="shelp">${acct.link.again?'It opens the same wardrobe as before; their old link no longer works. ':''}Copy it now: it can’t be shown again.</p></div>`:''}
     <div class="acct-list" id="acct-list">${list||(acct.invites?'<p class="shelp">No testers invited yet.</p>':'')}</div>`}
-  el.hidden=!h;el.innerHTML=h;if(typed&&el.querySelector('#acct-name')&&!acct.link)el.querySelector('#acct-name').value=typed}   // a redraw keeps the name being typed
-async function createInvite(){const inp=document.querySelector('#acct-name'),name=(inp&&inp.value||'').trim();
+  el.hidden=!h;el.innerHTML=h;if(typed&&el.querySelector('#acct-name')&&!acct.link)/** @type {HTMLInputElement} */(el.querySelector('#acct-name')).value=typed}   // a redraw keeps the name being typed
+async function createInvite(){const inp=/** @type {HTMLInputElement} */(document.querySelector('#acct-name')),name=(inp&&inp.value||'').trim();
   if(!name){acct.msg='Give the tester a name first.';renderAccountUI();return}
   if(acct.busy)return;acct.busy=true;acct.msg='';renderAccountUI();
   const r=await acctCall('invites',{method:'POST',body:JSON.stringify({name})});acct.busy=false;
   if(r.status===200&&r.j.code){acct.link={name:r.j.name,url:inviteLink(r.j.code)};const l=await acctCall('invites');if(l.status===200&&Array.isArray(l.j.invites))acct.invites=l.j.invites}
   else acct.msg=r.j.message||(r.status===0?'Couldn’t reach the server.':'Couldn’t create the invitation.');
   renderAccountUI()}
-async function copyInvite(){if(!acct.link)return;const inp=document.querySelector('#acct-link-url');
+async function copyInvite(){if(!acct.link)return;const inp=/** @type {HTMLInputElement} */(document.querySelector('#acct-link-url'));
   try{await navigator.clipboard.writeText(acct.link.url);acctToast('Link copied')}
   catch{if(inp){inp.focus();inp.select();try{document.execCommand('copy');acctToast('Link copied')}catch{acctToast('Select the link and copy it')}}}}
 async function revokeInvite(id){const v=(acct.invites||[]).find(x=>x.id===id);if(!v)return;

@@ -101,7 +101,7 @@ async function addDayOff(){const f=($('#cfg-off-from')||{}).value,t=($('#cfg-off
    the message goes under Days off either way */
 async function dayOffAdd(f,t,n){t=t||f;n=offNameCut(n);
   const say=m=>{holidayMsg=m;renderDaysOffUI();return {ok:false,msg:m}};if(!f)return say('Pick a date first.');
-  const a=isoToDate(f),b=isoToDate(t),T=todayDate();if(b<a)return say('The last day is before the first.');if((b-a)/864e5>92)return say('That is more than three months: add it in parts.');
+  const a=isoToDate(f),b=isoToDate(t),T=todayDate();if(b<a)return say('The last day is before the first.');if((+b-+a)/864e5>92)return say('That is more than three months: add it in parts.');
   // a typed date isn't held back by the field's min (audit 2026-11-15: "1 day off added." for a past day that never showed)
   if(b<T)return say(`${yearDate(b)} has passed: only days from today on can be added.`);
   const cur=new Map((settings.daysOff||[]).map(x=>[x.d,x]));let k=0;for(const d=new Date(a<T?T:a);d<=b;d.setDate(d.getDate()+1)){cur.set(isoKey(d),{d:isoKey(d),n:n||'Day off'});k++}
@@ -123,7 +123,7 @@ function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');i
     :'<small class="mut">No public holidays in the next year.</small>';
   const own=(settings.daysOff||[]).filter(x=>x.d>=tk),ol=$('#off-list');
   // consecutive days with one name are shown as one range
-  const runs=[];for(const x of own){const r=runs[runs.length-1];if(r&&r.n===x.n&&(isoToDate(x.d)-isoToDate(r.to))/864e5<=1.5)r.to=x.d,r.ds.push(x.d);else runs.push({from:x.d,to:x.d,n:x.n,ds:[x.d]})}
+  const runs=[];for(const x of own){const r=runs[runs.length-1];if(r&&r.n===x.n&&(+isoToDate(x.d)-+isoToDate(r.to))/864e5<=1.5)r.to=x.d,r.ds.push(x.d);else runs.push({from:x.d,to:x.d,n:x.n,ds:[x.d]})}
   if(ol)ol.innerHTML=runs.map(r=>{const l=r.from===r.to?yearDate(isoToDate(r.from)):`${yearDate(isoToDate(r.from))} – ${yearDate(isoToDate(r.to))}`;
     return `<span class="fchip"><span class="fcht">${l}${r.n&&r.n!=='Day off'?' · '+nameHtml(offNameCut(r.n)):''}</span><button type="button" aria-label="Remove ${l}" data-ds="${esc(r.ds.join(','))}">×</button></span>`}).join('');
   const m=$('#holiday-msg');if(m)m.textContent=holidayMsg||(cc&&up.length?`${up.filter(x=>!skip.has(x.d)).length} public holiday${up.length===1?'':'s'} of ${countryName(cc)} count as days off. Uncheck any you work.`:'');

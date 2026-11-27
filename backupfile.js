@@ -9,7 +9,7 @@ import {acts} from './act.js';
 async function downloadBackup(){
   const data={app:'daily-wardrobe',version:1,exported:new Date().toISOString(),...await localState()};
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));
-  a.download=`daily-wardrobe-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();try{localStorage.setItem('backup_file_at',Date.now())}catch{}   // (kit.js safariRemind: a copy was kept)
+  a.download=`daily-wardrobe-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();try{localStorage.setItem('backup_file_at',String(Date.now()))}catch{}   // (kit.js safariRemind: a copy was kept)
   setTimeout(()=>URL.revokeObjectURL(a.href),5000);
 }
 async function restoreBackup(file){

@@ -185,8 +185,8 @@ function busyLabelFor(u,o){if(!o||String(o.method||'GET').toUpperCase()!=='POST'
   if(p==='/describe')return /"what":"both"/.test(body)?'Claude is reading the color and texture…':/"what":"pattern"/.test(body)?'Claude is working out the weave…':'Claude is finding the shade…';   // (both: Read color and texture, CR-2-09)
   if(p==='/render')return /"mode":"item"/.test(body)?'Making the item picture…':null;   // (item pictures: the only thing POST /render makes now)
   return null}
-if(typeof window!=='undefined'&&window.fetch&&!window.fetch.busy){const f0=window.fetch.bind(window);
-  window.fetch=function(u,o){const l=busyLabelFor(typeof u==='string'?u:u&&u.url,o);if(!l)return f0(u,o);const end=busyStart(l);const r=f0(u,o);r.then(end,end);return r};window.fetch.busy=1}
+if(typeof window!=='undefined'&&window.fetch&&!/** @type {any} */(window.fetch).busy){const f0=window.fetch.bind(window);
+  window.fetch=function(u,o){const l=busyLabelFor(typeof u==='string'?u:u&&/** @type {Request} */(u).url,o);if(!l)return f0(u,o);const end=busyStart(l);const r=f0(u,o);r.then(end,end);return r};/** @type {any} */(window.fetch).busy=1}
 function renderBusy(){let el=document.getElementById('busy');if(!el){if(!document.body)return;el=document.createElement('div');el.id='busy';el.setAttribute('role','status');el.setAttribute('aria-live','polite');document.body.appendChild(el)}
   const live=[...busyJobs.values()];
   document.body.classList.toggle('busy-on',!!live.length);if(!live.length){el.classList.remove('on');return}
@@ -200,7 +200,7 @@ function fitNav(){const b=document.querySelector('#today:not([hidden]) .below'),
   // date, and the bar grew to its 64px cap (and was kept there). That measurement is kept per screen size and used everywhere else
   // (a day with only the drawing and its Generate button, whose tiles sit lower; a weekend with no tiles), so the bar keeps one size.
   const k='nav_fit2:'+innerWidth+'x'+innerHeight;let kept=0;try{kept=+localStorage.getItem(k)||0}catch{}
-  const img=document.querySelector('#today:not([hidden]) #mannequin-container > img'),ready=!!(b&&img&&img.complete&&img.naturalHeight>0&&img.getBoundingClientRect().height>60);
+  const img=/** @type {HTMLImageElement} */(document.querySelector('#today:not([hidden]) #mannequin-container > img')),ready=!!(b&&img&&img.complete&&img.naturalHeight>0&&img.getBoundingClientRect().height>60);
   let x=kept;
   if(ready){const gap=parseFloat(getComputedStyle(document.querySelector('#today')).getPropertyValue('--gap'))||12;
     const cs=getComputedStyle(nav),natural=innerHeight-44-(parseFloat(cs.paddingBottom)||0)-(parseFloat(cs.borderTopWidth)||0);   // the bar's top without the growth (not measured: its height may be mid-transition)

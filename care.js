@@ -146,7 +146,7 @@ function careBandTap(){const o=planFor()[key(sel)],s=o&&careDayState(o,sel),p=ca
 /* lay the banner out: its shape (the cut round the tie swatch when the swatch reaches into it) and its words (13 px, smaller down to 11,
    then the bold words on a line of their own) */
 let careRO=null,careObs=[];
-function careBandFit(){const fig=document.getElementById('mannequin-container'),band=fig&&fig.querySelector('.cband');if(!band)return;
+function careBandFit(){const fig=document.getElementById('mannequin-container'),band=fig&&/** @type {HTMLElement} */(fig.querySelector('.cband'));if(!band)return;
   const W=fig.clientWidth,H=fig.clientHeight;if(!W||!H)return;const BH=CARE_BH,M=5,F=9,R=14,t=v=>Math.round(v*10)/10;
   const st=fig.querySelector('.swstack'),sws=fig.querySelectorAll('.swstack .ovsw'),sw=sws.length?sws[sws.length-1]:null;let cut=null;
   if(sw&&st&&getComputedStyle(st).opacity!=='0'){const fr=fig.getBoundingClientRect(),r=sw.getBoundingClientRect(),sy=r.top-fr.top;
@@ -154,8 +154,8 @@ function careBandFit(){const fig=document.getElementById('mannequin-container'),
   const d=!cut?`M0 0H${W}V${BH-R}A${R} ${R} 0 0 1 ${W-R} ${BH}H${R}A${R} ${R} 0 0 1 0 ${BH-R}Z`
     :cut.ny<=0?`M${t(cut.nx+F)} 0H${W}V${BH-R}A${R} ${R} 0 0 1 ${W-R} ${BH}H${t(cut.nx)}V${F}A${F} ${F} 0 0 1 ${t(cut.nx+F)} 0Z`
     :`M0 0H${W}V${BH-R}A${R} ${R} 0 0 1 ${W-R} ${BH}H${t(cut.nx)}V${t(cut.ny+cut.cr)}A${cut.cr} ${cut.cr} 0 0 0 ${t(cut.nx-cut.cr)} ${t(cut.ny)}H0Z`;
-  const svg=band.querySelector('svg');svg.setAttribute('width',W);svg.setAttribute('height',BH);svg.setAttribute('viewBox',`0 0 ${W} ${BH}`);svg.querySelector('path').setAttribute('d',d);
-  const row=band.querySelector('.crow'),txt=row.querySelector('.ctxt');
+  const svg=band.querySelector('svg');svg.setAttribute('width',String(W));svg.setAttribute('height',String(BH));svg.setAttribute('viewBox',`0 0 ${W} ${BH}`);svg.querySelector('path').setAttribute('d',d);
+  const row=/** @type {HTMLElement} */(band.querySelector('.crow')),txt=/** @type {HTMLElement} */(row.querySelector('.ctxt'));
   // the words are fitted once, for the narrowest space they ever get (beside a full-size tie swatch: the stack's 10 px from the edge, 64 px,
   // the gap), and keep that size while the cut moves (the owner, 2026-11-14: refitted every frame of a swatch's shrinking, the text
   // jumped between sizes); fitted again only when the picture's width changes

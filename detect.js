@@ -356,9 +356,9 @@ function analyzeSett(src,sx,sy,sw,sh,opt={}){
     const nudge=stripShifts(folds.map(ch=>ch.map(a=>[...a,...a,...a])),w3,Math.max(2,Math.round(Mf*.06)));
     for(let i=0;i<n;i++)if(tAdj[i]>=0)tAdj[i]=((tAdj[i]+nudge[SP.grp[i]]*T/Mf)%T+T)%T}
   // each pixel's band (the median of its step in the lined-up repeat), so what is left over is the crossing lines
-  const F0=foldBins(G,tAdj,T,null),M0=F0.labs.length,_dbg=self.SETT_DEBUG&&console.log('fold b*',F0.labs.map(l=>l?Math.round(l[2]):'-').join(','),' L',F0.labs.map(l=>l?Math.round(l[0]):'-').join(',')),binOf=t=>Math.floor((((t%T)+T)%T)/T*M0)%M0;
+  const F0=foldBins(G,tAdj,T,null),M0=F0.labs.length,_dbg=/** @type {any} */(self).SETT_DEBUG&&console.log('fold b*',F0.labs.map(l=>l?Math.round(l[2]):'-').join(','),' L',F0.labs.map(l=>l?Math.round(l[0]):'-').join(',')),binOf=t=>Math.floor((((t%T)+T)%T)/T*M0)%M0;
   const cvMain=variance(prof.L)+.5*(variance(prof.A)+variance(prof.B));let cross=null,inLine=null;
-  if(self.SETT_DEBUG)console.log('sett',JSON.stringify({W,H,coh:+coh.toFixed(2),bv:+bv.toFixed(2),th:Math.round(th*180/Math.PI),T:+T.toFixed(1),lines:LM&&{T:LM.T,cv:+LM.cv.toFixed(2),n:LM.pk.map(p=>p.length)},len,cv:+cv.toFixed(2),ca,cvMain:+cvMain.toFixed(1),shift}));
+  if(/** @type {any} */(self).SETT_DEBUG)console.log('sett',JSON.stringify({W,H,coh:+coh.toFixed(2),bv:+bv.toFixed(2),th:Math.round(th*180/Math.PI),T:+T.toFixed(1),lines:LM&&{T:LM.T,cv:+LM.cv.toFixed(2),n:LM.pk.map(p=>p.length)},len,cv:+cv.toFixed(2),ca,cvMain:+cvMain.toFixed(1),shift}));
   if(cv>Math.max(1,cvMain*.005)){   // lines of about 1 unit of colour or more stand out, whatever the main stripes do
     const rs=[new Float32Array(n),new Float32Array(n),new Float32Array(n)];
     for(let i=0;i<n;i++){const lab=tAdj[i]<0?[G.L[i],G.A[i],G.B[i]]:F0.labs[binOf(tAdj[i])];rs[0][i]=G.L[i]-lab[0];rs[1][i]=G.A[i]-lab[1];rs[2][i]=G.B[i]-lab[2]}
@@ -379,7 +379,7 @@ function analyzeSett(src,sx,sy,sw,sh,opt={}){
     for(let q=0;q<M;q++)if(lvl[q]&&lvl[(q+M-1)%M]!==lvl[q]&&lvl[(q+1)%M]!==lvl[q])lvl[q]=0;   // a line is at least two steps wide
     // runs of one kind; each line run gets its own thread colour (a tattersall's red and green lines stay apart):
     // a crossing is about half band, half thread, so thread = 2 x pixel - band
-    const rid=new Int32Array(M).fill(-1),runs=[];for(let q=0;q<M;q++){if(q&&lvl[q]===lvl[q-1])rid[q]=runs.length-1;else{runs.push({l:lvl[q],w:0,s:[0,0,0,0],v:[0,0,0]});rid[q]=runs.length-1}runs[rid[q]].w++;
+    const rid=new Int32Array(M).fill(-1),runs=/** @type {{l: number, w: number, s: number[], v: number[], hex?: string, c?: any}[]} */([]);for(let q=0;q<M;q++){if(q&&lvl[q]===lvl[q-1])rid[q]=runs.length-1;else{runs.push({l:lvl[q],w:0,s:[0,0,0,0],v:[0,0,0]});rid[q]=runs.length-1}runs[rid[q]].w++;
       const ru=runs[rid[q]];ru.v[0]+=fl[0][q];ru.v[1]+=fl[1][q];ru.v[2]+=fl[2][q]}
     if(runs.length>1&&runs[0].l===runs[runs.length-1].l){const a=runs.pop();runs[0].w+=a.w;runs[0].v=runs[0].v.map((x,j)=>x+a.v[j]);for(let q=0;q<M;q++)if(rid[q]===runs.length)rid[q]=0}
     // the pixels under the lines are left out when the bands are measured; with lines nearly all across (a gingham's
@@ -398,7 +398,7 @@ function analyzeSett(src,sx,sy,sw,sh,opt={}){
     for(const c of cols)c.hex=labHex(c.sum.map(v=>v/c.n));
     const out=[];for(const ru of runs){const h=ru.l&&ru.c?ru.c.hex:null;if(out.length&&out[out.length-1][0]===h)out[out.length-1][1]+=ru.w;else out.push([h,ru.w])}
     if(out.some(x=>x[0]))cross={d:ca,bands:out.map(([c,w])=>[c,+(w/M).toFixed(3)]),r:+Math.max(.2,Math.min(5,Tc/T)).toFixed(2)};else inLine=null;
-    if(self.SETT_DEBUG)console.log('cross',JSON.stringify({Tc:+Tc.toFixed(1),lines:!!LC,len:lenC,thr:+thr.toFixed(2),runs:runs.length,cols:cols.map(c=>c.hex),shC}));
+    if(/** @type {any} */(self).SETT_DEBUG)console.log('cross',JSON.stringify({Tc:+Tc.toFixed(1),lines:!!LC,len:lenC,thr:+thr.toFixed(2),runs:runs.length,cols:cols.map(c=>c.hex),shC}));
   }
   // the bands: per-step medians of the lined-up repeat, leaving out the pixels under crossing lines (a gingham's white stays white)
   const bands=settBands(foldBins(G,tAdj,T,inLine).labs.filter(Boolean),.008);if(bands.length<2)return null;

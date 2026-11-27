@@ -63,7 +63,7 @@ async function addFiles(files,multi){
   if(multi){multiNote(true);const agg={n:0,counts:{},capped:false};for(const f of files)await addMulti(f,agg);return}
   // every photo gets its card at once, at the top in the order picked (where a card typed in by hand goes too), and ADD_PAR are tagged
   // at a time (one after another, five photos were five waits in a row)
-  const cards=[...files].map(f=>[{id:crypto.randomUUID(),busy:1},f]);queue.unshift(...cards.map(c=>c[0]));renderAdd();if(cards.length)addShowCard(cards[0][0].id);
+  /** @type {[any,any][]} */const cards=[...files].map(f=>[{id:crypto.randomUUID(),busy:1},f]);queue.unshift(...cards.map(c=>c[0]));renderAdd();if(cards.length)addShowCard(cards[0][0].id);
   const one=async([q,f])=>{
     // the picture itself: only a file that can't be opened, or is too small to read, is refused (nothing is asked for it)
     let img=null;try{img=await loadImg(f)}catch(e){console.warn('photo not opened',e);q.err='open'}
@@ -94,7 +94,7 @@ function stopRead(id){const q=queue.find(x=>x.id===id);if(!q||!q.abort||q.multiB
    there (the last card's: "Import from a spreadsheet", whose sheet then covered Add). A tap within ADD_CALM ms of a Confirm and near
    the same spot is let go */
 const ADD_CALM=450;let addCalm=null;
-document.addEventListener('click',e=>{const t=e.target&&e.target.closest?e.target:null;if(!t||!t.closest('#add'))return;
+document.addEventListener('click',/** @param {MouseEvent & {target: Element}} e */e=>{const t=e.target&&e.target.closest?e.target:null;if(!t||!t.closest('#add'))return;
   if(addCalm&&addCalm.ok&&e.isTrusted&&Date.now()-addCalm.t<ADD_CALM&&Math.hypot(e.clientX-addCalm.x,e.clientY-addCalm.y)<40){e.preventDefault();e.stopPropagation();return}
   if(e.isTrusted)addCalm=t.closest('[id^="qconf-"]')?{t:Date.now(),x:e.clientX,y:e.clientY}:null},true);   // (any other tap ends it)
 /* a new card is brought into view (it used to land below the One item / Several items buttons, out of sight under the tab bar) */

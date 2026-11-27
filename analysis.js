@@ -36,7 +36,7 @@ function evalPlan(list,T,weeks){
   const keep=items;setWardrobe({items:list});
   try{
     const ks=horizonKeys(T,weeks),inH=new Set(ks),end=keyDate2(ks[ks.length-1]||key(T));
-    const plans=planSim(planStart(T.getFullYear(),T.getMonth())).upTo(end),order=Object.keys(plans).sort((a,b)=>keyDate2(a)-keyDate2(b));
+    const plans=planSim(planStart(T.getFullYear(),T.getMonth())).upTo(end),order=Object.keys(plans).sort((a,b)=>+keyDate2(a)-+keyDate2(b));
     const use={},when={},lost={},marked={},kinds={},looks=new Set(),want={},score={};
     let sum=0,n=0,sumS=0,nS=0,problems=0,rest=0,jrep=0,trep=0,lrep=0,b2b=0,first=0,prev=null,prev2=null,pShoe=null,pN=null;
     for(const k of order){const o=plans[k];if(!o)continue;const dn=di(keyDate2(k));
@@ -194,7 +194,7 @@ function simFacts(L,T,weeks,base,its){
   const fixed=[];for(const [k,v] of Object.entries(base.kinds)){const f=v-(r.kinds[k]||0);if(f>0&&k!=='other')fixed.push([k,f])}
   const pts=(FIX_LABELS[its[0].type]||[]).reduce((a,l)=>a+(base.lost[l]||0)-(r.lost[l]||0),0);
   // two sample outfits: its best-scoring days, with different shirts
-  const samples=[],seen=new Set();for(const k of [...ks].sort((a,b)=>r.score[b]-r.score[a]||keyDate2(a)-keyDate2(b))){const o=r.plans[k],sh=o.shirt&&o.shirt.id;if(seen.has(sh))continue;seen.add(sh);
+  const samples=[],seen=new Set();for(const k of [...ks].sort((a,b)=>r.score[b]-r.score[a]||+keyDate2(a)-+keyDate2(b))){const o=r.plans[k],sh=o.shirt&&o.shirt.id;if(seen.has(sh))continue;seen.add(sh);
     const ids={};for(const s of SLOTS)if(o[s])ids[s]=o[s].id;samples.push({ids,suitDay:!!o.suitDay,vest:!!o.vest,score:r.score[k]});if(samples.length>=2)break}
   return {worn:ks.length,ownAvg:sc.length?sc.reduce((a,b)=>a+b,0)/sc.length:null,dAvg:r.avg-base.avg,dProb:base.problems-r.problems,dRest:base.rest-r.rest,dB2B:base.b2b-r.b2b,dFirst:r.first-base.first,
     pts,fixed,samples,marked:r.marked,use:r.use};

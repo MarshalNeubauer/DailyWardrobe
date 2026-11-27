@@ -985,7 +985,7 @@ function drawWatchTraced(w,P){const S=WATCH_D,o=watchOpts(w),[mL,mM,mD]=METAL_TO
     [1,2,4,5,7,8,10,11].forEach(h=>s+=bar(h));
     s+=el(S.sec,`fill="${mix(dial,'#000',.05)}" stroke="${mD}" stroke-width=".3"`)+el(S.time,`fill="${mix(dial,'#000',.02)}" stroke="${mD}" stroke-width=".3"`);
     // small seconds: a fine track at the rim; the time subdial: short bars half way in, none at 12 and 6 (the applied numerals)
-    for(const [ss,n] of [[S.sec,60],[S.time,12]])for(let i=0;i<n;i++){if(n===12&&i%6===0)continue;const t=(i*360/n-90)*Math.PI/180,[x1,y1]=ep(ss,n===12?.8:.95,t),[x2,y2]=ep(ss,n===12?.64:i%5?.88:.8,t);s+=`<line x1="${f2(x1)}" y1="${f2(y1)}" x2="${f2(x2)}" y2="${f2(y2)}" stroke="${ink}" stroke-width="${n===12?.42:.12}" stroke-opacity=".85"/>`}
+    for(const [ss,n] of /** @type {[any, number][]} */([[S.sec,60],[S.time,12]]))for(let i=0;i<n;i++){if(n===12&&i%6===0)continue;const t=(i*360/n-90)*Math.PI/180,[x1,y1]=ep(ss,n===12?.8:.95,t),[x2,y2]=ep(ss,n===12?.64:i%5?.88:.8,t);s+=`<line x1="${f2(x1)}" y1="${f2(y1)}" x2="${f2(x2)}" y2="${f2(y2)}" stroke="${ink}" stroke-width="${n===12?.42:.12}" stroke-opacity=".85"/>`}
     const [mx,my]=S.minC.split(' ').map(Number),[r1,r2,r3,r4]=S.minR.split(' ').map(Number),arc=(a0,a1)=>{const p=(rx,ry,a)=>f2(mx+rx*Math.cos(a))+','+f2(my+ry*Math.sin(a)),A0=a0*Math.PI/180,A1=a1*Math.PI/180,big=a1-a0>180?1:0;
       return `M${p(r1,r2,A0)} A${r1},${r2} 0 ${big} 1 ${p(r1,r2,A1)} L${p(r3,r4,A1)} A${r3},${r4} 0 ${big} 0 ${p(r3,r4,A0)} Z`};
     s+=`<path d="${arc(-90,62)}" fill="${mix(dial,'#000',.22)}" stroke="${mD}" stroke-width=".2"/><path d="${arc(35,62)}" fill="#1f4fa8"/>`;
@@ -994,7 +994,7 @@ function drawWatchTraced(w,P){const S=WATCH_D,o=watchOpts(w),[mL,mM,mD]=METAL_TO
     s+=`<path d="${S.date}" fill="#fff" stroke="${ink}" stroke-opacity=".5" stroke-width=".15"/>`;
     s+=hand(S.tHub,S.tMin,.35,mM)+hand(S.tHub,S.tHour,.5,mM)+`<line x1="${S.tHub.split(',')[0]}" y1="${S.tHub.split(',')[1]}" x2="${S.tSec.split(',')[0]}" y2="${S.tSec.split(',')[1]}" stroke="#c0392b" stroke-width=".12"/>`+
       hand(S.secHub,S.secTip,.18,mD)+hand(S.minHub,S.minTip,.5,navy)+hand(S.hub,S.chTip,.32,navy)+hand(S.hub,S.chTail,.55,navy);
-    for(const [h,r] of [[S.hub,.85],[S.minHub,.95],[S.secHub,.45],[S.tHub,.6]]){const [x,y]=h.split(',');s+=`<circle cx="${x}" cy="${y}" r="${r}" fill="${h===S.secHub||h===S.tHub?mM:navy}" stroke="${mD}" stroke-width=".12"/>`}
+    for(const [h,r] of /** @type {[string, number][]} */([[S.hub,.85],[S.minHub,.95],[S.secHub,.45],[S.tHub,.6]])){const [x,y]=h.split(',');s+=`<circle cx="${x}" cy="${y}" r="${r}" fill="${h===S.secHub||h===S.tHub?mM:navy}" stroke="${mD}" stroke-width=".12"/>`}
   }else{
     // three hands: every hour bar (two at 12), the date at 3 unless it has none, hands from the dial's centre
     for(let h=0;h<12;h++){if(h===3&&o.style!=='no-date')continue;s+=bar(h)}

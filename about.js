@@ -127,7 +127,7 @@ async function sendFeedback(){
 /* the local time of the next 00:00 UTC, when the server's daily allowances start again */
 function aboutResetAt(){const d=new Date();try{return new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1)).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}catch{return 'midnight UTC'}}
 /* the owner also sees what was sent in (GET /me says who this is; anything but a clear "owner" shows nothing) */
-const fbWhen=t=>{const n=typeof t==='number'&&t<1e12?t*1000:t,d=new Date(n);return isNaN(d)?'':d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})};
+const fbWhen=t=>{const n=typeof t==='number'&&t<1e12?t*1000:t,d=new Date(n);return isNaN(/** @type {any} */(d))?'':d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})};
 const fbTime=t=>{const n=typeof t==='number'&&t<1e12?t*1000:t,x=+new Date(n);return isNaN(x)?0:x};
 /* (who this is comes from account.js, which already asked /me for Settings; /me is asked here only when it doesn't know yet: CR-7-06) */
 async function loadFeedback(){
@@ -209,9 +209,9 @@ const ABOUT_WIPE_FAIL_SERVER='Your data was deleted from the server, but this de
 async function deleteMyData(server){
   if(aboutDeleting)return;aboutDeleting=true;
   const c=aboutConn();let note='Your data on this device was deleted.';
-  for(const b of document.querySelectorAll('#del-confirm button'))b.disabled=true;
+  for(const b of /** @type {NodeListOf<HTMLButtonElement>} */(document.querySelectorAll('#del-confirm button')))b.disabled=true;
   aboutSay('#del-status','Deleting…');
-  const stop=t=>{aboutDeleting=false;for(const b of document.querySelectorAll('#del-confirm button'))b.disabled=false;aboutSay('#del-status',t,true)};
+  const stop=t=>{aboutDeleting=false;for(const b of /** @type {NodeListOf<HTMLButtonElement>} */(document.querySelectorAll('#del-confirm button')))b.disabled=false;aboutSay('#del-status',t,true)};
   if(server&&c){
     const keep={w:localStorage.getItem('worker_url'),t:localStorage.getItem('app_token')};
     askFor('sync-stop');
