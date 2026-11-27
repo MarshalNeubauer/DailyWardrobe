@@ -65,12 +65,12 @@ module.exports=async({ok,engines,url,settle})=>{
   // (the contract's `asked.files`: each listed asker asks it, and no file needs it), and the `need` calls kept toward an optional file
   // (`asked.kept`) are still needs of the file named; a socket of either list that changed its server or askers fails here
   {const A=C.asked||{files:{},kept:{}},src=f=>fs.readFileSync(path.join(ROOT,f),'utf8'),bad=[];
-    const uses=(f,s,ops)=>new RegExp(`\\b(?:${ops})\\('${s}'`).test(src(f));
+    const asks=(f,s)=>new RegExp(`\\b(?:ask|askFor|served)\\('${s}'`).test(src(f)),needs=(f,s)=>new RegExp(`\\b(?:need|needFn)\\('${s}'`).test(src(f));
     for(const [g,l] of Object.entries(A.files)){if(!C.files[g]||C.files[g].class!=='optional')bad.push(g+' is not an optional page script');
       for(const {socket:s,by} of l){if(!new RegExp(`\\bserve\\('${s}'`).test(src(g)))bad.push(`${g} does not serve ${s}`);
-        for(const b of by)if(!uses(b,s,'ask|askFor|served'))bad.push(`${b} does not ask ${s}`);
-        const needers=page.filter(f=>uses(f,s,'need|needFn'));if(needers.length)bad.push(`${s} is still needed by ${needers.join(', ')}`)}}
-    for(const [g,k] of Object.entries(A.kept))for(const s of k.sockets){if(!new RegExp(`\\bserve\\('${s}'`).test(src(g)))bad.push(`${g} does not serve ${s} (kept)`);if(!uses(k.by,s,'need|needFn'))bad.push(`${k.by} no longer needs ${s} (kept): move it to asked.files`)}
+        for(const b of by)if(!asks(b,s))bad.push(`${b} does not ask ${s}`);
+        const needers=page.filter(f=>needs(f,s));if(needers.length)bad.push(`${s} is still needed by ${needers.join(', ')}`)}}
+    for(const [g,k] of Object.entries(A.kept))for(const s of k.sockets){if(!new RegExp(`\\bserve\\('${s}'`).test(src(g)))bad.push(`${g} does not serve ${s} (kept)`);if(!needs(k.by,s))bad.push(`${k.by} no longer needs ${s} (kept): move it to asked.files`)}
     const nA=Object.values(A.files).flat().length,nK=Object.values(A.kept).reduce((n,k)=>n+k.sockets.length,0);
     ok(nA>0&&!bad.length,`N5: ${nA} sockets of optional files (${Object.keys(A.files).join(', ')}) are asked, not needed, by the required and today-no-picture files; ${nK} needs toward optional files are kept (${Object.keys(A.kept).join(', ')})${bad.length?': '+bad.join('; '):''}`)}
   for(const [eng,launch] of engines){let browser;
