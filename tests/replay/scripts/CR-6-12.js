@@ -47,9 +47,10 @@ async function addOne(a, i) {   // one photo, the mocked tags, Confirm (the 12 N
   await a.page.waitForFunction(() => [...document.querySelectorAll('button')].some(b => b.innerText.trim() === 'Confirm' && b.offsetParent && !b.disabled), null, { timeout: 20000 });
   await sleep(800); await tt(a, 'Confirm'); await sleep(1200);
 }
-const sync = p => p.page.evaluate(async () => { for (let i = 0; i < 100 && ((typeof HOOK !== 'undefined' && HOOK.syncing) || window.syncRun); i++) await new Promise(r => setTimeout(r, 200)); return typeof syncNow === 'function' ? syncNow() : null });
+// today's app reads through HOOK; the old builds (RP.old) have no HOOK, so there the page's globals (READS_KEPT in tests/bridge.test.js)
+const sync = p => p.page.evaluate(async () => { const hk = typeof HOOK !== 'undefined'; for (let i = 0; i < 100 && (hk ? HOOK.syncing || HOOK.syncRun : window.syncRun); i++) await new Promise(r => setTimeout(r, 200)); return hk ? HOOK.syncNow() : typeof syncNow === 'function' ? syncNow() : null });
 const backup = async p => { await sync(p); await sleep(1500); await sync(p); await sleep(1000) };
-const phoneItems = p => p.page.evaluate(() => items.map(i => i.id).sort());
+const phoneItems = p => p.page.evaluate(() => (typeof HOOK !== 'undefined' ? HOOK.items : items).map(i => i.id).sort());
 async function server() {
   const kv = await mock('kv-dump'), k = Object.keys(kv).find(x => /wardrobe:v1$/.test(x)); if (!k) return { ids: [] };
   const e = kv[k], txt = e.b ? Buffer.from(e.v, 'base64').toString() : e.v; let j = {}; try { j = JSON.parse(txt) } catch {}

@@ -113,18 +113,18 @@ const app=async({ok,chromium,url,ROOT,settle})=>{
       await r.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:Buffer.from(await res.arrayBuffer())})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>{settings.workdays=[0,1,2,3,4];settings.location={name:'Kuwait City, KW',lat:29.37,lon:47.98};HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-20T09:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,22);show('today')});
+    await p.evaluate(()=>{HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.location={name:'Kuwait City, KW',lat:29.37,lon:47.98};HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-20T09:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,22);HOOK.show('today')});
     // spies on the app's own functions: keeping an event goes through them
     await p.evaluate(()=>{window.__calls=[];for(const f of ['setOccasion','dayOffAdd','packSetTrip']){const o=window[f];window[f]=function(...a){__calls.push([f,...a]);return o.apply(this,a)}}});
-    await p.evaluate(()=>openSettings('calendar'));await settle(p,300);
-    const s0=await p.evaluate(()=>({field:!!$('#cal-link'),btn:!!$('#cal-connect')&&!$('#cal-connect').disabled,sum:$('#sum-calendar').textContent,guides:[...document.querySelectorAll('.cal-guides button')].map(b=>b.textContent)}));
+    await p.evaluate(()=>HOOK.openSettings('calendar'));await settle(p,300);
+    const s0=await p.evaluate(()=>({field:!!HOOK.$('#cal-link'),btn:!!HOOK.$('#cal-connect')&&!HOOK.$('#cal-connect').disabled,sum:HOOK.$('#sum-calendar').textContent,guides:[...document.querySelectorAll('.cal-guides button')].map(b=>b.textContent)}));
     ok(s0.field&&s0.btn&&s0.sum==='Not connected'&&s0.guides.join()==='iPhone (iCloud),Google,Outlook',`Settings → Calendar: a link field, Connect, and how to get the link for iPhone, Google and Outlook (${JSON.stringify(s0)})`);
     await p.fill('#cal-link','not a link');await p.click('#cal-connect');
     ok(/doesn’t look like a calendar link/.test(await p.textContent('#cal-msg'))&&reads===0,'a pasted text that isn\'t a link is turned down on the phone');
     await p.fill('#cal-link',LINK);await p.click('#cal-connect');
-    await p.waitForFunction(()=>/^Connected/.test(($('#cal-msg')||{}).textContent||''),null,{timeout:10000});
-    const s1=await p.evaluate(()=>({masked:$('#cal-masked').textContent,field:!!$('#cal-link'),status:$('#cal-status').textContent,msg:$('#cal-msg').textContent,stored:settings.calendar&&settings.calendar.url,
-      stamped:!!(settings.ks&&settings.ks.calendar),html:document.documentElement.outerHTML,ls:localStorage.getItem('cal_last')||'',rows:[...document.querySelectorAll('#cal-new-list .cal-row')].map(r=>r.querySelector('b').textContent+' '+r.querySelector('.cal-to').textContent)}));
+    await p.waitForFunction(()=>/^Connected/.test((HOOK.$('#cal-msg')||{}).textContent||''),null,{timeout:10000});
+    const s1=await p.evaluate(()=>({masked:HOOK.$('#cal-masked').textContent,field:!!HOOK.$('#cal-link'),status:HOOK.$('#cal-status').textContent,msg:HOOK.$('#cal-msg').textContent,stored:HOOK.settings.calendar&&HOOK.settings.calendar.url,
+      stamped:!!(HOOK.settings.ks&&HOOK.settings.ks.calendar),html:document.documentElement.outerHTML,ls:localStorage.getItem('cal_last')||'',rows:[...document.querySelectorAll('#cal-new-list .cal-row')].map(r=>r.querySelector('b').textContent+' '+r.querySelector('.cal-to').textContent)}));
     ok(s1.stored===LINK&&s1.stamped,'Connect keeps the link in the settings, stamped like any setting (so it syncs to the person\'s other devices)');
     ok(s1.masked==='cal.example.test/…'&&!s1.field,`once saved the link is shown only by where it points ("${s1.masked}"), and the field is gone`);
     ok(!s1.html.includes(SECRET)&&!s1.ls.includes(SECRET)&&!s1.ls.includes('cal.example.test/p'),'the secret part of the link is nowhere on the page or in what the phone keeps of the last read');
@@ -134,24 +134,24 @@ const app=async({ok,chromium,url,ROOT,settle})=>{
     ok(!s1.rows.some(r=>/Stand-up|meeting/.test(r)),'events that don\'t change what is worn are not listed');
     ok(await p.evaluate(()=>{const r=[...document.querySelectorAll('#cal-new-list .cal-row')].find(x=>/Sam & Alex/.test(x.textContent));return !!r&&!r.querySelector('.cal-ok')&&!!r.querySelector('.cal-no')}),'an occasion on a day that isn\'t a workday can only be dismissed');
     // a workday of the week that is a day off gives the real reason: a made-up holiday by its name, the person's own day off as theirs
-    const offw=await p.evaluate(()=>{const h=settings.holidays,o=settings.daysOff;
-      try{settings.holidays={country:'ZZ',list:[{d:'2026-11-25',n:'Made-up Founders Day'}],skip:[]};settings.daysOff=[{d:'2026-12-01',n:'Dentist'}];
+    const offw=await p.evaluate(()=>{const h=HOOK.settings.holidays,o=HOOK.settings.daysOff;
+      try{HOOK.settings.holidays={country:'ZZ',list:[{d:'2026-11-25',n:'Made-up Founders Day'}],skip:[]};HOOK.settings.daysOff=[{d:'2026-12-01',n:'Dentist'}];
         const w=(d,k)=>HOOK.calPlan({...HOOK.CAL_X,ev:{id:'t'+d,title:'T',start:d,end:d,days:1},k,label:'Wedding day'});
         const a=w('2026-11-25','wedding'),b=w('2026-12-01','funeral'),c=w('2026-11-28','wedding');
-        return {a:a.what,b:b.what,c:c.what,can:a.can||b.can||c.can}}finally{settings.holidays=h;settings.daysOff=o}});
+        return {a:a.what,b:b.what,c:c.what,can:a.can||b.can||c.can}}finally{HOOK.settings.holidays=h;HOOK.settings.daysOff=o}});
     ok(offw.a==='a day off (Made-up Founders Day): no outfit to plan'&&offw.b==='a day off (your day off): no outfit to plan'&&offw.c==='Saturday isn’t a workday: no outfit to plan'&&!offw.can,
       `an occasion on a weekday that is a day off says why: the holiday's name, or "your day off"; a Saturday still says it isn't a workday (${JSON.stringify(offw)})`);
     // Today's banner, before anything is kept
-    await p.evaluate(()=>{closeSettings();HOOK.sel=new Date(2026,10,22);renderToday()});
-    const ban=await p.evaluate(()=>($('#cal-new')||{}).textContent||'');
+    await p.evaluate(()=>{HOOK.closeSettings();HOOK.sel=new Date(2026,10,22);HOOK.renderToday()});
+    const ban=await p.evaluate(()=>(HOOK.$('#cal-new')||{}).textContent||'');
     ok(/^\d+ new calendar events?Review$/.test(ban),`Today shows a small banner with the new events ("${ban}")`);
     await p.click('#cal-new button');await settle(p,300);
-    ok(await p.evaluate(()=>settingsOpen()&&$('#sc-calendar').classList.contains('open')),'Review opens Settings → Calendar');
+    ok(await p.evaluate(()=>HOOK.settingsOpen()&&HOOK.$('#sc-calendar').classList.contains('open')),'Review opens Settings → Calendar');
     const keep=async t=>{await p.evaluate(t=>{const r=[...document.querySelectorAll('#cal-new-list .cal-row')].find(x=>x.querySelector('b').textContent===t);r.querySelector('.cal-ok').click()},t);
       await p.waitForFunction(t=>![...document.querySelectorAll('#cal-new-list .cal-row')].some(x=>x.querySelector('b').textContent===t),t,{timeout:8000})};
     await keep('Funeral of a family friend');await keep('Annual gala, black tie');await keep("Cousin's wedding");await keep('Vacation');await keep('Retail conference');
-    const k=await p.evaluate(()=>({calls:__calls.map(c=>c.slice(0,3).join(' ')),f:dayRecs['2026-11-24']&&dayRecs['2026-11-24'].occasion,g:dayRecs['2026-11-26']&&dayRecs['2026-11-26'].formal,w:dayRecs['2026-12-2']&&dayRecs['2026-12-2'].occasion,
-      off:(settings.daysOff||[]).filter(x=>x.d>='2026-12-13'&&x.d<='2026-12-17').map(x=>x.d+' '+x.n),trip:HOOK.packTrip(),seen:Object.values(settings.calSeen||{}).filter(v=>v==='k').length}));
+    const k=await p.evaluate(()=>({calls:__calls.map(c=>c.slice(0,3).join(' ')),f:HOOK.dayRecs['2026-11-24']&&HOOK.dayRecs['2026-11-24'].occasion,g:HOOK.dayRecs['2026-11-26']&&HOOK.dayRecs['2026-11-26'].formal,w:HOOK.dayRecs['2026-12-2']&&HOOK.dayRecs['2026-12-2'].occasion,
+      off:(HOOK.settings.daysOff||[]).filter(x=>x.d>='2026-12-13'&&x.d<='2026-12-17').map(x=>x.d+' '+x.n),trip:HOOK.packTrip(),seen:Object.values(HOOK.settings.calSeen||{}).filter(v=>v==='k').length}));
     ok(k.f==='funeral'&&k.g===true&&k.w==='wedding'&&k.calls.includes('setOccasion funeral 2026-11-24')&&k.calls.includes('setOccasion formal 2026-11-26')&&k.calls.includes('setOccasion wedding 2026-12-2'),
       `✓ sets the funeral, the formal day and the wedding through setOccasion, as a day set by hand (${k.calls.join(', ')})`);
     ok(k.off.length===5&&k.off[0]==='2026-12-13 Vacation'&&k.calls.includes('dayOffAdd 2026-12-13 2026-12-17'),`✓ on the vacation adds its days off through dayOffAdd (${k.off.join(', ')})`);
@@ -159,23 +159,23 @@ const app=async({ok,chromium,url,ROOT,settle})=>{
     ok(k.seen===5,'each kept event is remembered by its id');
     // a dismissal
     const dId=await p.evaluate(()=>{const r=[...document.querySelectorAll('#cal-new-list .cal-row')].find(x=>/Dress down/.test(x.textContent));const id=r.querySelector('.cal-no').dataset.id;r.querySelector('.cal-no').click();return id});
-    await p.waitForFunction(id=>settings.calSeen&&settings.calSeen[id]==='x',dId,{timeout:5000});
-    const st=await p.evaluate(()=>$('#cal-status').textContent);
+    await p.waitForFunction(id=>HOOK.settings.calSeen&&HOOK.settings.calSeen[id]==='x',dId,{timeout:5000});
+    const st=await p.evaluate(()=>HOOK.$('#cal-status').textContent);
     ok(/ · 5 events used$/.test(st),`the status counts the events used ("${st}")`);
     // Today on a trip day: the note; the banner counts what is left
-    await p.evaluate(()=>{closeSettings();HOOK.sel=new Date(2026,11,8);renderToday()});
-    ok(/^Trip: Retail conference · Packing list$/.test(await p.evaluate(()=>($('#cal-trip')||{}).textContent||'')),'a day of a kept trip says so on Today, with the Packing list');
+    await p.evaluate(()=>{HOOK.closeSettings();HOOK.sel=new Date(2026,11,8);HOOK.renderToday()});
+    ok(/^Trip: Retail conference · Packing list$/.test(await p.evaluate(()=>(HOOK.$('#cal-trip')||{}).textContent||'')),'a day of a kept trip says so on Today, with the Packing list');
     // after a restart: the link, the kept and the dismissed are still there (settings stored), the last read on this phone
     await p.reload();await p.waitForFunction(()=>window.appReady);
-    await p.evaluate(()=>{settings.workdays=[0,1,2,3,4];HOOK.TODAY_OVERRIDE='2026-11-20T09:00:00';HOOK.cache={};openSettings('calendar')});await settle(p,300);
-    const r1=await p.evaluate(id=>({seen:settings.calSeen&&settings.calSeen[id],url:settings.calendar&&settings.calendar.url,gone:[...document.querySelectorAll('.cal-row.gone')].map(r=>r.querySelector('b').textContent),
+    await p.evaluate(()=>{HOOK.settings.workdays=[0,1,2,3,4];HOOK.TODAY_OVERRIDE='2026-11-20T09:00:00';HOOK.cache={};HOOK.openSettings('calendar')});await settle(p,300);
+    const r1=await p.evaluate(id=>({seen:HOOK.settings.calSeen&&HOOK.settings.calSeen[id],url:HOOK.settings.calendar&&HOOK.settings.calendar.url,gone:[...document.querySelectorAll('.cal-row.gone')].map(r=>r.querySelector('b').textContent),
       newIds:HOOK.calNew().map(x=>x.ev.id)}),dId);
     ok(r1.seen==='x'&&r1.url===LINK&&r1.gone.includes('Dress down Thursday')&&!r1.newIds.includes(dId),'after a restart the dismissal is remembered and the event isn\'t offered again');
     // the setting syncs entry by entry: two phones' choices merge
-    const mg=await p.evaluate(()=>{const a=JSON.parse(JSON.stringify(settings)),b=JSON.parse(JSON.stringify(settings));
-      a.calSeen={...a.calSeen,'aaaaaaaaaaaaaaaa':'k'};stampSettings(a,Date.now()+1000);b.calSeen={...b.calSeen,'bbbbbbbbbbbbbbbb':'x'};stampSettings(b,Date.now()+2000);
-      const m=mergeSettings(a,b);const c=cleanSettings({calendar:{url:'javascript:alert(1)'},calSeen:{'<x>':'k',ffffffffffffffff:'k',eeeeeeeeeeeeeeee:'maybe'}});
-      return {a:m.calSeen.aaaaaaaaaaaaaaaa,b:m.calSeen.bbbbbbbbbbbbbbbb,url:m.calendar.url===settings.calendar.url,bad:c.calendar.url===undefined,seen:Object.keys(c.calSeen).join()}});
+    const mg=await p.evaluate(()=>{const a=JSON.parse(JSON.stringify(HOOK.settings)),b=JSON.parse(JSON.stringify(HOOK.settings));
+      a.calSeen={...a.calSeen,'aaaaaaaaaaaaaaaa':'k'};HOOK.stampSettings(a,Date.now()+1000);b.calSeen={...b.calSeen,'bbbbbbbbbbbbbbbb':'x'};HOOK.stampSettings(b,Date.now()+2000);
+      const m=HOOK.mergeSettings(a,b);const c=HOOK.cleanSettings({calendar:{url:'javascript:alert(1)'},calSeen:{'<x>':'k',ffffffffffffffff:'k',eeeeeeeeeeeeeeee:'maybe'}});
+      return {a:m.calSeen.aaaaaaaaaaaaaaaa,b:m.calSeen.bbbbbbbbbbbbbbbb,url:m.calendar.url===HOOK.settings.calendar.url,bad:c.calendar.url===undefined,seen:Object.keys(c.calSeen).join()}});
     ok(mg.a==='k'&&mg.b==='x'&&mg.url,'kept and dismissed events made on two phones both survive a sync (merged entry by entry), the link with them');
     ok(mg.bad&&mg.seen==='ffffffffffffffff','settings coming in keep only a webcal/https link and well-formed marks');
     // the walkthrough: each guide's cards at 390 and 320 px, light and dark, nothing wider than the screen
@@ -183,30 +183,30 @@ const app=async({ok,chromium,url,ROOT,settle})=>{
     for(const [w,theme] of [[390,'light'],[390,'dark'],[320,'light'],[320,'dark']]){
       await p.setViewportSize({width:w,height:800});await p.emulateMedia({colorScheme:theme});
       for(const g of ['icloud','google','outlook']){
-        await p.evaluate(g=>{openSettings('calendar');HOOK.calGuide(g)},g);await settle(p,200);
-        const n=await p.evaluate(()=>kit.cards.length);
+        await p.evaluate(g=>{HOOK.openSettings('calendar');HOOK.calGuide(g)},g);await settle(p,200);
+        const n=await p.evaluate(()=>HOOK.kit.cards.length);
         for(let i=0;i<n;i++){
-          const c=await p.evaluate(()=>{const s=$('#kitsheet'),pic=s.querySelector('.kit-pic svg');return {t:s.querySelector('#kit-title').textContent,wide:s.scrollWidth>s.clientWidth+1||document.documentElement.scrollWidth>innerWidth+1,pic:!!pic&&pic.getBoundingClientRect().width<=innerWidth,body:s.querySelector('.kit-body').textContent}});
+          const c=await p.evaluate(()=>{const s=HOOK.$('#kitsheet'),pic=s.querySelector('.kit-pic svg');return {t:s.querySelector('#kit-title').textContent,wide:s.scrollWidth>s.clientWidth+1||document.documentElement.scrollWidth>innerWidth+1,pic:!!pic&&pic.getBoundingClientRect().width<=innerWidth,body:s.querySelector('.kit-body').textContent}});
           ok(!c.wide&&c.pic&&c.t,`${g} card ${i+1} "${c.t}" fits at ${w} px (${theme})`);
           if(shots&&w===390){fs.mkdirSync(shots,{recursive:true});await p.screenshot({path:path.join(shots,`${g}-${i+1}-${theme}.png`)})}
           if(i<n-1){await p.waitForTimeout(400);await p.click('#kit-next')}}
-        const last=await p.evaluate(()=>$('#kit-next').textContent);await p.waitForTimeout(400);await p.click('#kit-next');await settle(p,200);
-        ok(last==='Done'&&await p.evaluate(()=>!kit&&settingsOpen()&&$('#sc-calendar').classList.contains('open')),`the ${g} guide ends with "Done" and goes back to Settings → Calendar`)}}
-    if(shots){await p.setViewportSize({width:390,height:860});for(const theme of ['light','dark']){await p.emulateMedia({colorScheme:theme});await p.evaluate(()=>openSettings('calendar'));await settle(p,300);
+        const last=await p.evaluate(()=>HOOK.$('#kit-next').textContent);await p.waitForTimeout(400);await p.click('#kit-next');await settle(p,200);
+        ok(last==='Done'&&await p.evaluate(()=>!HOOK.kit&&HOOK.settingsOpen()&&HOOK.$('#sc-calendar').classList.contains('open')),`the ${g} guide ends with "Done" and goes back to Settings → Calendar`)}}
+    if(shots){await p.setViewportSize({width:390,height:860});for(const theme of ['light','dark']){await p.emulateMedia({colorScheme:theme});await p.evaluate(()=>HOOK.openSettings('calendar'));await settle(p,300);
       await p.screenshot({path:path.join(shots,`settings-${theme}.png`),fullPage:false});
-      await p.evaluate(()=>{closeSettings();HOOK.sel=new Date(2026,11,8);renderToday()});await p.screenshot({path:path.join(shots,`today-trip-${theme}.png`)})}}
+      await p.evaluate(()=>{HOOK.closeSettings();HOOK.sel=new Date(2026,11,8);HOOK.renderToday()});await p.screenshot({path:path.join(shots,`today-trip-${theme}.png`)})}}
     const guideText=await p.evaluate(()=>Object.values(HOOK.CAL_GUIDES).flat().map(c=>c.title+' '+c.body).join(' '));
     ok(/Public Calendar/.test(guideText)&&/Share Link/.test(guideText)&&/Secret address in iCal format/.test(guideText)&&/Publish a calendar/.test(guideText)&&/ICS/.test(guideText)&&/slightly differently/.test(guideText),'the walkthrough names the real menu items (Public Calendar → Share Link, Secret address in iCal format, Publish a calendar → ICS) and says menus may differ');
-    ok(!/\b(worker|Cloudflare|KV|token)\b/i.test(guideText+await p.evaluate(()=>{openSettings('calendar');return $('#sc-calendar').textContent})),'no word a tester mustn\'t read (worker, Cloudflare, KV, token)');
+    ok(!/\b(worker|Cloudflare|KV|token)\b/i.test(guideText+await p.evaluate(()=>{HOOK.openSettings('calendar');return HOOK.$('#sc-calendar').textContent})),'no word a tester mustn\'t read (worker, Cloudflare, KV, token)');
     // Disconnect: asks, then forgets the link and the last read; what was set stays
     await p.setViewportSize({width:390,height:860});await p.emulateMedia({colorScheme:'light'});
-    await p.evaluate(()=>openSettings('calendar'));await settle(p,200);await p.click('#cal-off');await p.waitForSelector('#ask-ok');await p.click('#ask-ok');
-    await p.waitForFunction(()=>!settings.calendar&&!!$('#cal-link'),null,{timeout:5000});
-    const d=await p.evaluate(()=>({ls:localStorage.getItem('cal_last'),field:!!$('#cal-link'),sum:$('#sum-calendar').textContent,off:(settings.daysOff||[]).some(x=>x.d==='2026-12-13'),occ:dayRecs['2026-11-24']&&dayRecs['2026-11-24'].occasion}));
+    await p.evaluate(()=>HOOK.openSettings('calendar'));await settle(p,200);await p.click('#cal-off');await p.waitForSelector('#ask-ok');await p.click('#ask-ok');
+    await p.waitForFunction(()=>!HOOK.settings.calendar&&!!HOOK.$('#cal-link'),null,{timeout:5000});
+    const d=await p.evaluate(()=>({ls:localStorage.getItem('cal_last'),field:!!HOOK.$('#cal-link'),sum:HOOK.$('#sum-calendar').textContent,off:(HOOK.settings.daysOff||[]).some(x=>x.d==='2026-12-13'),occ:HOOK.dayRecs['2026-11-24']&&HOOK.dayRecs['2026-11-24'].occasion}));
     ok(d.ls===null&&d.field&&d.sum==='Not connected'&&d.off&&d.occ==='funeral',`Disconnect asks first, forgets the link and the last read, and leaves the days it set (${JSON.stringify(d)})`);
     // not connected to the server: Connect can't be used, and says why
     await p.evaluate(()=>{localStorage.removeItem('app_token');HOOK.renderCalUI()});
-    ok(await p.evaluate(()=>$('#cal-connect').disabled&&/needs a connection/.test($('#cal-box').textContent)),'without a connection Connect is off and the section says what is needed');
+    ok(await p.evaluate(()=>HOOK.$('#cal-connect').disabled&&/needs a connection/.test(HOOK.$('#cal-box').textContent)),'without a connection Connect is off and the section says what is needed');
     ok(!errs.length,'no page errors: '+errs.join('; '));
   }finally{globalThis.fetch=realFetch;Date.now=realNow;cm.calReset();await browser.close()}
 };

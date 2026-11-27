@@ -34,8 +34,8 @@ async function tapText(ph, text, scope = 'body') {
   await ph.tapAt(b.x + b.width / 2, b.y + b.height / 2); await sleep(400);
 }
 const text = async (ph, sel = 'body') => { try { return (await ph.page.innerText(sel)).replace(/\s+/g, ' ') } catch { return '' } };
-const state = ph => ph.page.evaluate(() => ({ items: items.map(i => i.type + ':' + i.primaryColor).sort(), n: items.length, setupShown: typeof setupShown === 'function' ? setupShown() : null,
-  vest: settings.vestMode, hol: settings.holidays && settings.holidays.country, sync: localStorage.getItem('sync_status'), last: localStorage.getItem('last_sync') }));
+const state = ph => ph.page.evaluate(() => ({ items: HOOK.items.map(i => i.type + ':' + i.primaryColor).sort(), n: HOOK.items.length, setupShown: 'setupShown' in HOOK && typeof HOOK.setupShown === 'function' ? HOOK.setupShown() : null,
+  vest: HOOK.settings.vestMode, hol: HOOK.settings.holidays && HOOK.settings.holidays.country, sync: localStorage.getItem('sync_status'), last: localStorage.getItem('last_sync') }));
 async function closeTour(ph) { for (let k = 0; k < 10 && await ph.page.locator('#kit-next').isVisible().catch(() => false); k++) { await ph.tap('#kit-next'); await sleep(400) } }
 async function openAdd(ph) {
   await closeTour(ph);
@@ -51,11 +51,11 @@ async function addPhotos(ph, files, types) {
   if (types) {
     await sleep(3000);
     for (const t of types) { const s = ph.page.locator('#add select[aria-label="Type"]').first(); if (!await s.count()) break; await s.scrollIntoViewIfNeeded(); await s.selectOption(t); await sleep(1200) }
-  } else await ph.page.waitForFunction(n => queue.length >= n && !queue.some(q => q.busy || (typeof cardReading === 'function' && cardReading(q))), files.length, { timeout: 60000 });
+  } else await ph.page.waitForFunction(n => HOOK.queue.length >= n && !HOOK.queue.some(q => q.busy || ('cardReading' in HOOK && typeof HOOK.cardReading === 'function' && HOOK.cardReading(q))), files.length, { timeout: 60000 });
   await sleep(800);
   const sa = ph.page.locator('#add button', { hasText: /^Save all/ }).first();
   await sa.scrollIntoViewIfNeeded(); const b = await sa.boundingBox(); await ph.tapAt(b.x + b.width / 2, b.y + b.height / 2);
-  await ph.page.waitForFunction(() => queue.length === 0, null, { timeout: 30000 }); await sleep(1200);
+  await ph.page.waitForFunction(() => HOOK.queue.length === 0, null, { timeout: 30000 }); await sleep(1200);
 }
 async function goTab(ph, name) { const nav = ph.page.locator('nav button', { hasText: name }).first(); const nb = await nav.boundingBox(); await ph.tapAt(nb.x + nb.width / 2, nb.y + nb.height / 2); await sleep(500) }
 async function openSettingsCat(ph, cat) { await tapSel(ph, 'header button[aria-label="Settings"]'); await sleep(600); await tapSel(ph, `#sc-${cat} .scat-head`); await sleep(600) }

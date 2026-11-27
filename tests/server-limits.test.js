@@ -27,20 +27,20 @@ const kvlimit=async({ok,chromium,url,ROOT})=>{
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
-    const r=await p.evaluate(async()=>{await syncNow();const it={id:'n',type:'tie',primaryColor:'burgundy',pattern:'solid',added:Date.now()};await put(it);items.push(it);const ok1=await syncNow();
+    const r=await p.evaluate(async()=>{await HOOK.syncNow();const it={id:'n',type:'tie',primaryColor:'burgundy',pattern:'solid',added:Date.now()};await HOOK.put(it);HOOK.items.push(it);const ok1=await HOOK.syncNow();
       const st=localStorage.getItem('sync_status')||'',pause=+localStorage.getItem('sync_pause')||0;let n=0;const f0=window.fetch;window.fetch=function(u,o){if(o&&o.method&&o.method!=='GET')n++;return f0.apply(this,arguments)};
-      const ok2=await syncNow();window.fetch=f0;return {ok1,ok2,st,pause,writes:n,reset:new Date(pause).toISOString()}});
+      const ok2=await HOOK.syncNow();window.fetch=f0;return {ok1,ok2,st,pause,writes:n,reset:new Date(pause).toISOString()}});
     ok(!r.ok1&&/Today’s backups are used up on the server\. Your changes are kept on this phone and back up after 3:00/.test(r.st),`the app says why, with the local reset time ("${r.st}")`);
     ok(r.pause>Date.now()&&/T00:00:00/.test(r.reset)&&r.writes===0&&!r.ok2,'and sends nothing more until the next UTC day');
     // (2026-11-14, the owner: Sync now did nothing and the status still read "Backed up 10:28") the status says why while paused, and the
     // Sync now button always tries: with the server's allowance back (a plan upgraded), it backs up at once
-    const s1=await p.evaluate(()=>{localStorage.setItem('last_sync',Date.now()-3600e3);openSettings('backup');showSyncStatus();return document.querySelector('#sync-status').textContent});
+    const s1=await p.evaluate(()=>{localStorage.setItem('last_sync',Date.now()-3600e3);HOOK.openSettings('backup');HOOK.showSyncStatus();return document.querySelector('#sync-status').textContent});
     ok(/^Today’s backups are used up on the server\..*Last backed up /.test(s1),`while paused, the status says so instead of only the last backup's time ("${s1}")`);
     full=false;
     const s2=await p.evaluate(async()=>{const ok=await HOOK.syncTap();return {ok,pause:localStorage.getItem('sync_pause'),st:document.querySelector('#sync-status').textContent,btn:document.querySelector('.sactions button.conn-only').getAttribute('data-act')}});
     ok(s2.ok&&!s2.pause&&/^Backed up /.test(s2.st)&&s2.btn==='syncNowTap',`Sync now tries despite the pause: the server takes it now, the pause is gone ("${s2.st}")`);
     full=true;
-    const s3=await p.evaluate(async()=>{const it={id:'n2',type:'tie',primaryColor:'green',pattern:'solid',added:Date.now()};await put(it);items.push(it);const ok=await HOOK.syncTap();return {ok,pause:+localStorage.getItem('sync_pause')||0}});
+    const s3=await p.evaluate(async()=>{const it={id:'n2',type:'tie',primaryColor:'green',pattern:'solid',added:Date.now()};await HOOK.put(it);HOOK.items.push(it);const ok=await HOOK.syncTap();return {ok,pause:+localStorage.getItem('sync_pause')||0}});
     ok(!s3.ok&&s3.pause>Date.now(),'still refused: the pause comes back');
     ok(!errs.length,'no page errors: '+errs.join('; '))}
   finally{await browser.close()}
@@ -116,39 +116,39 @@ const nuserver=async({ok,chromium,url,ROOT})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const lists=()=>asks.filter(a=>/list=1/.test(a)).length;
-    const both=await p.evaluate(async()=>{HOOK.listKeys=null;HOOK.listAt=0;HOOK.remoteKeys=null;await Promise.all([asmListGet(),HOOK.remoteList(),asmListGet(),HOOK.remoteList()]);return {asm:!!asmList,remote:HOOK.remoteListed}});
+    const both=await p.evaluate(async()=>{HOOK.listKeys=null;HOOK.listAt=0;HOOK.remoteKeys=null;await Promise.all([HOOK.asmListGet(),HOOK.remoteList(),HOOK.asmListGet(),HOOK.remoteList()]);return {asm:!!HOOK.asmList,remote:HOOK.remoteListed}});
     const n0=lists();asks.length=0;
-    await p.evaluate(async()=>{HOOK.remoteKeys=null;await Promise.all([asmListGet(),HOOK.remoteList()])});
+    await p.evaluate(async()=>{HOOK.remoteKeys=null;await Promise.all([HOOK.asmListGet(),HOOK.remoteList()])});
     ok(both.asm&&both.remote&&lists()===0,`the painted pictures and the outfit photos share one list, kept for a while (${n0} at start, ${lists()} more when both asked again)`);
     listMode=429;asks.length=0;
     const paused=await p.evaluate(async()=>{HOOK.listKeys=null;HOOK.listAt=0;HOOK.remoteKeys=null;HOOK.asmList=null;await HOOK.remoteList();HOOK.remoteKeys=null;
-      await Promise.all([asmListGet(),HOOK.remoteList(),asmListGet()]);
-      const o={top:{id:'s',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:{id:'h',type:'shirt',primaryColor:'white',pattern:'solid'}};HOOK.renderTried.clear();await fetchRemoteRender(o,'2026-11-16');
-      let p=null;try{p=JSON.parse(localStorage.getItem('list_pause'))}catch{}return {p,asm:asmList,listed:HOOK.remoteListed}});
+      await Promise.all([HOOK.asmListGet(),HOOK.remoteList(),HOOK.asmListGet()]);
+      const o={top:{id:'s',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:{id:'h',type:'shirt',primaryColor:'white',pattern:'solid'}};HOOK.renderTried.clear();await HOOK.fetchRemoteRender(o,'2026-11-16');
+      let p=null;try{p=JSON.parse(localStorage.getItem('list_pause'))}catch{}return {p,asm:HOOK.asmList,listed:HOOK.remoteListed}});
     const tomorrow=(d=>Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1))(new Date());
     ok(lists()===1&&asks.length===1&&paused.p&&paused.p.until===tomorrow&&!paused.asm&&!paused.listed,
       `a refused list (429) is not asked again until the next UTC day, and no day is asked about one by one meanwhile (${asks.length} requests: ${asks.join(' ')})`);
-    listMode=503;asks.length=0;await p.evaluate(async()=>{localStorage.removeItem('list_pause');HOOK.listKeys=null;HOOK.remoteKeys=null;await HOOK.remoteList();HOOK.remoteKeys=null;await HOOK.remoteList();await asmListGet()});
+    listMode=503;asks.length=0;await p.evaluate(async()=>{localStorage.removeItem('list_pause');HOOK.listKeys=null;HOOK.remoteKeys=null;await HOOK.remoteList();HOOK.remoteKeys=null;await HOOK.remoteList();await HOOK.asmListGet()});
     ok(lists()===1,`a 503 list pauses the same way (${lists()} request)`);
-    listMode=200;asks.length=0;const forced=await p.evaluate(async()=>{const L=await asmListGet(true);return !!L&&!localStorage.getItem('list_pause')});
+    listMode=200;asks.length=0;const forced=await p.evaluate(async()=>{const L=await HOOK.asmListGet(true);return !!L&&!localStorage.getItem('list_pause')});
     ok(lists()===1&&forced,'a forced ask (Settings) still tries once, and a list that comes clears the pause');
 
     // ---- the app: an item-picture batch stops at the first picture the server can't keep
     KV.o.failPut=k=>/render:/.test(k);openai=0;
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       HOOK.items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('shoes','oxblood',{leather:'cordovan'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
-      for(const x of Object.keys(renders))delete renders[x];HOOK.renderTried.clear();openSettings('photos')});
+      for(const x of Object.keys(HOOK.renders))delete HOOK.renders[x];HOOK.renderTried.clear();HOOK.openSettings('photos')});
     await p.evaluate(()=>{HOOK.startItemPics()});await p.click('#ask-ok');
-    await p.waitForFunction(()=>!HOOK.itemBatch&&/Done/.test($('#itempic-status').textContent),null,{timeout:20000});
-    const st=await p.evaluate(()=>({status:$('#itempic-status').textContent,local:Object.values(renders).filter(r=>r&&r.local).length,left:HOOK.missingItemPics().length}));
+    await p.waitForFunction(()=>!HOOK.itemBatch&&/Done/.test(HOOK.$('#itempic-status').textContent),null,{timeout:20000});
+    const st=await p.evaluate(()=>({status:HOOK.$('#itempic-status').textContent,local:Object.values(HOOK.renders).filter(r=>r&&r.local).length,left:HOOK.missingItemPics().length}));
     ok(openai===1&&st.local===1&&st.left===3,`the batch stops after the first picture the server couldn't keep: one paid for, kept on the phone (${openai} made, ${st.local} kept here, ${st.left} left)`);
     ok(/^Done: 1 picture ready, 3 not made \(.*kept on this phone only/.test(st.status)&&!/failed|changes are kept/.test(st.status),`it says so plainly (${st.status})`);
     await p.evaluate(()=>{HOOK.startItemPics()});await p.click('#ask-ok');
-    await p.waitForFunction(()=>!HOOK.itemBatch&&/Done: 0/.test($('#itempic-status').textContent),null,{timeout:20000}).catch(()=>{});
-    const st2=await p.evaluate(()=>$('#itempic-status').textContent);
+    await p.waitForFunction(()=>!HOOK.itemBatch&&/Done: 0/.test(HOOK.$('#itempic-status').textContent),null,{timeout:20000}).catch(()=>{});
+    const st2=await p.evaluate(()=>HOOK.$('#itempic-status').textContent);
     ok(openai===1&&/^Done: 0 pictures ready, 3 not made \(.*no item pictures can be made until the daily reset/.test(st2),`a second tap is refused before anything is paid for, and says why (${openai} made; ${st2})`);
     KV.o.failPut=()=>false;
-    const shared=await p.evaluate(async()=>({n:await HOOK.shareLocalPics(),local:Object.values(renders).filter(r=>r&&r.local).length}));
+    const shared=await p.evaluate(async()=>({n:await HOOK.shareLocalPics(),local:Object.values(HOOK.renders).filter(r=>r&&r.local).length}));
     ok(shared.n===1&&shared.local===0&&[...KV.store.keys()].some(k=>/^render:c/.test(k)),'once the server saves again, the picture kept on the phone is uploaded');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   }finally{globalThis.fetch=realFetch;await browser.close()}
@@ -175,13 +175,13 @@ const testersync=async({ok,chromium,url})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(([h,t])=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token',t);HOOK.rememberRole({role:'tester'})},[HOST,T]);
     await p.waitForTimeout(3000);puts=0;
-    const change=n=>p.evaluate(async n=>{const it={id:'x'+n,type:'tie',primaryColor:'navy',pattern:'solid',added:Date.now(),updated:Date.now()};await put(it);items.push(it);scheduleSync()},n);
+    const change=n=>p.evaluate(async n=>{const it={id:'x'+n,type:'tie',primaryColor:'navy',pattern:'solid',added:Date.now(),updated:Date.now()};await HOOK.put(it);HOOK.items.push(it);HOOK.scheduleSync()},n);
     const hide=()=>p.evaluate(()=>{Object.defineProperty(document,'visibilityState',{configurable:true,get:()=>'hidden'});document.dispatchEvent(new Event('visibilitychange'));delete document.visibilityState});
     await change(1);await p.waitForTimeout(3500);const p1=puts;
     await hide();await p.waitForFunction(()=>!HOOK.syncing&&!HOOK.syncDue,null,{timeout:8000});
     ok(p1===0&&puts===1,`a tester's change waits: nothing uploaded 3.5 s later, uploaded once the app goes to the background (${p1} then ${puts})`);
-    ok(await p.evaluate(()=>{scheduleSync();const due=HOOK.syncDue;return due>0&&due<=nowMs()&&HOOK.TESTER_SYNC_MS===15*60000}),'without closing the app it goes up 15 minutes after the first change still waiting');
-    await p.evaluate(()=>{clearTimeout(syncTimer);HOOK.syncDue=0});
+    ok(await p.evaluate(()=>{HOOK.scheduleSync();const due=HOOK.syncDue;return due>0&&due<=HOOK.nowMs()&&HOOK.TESTER_SYNC_MS===15*60000}),'without closing the app it goes up 15 minutes after the first change still waiting');
+    await p.evaluate(()=>{clearTimeout(HOOK.syncTimer);HOOK.syncDue=0});
     // the daily limit
     mode='limit';await change(2);await hide();await p.waitForFunction(()=>!HOOK.syncing&&!!localStorage.getItem('sync_pause'),null,{timeout:8000});
     const l=await p.evaluate(()=>({pause:+localStorage.getItem('sync_pause'),st:localStorage.getItem('sync_status')}));
@@ -191,10 +191,10 @@ const testersync=async({ok,chromium,url})=>{
     ok(puts===before,'no more uploads that day');
     await p.evaluate(()=>{localStorage.removeItem('sync_pause');localStorage.removeItem('sync_status')});mode='ok';
     // an invitation switched off
-    mode='ended';const g0=gets;await p.evaluate(()=>syncNow());
+    mode='ended';const g0=gets;await p.evaluate(()=>HOOK.syncNow());
     const e=await p.evaluate(()=>({flag:localStorage.getItem('invite_ended'),toast:document.querySelector('#toast').textContent,st:localStorage.getItem('sync_status')}));
     ok(e.flag===T&&/invitation has ended/.test(e.toast)&&/invitation has ended/.test(e.st),`an invitation switched off is said once (${e.toast})`);
-    let tries=0;await p.route(HOST+'sync**',r=>{tries++;r.continue()});await p.evaluate(()=>syncNow());await p.waitForTimeout(500);
+    let tries=0;await p.route(HOST+'sync**',r=>{tries++;r.continue()});await p.evaluate(()=>HOOK.syncNow());await p.waitForTimeout(500);
     ok(tries===0,'and the app stops trying');
     // the owner's phone: right away
     await p.evaluate(h=>{localStorage.setItem('app_token','owner');localStorage.removeItem('invite_ended');HOOK.rememberRole({role:'owner'})},HOST);mode='ok';puts=0;await p.unroute(HOST+'sync**');
@@ -218,25 +218,25 @@ const testerview=async({ok,chromium,url})=>{
     const p=await browser.newPage({viewport:{width:390,height:900}});const errs=[];p.on('pageerror',e=>{if(!FAKE_CUT.test(e.message))errs.push(e.message)});
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     // the role is remembered for the connection's code
-    const as=role=>p.evaluate(r=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','code-'+r);acct.me=null;HOOK.rememberRole({role:r})},role);
+    const as=role=>p.evaluate(r=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','code-'+r);HOOK.acct.me=null;HOOK.rememberRole({role:r})},role);
     // (the day's photo line with its price went with the photo generator, 2026-11-14; showCost still guards the item pictures' price)
-    const texts=()=>p.evaluate(()=>({cost:showCost(),fb:(HOOK.renderAbout(),document.querySelector('#fb-help').textContent)}));
+    const texts=()=>p.evaluate(()=>({cost:HOOK.showCost(),fb:(HOOK.renderAbout(),document.querySelector('#fb-help').textContent)}));
     await as('tester');const t=await texts();
     ok(t.cost===false,'a tester sees no costs');
     ok(/goes to the person who invited you/.test(t.fb),'a tester is told who reads the feedback');
     await as('owner');const o=await texts();
     ok(o.cost===true&&!/invited you/.test(o.fb)&&/^What works, what doesn’t, what is missing\.$/.test(o.fb),`the owner sees costs, and no "person who invited you" (${o.fb})`);
-    ok(await p.evaluate(()=>{localStorage.setItem('app_token','another');return acctRole()===null&&showCost()}),'a remembered role belongs to its code: another code is asked again');
+    ok(await p.evaluate(()=>{localStorage.setItem('app_token','another');return HOOK.acctRole()===null&&HOOK.showCost()}),'a remembered role belongs to its code: another code is asked again');
     // the owner's tools (the Advanced sections) are the owner's only
-    const advs=role=>p.evaluate(r=>{localStorage.setItem('worker_url','https://w.test/');if(r){localStorage.setItem('app_token','code-'+r);acct.me=null;HOOK.rememberRole({role:r})}else{localStorage.removeItem('worker_url');localStorage.removeItem('app_token')}applyRole();
-      openSettings('schedule');return ['photos','connection'].filter(k=>getComputedStyle(document.querySelector('#adv-'+k)).display!=='none').join()},role);
+    const advs=role=>p.evaluate(r=>{localStorage.setItem('worker_url','https://w.test/');if(r){localStorage.setItem('app_token','code-'+r);HOOK.acct.me=null;HOOK.rememberRole({role:r})}else{localStorage.removeItem('worker_url');localStorage.removeItem('app_token')}HOOK.applyRole();
+      HOOK.openSettings('schedule');return ['photos','connection'].filter(k=>getComputedStyle(document.querySelector('#adv-'+k)).display!=='none').join()},role);
     const vt=await advs('tester'),vo=await advs('owner'),vn=await advs(null);
     ok(vt===''&&/^(photos,)?connection$/.test(vo)&&vn===''&&await p.evaluate(()=>!document.querySelector('#adv-tagging')),`Advanced sections: none for a tester, all of them for the owner (Schedule has none since 2026-11-14; Outfit pictures' only while item photos are on; Photo tagging has none since 2026-11-13), none before connecting either, until "I run the server" (ui.js connOwn) (tester "${vt}", owner "${vo}", not connected "${vn}")`);
-    await p.evaluate(()=>{closeSettings();localStorage.setItem('worker_url','https://w.test/')});
+    await p.evaluate(()=>{HOOK.closeSettings();localStorage.setItem('worker_url','https://w.test/')});
     // Backup line
     // (the app's own sync to the made-up server may run meanwhile and write its status, "Syncing…" or a failure, which outranks the line
     // being checked: on a busy machine it did, CR-10-03. Each line waits for it to end, and states the status unless it names one)
-    const line=async s=>{await p.waitForFunction(()=>!HOOK.syncing,null,{timeout:15000}).catch(()=>{});return p.evaluate(s=>{s={sync_status:null,...s};localStorage.setItem('app_token','x');for(const [k,v] of Object.entries(s))v==null?localStorage.removeItem(k):localStorage.setItem(k,v);settingsSummaries();return document.querySelector('#sum-backup').textContent},s)};
+    const line=async s=>{await p.waitForFunction(()=>!HOOK.syncing,null,{timeout:15000}).catch(()=>{});return p.evaluate(s=>{s={sync_status:null,...s};localStorage.setItem('app_token','x');for(const [k,v] of Object.entries(s))v==null?localStorage.removeItem(k):localStorage.setItem(k,v);HOOK.settingsSummaries();return document.querySelector('#sum-backup').textContent},s)};
     const now=Date.now(),old=new Date(2026,2,3,12).getTime();
     ok(/^Backed up today$/.test(await line({last_sync:String(now),sync_status:null,sync_wait:null,sync_pause:null})),'a backup today says so');
     // (2026-11-15, the audit) not "Backed up today" while changes wait, the day's saves are used up, or the phone is offline
@@ -251,11 +251,11 @@ const testerview=async({ok,chromium,url})=>{
     const f=await line({last_sync:String(old),sync_status:'Backup failed: HTTP 500'});
     ok(/^Last backup failed · last saved Mar 3$/.test(f),`a failed try says so, with the last good day (${f})`);
     ok(/^Backup failed: not backed up yet$/.test(await line({last_sync:null,sync_status:'Backup failed: HTTP 500'})),'a first try that failed says nothing is backed up');
-    ok(/^Not backed up yet: needs a connection$/.test(await p.evaluate(()=>{localStorage.removeItem('worker_url');settingsSummaries();return document.querySelector('#sum-backup').textContent})),'without a connection it says so');
+    ok(/^Not backed up yet: needs a connection$/.test(await p.evaluate(()=>{localStorage.removeItem('worker_url');HOOK.settingsSummaries();return document.querySelector('#sum-backup').textContent})),'without a connection it says so');
     // one title style: descriptions start with a capital, the rest as written; a typed name exactly as typed
     const ti=await p.evaluate(()=>{const a={id:'t1',type:'suit',primaryColor:'navy',pattern:'pinstripe',secondaryColor:'white',added:1},b={...a,id:'t2',name:'navy hopsack'};
-      return {a:itemTitle(a),b:itemTitle(b),cb:HOOK.careName(b),tt:getComputedStyle(Object.assign(document.body.appendChild(document.createElement('span')),{className:'cap',textContent:'x'})).textTransform,
-        s:[avgText(100),avgText(99.96),avgText(97.24),avgText(null)]}});
+      return {a:HOOK.itemTitle(a),b:HOOK.itemTitle(b),cb:HOOK.careName(b),tt:getComputedStyle(Object.assign(document.body.appendChild(document.createElement('span')),{className:'cap',textContent:'x'})).textTransform,
+        s:[HOOK.avgText(100),HOOK.avgText(99.96),HOOK.avgText(97.24),HOOK.avgText(null)]}});
     ok(/^Navy [^A-Z]+$/.test(ti.a)&&ti.b==='navy hopsack'&&/: navy hopsack$/.test(ti.cb)&&ti.tt==='none',`a description is sentence case ("${ti.a}"), a typed name is kept as typed everywhere ("${ti.b}", "${ti.cb}")`);
     ok(ti.s.join()==='100,99.9,97.2,–','an average score has one decimal, rounded down, so it reads 100 only when every day did');
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');

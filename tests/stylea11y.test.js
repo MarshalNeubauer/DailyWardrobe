@@ -31,14 +31,14 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
       HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('suit','grey'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','white'),I('shirt','lightblue'),
         I('tie','burgundy'),I('tie','navy'),I('tie','green'),I('tie','grey'),I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'}),I('socks','navy'),I('belt','black',{leather:'calf'})];
-      settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-16T18:00:00';HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};HOOK.cache={};show('today')});
+      HOOK.settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-16T18:00:00';HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};HOOK.cache={};HOOK.show('today')});
     await settle(p,300);
     const act=()=>p.evaluate(()=>{const a=document.activeElement;return !a||a===document.body?'BODY':a.tagName+(a.id?'#'+a.id:'')});
     const inside=q=>p.evaluate(q=>{const e=document.querySelector(q);return !!e&&e.contains(document.activeElement)},q);
     const tabs=async(q,n)=>{let out=0;for(let i=0;i<n;i++){await p.keyboard.press('Tab');if(!await inside(q))out++}return out};
 
     // CR-9-01: a class rule for a button on a page now wins over the base rule, by order, as for any element
-    const probe=await p.evaluate(()=>{openAdd();const st=document.createElement('style');st.textContent='.f10probe{border-radius:0;min-height:0;background:rgb(255,0,0)}';document.head.appendChild(st);
+    const probe=await p.evaluate(()=>{HOOK.openAdd();const st=document.createElement('style');st.textContent='.f10probe{border-radius:0;min-height:0;background:rgb(255,0,0)}';document.head.appendChild(st);
       const b=document.createElement('button');b.className='f10probe';b.textContent='x';document.querySelector('#add').appendChild(b);const c=getComputedStyle(b);
       const r={radius:c.borderTopLeftRadius,min:c.minHeight,bg:c.backgroundColor};b.remove();st.remove();
       const a=getComputedStyle(document.querySelector('#add-import')),bk=document.querySelector('#add .pback').getBoundingClientRect(),bs=getComputedStyle(document.querySelector('#add .pback'));
@@ -68,25 +68,25 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.keyboard.press('Escape');await settle(p,500);
     ok(await act()==='BUTTON#add-import',`Escape closes it and the focus is back on Import (${await act()})`);
     // the tour (from About in Settings)
-    await p.evaluate(()=>{show('today');openSettings('about')});await settle(p,400);
+    await p.evaluate(()=>{HOOK.show('today');HOOK.openSettings('about')});await settle(p,400);
     await p.focus('#settings-modal button[data-act="tourAgainTap"]');await p.keyboard.press('Enter');await settle(p,500);
     ok(await inside('#kitsheet.on'),`the tour opens with the focus in it (${await act()})`);
     const tOut=await tabs('#kitsheet',30);
     ok(tOut===0,`30 Tabs stay inside the tour (${tOut} outside)`);
-    await p.keyboard.press('Escape');await settle(p,500);await p.evaluate(()=>{try{closeSettings()}catch{}});await settle(p,300);
+    await p.keyboard.press('Escape');await settle(p,500);await p.evaluate(()=>{try{HOOK.closeSettings()}catch{}});await settle(p,300);
 
     // CR-9-04: What to buy: Insights drawn again while it is up; Escape gives the focus to the new What to buy button
-    await p.evaluate(()=>{show('stats');const cat=n=>({key:'c'+n,title:'Section '+n,verdict:'covered',own:null,notes:['A note'],recs:[]});
-      HOOK.shop={sig:HOOK.shopSig(),at:Date.now(),res:{v:2,base:null,cats:[0,1].map(cat),top:[],occasions:[],checked:0,sims:1,months:6}};renderStats()});await settle(p,300);
+    await p.evaluate(()=>{HOOK.show('stats');const cat=n=>({key:'c'+n,title:'Section '+n,verdict:'covered',own:null,notes:['A note'],recs:[]});
+      HOOK.shop={sig:HOOK.shopSig(),at:Date.now(),res:{v:2,base:null,cats:[0,1].map(cat),top:[],occasions:[],checked:0,sims:1,months:6}};HOOK.renderStats()});await settle(p,300);
     await p.evaluate(()=>{window.__f10b=document.querySelector('#shop-btn')});
     await p.focus('#shop-btn');await p.keyboard.press('Enter');await settle(p,400);
-    await p.evaluate(()=>renderStats());   // what analyzeWardrobe does when it finishes while the sheet is up
+    await p.evaluate(()=>HOOK.renderStats());   // what analyzeWardrobe does when it finishes while the sheet is up
     const gone=await p.evaluate(()=>!window.__f10b.isConnected&&!!document.querySelector('#shop-btn'));
     await p.keyboard.press('Escape');await settle(p,500);
     ok(gone&&await act()==='BUTTON#shop-btn',`What to buy closed by Escape: the focus is on the What to buy button drawn while it was up (${gone}, ${await act()})`);
 
     // and the real check: opened with nothing kept, closed while it still runs; when it finishes and draws the button again, the focus stays on it
-    await p.evaluate(()=>{HOOK.shop=null;renderStats()});await settle(p,300);
+    await p.evaluate(()=>{HOOK.shop=null;HOOK.renderStats()});await settle(p,300);
     await p.focus('#shop-btn');await p.keyboard.press('Enter');
     await p.keyboard.press('Escape');
     const ran=await p.evaluate(()=>{window.__f10b=document.querySelector('#shop-btn');return !!HOOK.shopBusy});
@@ -113,16 +113,16 @@ module.exports=async({ok,chromium,url,settle})=>{
     // each screen is opened, then measured once its page-in animation is over
     const step=async(open,read)=>{await p.evaluate(open);await settle(p,700);return p.evaluate(read)};
     const measure=async()=>{const m={c:{},t:{}};
-      Object.assign(m.t,await step(()=>{show('today');for(const b of document.querySelectorAll('#today .ibox:not(.open) .month-link,#today .mbox:not(.open) .month-link'))try{b.click()}catch{}},
+      Object.assign(m.t,await step(()=>{HOOK.show('today');for(const b of document.querySelectorAll('#today .ibox:not(.open) .month-link,#today .mbox:not(.open) .month-link'))try{b.click()}catch{}},
         ()=>{const {hit,vis}=__f10m(),wp=document.querySelector('#wpill'),sw=vis('#today .row .swap'),rt=vis('#today .rowtap');
           return {wpill:wp?hit(wp):null,swap:sw.length?[Math.min(...sw.map(e=>hit(e)[0])),Math.min(...sw.map(e=>hit(e)[1]))]:null,rowtap:rt.length?Math.min(...rt.map(e=>hit(e)[1])):null}}));
-      m.t.sttype=await step(()=>show('stats'),()=>{const {hit,vis}=__f10m(),su=vis('#stats .st-type summary');return su.length?Math.min(...su.map(e=>hit(e)[1])):null});
-      Object.assign(m.c,await step(()=>openAdd(),()=>{const {ratio,probe}=__f10m();
+      m.t.sttype=await step(()=>HOOK.show('stats'),()=>{const {hit,vis}=__f10m(),su=vis('#stats .st-type summary');return su.length?Math.min(...su.map(e=>hit(e)[1])):null});
+      Object.assign(m.c,await step(()=>HOOK.openAdd(),()=>{const {ratio,probe}=__f10m();
         return {addSub:ratio(document.querySelector('#add-manual .addlong-t small')),confMedium:probe('<span class="conf medium">Medium</span>','#add'),connTick:probe('<span class="conn-tick">✓</span>','#add')}}));
-      Object.assign(m.c,await step(()=>{show('wardrobe');openItem(items[0].id)},()=>{const {probe}=__f10m();
+      Object.assign(m.c,await step(()=>{HOOK.show('wardrobe');HOOK.openItem(HOOK.items[0].id)},()=>{const {probe}=__f10m();
         return {pill:probe('<span class="ivpill">Clean in 5 wears</span>','#item-view .ivpills,#item-view'),pillGood:probe('<span class="ivpill good">In rotation</span>','#item-view .ivpills,#item-view')}}));
-      m.t.dtog=await step(()=>{HOOK.closeItem();openSettings('schedule')},()=>{const {hit,vis}=__f10m(),dt=vis('#settings-modal .dtog');return dt.length?Math.min(...dt.map(e=>hit(e)[1])):null});
-      await p.evaluate(()=>{closeSettings();show('today')});await settle(p,400);return m};
+      m.t.dtog=await step(()=>{HOOK.closeItem();HOOK.openSettings('schedule')},()=>{const {hit,vis}=__f10m(),dt=vis('#settings-modal .dtog');return dt.length?Math.min(...dt.map(e=>hit(e)[1])):null});
+      await p.evaluate(()=>{HOOK.closeSettings();HOOK.show('today')});await settle(p,400);return m};
     for(const theme of ['light','dark']){
       await p.emulateMedia({colorScheme:theme});await settle(p,200);
       const m=await measure();
@@ -135,21 +135,21 @@ module.exports=async({ok,chromium,url,settle})=>{
     // over 3:1 like every field's (it was a white box inside a gray one, its edge about 1.4:1 light and 1.3:1 dark)
     for(const theme of ['light','dark']){
       await p.emulateMedia({colorScheme:theme});await settle(p,200);
-      const f=await p.evaluate(()=>{openSettings();const w=document.querySelector('#settings-modal .cpwin'),i=w&&w.querySelector('input');if(!i){closeSettings();return null}
+      const f=await p.evaluate(()=>{HOOK.openSettings();const w=document.querySelector('#settings-modal .cpwin'),i=w&&w.querySelector('input');if(!i){HOOK.closeSettings();return null}
         // its edge against the first solid background behind it (the Settings category may be folded: its opacity is left out)
         const rgb=c=>(c.match(/[\d.]+/g)||[]).map(Number),L=c=>{const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(c[0])+.7152*f(c[1])+.0722*f(c[2])};
         let a=w.parentElement,bg=null;while(a&&!bg){const c=rgb(getComputedStyle(a).backgroundColor);if(c.length===3||(c.length===4&&c[3]>=.99))bg=c;a=a.parentElement}
         const x=L(rgb(getComputedStyle(w).borderTopColor)),y=L(bg||[255,255,255]),edge=+((Math.max(x,y)+.05)/(Math.min(x,y)+.05)).toFixed(2);
-        const r={input:getComputedStyle(i).backgroundColor,box:getComputedStyle(w).backgroundColor,edge};closeSettings();return r});
+        const r={input:getComputedStyle(i).backgroundColor,box:getComputedStyle(w).backgroundColor,edge};HOOK.closeSettings();return r});
       ok(f&&f.input===f.box&&f.edge>=3,`${theme}: the cost-per-wear field's box is the input's color and its edge is over 3:1 (${JSON.stringify(f)})`);
     }
     await p.emulateMedia({colorScheme:'light'});
 
     // CR-9-07: an iPhone on its side: the full-width bars keep clear of the side insets (WebKit and Chromium have none, so set them)
-    const sa=await p.evaluate(()=>{const r=document.documentElement.style;r.setProperty('--sal','47px');r.setProperty('--sar','47px');tourOpen();
+    const sa=await p.evaluate(()=>{const r=document.documentElement.style;r.setProperty('--sal','47px');r.setProperty('--sar','47px');HOOK.tourOpen();
       const g=(q,k)=>{const e=document.querySelector(q);return e?parseFloat(getComputedStyle(e)[k]):-1};
       const o={header:[g('body>header','paddingLeft'),g('body>header','paddingRight')],nav:[g('body>nav','paddingLeft'),g('body>nav','paddingRight')],kit:[g('.kit-head','paddingLeft'),g('.kit-bar','paddingRight')]};
-      kitClose();r.removeProperty('--sal');r.removeProperty('--sar');o.upright=[g('body>header','paddingLeft'),g('body>header','paddingRight')];return o});
+      HOOK.kitClose();r.removeProperty('--sal');r.removeProperty('--sar');o.upright=[g('body>header','paddingLeft'),g('body>header','paddingRight')];return o});
     ok(sa.header.join()==='47,47'&&sa.nav.join()==='47,47'&&sa.kit.join()==='47,47'&&sa.upright.join()==='16,12',`the header, the tab bar and the tour keep clear of the side safe areas, and keep their padding upright (${JSON.stringify(sa)})`);
     ok(!errs.length,'no page errors'+(errs.length?': '+errs.join(' | '):''));
   }finally{await browser.close()}
