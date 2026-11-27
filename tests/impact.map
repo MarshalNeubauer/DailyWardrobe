@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	470163a96e59bb2a5c85
+# tested	5e28af1d054079406e0f
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -1564,7 +1564,7 @@ asmcolor.test.js	draw.js	<loaded>	fabricDef	figBg	figFabric	figKind	figureSvg
 asmcolor.test.js	dress.js	<loaded>	@onsettingsdraw	@onsettingssummaries	dressOn	dressSummary	migrateVests	renderDressUI
 asmcolor.test.js	fav.js	<loaded>	favWhy
 asmcolor.test.js	fields.js	<loaded>
-asmcolor.test.js	history.js	<loaded>	canPick	checkPlanRules	dayActions	dropLearn	recordDays	renderReplanUI	replanCount	resetCard	slotLabel	whenPulled
+asmcolor.test.js	history.js	<loaded>	canPick	checkPlanRules	dayActions	dropLearn	recordDays	renderReplanUI	replanCount	resetCard	setTodayPullWait	slotLabel	whenPulled
 asmcolor.test.js	index.html	<loaded>
 asmcolor.test.js	item-photo.js	<loaded>	smallPhotos
 asmcolor.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	itemShown	renderItem
@@ -9030,7 +9030,6 @@ invite.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehid
 invite.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 invite.test.js	tagging.js	<loaded>
 invite.test.js	tests/fixedplan.js	<any>
-invite.test.js	tests/webkit.js	<any>
 invite.test.js	theme.js	<loaded>	applyTheme
 invite.test.js	toast.js	<loaded>	toast	toastOff
 invite.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -9552,7 +9551,7 @@ keptphotos.test.js	worker.js	<loaded>	corsFor	fetch	serve
 keptphotos.test.js	worker/items.js	<loaded>	ITEM_BG	ITEM_REF_PROMPT	itemPhoto	kvIsFull	renderItem
 keptphotos.test.js	worker/links.js	<loaded>	readCapped
 keptphotos.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendEach	usedOf	utcDay	whoIs
-keptphotos.test.js	worker/photostore.js	handleSync
+keptphotos.test.js	worker/photostore.js	<loaded>	handleSync
 keptphotos.test.js	worker/records.js	<loaded>	getRender	putRender	renderId	renderTtl
 keptphotos.test.js	worker/render.js	<loaded>	dataUrlToBlob	handleRender
 keptphotos.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
@@ -14367,7 +14366,7 @@ rollback.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
 rollback.test.js	photo-keys.js	<loaded>	@serverenders	comboKey	comboSig	fnv64	listPaused	loadRenders	lookSig	picsDrawn	shirtPatterned	shirtTextured	workerBase	workerList
 rollback.test.js	photos.js	<loaded>	asmLive	fetchRemoteRender	fixItemBackdrops	missingItemPics	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shareLocalPics
 rollback.test.js	pickscore.js	<loaded>
-rollback.test.js	planner.js	<loaded>	idsAhead	lockStale	pairSeen	shirtGroup
+rollback.test.js	planner.js	<loaded>	idsAhead	pairSeen	shirtGroup
 rollback.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 rollback.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errList	errReport	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 rollback.test.js	scorecard.js	<loaded>
@@ -15124,7 +15123,7 @@ run.js: renders the outfit without errors	calendar.js	<loaded>	@whenPulled	calAu
 run.js: renders the outfit without errors	care.js	<loaded>	careBandSoon	careDayState	careFrame	careNote	careTop
 run.js: renders the outfit without errors	checklist.js	<loaded>
 run.js: renders the outfit without errors	colpick.js	<loaded>
-run.js: renders the outfit without errors	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	LUM	accentOf	acctBase	applyCustom	camoPat	careLimit	colBase	colName	colOf	colourNameRe	dE00	dayClimate	dayFields	di	esc	hasInviteHash	hasVest	hexRgb	homeAndroid	homeIOS	homeNeeded	homeStandalone	inRotation	isCargo	isConnected	isHandPick	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keyDate	keySettings	keySplit	leatherWord	lum	lumCol	matSeason	metalWord	mix	nameHtml	nextStamp	nm	nowMs	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	rgbLab	seasonFit	sentence	set items	setWardrobe	settingsOpen	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	strapBand	styleWord	subHashes	syncUrl	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
+run.js: renders the outfit without errors	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	LUM	accentOf	acctBase	applyCustom	camoPat	careLimit	colBase	colName	colOf	colourNameRe	dE00	dayClimate	dayFields	di	esc	hasInviteHash	hasVest	hexRgb	homeAndroid	homeIOS	homeNeeded	homeStandalone	inRotation	inviteOver	isCargo	isConnected	isHandPick	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keyDate	keySettings	keySplit	leatherWord	lum	lumCol	matSeason	metalWord	mix	nameHtml	nextStamp	nm	nowMs	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	rgbLab	seasonFit	sentence	set items	setWardrobe	settingsOpen	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	strapBand	styleWord	subHashes	syncUrl	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
 run.js: renders the outfit without errors	cost.js	<loaded>
 run.js: renders the outfit without errors	days.js	<loaded>	idsOf	releaseLocks	saveDay
 run.js: renders the outfit without errors	daysoff.js	<loaded>	refreshHolidays
