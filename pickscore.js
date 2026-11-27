@@ -2,6 +2,7 @@
    (slotPool, handPool, pickScores, fitOf, fitRule, fitTag, pickSub) and Suggest another stays clean (suggestClean)
    (An ES module since 2026-11-23; split out of history.js, Round C 2026-11-17, and loaded after it.) */
 /* a piece taken off (rec.off) stays pinned through a swap or a pick of another piece, so putting it back brings the same one */
+import {serve} from './bus.js';
 import {SLOTS,SLOT_TYPE,TYPES,camoPants,dayClimate,dayRecs,di,handPickSlot,inRotation,isHandPick,itemTitle,items,key,nm,seasonFit,shoeStyle} from './core.js';
 import {cache,planDirty,planFor} from './today-plan.js';
 import {cap1,sel} from './app.js';
@@ -89,3 +90,4 @@ const pickSub=(i,pool)=>{const t=x=>itemTitle(x)||nm(x),same=pool.filter(x=>t(x)
 Object.assign(globalThis,{keepOff,FOLLOW,beltless,BELT_STUCK,slotPool,handPool,handWhy,pocketOn,keepHand,bootsOff,suitPants,suggestClean,fitOf,fitTag,pickSub});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,FOLLOW,fitOf,fitTag,pickSub,slotPool};
 export {keepOff,FOLLOW,beltless,BELT_STUCK,slotPool,handPool,handWhy,pocketOn,keepHand,bootsOff,suitPants,suggestClean,fitOf,fitTag,pickSub};
+serve('belt-stuck',()=>BELT_STUCK);serve('pick-follow',()=>FOLLOW);serve('beltless',beltless);serve('boots-off',bootsOff);serve('fit-of',fitOf);serve('fit-tag',fitTag);serve('hand-pool',handPool);serve('hand-why',handWhy);serve('keep-hand',keepHand);serve('keep-off',keepOff);serve('pick-sub',pickSub);serve('pocket-on',pocketOn);serve('slot-pool',slotPool);serve('suggest-clean',suggestClean);serve('suit-pants',suitPants);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

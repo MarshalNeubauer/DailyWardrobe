@@ -5,6 +5,7 @@
    (picBelow: the rows after it, the cards under its card, the cards under the stage), and the card it is in (the pieces list) is
    clipped to its old edge and grows with it; the photo drops in with the days' bounce. Shutting is the same backwards: the photo
    lifts out with the days' dip, then the space closes. A row's running animations are kept on it (el._pa). */
+import {serve} from './bus.js';
 import {$,MONTH_EASE} from './core.js';
 import {foldEdge,foldQuiet,keepInView,pageScroll,revealNeed} from './ui.js';
 const PIC_MS=380;
@@ -48,3 +49,4 @@ function picSnap(r,keep){picStop(r);const above=keep&&r.getBoundingClientRect().
 /* the bridge (tests/bridge.test.js): today.js, a classic script, opens and shuts a piece's photo with these; a module imports them */
 Object.assign(globalThis,{picStop,picOpenReady,picShut,picSnap});
 export {picStop,picOpenReady,picShut,picSnap};
+serve('pic-open-ready',picOpenReady);serve('pic-shut',picShut);serve('pic-snap',picSnap);serve('pic-stop',picStop);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

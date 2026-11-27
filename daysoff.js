@@ -1,6 +1,6 @@
 /* Daily Wardrobe: Settings → Days off: public holidays, your own days off and the occasions (formal days)
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
-import {on} from './bus.js';
+import {on,serve} from './bus.js';
 import {$,OCCASIONS,dayRecs,isoKey,isoToDate,key,keyDate,nameHtml,nowMs,occLabel,occOf,setStr,setWardrobe,settings,shortDate,syncUrl,takeSettings,todayDate,trueToday,yearDate} from './core.js';
 import {esc,workerBase} from './photo-keys.js';
 import {saveUserSettings,settingsOpen,settingsSummaries,todayDirty} from './settings.js';
@@ -164,3 +164,4 @@ on('settings-summaries',S=>{S.country=countryName});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,addDayOff,builtinHolidays,holYears,get holidayMsg(){return holidayMsg},nagerKeep,toggleHoliday,refreshHolidays,setHolidayCountry};
 export {COUNTRY_CODES,countryName,holidayMsg,nagerKeep,builtinHolidays,holYears,setHolidayCountry,refreshHolidays,toggleHoliday,addDayOff,dayOffAdd,renderDaysOffUI,renderFormalUI};
 acts({occClear,countryPick,dayOffAddTap,occAddTap});
+serve('holidays-refresh',refreshHolidays);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

@@ -23,6 +23,11 @@
                             An error the served fn throws reaches the caller, as a direct call's would
      served(name)           whether anything is served under name (where the code asked `typeof f==='function'` before a call it
                             makes with other arguments, or to choose another way; the restructure S6p, 2026-11-27)
+     need(name, ...args)    as ask, but when nothing is served it throws (a ReferenceError), as the direct call did when the feature's
+                            file was missing: for a call with no `typeof` guard, so a missing file still stops the caller where it
+                            stopped before (start-up's startFailed, a Settings part, a swap); the restructure S6b, 2026-11-27
+     needFn(name)           for a name handed on as a value (`.then(f)`, `whenPulled(f)`): throws at once when nothing is served, as
+                            the bare name did, else gives a fn that asks the socket
    Every socket, who serves it and who asks, is listed in tests/bus.test.js (SOCKETS).
    This file reads no other file and is read by nothing at load: it can sit first in the list. */
 const BOARD=new Map();   // topic -> [fn], in pin order
@@ -35,5 +40,7 @@ const SOCKETS=new Map();   // name -> fn
 function serve(name,fn){if(typeof fn==='function')SOCKETS.set(name,fn)}
 function ask(name,...args){const fn=SOCKETS.get(name);return fn?fn(...args):undefined}
 function served(name){return SOCKETS.has(name)}
+function need(name,...args){const fn=SOCKETS.get(name);if(!fn)throw new ReferenceError(name+' is not served');return fn(...args)}
+function needFn(name){if(!SOCKETS.has(name))throw new ReferenceError(name+' is not served');return (...args)=>ask(name,...args)}
 const askFor=ask;   // the same, for a file that also uses app.js's own ask() (the server request): colpick.js
-export {on,heard,emit,serve,ask,askFor,served};
+export {on,heard,emit,serve,ask,askFor,served,need,needFn};

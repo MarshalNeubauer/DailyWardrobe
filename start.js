@@ -2,7 +2,7 @@
    subOpen, openAdd, pagesOn) is nav.js's since the restructure S3f (2026-11-26); this file keeps the tabs' and Add's handlers, so a tap
    on a tab during loading counts from where it always did (this file's place in the list)
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14.) */
-import {ask} from './bus.js';
+import {ask,need,needFn} from './bus.js';
 import {backOn} from './back.js';
 import {PAGES,openAdd,pageBack,setPageWant,setPagesOn,show,showWanted,subBack} from './nav.js';
 import {$,applyCustom,cleanDay,cleanRecord,key,setWardrobe,settings,takeSettings,todayDate} from './core.js';
@@ -30,12 +30,12 @@ function startFailed(e){console.warn(e);
     setWardrobe({items:(startRead.r||[]).map(x=>one(cleanRecord,x)).filter(Boolean)});
     setWardrobe({days:Object.fromEntries((startRead.d||[]).map(x=>one(cleanDay,x)).filter(Boolean).map(x=>[x.date,x]))})}
   if(!startRead)setWardrobe({items:[]});
-  else{afterScripts(()=>errNote(e,'Start-up'));
+  else{need('after-scripts',()=>errNote(e,'Start-up'));
     setTimeout(()=>toast('Something went wrong while the app was starting. Your wardrobe is safe on this phone: nothing was deleted. Close the app fully and open it again; if this keeps happening, tell us in Settings → About → Feedback.',15000),0)}
   setPagesOn(true);setPageWant(null);setWanted();   // (a failed start-up stays on Today, where its message is)
-  try{show('today')}catch(e2){console.warn(e2);if(startRead)afterScripts(()=>errNote(e2,'Start-up: Today'));startPlain()}
-  window.appReady=true;afterScripts(()=>storageDown(e));
-  if(startRead)afterScripts(()=>{try{safetyStart()}catch(x){console.warn(x)}})}   // (Add's unsaved cards come back, the error report goes)
+  try{show('today')}catch(e2){console.warn(e2);if(startRead)need('after-scripts',()=>errNote(e2,'Start-up: Today'));startPlain()}
+  window.appReady=true;need('after-scripts',()=>storageDown(e));
+  if(startRead)need('after-scripts',()=>{try{safetyStart()}catch(x){console.warn(x)}})}   // (Add's unsaved cards come back, the error report goes)
 /* Today couldn't be drawn: a plain card says so, with Try again */
 function startPlain(){const t=$('#today');if(!t)return;for(const s of PAGES){const el=$('#'+s);if(el)el.hidden=s!=='today'}
   t.innerHTML='<div class="mbox"><p><b>Today couldn’t be shown.</b></p><p class="shelp">Your wardrobe is safe on this phone: nothing was deleted.</p><div class="sactions"><button type="button" data-act="reloadTap">Try again</button></div></div>'}
@@ -51,23 +51,23 @@ async function startUp(){window.startBusy=true;
     if(setWanted())openSettings()}   // the gear tapped during loading (settings.js setOpenTap): Settings opens now, with the stored settings read
   catch(e){try{startFailed(e)}catch(e2){window.startBusy=false;throw e2}}}
 /* the four reads: items, days, settings and the plan snapshot */
-const loadStored=()=>connRestored.then(()=>Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('settings'),metaGet(PLAN_SNAP).catch(()=>null)]));
+const loadStored=()=>need('conn-restored').then(()=>Promise.all([need('tx','readonly',s=>s.getAll()),need('txs','days','readonly',s=>s.getAll()),need('meta-get','settings'),need('meta-get',need('plan-snap')).catch(()=>null)]));
 /* what was read goes into memory (startRead/startTook tell startFailed how far it got), then the day Today opens on and the plan snapshot */
-function applyStored(r,d,st,sn){startRead={r,d};const kept=cleanStored(r,d);setWardrobe({items:kept.items});d=kept.days;startTook=true;setWardrobe({days:Object.fromEntries((d||[]).map(x=>[x.date,x]))});setWardrobe({settings:takeSettings(settings,cleanStoredSettings(st))});setSetSeen(st&&st.updated||0);applyCustom(settings.custom);wxPreload();
-  if(key(sel)===key(todayDate())){const h=homeDay();setSel(new Date(h));setView({y:h.getFullYear(),m:h.getMonth()})}
-  planSnapUse(sn)}
+function applyStored(r,d,st,sn){startRead={r,d};const kept=need('stored-clean',r,d);setWardrobe({items:kept.items});d=kept.days;startTook=true;setWardrobe({days:Object.fromEntries((d||[]).map(x=>[x.date,x]))});setWardrobe({settings:takeSettings(settings,need('stored-settings-clean',st))});setSetSeen(st&&st.updated||0);applyCustom(settings.custom);need('wx-preload');
+  if(key(need('sel-day'))===key(todayDate())){const h=need('home-day');need('sel-set',new Date(h));need('view-set',{y:h.getFullYear(),m:h.getMonth()})}
+  need('plan-snap-use',sn)}
 /* started before Today is first drawn: the plan rules check and the one-time fix-ups of old records */
-function startChecks(){checkPlanRules().then(()=>whenPulled(checkArrivals)).then(()=>{if(!$('#today').hidden)refreshToday()});
-  afterScripts(()=>migrateVests());whenPulled(dropLearn);
-  whenPulled(()=>afterScripts(()=>kitFixOldImports().then(n=>{if(n&&!$('#today').hidden)refreshToday()})));
-  whenPulled(()=>kitSampleMigrate())}
+function startChecks(){need('plan-rules-check').then(()=>need('when-pulled',checkArrivals)).then(()=>{if(!$('#today').hidden)refreshToday()});
+  need('after-scripts',()=>migrateVests());need('when-pulled',needFn('learn-drop'));
+  need('when-pulled',()=>need('after-scripts',()=>kitFixOldImports().then(n=>{if(n&&!$('#today').hidden)refreshToday()})));
+  need('when-pulled',()=>kitSampleMigrate())}
 /* after Today is drawn: the setup, the weather and holidays, the kept photos (then appReady) and the photo fix-ups, the safety checks */
-function startJobs(){afterScripts(()=>setupStart());loadWeather();afterScripts(()=>refreshHolidays());
-  loadRenders().then(()=>/** @type {any} */(asmLive()?ask('asm-load'):0)).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>ask('asm-sync'));if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();
-    fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});
-    whenPulled(()=>texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));
-    whenPulled(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>upgradeCloseups()).then(()=>upgradePhotos()).then(()=>fixBlackBackdrops()).then(()=>smallPhotos()));
-    afterScripts(()=>safetyStart())})}
+function startJobs(){need('after-scripts',()=>setupStart());need('weather-load');need('after-scripts',()=>need('holidays-refresh'));
+  need('renders-load').then(()=>/** @type {any} */(need('asm-live')?ask('asm-load'):0)).then(()=>{need('after-dom',()=>{window.appReady=true});if(need('asm-live'))need('after-scripts',()=>ask('asm-sync'));if(Object.keys(need('renders')).length&&!$('#today').hidden)refreshToday();
+    need('item-backdrops-fix').then(n=>{if(n&&!$('#today').hidden)refreshToday()});
+    need('when-pulled',()=>need('tex-swatches').then(n=>{if(n&&!$('#today').hidden)refreshToday()}));
+    need('when-pulled',()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>upgradeCloseups()).then(()=>upgradePhotos()).then(()=>fixBlackBackdrops()).then(()=>need('small-photos')));
+    need('after-scripts',()=>safetyStart())})}
 
 /* (Today opens on the home day once the settings are read: today, or the next workday when today is a weekend or a day off; it opened on the
    calendar day, an empty "Saturday isn't a workday" page, while the Today tab went to Sunday's outfit (audit 2026-11-14))
@@ -77,8 +77,8 @@ function startJobs(){afterScripts(()=>setupStart());loadWeather();afterScripts((
 /* service worker: fresh files on every load, offline fallback (only over http/https) */
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(e=>console.warn('service worker not registered',e));
 /* sync brought new data: refresh the in-memory outfit history too */
-function onSyncedData(m){setWardrobe({days:Object.fromEntries((m.days||[]).map(d=>[d.date,d]))});const drawn=picsDrawn();if(m.settings){setWardrobe({settings:takeSettings(settings,m.settings)});setSetSeen(m.settings.updated||0);applyCustom(settings.custom)}dressSynced(m);loadWeather();if(typeof remindSoon==='function')remindSoon();   // (another device may have changed the coming outfits: the reminder lines follow, CR-4-09)
-  if(picsDrawn()!==drawn){picsSwitched();if(settingsOpen()){renderPicturesUI();ask('asm-ui')}}}   // "Drawing only" chosen on another device
+function onSyncedData(m){setWardrobe({days:Object.fromEntries((m.days||[]).map(d=>[d.date,d]))});const drawn=need('pics-drawn');if(m.settings){setWardrobe({settings:takeSettings(settings,m.settings)});setSetSeen(m.settings.updated||0);applyCustom(settings.custom)}dressSynced(m);need('weather-load');if(typeof remindSoon==='function')remindSoon();   // (another device may have changed the coming outfits: the reminder lines follow, CR-4-09)
+  if(need('pics-drawn')!==drawn){picsSwitched();if(settingsOpen()){renderPicturesUI();ask('asm-ui')}}}   // "Drawing only" chosen on another device
 /* the markup's handlers (act.js): Add's ‹, the Wardrobe's round +, and the Wardrobe and Insights tabs (data-page: the page shown) */
 function addBackTap(){subBack()}
 function wardAddTap(){openAdd()}

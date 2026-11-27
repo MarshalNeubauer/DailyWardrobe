@@ -4,6 +4,7 @@
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of today.js on 2026-11-17, Round C.) */
 /* the plan for a month. Every month from two months back shares one simulation (kept in the cache, so anything that clears
    the cache starts it again): another month only plans the days not planned yet. Earlier months are built on their own. */
+import {serve} from './bus.js';
 import {climate,dayRecs,isoKey,items,keyDate,settings,todayDate,weather} from './core.js';
 import {idsOf} from './days.js';
 import {metaPut,view} from './app.js';
@@ -60,3 +61,4 @@ Object.defineProperties(globalThis,{cache:{get:()=>cache,set:v=>{cache=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,planRuns,planSig,get planSnapUsed(){return planSnapUsed},get cache(){return cache},set cache(v){cache=v},planStartDay,planMonth,PLAN_SNAP,hasOutfit,planDirty,planFor};
 export {cache,planDirty,planRuns,planMonth,planStartDay,planTrim,planFor,hasOutfit,PLAN_SNAP,strHash,planSig,planSnapUse,planSnapUsed,outSig,planSnapSoon};
+serve('plan-for',planFor);serve('has-outfit',hasOutfit);serve('plan-dirty',planDirty);serve('plan-snap',()=>PLAN_SNAP);serve('plan-snap-use',planSnapUse);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

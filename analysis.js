@@ -10,6 +10,7 @@
    3. Shoes, belts, socks, tie clip, cufflinks and coats: few options and a direct effect, so each is simulated and
       ranked by that effect (problem days fixed, checks no longer marked down, first-choice shoes, pairs worn two days running).
    4. Formal, wedding, funeral and no-jacket days are dressed once each to see what is missing. */
+import {serve} from './bus.js';
 import {COLORS,COLS_BY,COOL,CUSTOM_COL,OCCASIONS,SHOP_PER_CAT,SHOP_TOP,SHOP_WEEKS,SLOTS,TROUSER_KINDS,colName,dayClimate,di,dressOut,inRotation,isHandPick,isWorkday,items,key,listAnd,nm,patBase,patName,patOf,planCol,prettyCols,primaryCol,setWardrobe,settings,sockPatterned,todayDate,trouserKind,wearsJacket,wearsTie} from './core.js';
 import {QWIN,SH,beltFit,clothesScore,colsOf,fam,finish,jacketGroup,leatherGroup,metalOf,outfit,pairScore,patInfo,patternScore,pcol,planSim,planStart,rateOutfit,shirtGroup,shirtLook,shoeSuits,sockBold,tieGroup,tieLook,withColRun} from './planner.js';
 const keyDate2=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
@@ -386,3 +387,4 @@ Object.assign(globalThis,{horizonKeys,CLASS_NAMES,groupLabel,TYPE_WORD,runAnalys
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,evalPlan,occasionCheck,shopList,shopShelved,horizonKeys,runAnalysis};
 export {horizonKeys,shopList,evalPlan,CLASS_NAMES,groupLabel,TYPE_WORD,shopShelved,runAnalysis,occasionCheck};
+serve('horizon-keys',horizonKeys);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
