@@ -13,11 +13,11 @@ const sLin=u=>{u/=255;return u>.04045?((u+.055)/1.055)**2.4:u/12.92},linS=u=>255
 /* the sRGB checks, run in Node and in each browser: every byte, bytes times white-balance gains (measureCloth, matchMean), and linear
    values 0..1 on a fine grid plus the curve's knee */
 const SRGB_CHECK=`(()=>{const bad=[];let n=0;const same=(a,b)=>a===b||(a!==a&&b!==b);
-  for(let u=0;u<=255;u++){n++;if(!same(srgbLin8(u),sLin(u)))bad.push('lin '+u)}
-  for(let u=0;u<=255;u++)for(const g of [.85,.9,1.03,1.1,1.18])for(const e of [1,1.37,2.2]){const v=Math.min(255,u*g)*1;n++;if(!same(srgbLin8(v),sLin(v)))bad.push('lin '+v);
-    const w=Math.min(1,sLin(v)*e);n++;if(!same(linSrgb8(w),linS(w)))bad.push('gam '+w)}
-  for(let k=0;k<=200000;k++){const w=k/200000;n++;if(!same(linSrgb8(w),linS(w)))bad.push('gam '+w)}
-  for(const w of [.0031308,.0031307999,.0031308001,0,1,1e-9]){n++;if(!same(linSrgb8(w),linS(w)))bad.push('gam '+w)}
+  for(let u=0;u<=255;u++){n++;if(!same(HOOK.srgbLin8(u),sLin(u)))bad.push('lin '+u)}
+  for(let u=0;u<=255;u++)for(const g of [.85,.9,1.03,1.1,1.18])for(const e of [1,1.37,2.2]){const v=Math.min(255,u*g)*1;n++;if(!same(HOOK.srgbLin8(v),sLin(v)))bad.push('lin '+v);
+    const w=Math.min(1,sLin(v)*e);n++;if(!same(HOOK.linSrgb8(w),linS(w)))bad.push('gam '+w)}
+  for(let k=0;k<=200000;k++){const w=k/200000;n++;if(!same(HOOK.linSrgb8(w),linS(w)))bad.push('gam '+w)}
+  for(const w of [.0031308,.0031307999,.0031308001,0,1,1e-9]){n++;if(!same(HOOK.linSrgb8(w),linS(w)))bad.push('gam '+w)}
   return {n,bad:bad.slice(0,5),nbad:bad.length}})()`;
 module.exports=async({ok,engines,ROOT})=>{
   /* ---- core.js and srgb.js in Node */

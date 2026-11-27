@@ -83,7 +83,7 @@ Object.assign(globalThis,{unit,temp,wxChip,renderWxLoc,setUnits,setLocation,useM
 on('settings-draw',()=>{renderWxLoc();if($('#cfg-units'))$('#cfg-units').value=unit()});
 on('settings-summaries',S=>{S.unit=unit});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,geoName};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,geoName,findCity,setLocation,setUnits,unit};
 export {unit,temp,wxChip,renderWxLoc,setUnits,setLocation,useMyLocation,geoName,findCity,loadWeather};
 /* the markup's handler (act.js): a place in the city search's results (data-i: its place in the list kept as _cities) */
 function cityPick(el){setLocation(window._cities[+el.dataset.i])}

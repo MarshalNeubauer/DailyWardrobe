@@ -87,4 +87,5 @@ const pickSub=(i,pool)=>{const t=x=>itemTitle(x)||nm(x),same=pool.filter(x=>t(x)
 /* the bridge (tests/bridge.test.js): history.js, a classic script, swaps, picks and draws the picker with these; the care, onorder,
    planner-rules and rotation-pause tests call slotPool, fitOf, fitTag and pickSub; a module imports them */
 Object.assign(globalThis,{keepOff,FOLLOW,beltless,BELT_STUCK,slotPool,handPool,handWhy,pocketOn,keepHand,bootsOff,suitPants,suggestClean,fitOf,fitTag,pickSub});
+globalThis.HOOK={__proto__:globalThis.HOOK||null,FOLLOW,fitOf,fitTag,pickSub,slotPool};
 export {keepOff,FOLLOW,beltless,BELT_STUCK,slotPool,handPool,handWhy,pocketOn,keepHand,bootsOff,suitPants,suggestClean,fitOf,fitTag,pickSub};

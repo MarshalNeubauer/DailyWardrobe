@@ -20,5 +20,5 @@ const needType=q=>!!q&&!!q.unread&&!q.manual&&!q.ai&&!q.busy&&!q.err&&!q.multiBu
 /* An ES module: the bridge (tests/bridge.test.js lists it). Every Add file, tagging.js, pattern-read.js, colpick.js, look.js,
    checklist.js, own-lists.js and kit.js read these as globals; the tests call cardOf, qAt, needType and cardReading. No top-level call */
 Object.assign(globalThis,{cardOf,qAt,qh,cardAt,cardIx,cardReading,needType});
-globalThis.HOOK={__proto__:globalThis.HOOK||null,cardReading,needType,qAt};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,cardReading,needType,qAt,cardIx,cardOf};
 export {cardOf,qAt,qh,cardAt,cardIx,cardReading,needType};

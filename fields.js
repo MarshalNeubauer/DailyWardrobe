@@ -32,4 +32,5 @@ function matTidy(it){const ml=matsFor(it.type);if(it.material&&!(ml&&(ml.include
 /* An ES module: the bridge (tests/bridge.test.js lists it). add-card.js, add-save.js, wardrobe.js, itemsheet.js and kit.js read these as
    globals; the tests call matRow. No top-level call */
 Object.assign(globalThis,{WARD_FIELDS,WARD_MAX,matLabel,matRow,fldRow,notesRow,matPicked,wardSaveFields,optLab,matTidy});
+globalThis.HOOK={__proto__:globalThis.HOOK||null,matRow};
 export {WARD_FIELDS,WARD_MAX,matLabel,matRow,fldRow,notesRow,matPicked,wardSaveFields,optLab,matTidy};

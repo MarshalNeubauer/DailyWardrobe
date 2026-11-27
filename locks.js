@@ -68,4 +68,5 @@ async function unlockClash(k,past){const o=planFor()[k];if(!o||(o.frozen&&!past)
    (history, settings, dress, care, setup, kit), lockIds (pack), lockUpcoming (today), careUnlock (add-more, care), unlockClash
    (history). The file has no top-level call, so the bridge is its last lines */
 Object.assign(globalThis,{lockIds,lockUpcoming,clearLocks,careUnlock,unlockClash});
+globalThis.HOOK={__proto__:globalThis.HOOK||null,clearLocks,lockIds,lockUpcoming};
 export {lockIds,lockUpcoming,clearLocks,careUnlock,unlockClash};

@@ -87,6 +87,6 @@ Object.assign(globalThis,{renderDressUI,newSuitVest,dressSummary,dressWhyUnused,
 on('settings-draw',()=>renderDressUI());
 on('settings-summaries',S=>{S.dress=dressSummary});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,get vestMigrating(){return vestMigrating}};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,get vestMigrating(){return vestMigrating},dressSynced,migrateVests,newSuitVest};
 export {renderDressUI,newSuitVest,dressSummary,dressWhyUnused,vestMigrating,migrateVests,dressNewItem,dressSynced};
 acts({dressSwTap});

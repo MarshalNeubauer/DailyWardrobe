@@ -39,6 +39,8 @@
 // HOOK.name a test uses is there, the app never reads HOOK. The tests' uses (testUses) count strings too: the code inside a string
 // (page.evaluate('…'), a SETUP template), and a sentence's words (safe side; not an ok() message). `--hook` lists the names the
 // tests use through HOOK alone (they can come off BRIDGE) and the files still using the rest as globals; `--to-hook <file>` rewrites one.
+// Since S6t0 (2026-11-27) every bridged name a test reads is on its owner's HOOK too, `--to-hook` rewrites those reads as well, and
+// `--reads` lists the reads left per file; the check that fails on one (BARE_READS_CHECK) is switched on by the last group, S6t4.
 const fs=require('fs'),path=require('path');
 const acorn=require('acorn'),escope=require('eslint-scope');
 const modscope=require('./modscope');
@@ -420,14 +422,36 @@ const SEARCHED=new Set(['includes','indexOf','lastIndexOf','startsWith','endsWit
 const RUNS_CODE=new Set(['evaluate','evaluateHandle','$eval','$$eval','addInitScript','waitForFunction','runInContext','runInNewContext','runInThisContext','Script','Function','eval','compileFunction']);
 const CALL_LABEL=/^\s*[A-Za-z_$][\w$]*\((?:[^()'"`]|'[^']*'|"[^"]*")*\)\s*$/;
 const calleeName=c=>c.type==='Identifier'?c.name:c.type==='MemberExpression'&&!c.computed&&c.property.type==='Identifier'?c.property.name:null;
+/* S6t0 (2026-11-27): code a test hands to Node's vm (vm.runInContext('planFor(d)', ctx), new vm.Script(…)) runs in a context where the
+   app files ran as classic scripts (tests/appsrc.js): their names are that context's own, with no bridge involved, so it is no use of
+   a bridged name and the rewrite leaves it, as a string joined after appSrc(…) */
+const VM_RUN=new Set(['runInContext','runInNewContext','runInThisContext','Script','compileFunction']);
+const vmArgs=n=>(n.type==='CallExpression'||n.type==='NewExpression')&&n.callee&&VM_RUN.has(calleeName(n.callee))?n.arguments:null;
+/* S6t0: the names the platform gives (the browser's, a worker's, Node's, the language's): a bare one in a test is the platform's own
+   (`open`, `name`, `status`, `fetch`), never rewritten to HOOK even if a page module ever bridges the same name */
+let PLATFORM_ALL=null;
+const platformAll=()=>{if(!PLATFORM_ALL){PLATFORM_ALL=new Set();try{const g=require('globals');for(const k of ['browser','worker','node','builtin','nodeBuiltin','commonjs'])for(const n of Object.keys(g[k]||{}))PLATFORM_ALL.add(n)}catch(e){}}return PLATFORM_ALL};
 /* the string nodes of a parsed file that are not code by those two rules (searched for, or a call's label outside code) */
 function notCodeStrings(ast){const out=new Set();
   const str=n=>n&&(n.type==='Literal'&&typeof n.value==='string'||n.type==='TemplateLiteral');
   const walk=(n,ev)=>{if(!n||typeof n.type!=='string')return;
+    // (S6t0: a string compared with another is data, an expected value: `hits.join()==='c.key,esc(k)'`)
+    if(n.type==='BinaryExpression'&&/^[!=]==?$/.test(n.operator))for(const s of [n.left,n.right])if(str(s))out.add(s);
     if((n.type==='CallExpression'||n.type==='NewExpression')&&n.callee){const c=calleeName(n.callee);
       if(n.callee.type==='MemberExpression'&&SEARCHED.has(c)&&str(n.arguments[0]))out.add(n.arguments[0]);
       if(RUNS_CODE.has(c))ev=true;
       else if(!ev&&n.callee.type==='Identifier')for(const a of n.arguments)if(a.type==='Literal'&&typeof a.value==='string'&&CALL_LABEL.test(a.value))out.add(a)}
+    for(const k in n){if(k==='range'||k==='loc')continue;const v=n[k];if(Array.isArray(v))v.forEach(x=>walk(x,ev));else if(v&&typeof v.type==='string')walk(v,ev)}};
+  walk(ast,false);return out}
+/* S6t0 (2026-11-27): the string nodes that may be a piece of code that doesn't parse alone: inside what is handed to a call that runs
+   code (page.evaluate('a('+b+')'), addInitScript, waitForFunction …), joined with `+` or not. A string that doesn't parse anywhere else
+   is words (a log line, a message, a key, markup), not code: no use of a page name, and nothing for a person to reword */
+function joinedStrings(ast){const out=new Set();
+  const str=n=>n&&(n.type==='Literal'&&typeof n.value==='string'||n.type==='TemplateLiteral');
+  const walk=(n,ev)=>{if(!n||typeof n.type!=='string')return;
+    if(ev&&str(n))out.add(n);
+    if((n.type==='CallExpression'||n.type==='NewExpression')&&n.callee&&RUNS_CODE.has(calleeName(n.callee))){walk(n.callee,ev);for(const a of n.arguments)walk(a,true);return}
+    if(ev&&/Function/.test(n.type))ev=false;   // (a function handed to the page is code of the file itself)
     for(const k in n){if(k==='range'||k==='loc')continue;const v=n[k];if(Array.isArray(v))v.forEach(x=>walk(x,ev));else if(v&&typeof v.type==='string')walk(v,ev)}};
   walk(ast,false);return out}
 /* A test's or tool's uses of page names (T2, 2026-11-25): {global: Set (bare or on window/self/globalThis), hook: Set (`HOOK.name`),
@@ -437,10 +461,10 @@ function notCodeStrings(ast){const out=new Set();
    string joined after appSrc(…)/asScript(…): the vm tests run that in the files' own scope, where no bridge is involved. */
 function testUses(src,words){
   const out={global:new Set(),hook:new Set(),globalWrites:new Set(),hookWrites:new Set()};
-  const take=(text,code)=>{if(!code&&/^\s*[A-Za-z_$][\w$]*\s*$/.test(text))return;   // (one word alone is a key: metaGet('shop'); no test evaluates one)
+  const take=(text,code,joined=true)=>{if(!code&&/^\s*[A-Za-z_$][\w$]*\s*$/.test(text))return;   // (one word alone is a key: metaGet('shop'); no test evaluates one)
     const f=freeNames(text,false);
     if(f){for(const n of f)if(words.has(n))out.global.add(n);for(const [n] of writesOf(text,false)||[])if(words.has(n))out.globalWrites.add(n)}
-    else if(!code)for(const m of markup(text).matchAll(/(?<![\w$.#-])[A-Za-z_$][\w$]*(?![\w$-])/g))if(words.has(m[0]))out.global.add(m[0]);   // (not a CSS name: #shop-btn)
+    else if(!code&&joined)for(const m of markup(text).matchAll(/(?<![\w$.#-])[A-Za-z_$][\w$]*(?![\w$-])/g))if(words.has(m[0]))out.global.add(m[0]);   // (not a CSS name: #shop-btn)
     for(const m of text.matchAll(ON_GLOBAL))if(words.has(m[1]||m[2]))out.global.add(m[1]||m[2])};
   take(src,true);
   let ast=null,cm=[];const o={ecmaVersion:'latest',ranges:true,allowHashBang:true,onComment:(b,t,a,z)=>cm.push([a,z])};
@@ -456,6 +480,7 @@ function testUses(src,words){
   const walk=n=>{if(!n||typeof n.type!=='string')return;
     // (an ok() message is words for a person: tests/run.js ok(cond, message))
     if(n.type==='CallExpression'&&n.callee.type==='Identifier'&&n.callee.name==='ok'&&n.arguments[1])prose(n.arguments[1]);
+    {const va=vmArgs(n);if(va)va.forEach(prose)}   // (code run in a vm context: the files' own scope, S6t0)
     if(n.type==='BinaryExpression'&&n.operator==='+'){const l=left(n);
       if(l&&l.type==='CallExpression'&&l.callee.type==='Identifier'&&/^(?:appSrc|asScript)$/.test(l.callee.name)){let e=n;while(e.type==='BinaryExpression'&&e.operator==='+'){lexical.add(e.right);e=e.left}}}
     if(n.type==='Literal'&&typeof n.value==='string')strs.push([n,n.value]);
@@ -463,9 +488,10 @@ function testUses(src,words){
     for(const k in n){if(k==='range'||k==='loc')continue;const v=n[k];if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v.type==='string')walk(v)}};
   walk(ast);
   for(const n of notCodeStrings(ast))lexical.add(n);
+  const J=joinedStrings(ast);
   for(const [n,text] of strs){if(lexical.has(n)||text.length<2||notCode(text))continue;
     let any=false;for(const m of text.matchAll(/[A-Za-z_$][\w$]*/g))if(words.has(m[0])){any=true;break}
-    if(any)take(text,false)}
+    if(any)take(text,false,J.has(n))}
   return out;
 }
 /* T2 phase 2's rewrite of one test or tool file: each global use of a name in `names` (a bare name, `window.name`, in the code and in
@@ -474,6 +500,7 @@ function testUses(src,words){
    write `'name' in HOOK`), a string with an escape in it, a string that isn't code (a sentence: reword it, or leave it, the name then
    stays on BRIDGE). `node tests/bridge.test.js --to-hook <file> [--write]` runs it with the names only the tests use. */
 function toHook(src,names,writes=new Set(),noSet=new Set()){
+  {const P=platformAll();if([...names].some(n=>P.has(n)))names=new Set([...names].filter(n=>!P.has(n)))}   // (the platform's own names stay bare, S6t0)
   const edits=[],manual=[],any=w=>names.has(w)||writes.has(w)||noSet.has(w);
   const line=at=>src.slice(0,at).split('\n').length;
   const code=(text,base,top)=>{let ast;const o={ecmaVersion:'latest',ranges:true,allowHashBang:true};
@@ -485,12 +512,14 @@ function toHook(src,names,writes=new Set(),noSet=new Set()){
       if(n.type==='Property'&&n.shorthand&&n.value.type==='AssignmentPattern'&&n.value.left.type==='Identifier')short.add(n.value.left);   // ({x=1}=o)
       if(n.type==='UnaryExpression'&&n.operator==='typeof'&&n.argument.type==='Identifier')tyof.add(n.argument);
       if(top&&n.type==='CallExpression'&&n.callee.type==='Identifier'&&n.callee.name==='ok'&&n.arguments[1])mark(n.arguments[1]);
+      if(top){const va=vmArgs(n);if(va)va.forEach(mark)}   // (code run in a vm context: the files' own scope, S6t0)
       if(top&&n.type==='BinaryExpression'&&n.operator==='+'){let l=n;while(l.type==='BinaryExpression'&&l.operator==='+')l=l.left;
         if(l.type==='CallExpression'&&l.callee.type==='Identifier'&&/^(?:appSrc|asScript)$/.test(l.callee.name)){let e=n;while(e.type==='BinaryExpression'&&e.operator==='+'){mark(e.right);e=e.left}}}
       if(top&&(n.type==='Literal'&&typeof n.value==='string'||n.type==='TemplateLiteral'))strs.push(n);
       for(const k in n){if(k==='range'||k==='loc')continue;const v=n[k];if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v.type==='string')walk(v)}};
     walk(ast);
     if(top)for(const n of notCodeStrings(ast))mark(n);
+    const joined=top?joinedStrings(ast):null;
     const g=escope.analyze(ast,{ecmaVersion:2024,sourceType:ast.sourceType}).globalScope,own=new Set(g.variables.filter(v=>v.defs.length).map(v=>v.name));
     for(const r of g.through){const id=r.identifier,n=id.name;if(own.has(n))continue;
       // (a name the tests assign, S1a: only where it is assigned, `x=`, `x+=`, `x++`, a destructuring target; a read, `x.y=` and `x[k]=`
@@ -504,9 +533,11 @@ function toHook(src,names,writes=new Set(),noSet=new Set()){
       const set=()=>ASSIGN_AFTER.test(text.slice(m.index+m[0].length));
       if(names.has(n)||writes.has(n)&&set())edits.push([base+m.index,base+m.index+m[0].length,`HOOK.${n}`]);
       else if(noSet.has(n)&&set())manual.push(`line ${line(base+m.index)}: assigns ${m[0]}, which has no HOOK setter (not a \`let\`: replace the function another way)`)}
-    return {strs,skip}};
+    return {strs,skip,joined}};
   const t=code(src,0,true);if(!t)return {out:src,n:0,manual:['the file does not parse']};
   for(const s of t.strs){if(t.skip.has(s))continue;let text,base;
+    const words=s.type==='Literal'?s.value:s.quasis.map(q=>q.value.cooked==null?q.value.raw:q.value.cooked).join('0');
+    if(!t.joined.has(s)&&freeNames(words,false)==null)continue;   // (words, not code: neither joined to code nor handed to the page, S6t0)
     if(s.type==='Literal'){const raw=src.slice(s.range[0]+1,s.range[1]-1);if(!/[A-Za-z_$]/.test(raw))continue;
       let hit=false;for(const m of raw.matchAll(/[A-Za-z_$][\w$]*/g))if(any(m[0])){hit=true;break}if(!hit)continue;
       if(raw!==s.value&&/\t/.test(s.value)&&freeNames(s.value,false)==null)continue;   // (a tab-separated record: data)
@@ -557,7 +588,25 @@ function readers(ROOT,m){
 function writeSets(r,hk){const writes=new Set(),noSet=new Set();
   for(const l of Object.values(hk.hooked))for(const [n,x] of l)if(x.set&&r[n]&&!OLD_BUILD.has(n))writes.add(n);
   for(const n of Object.keys(r))if(r[n].testWrites.length&&!writes.has(n)&&!OLD_BUILD.has(n))noSet.add(n);
-  return {names:new Set(hk.testOnly.filter(n=>!OLD_BUILD.has(n))),writes,noSet}}
+  /* S6t0 (2026-11-27): and every bridged name a test reads as a global whose owner puts it on HOOK (a function or a constant as
+     itself, a `let` behind a getter, which reads the module's variable of the moment), not only the names the tests alone use, so
+     no test reads the bridge and it can come down (restructure step 6). The platform's names stay bare (toHook) */
+  const P=platformAll(),names=new Set(hk.testOnly.filter(n=>!OLD_BUILD.has(n)));
+  for(const l of Object.values(hk.hooked))for(const [n] of l)if(r[n]&&r[n].tests.length&&!OLD_BUILD.has(n)&&!P.has(n))names.add(n);
+  return {names,writes,noSet}}
+/* S6t0: per test or tool file, the bridged names it still reads as globals (bare, window.name, in its code or the code of its strings;
+   a word of a sentence counts, the safe side: reword it). Allowed: the names a test also uses on an older build, which has no HOOK,
+   in the files that run one (READS_KEPT), and the platform's own names. {file: [names]} */
+function bareReads(r,allowed=READS_KEPT){const P=platformAll(),out={};
+  for(const [n,x] of Object.entries(r))if(!P.has(n))for(const f of x.tests)if(!(allowed[f]||[]).includes(n))(out[f]=out[f]||[]).push(n);
+  for(const l of Object.values(out))l.sort();
+  return out}
+/* S6t0: the check that no test reads a bridged name as a global. Off until the last of the four groups (S6t4, C:\code\cr-2026-11-16\
+   STEP6T.md) has rewritten its files: S6t4 sets it to true, and from then on a bare read of a bridged name fails like a write (S1f) */
+const BARE_READS_CHECK=false;
+/* the files that read a bridged name on an older build (tests/replay R.old(sha), which has no HOOK), and the names: they stay bare
+   there. The groups fill this in for the uses that really run on an old build; every other use is rewritten */
+const READS_KEPT={};
 /* the names a test also uses on an older build, which has no HOOK (T2 phase 3): they stay globals there, so --to-hook leaves them */
 const OLD_BUILD=new Set(['syncing','kitEdited','asmCmMf','asmCmCodeSig','asmCmSig','asmCmSrcSig']);
 /* of those, the ones a test assigns there, and the file (S1f): garmentpaint.test.js gives origin/main's page a HOOK of its own whose
@@ -736,8 +785,8 @@ module.exports=async({ok,ROOT})=>{
     h=P('globalThis.HOOK={f};globalThis.HOOK={__proto__:globalThis.HOOK||null,get a(){return b},[k]:1,set a(v){a=v+1}};');
     ok(h.count===2&&h.odd.length===4,'a HOOK statement without its __proto__ first, a getter giving back another name, a computed key or a setter that doesn\'t plainly assign is named');
     const u=testUses("await p.evaluate(()=>{HOOK.a=1;b();window.c=2});p.evaluate('d(HOOK.e)');log('f is gone');ok(1,`h ${1} too`);vm.runInContext(appSrc(R,'x.js')+';this.K={g}',ctx);",new Set('abcdefgh'));
-    ok([...u.global].sort().join()==='b,c,d,f'&&[...u.hook].sort().join()==='a,e'&&[...u.hookWrites].join()==='a'&&[...u.globalWrites].join()==='c',
-      'a test\'s uses: bare names and window.name in its code and in the code of its strings (a word of a sentence counts, the safe side, but not an ok() message) are global, HOOK.name is the access point, a string joined after appSrc is the files\' own scope')
+    ok([...u.global].sort().join()==='b,c,d'&&[...u.hook].sort().join()==='a,e'&&[...u.hookWrites].join()==='a'&&[...u.globalWrites].join()==='c',
+      'a test\'s uses: bare names and window.name in its code and in the code of its strings are global (a sentence, an ok() message, is not: S6t0), HOOK.name is the access point, a string joined after appSrc is the files\' own scope')
     /* strings that are not code (T2 phase 3): each is no use, and the rewrite leaves it as it is */
     const W=new Set(['shop','rd','setOpenTap','tieScore','a']);
     const NOT={'a file name':"src('shop.js');p.route('**/shop.js',r=>r.abort());",'an id':"p.click('#'+'rd-camo');tapAt('shop-backdrop');S('lock-shop');",
@@ -778,6 +827,33 @@ module.exports=async({ok,ROOT})=>{
     ok(['items','dayRecs','TODAY_OVERRIDE','cache','sel','view','weather','monthOpen','editing'].every(n=>w2.writes.has(n))&&[...w2.noSet].every(n=>!w2.writes.has(n)),
       `every let the tests assign has a HOOK setter, so --to-hook can rewrite it (${w2.writes.size} names; without one: ${[...w2.noSet].sort().join(', ')||'none'})`);
     ok([...OLD_BUILD].every(n=>!w2.writes.has(n)&&!w2.names.has(n)&&!w2.noSet.has(n)),`--to-hook leaves the names a test also uses on an older build, which has no HOOK (${[...OLD_BUILD].join(', ')})`)}
+  /* S6t0 (2026-11-27): --to-hook rewrites a bridged name a test reads (on its owner's HOOK) wherever it is read, and leaves call labels,
+     strings that aren't code, property names, a local of the same name, code run in a vm context and the platform's own names */
+  {const Wr=new Set(['items','planFor','cache','open','name']),T=s=>toHook(s,Wr);
+    const READS=[
+      ['a bare read and a call','f(items);const d=planFor(k);','f(HOOK.items);const d=HOOK.planFor(k);'],
+      ['in a function handed to the page','await p.evaluate(()=>items.length+planFor(d).ids.length);','await p.evaluate(()=>HOOK.items.length+HOOK.planFor(d).ids.length);'],
+      ['in the code of a string',"p.evaluate('planFor(d)');p.waitForFunction(`items.length>${n}`);","p.evaluate('HOOK.planFor(d)');p.waitForFunction(`HOOK.items.length>${n}`);"],
+      ['window.name and a shorthand property','const x=window.items;g({items});','const x=HOOK.items;g({items:HOOK.items});'],
+      ['a write as well as a read','items=[];items.push(1);','HOOK.items=[];HOOK.items.push(1);'],
+    ];
+    const LEAVE=[
+      ['a call\'s label',"await step('one tap',()=>tap('#b'),'planFor()');"],
+      ['strings that are not code',"p.click('#items');metaGet('cache');src('items.js');ok(1,`planFor(d) ${1}`);"],
+      ['property names','o.items;o?.planFor(d);const q={items:1,planFor(){}};class C{items(){}}x["cache"];'],
+      ['a local of the same name','const items=[];items.push(1);function g(planFor){return planFor()}for(const cache of l)cache.x;'],
+      ['code run in a vm context',"vm.runInContext('planFor(d)+items.length',ctx);new vm.Script(`cache=${1}`);vm.runInContext(appSrc(R,'a.js')+';items',ctx);"],
+      ['the platform\'s own names',"open('x');const t=name;window.open('y');p.evaluate('name+open()');"],
+    ];
+    for(const [what,src,want] of READS){const r=T(src);ok(r.out===want&&!r.manual.length,`--to-hook, a bridged name a test reads: ${what}`+(r.out===want?'':` (got ${r.out})`)+(r.manual.length?` (left: ${r.manual})`:''))}
+    for(const [what,src] of LEAVE){const r=T(src),u=testUses(src,Wr);
+      ok(r.out===src&&!r.manual.length&&![...u.global].some(n=>!platformAll().has(n)),`--to-hook and the reads check leave ${what}`+(r.out===src?'':` (got ${r.out})`)+([...u.global].some(n=>!platformAll().has(n))?` (counted: ${[...u.global]})`:'')+(r.manual.length?` (left: ${r.manual})`:''))}
+    const se="log('the items are drawn');ok(hits.join()==='c.key,planFor(k)','x');",sj="p.evaluate('items.filter(x=>'+c+')');",s1=T(se),s2=T(sj),u1=testUses(se,Wr),u2=testUses(sj,Wr);
+    ok(s1.out===se&&!s1.manual.length&&!u1.global.size&&s2.out===sj&&s2.manual.length===1&&/isn't code uses items/.test(s2.manual[0])&&[...u2.global].join()==='items',
+      'a sentence, and a string compared with another (an expected value), are words: no use, left alone; a piece of code that doesn\'t parse alone, joined with + to the rest, still counts and is named for a person'+(s1.manual.length||s2.manual.length!==1?` (left: ${[...s1.manual,...s2.manual].join('; ')})`:''));
+    const pl=testUses("p.evaluate(()=>items.length);log(`x`)",Wr),br2=bareReads({items:{tests:['tests/a.test.js','tests/old.test.js']},open:{tests:['tests/a.test.js']}},{'tests/old.test.js':['items']});
+    ok([...pl.global].join()==='items'&&JSON.stringify(br2)==='{"tests/a.test.js":["items"]}',
+      'the reads check names a test reading a bridged name as a global (a planted read), but not the platform\'s names or an old build\'s read listed in READS_KEPT')}
   const rs=readers(ROOT,m),hk=hookCheck(ROOT,m,rs);
   ok(!hk.problems.length,'every HOOK statement is in a module, once, after its bridge, with names of the file\'s own (a `let` behind a getter, a setter for what a test assigns), none twice; no test uses a name that isn\'t on HOOK through it; the app never reads HOOK'+(hk.problems.length?': '+hk.problems.join('; '):''));
   ok(!hk.missing.length,`every name only the tests use is on its file's HOOK (${hk.testOnly.length} names)`+(hk.missing.length?': add '+hk.missing.join('; '):''));
@@ -786,10 +862,16 @@ module.exports=async({ok,ROOT})=>{
      one exception: a name a test also writes on an older build, which has no HOOK (OLD_BUILD_WRITES) */
   const tw=Object.entries(rs).flatMap(([n,x])=>x.testWrites.filter(f=>!(OLD_BUILD_WRITES[n]||[]).includes(f)).map(f=>`${f} assigns ${n}`));
   ok(!tw.length,'no test or tool assigns a bridged name (it writes HOOK.name: node tests/bridge.test.js --to-hook <file> rewrites it)'+(tw.length?': '+tw.join('; '):''));
+  /* S6t0 (2026-11-27), before the bridge comes down: no test or tool reads a bridged name as a global either (it reads HOOK.name).
+     Off until S6t4 switches it on (BARE_READS_CHECK); until then it says how many reads are left */
+  {const br3=bareReads(rs),files=Object.keys(br3),pairs=Object.values(br3).reduce((a,l)=>a+l.length,0);
+    if(BARE_READS_CHECK)ok(!files.length,'no test or tool reads a bridged name as a global (it reads HOOK.name: node tests/bridge.test.js --to-hook <file> rewrites it)'+(files.length?': '+files.map(f=>`${f} reads ${br3[f].join(', ')}`).join('; '):''));
+    else ok(true,`(the reads check is off until S6t4: ${files.length} test and tool files still read ${pairs} bridged name${pairs===1?'':'s'} as globals, file by file; \`node tests/bridge.test.js --reads\` lists them)`)}
   ok(true,`${hk.ready.length} of the ${hk.testOnly.length} names only the tests use are used through HOOK alone and can come off BRIDGE (T2 phase 3; \`node tests/bridge.test.js --hook\` lists them and the tests still using the rest as globals)`);
 };
 module.exports.measure=measure;module.exports.compare=compare;module.exports.grew=grew;module.exports.writesOf=writesOf;
 module.exports.readers=readers;module.exports.testUses=testUses;module.exports.toHook=toHook;module.exports.hookCheck=hookCheck;module.exports.writeSets=writeSets;
+module.exports.bareReads=bareReads;
 
 /* `node tests/bridge.test.js --plan file.js`: what a page script would have to bridge if it became a module today. For each of its
    top-level names: the page scripts that use it (a read, a call, a `typeof` guard), the tests and tools that do, and who assigns it.
@@ -829,6 +911,11 @@ if(require.main===module){
     const w=writeSets(r,hk),x=toHook(fs.readFileSync(p,'utf8'),w.names,w.writes,w.noSet);
     if(process.argv.includes('--write'))fs.writeFileSync(p,x.out);
     console.log(`${f}: ${x.n} use${x.n===1?'':'s'} ${process.argv.includes('--write')?'rewritten':'to rewrite (--write writes them)'} to HOOK.name`+(x.manual.length?'\nLeft for you:\n  '+x.manual.join('\n  '):''));
+    process.exit(0)}
+  /* `node tests/bridge.test.js --reads [--json]` (S6t0): per test or tool file, the bridged names it still reads as globals */
+  if(process.argv.includes('--reads')){const m=measure(ROOT),r=readers(ROOT,m),b=bareReads(r),l=Object.entries(b).sort((x,y)=>x[0]<y[0]?-1:1);
+    if(process.argv.includes('--json')){console.log(JSON.stringify(b,null,1));process.exit(0)}
+    console.log(`${l.length} test and tool files read ${l.reduce((a,[,n])=>a+n.length,0)} bridged names as globals (file-name pairs):`);for(const [f,n] of l)console.log(`  ${f}: ${n.join(', ')}`);
     process.exit(0)}
   if(process.argv.includes('--hook')){const m=measure(ROOT),r=readers(ROOT,m),hk=hookCheck(ROOT,m,r),files={};
     for(const n of hk.testOnly)for(const f of r[n].tests)(files[f]=files[f]||[]).push(n);
