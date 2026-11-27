@@ -41,11 +41,11 @@ module.exports=async({ok,chromium,url,settle})=>{
   const bz=await p.evaluate(()=>{HOOK.sel=new Date(2026,10,19);renderToday();const t=[...document.querySelectorAll('.below .tile small')].map(x=>x.textContent).join();
     const o=planFor()[key(sel)];return {t,blazer:!o.suitDay}});
   ok(bz.blazer&&bz.t.startsWith('Pants'),'on a blazer day the pants are a tile');
-  const nt=await p.evaluate(()=>{const o={...planFor()[key(sel)],tie:null,clip:null,watch:null};const d=document.createElement('div');d.innerHTML=figureSvg(o,'x-');
+  const nt=await p.evaluate(()=>{const o={...planFor()[key(sel)],tie:null,clip:null,watch:null};const d=document.createElement('div');d.innerHTML=HOOK.figureSvg(o,'x-');
     return {tie:!!d.querySelector('use[href="#x-bladeP"]'),clip:!!d.querySelector('.fig-clip'),watch:!!d.querySelector('.fig-watch')}});
   ok(!nt.tie&&!nt.clip,'without a tie or clip, neither is drawn');
   // two figures don't share ids
-  const ids=await p.evaluate(()=>{const o=planFor()[key(sel)],a=figureSvg(o,'a-'),b=figureSvg(o,'b-'),A=new Set([...a.matchAll(/id="([^"]+)"/g)].map(m=>m[1]));return [...b.matchAll(/id="([^"]+)"/g)].some(m=>A.has(m[1]))});
+  const ids=await p.evaluate(()=>{const o=planFor()[key(sel)],a=HOOK.figureSvg(o,'a-'),b=HOOK.figureSvg(o,'b-'),A=new Set([...a.matchAll(/id="([^"]+)"/g)].map(m=>m[1]));return [...b.matchAll(/id="([^"]+)"/g)].some(m=>A.has(m[1]))});
   ok(!ids,'two figures on a page use distinct ids');
   ok(await p.evaluate(()=>!document.querySelector('.figmode:not(.small)')&&typeof renderMannequinCanvas==='undefined'),'the full-body mannequin is gone (no view toggle)');
   ok(await p.evaluate(()=>document.documentElement.scrollWidth<=390),'no horizontal scroll on a phone');

@@ -61,7 +61,7 @@ module.exports=async({ok,chromium,url,settle,ROOT})=>{
     ok(why.pts===0&&/combat boots go with camouflage pants/.test(why.why)&&why.hard.includes('Shoes'),`with chinos: "${why.why}"`);
     // the drawing: in the thumbnail's box, the sole in the second colour, else the upper darker, no text
     const d=await p.evaluate(()=>{const host=document.createElement('div');host.style.cssText='position:fixed;left:0;top:0;width:260px';document.body.appendChild(host);
-      const mk=x=>{host.innerHTML=itemThumb({id:'t',type:'shoes',shoeStyle:'combat',primaryColor:'coyote',leather:'suede',...x});const svg=host.querySelector('svg'),r=svg.getBoundingClientRect(),b=svg.getBBox();return {svg:svg.outerHTML,b:[b.x,b.y,b.x+b.width,b.y+b.height]}};
+      const mk=x=>{host.innerHTML=HOOK.itemThumb({id:'t',type:'shoes',shoeStyle:'combat',primaryColor:'coyote',leather:'suede',...x});const svg=host.querySelector('svg'),r=svg.getBoundingClientRect(),b=svg.getBBox();return {svg:svg.outerHTML,b:[b.x,b.y,b.x+b.width,b.y+b.height]}};
       const plain=mk({}),black=mk({secondaryColor:'black'});host.remove();
       return {b:plain.b,text:/<text/i.test(plain.svg),soleDef:plain.svg.includes(mix('#8f6a3c','#000',HOOK.CB_SOLE_DARK)),soleBlack:black.svg.includes(COLORS.black),hooks:HOOK.SHOE_CB.fhooks.length,grom:HOOK.SHOE_CB.fgrom.length,laces:HOOK.SHOE_CB.flacel.split('M').length-1,len:plain.svg.length}});
     ok(d.b[0]>=0&&d.b[1]>=0&&d.b[2]<=100&&d.b[3]<=100,`the pair stays in the 100 box (${d.b.map(v=>v.toFixed(1))})`);

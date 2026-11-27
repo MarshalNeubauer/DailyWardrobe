@@ -49,7 +49,7 @@ const motif=async({ok,chromium,url,ROOT})=>{
       const s=HOOK.motifFromSpec(spec,{tex:tx,full:ph,box:{x:340,y:150,w:240,h:550},type:'tie'}),noBox=HOOK.motifFromSpec(spec,{tex:tx,full:ph,type:'tie'});
       const mm=s.motif,lab={ground:L(mm.ground),purple:L(mm.figs[0].cols[0]),navy:L(mm.figs[0].cols[1]),white:L(mm.figs[1].cols[0]),centre:L(mm.figs[1].centre)};
       const it={id:'t1',type:'tie',primaryColor:'purple',secondaryColor:'navy',tertiaryColor:'white',pattern:'foulard',sett:s};
-      const def=fabricDef('q',it,'tie'),fig=fabricDef('q',it,'tie','fig');
+      const def=HOOK.fabricDef('q',it,'tie'),fig=HOOK.fabricDef('q',it,'tie','fig');
       const o={suitDay:true,top:{id:'s',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:{id:'h',type:'shirt',primaryColor:'white',pattern:'solid'},tie:it};
       const key1=comboKey(o),key2=comboKey({...o,tie:{...it,sett:{...s,motif:{...mm,ground:'#000000'}}}});
       return {s,lab,noBoxGround:L(noBox.motif.ground)[0],def,fig,key1,key2,sum:settSummary(s)}},spec);
@@ -69,7 +69,7 @@ const motif=async({ok,chromium,url,ROOT})=>{
 
     // an older band reading of the same tie is ignored: no plaid drawn
     const old=await p.evaluate(()=>{const it={id:'t2',type:'tie',primaryColor:'purple',secondaryColor:'navy',tertiaryColor:'white',pattern:'foulard',sett:{v:2,a:-45,bands:[['#6c5584',.5],['#463a64',.5]],cross:null,cr:3,tr:4,src:'claude+pixels'}};
-      HOOK.items=[it];return {use:usableSett(it),def:fabricDef('q',it,'tie'),sum:patSummary(it),stripe:usableSett({...it,pattern:'stripe'})}});
+      HOOK.items=[it];return {use:usableSett(it),def:HOOK.fabricDef('q',it,'tie'),sum:patSummary(it),stripe:usableSett({...it,pattern:'stripe'})}});
     ok(old.use===null&&!old.def.includes('#6c5584')&&/older reading drew these foulard figures as stripes/.test(old.sum)&&old.stripe,'an older band reading of a foulard is ignored (drawn generic, not described), and the editor says to read it again; a striped tie keeps its bands');
 
     // the Add card: the tagger says foulard; once the close-up is in, Claude reads the motif
@@ -133,8 +133,8 @@ const figuremotif=async({ok,chromium,url,ROOT})=>{
     await p.goto(url);await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t')});await p.reload();await p.waitForFunction(()=>window.appReady);
     const m=await p.evaluate(async spec=>{const im=new Image();im.src='tests/fixtures/shirt-chevron-closeup.png';await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);
       const s=HOOK.specSett(spec,{tex:c,type:'shirt'}),L=h=>rgbLab(...hexRgb(h))[0],it={id:'sh',type:'shirt',primaryColor:'white',secondaryColor:'grey',pattern:'dobby',sett:s};
-      const def=fabricDef('q',it,'shirt'),W=+def.match(/width="([\d.]+)"/)[1],H=+def.match(/height="([\d.]+)"/)[1];
-      const off=fabricDef('q',{...it,sett:{...s,motif:{...s.motif,off:1}}},'shirt');
+      const def=HOOK.fabricDef('q',it,'shirt'),W=+def.match(/width="([\d.]+)"/)[1],H=+def.match(/height="([\d.]+)"/)[1];
+      const off=HOOK.fabricDef('q',{...it,sett:{...s,motif:{...s.motif,off:1}}},'shirt');
       const o={suitDay:true,top:{id:'t',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:it,tie:{id:'x',type:'tie',primaryColor:'burgundy',pattern:'solid'}};
       return {s,ground:L(s.motif.ground),fig:L(s.motif.figs[0].cols[0]),rects:(def.match(/<rect /g)||[]).length,ratio:H/W,figCol:def.includes(s.motif.figs[0].cols[0]),
         offDiff:off!==def,usable:!!usableSett(it),band:usableSett({...it,sett:{v:2,bands:[['#fff',.5],['#888',.5]]}}),patterned:HOOK.shirtPatterned(it),

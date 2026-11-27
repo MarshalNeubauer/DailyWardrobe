@@ -25,10 +25,10 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.evaluate(async()=>{const b=await (await fetch('tests/fixtures/blazer-windowpane-closeup.jpg')).blob();await addTexture(0,new File([b],'c.jpg',{type:'image/jpeg'}))});
     await p.waitForFunction(()=>queue[0].swSrc==='tex',null,{timeout:20000});
     await p.evaluate(()=>save(0));
-    const it=await p.evaluate(()=>{const i=items.find(x=>x.texture);return {id:i.id,src:i.swSrc,sw:/^data:image\/jpeg/.test(i.swatch),svg:swatchSVG(i)}});
+    const it=await p.evaluate(()=>{const i=items.find(x=>x.texture);return {id:i.id,src:i.swSrc,sw:/^data:image\/jpeg/.test(i.swatch),svg:HOOK.swatchSVG(i)}});
     ok(it.src==='tex'&&it.sw,'the saved item keeps the close-up swatch');
     ok(/<image href="data:image\/jpeg/.test(it.svg),'its small fabric square across the app is the close-up swatch');
-    const plain=await p.evaluate(()=>swatchSVG({id:'x',type:'suit',primaryColor:'navy',pattern:'solid',swatch:'data:image/png;base64,AA',swSrc:'photo'}));
+    const plain=await p.evaluate(()=>HOOK.swatchSVG({id:'x',type:'suit',primaryColor:'navy',pattern:'solid',swatch:'data:image/png;base64,AA',swSrc:'photo'}));
     ok(!/<image/.test(plain)&&/<pattern/.test(plain),'an item without a close-up stays drawn (never cut from its photo)');
     // Today's pieces list shows it
     const today=await p.evaluate(id=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});const s=items.find(x=>x.id===id);
@@ -36,7 +36,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       settings.workdays=[1,2,3,4,5];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};show('today');
       const row=document.querySelector('#ri-top .dot'),chip=document.querySelector('.pchip');
       return {row:!!row&&!row.querySelector('image')&&!!row.querySelector('pattern'),chip:!!chip&&!chip.querySelector('image'),size:row&&Math.round(row.getBoundingClientRect().width),
-        elsewhere:/<image/.test(swatchSVG(s))}},it.id);
+        elsewhere:/<image/.test(HOOK.swatchSVG(s))}},it.id);
     ok(today.row&&today.chip&&today.elsewhere,'Today\'s pieces list and chips show the drawn swatch; elsewhere it is the close-up');
     ok(today.size===40,`Today's piece swatches are 40px, so the pattern reads (${today.size}px)`);
     const rows=await p.evaluate(()=>{HOOK.toggleList();const hs=()=>[...document.querySelectorAll('#today .list .ritem>.row')].map(r=>Math.round(r.getBoundingClientRect().height));
@@ -45,11 +45,11 @@ module.exports=async({ok,chromium,url,settle})=>{
     const legible=await p.evaluate(()=>{const w={id:'w',type:'suit',primaryColor:'khaki',pattern:'windowpane',sett:{v:2,a:0,bands:[['#b0a084',.95],['#9db3cf',.05]],cross:{d:90,bands:[[null,.95],['#9db3cf',.05]],r:1},cr:3.5,tr:9}};
       const tile=s=>+(s.match(/<pattern[^>]*width="([\d.]+)"/)||[])[1];
       const sh={id:'s',type:'shirt',primaryColor:'white',pattern:'woven',sett:{v:4,tex:{kind:'diamond',grid:['1001','0110','0110','1001'],aspect:1.4,lighter:true,contrast:'subtle',rel:.2},a:0,cr:24,tr:45}};
-      return {wp:tile(swatchSVG(w,true)),tex:tile(swatchSVG(sh,true))}});
+      return {wp:tile(HOOK.swatchSVG(w,true)),tex:tile(HOOK.swatchSVG(sh,true))}});
     ok(legible.wp===8&&Math.abs(legible.tex-6.4)<.01,`drawn at a readable scale: two windowpane panes across the square (${legible.wp} of 16), two and a half weave repeats (${legible.tex})`);
     // ---- Wardrobe editor: removing, re-adding and undoing the close-up re-cut the swatch
-    const ed=await p.evaluate(async id=>{const it=items.find(x=>x.id===id),tex=it.texture;await HOOK.setTexture(id,null);const off={src:it.swSrc,img:/<image/.test(swatchSVG(it))};
-      await HOOK.setTexture(id,tex);const on={src:it.swSrc,img:/<image/.test(swatchSVG(it))};await HOOK.undoPhoto(id);const undo={src:it.swSrc,tex:!!it.texture};return {off,on,undo}},it.id);
+    const ed=await p.evaluate(async id=>{const it=items.find(x=>x.id===id),tex=it.texture;await HOOK.setTexture(id,null);const off={src:it.swSrc,img:/<image/.test(HOOK.swatchSVG(it))};
+      await HOOK.setTexture(id,tex);const on={src:it.swSrc,img:/<image/.test(HOOK.swatchSVG(it))};await HOOK.undoPhoto(id);const undo={src:it.swSrc,tex:!!it.texture};return {off,on,undo}},it.id);
     ok(ed.off.src==='photo'&&!ed.off.img&&ed.on.src==='tex'&&ed.on.img,'the editor re-cuts the swatch when the close-up is removed or added');
     ok(ed.undo.src==='photo'&&!ed.undo.tex,'undo restores the close-up and the swatch with it (back to no close-up here)');
     // ---- once: an item that already had a close-up gets its swatch cut from it

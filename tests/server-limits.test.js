@@ -116,21 +116,21 @@ const nuserver=async({ok,chromium,url,ROOT})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const lists=()=>asks.filter(a=>/list=1/.test(a)).length;
-    const both=await p.evaluate(async()=>{HOOK.listKeys=null;HOOK.listAt=0;HOOK.remoteKeys=null;await Promise.all([asmListGet(),HOOK.remoteList(),asmListGet(),HOOK.remoteList()]);return {asm:!!asmList,remote:HOOK.remoteListed}});
+    const both=await p.evaluate(async()=>{HOOK.listKeys=null;HOOK.listAt=0;HOOK.remoteKeys=null;await Promise.all([HOOK.asmListGet(),HOOK.remoteList(),HOOK.asmListGet(),HOOK.remoteList()]);return {asm:!!HOOK.asmList,remote:HOOK.remoteListed}});
     const n0=lists();asks.length=0;
-    await p.evaluate(async()=>{HOOK.remoteKeys=null;await Promise.all([asmListGet(),HOOK.remoteList()])});
+    await p.evaluate(async()=>{HOOK.remoteKeys=null;await Promise.all([HOOK.asmListGet(),HOOK.remoteList()])});
     ok(both.asm&&both.remote&&lists()===0,`the painted pictures and the outfit photos share one list, kept for a while (${n0} at start, ${lists()} more when both asked again)`);
     listMode=429;asks.length=0;
     const paused=await p.evaluate(async()=>{HOOK.listKeys=null;HOOK.listAt=0;HOOK.remoteKeys=null;HOOK.asmList=null;await HOOK.remoteList();HOOK.remoteKeys=null;
-      await Promise.all([asmListGet(),HOOK.remoteList(),asmListGet()]);
+      await Promise.all([HOOK.asmListGet(),HOOK.remoteList(),HOOK.asmListGet()]);
       const o={top:{id:'s',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:{id:'h',type:'shirt',primaryColor:'white',pattern:'solid'}};HOOK.renderTried.clear();await fetchRemoteRender(o,'2026-11-16');
-      let p=null;try{p=JSON.parse(localStorage.getItem('list_pause'))}catch{}return {p,asm:asmList,listed:HOOK.remoteListed}});
+      let p=null;try{p=JSON.parse(localStorage.getItem('list_pause'))}catch{}return {p,asm:HOOK.asmList,listed:HOOK.remoteListed}});
     const tomorrow=(d=>Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1))(new Date());
     ok(lists()===1&&asks.length===1&&paused.p&&paused.p.until===tomorrow&&!paused.asm&&!paused.listed,
       `a refused list (429) is not asked again until the next UTC day, and no day is asked about one by one meanwhile (${asks.length} requests: ${asks.join(' ')})`);
-    listMode=503;asks.length=0;await p.evaluate(async()=>{localStorage.removeItem('list_pause');HOOK.listKeys=null;HOOK.remoteKeys=null;await HOOK.remoteList();HOOK.remoteKeys=null;await HOOK.remoteList();await asmListGet()});
+    listMode=503;asks.length=0;await p.evaluate(async()=>{localStorage.removeItem('list_pause');HOOK.listKeys=null;HOOK.remoteKeys=null;await HOOK.remoteList();HOOK.remoteKeys=null;await HOOK.remoteList();await HOOK.asmListGet()});
     ok(lists()===1,`a 503 list pauses the same way (${lists()} request)`);
-    listMode=200;asks.length=0;const forced=await p.evaluate(async()=>{const L=await asmListGet(true);return !!L&&!localStorage.getItem('list_pause')});
+    listMode=200;asks.length=0;const forced=await p.evaluate(async()=>{const L=await HOOK.asmListGet(true);return !!L&&!localStorage.getItem('list_pause')});
     ok(lists()===1&&forced,'a forced ask (Settings) still tries once, and a list that comes clears the pause');
 
     // ---- the app: an item-picture batch stops at the first picture the server can't keep

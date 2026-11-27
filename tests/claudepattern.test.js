@@ -87,7 +87,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // a tie's read stripes and figures are drawn without the faint white sheen line: turned with the pattern it showed as light bands
     const sh=await p.evaluate(()=>{const band={id:'sb',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'stripe',sett:{v:2,a:-45,bands:[['#141e33',.69],['#c0c3c1',.04],['#8b8d93',.23],['#c0c3c1',.04]],cross:null,cr:3.5,tr:2.5,src:'claude+pixels'}};
       const mot={id:'sm',type:'tie',primaryColor:'navy',pattern:'foulard',sett:{v:3,motif:{grid:'diagonal',ground:'#313363',figs:[{shape:'square',place:'cell',size:.9,cols:['#755ea0']}]},a:45,cr:17,tr:20,src:'claude+pixels'}};
-      return [fabricDef('x1',band,'tie'),fabricDef('x2',mot,'tie'),fabricDef('x3',band,'tie','fig')].map(d=>/stroke="#fff"/.test(d))});
+      return [HOOK.fabricDef('x1',band,'tie'),HOOK.fabricDef('x2',mot,'tie'),HOOK.fabricDef('x3',band,'tie','fig')].map(d=>/stroke="#fff"/.test(d))});
     ok(sh.every(v=>!v),`a tie's stripes and figures have no white sheen line across them (${sh.join(', ')})`);
     // the Add card: after the close-up, Claude reads the pattern
     await p.evaluate(async()=>{show('add');const b=await (await fetch('tests/fixtures/blazer-windowpane.jpg')).blob();await addFiles([new File([b],'b.jpg',{type:'image/jpeg'})])});

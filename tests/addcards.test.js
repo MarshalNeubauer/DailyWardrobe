@@ -363,7 +363,7 @@ const nu2fix2=async({ok,chromium,url})=>{
 // is one request, the Backup line inside agrees with its summary, the trousers row of the checklist, the Days off summary follows a
 // change, the schedule summary from the week's first day.
 const auditfix=async({ok,chromium,url})=>{
-  const sw=fs.readFileSync(path.join(__dirname,'..','sw.js'),'utf8'),ac=fs.readFileSync(path.join(__dirname,'..','asm-color.js'),'utf8');
+  const sw=fs.readFileSync(path.join(__dirname,'..','sw.js'),'utf8'),ac=fs.readFileSync(path.join(__dirname,'..','asm-cm-page.js'),'utf8');
   ok(sw.includes("'Today’s outfit'")&&!/â€/.test(sw)&&/\$\{asmGapRun\.n\}…</.test(ac),'the reminder reads "Today’s outfit" (no garbled "â€" in sw.js) and Settings\' "Reading 1 of 3…" has its ellipsis');
   const browser=await chromium.launch();
   try{

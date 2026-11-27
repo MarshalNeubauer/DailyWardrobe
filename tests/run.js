@@ -74,8 +74,8 @@ suite('renders the outfit without errors',async({page,errs})=>{
 
 suite('figure draws the tie, and the shirt when there is no jacket',async({page})=>{
   const r=await page.evaluate(`(()=>{const o={suitDay:true,top:{type:'suit',primaryColor:'grey',pattern:'solid'},bot:{type:'suit',primaryColor:'grey',pattern:'solid'},shirt:{type:'shirt',primaryColor:'white',pattern:'solid'},tie:{type:'tie',primaryColor:'navy',pattern:'solid'}};
-    const d=document.createElement('div');d.innerHTML=figureSvg(o,'t1-');const a=!!d.querySelector('use[href="#t1-bladeP"]')&&d.querySelector('#t1-suitB').innerHTML.includes(COLORS.grey);
-    o.top=null;d.innerHTML=figureSvg(o,'t2-');const b=d.querySelector('#t2-suitB').innerHTML.includes(COLORS.white);return [a,b]})()`);
+    const d=document.createElement('div');d.innerHTML=HOOK.figureSvg(o,'t1-');const a=!!d.querySelector('use[href="#t1-bladeP"]')&&d.querySelector('#t1-suitB').innerHTML.includes(COLORS.grey);
+    o.top=null;d.innerHTML=HOOK.figureSvg(o,'t2-');const b=d.querySelector('#t2-suitB').innerHTML.includes(COLORS.white);return [a,b]})()`);
   ok(r[0],'tie drawn over the suit');ok(r[1],'without a jacket the body is drawn in the shirt fabric');
 });
 

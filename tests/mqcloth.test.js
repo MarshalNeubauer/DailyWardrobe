@@ -37,12 +37,12 @@ module.exports=async({ok,chromium,url})=>{
         const k=i=>{const s=i&&usableSett(i);return s&&s.bands&&s.bands.length>1&&STRIPE_PATS.includes(patBase(i.pattern))?1.6:1};
         return outfitMannequinSvg({kind,suit:top?HOOK.figFabric(top,'top'):shirt,shirt,tie:HOOK.figFabric(o.tie,'tie'),bot:bot?HOOK.figFabric(bot,'bot'):{color:'#4A4E55'},beltColor:o.belt?colOf(o.belt):'#3A2A22',vest:!!(o.vest&&o.top),clip,shirtColor:o.shirt?colOf(o.shirt):HOOK.FIG_NO_SHIRT.color,bg:HOOK.figBg(),idPrefix:prefix,ariaLabel:label,fab:{suit:k(top),shirt:1,tie:1,bot:k(bot)}})};
       const a={suitDay:true,top:Q.pin,bot:Q.pin,shirt:Q.shirt,tie:Q.tie,vest:true},b={suitDay:true,top:Q.plain,bot:Q.plain,shirt:Q.shirt,tie:Q.tie},c={suitDay:false,top:null,bot:Q.plain,shirt:Q.shirt,tie:Q.tie};
-      return [a,b,c].map((o,i)=>figureSvg(o,'s'+i+'-')===old(o,'s'+i+'-'))});
+      return [a,b,c].map((o,i)=>HOOK.figureSvg(o,'s'+i+'-')===old(o,'s'+i+'-'))});
     ok(same.every(Boolean),`a striped jacket (and a plain cloth with no close-up) draws byte-identical to before (${same.join()})`);
     // drawn first, in a millisecond or so; the block made in the background; the figure then written with it, the image once
     const k=await pace(p);   // (the 50 ms is at this machine's pace: tests/pace.js)
-    const bg=await p.evaluate(async()=>{const Q=__Q,o={suitDay:true,top:Q.tw,bot:Q.tw,shirt:Q.shirt,tie:Q.tie,vest:true},t0=performance.now(),first=figureSvg(o,'b-'),ms=performance.now()-t0;
-      const e=[...HOOK.FIG_CU.values()].pop();await e.p;const then=figureSvg(o,'b-'),d=document.createElement('div');d.innerHTML=then;
+    const bg=await p.evaluate(async()=>{const Q=__Q,o={suitDay:true,top:Q.tw,bot:Q.tw,shirt:Q.shirt,tie:Q.tie,vest:true},t0=performance.now(),first=HOOK.figureSvg(o,'b-'),ms=performance.now()-t0;
+      const e=[...HOOK.FIG_CU.values()].pop();await e.p;const then=HOOK.figureSvg(o,'b-'),d=document.createElement('div');d.innerHTML=then;
       const base=d.querySelector('pattern#b-cuT'),kids=[...d.querySelectorAll('pattern[href="#b-cuT"]')].length,G=mqData(HOOK.figKind(o));
       return {ms,first:!/cuT/.test(first)&&/id="b-suitB"/.test(first),imgs:(then.match(/<image href="data:image\/jpeg/g)||[]).length,base:!!(base&&base.querySelector('image')),kids,parts:G.parts.length+(G.parts.some(p=>p.id==='lapL')?0:2)+1,
         W:e.blk&&e.blk.W,N:e.blk&&e.blk.N,suitB:d.querySelector('#b-suitB').getAttribute('href'),bytes:e.blk&&e.blk.url.length}});
@@ -50,18 +50,18 @@ module.exports=async({ok,chromium,url})=>{
     ok(bg.base&&bg.imgs===1&&bg.kids===bg.parts&&bg.suitB==='#b-cuT',`once made, one base pattern holds the block and every piece's pattern (${bg.kids} of ${bg.parts}: body, lapels, sleeves) inherits it: the image is written once (${bg.imgs}, ${(bg.bytes/1024).toFixed(1)} KB)`);
     ok(bg.W>40&&bg.W<120&&bg.N>=16&&bg.N<=256,`at the painter's repeat (${bg.W&&bg.W.toFixed(1)} units, ${bg.N} px from the figure's real width x DPR)`);
     // herringbone: two images (body and sleeves); its tile is the clean herringbone at the tagged colour's lifted mean
-    const hb=await p.evaluate(async()=>{const Q=__Q,o={suitDay:true,top:Q.hb,bot:Q.hb,shirt:Q.shirt,tie:Q.tie};figureSvg(o,'h-');const e=[...HOOK.FIG_CU.values()].pop();await e.p;const s=figureSvg(o,'h-');
-      const T=await asmCuTile(Q.hb),k=HOOK.figWay(Q.hb,'jacket').k,H=HOOK.figHbTile(T,k),n=H.TW*H.TH;let m=0;for(let j=0;j<n;j++)m+=HOOK.figY(H.t[3*j],H.t[3*j+1],H.t[3*j+2]);
-      const W=asmWorstedTile(Q.black),kb=HOOK.figWay(Q.black,'jacket').k,B=HOOK.figNorm(W,kb);let mb=0;for(let j=0;j<n;j++)mb+=HOOK.figY(B.t[3*j],B.t[3*j+1],B.t[3*j+2]);
+    const hb=await p.evaluate(async()=>{const Q=__Q,o={suitDay:true,top:Q.hb,bot:Q.hb,shirt:Q.shirt,tie:Q.tie};HOOK.figureSvg(o,'h-');const e=[...HOOK.FIG_CU.values()].pop();await e.p;const s=HOOK.figureSvg(o,'h-');
+      const T=await HOOK.asmCuTile(Q.hb),k=HOOK.figWay(Q.hb,'jacket').k,H=HOOK.figHbTile(T,k),n=H.TW*H.TH;let m=0;for(let j=0;j<n;j++)m+=HOOK.figY(H.t[3*j],H.t[3*j+1],H.t[3*j+2]);
+      const W=HOOK.asmWorstedTile(Q.black),kb=HOOK.figWay(Q.black,'jacket').k,B=HOOK.figNorm(W,kb);let mb=0;for(let j=0;j<n;j++)mb+=HOOK.figY(B.t[3*j],B.t[3*j+1],B.t[3*j+2]);
       return {imgs:(s.match(/<image href="data:image\/jpeg/g)||[]).length,sl:/id="h-cuTs"/.test(s),mean:m/n/HOOK.figLum(Q.hb)/k,bmean:mb/n/HOOK.figLum(Q.black)/kb,ribs:H.t[0]!==T.t[0]}});
     ok(hb.imgs===2&&hb.sl,`a herringbone writes two images: the body's and the sleeves' softer one (${hb.imgs})`);
     ok(Math.abs(hb.mean-1)<.01&&Math.abs(hb.bmean-1)<.01,`H2's and B2's tile means are held at k x the tagged colour (${hb.mean.toFixed(3)}, ${hb.bmean.toFixed(3)})`);
     // the cache keys follow the colour, the shade and the close-up (and the block variant)
     const keys=await p.evaluate(()=>{const Q=__Q,K=i=>{const w=HOOK.figWay(i,'jacket');return HOOK.figCuKey(i,w.way,w.k,1,3)},a=K(Q.tw);
-      return {colour:K({...Q.tw,primaryColor:'brown'})!==a,shade:K({...Q.tw,shade:2})!==a,cu:K({...Q.tw,texture:Q.tw.texture+'AAAA'})!==a,same:K({...Q.tw})===a,v:a.includes(JSON.stringify(ASM_CU.v))}});
+      return {colour:K({...Q.tw,primaryColor:'brown'})!==a,shade:K({...Q.tw,shade:2})!==a,cu:K({...Q.tw,texture:Q.tw.texture+'AAAA'})!==a,same:K({...Q.tw})===a,v:a.includes(JSON.stringify(HOOK.ASM_CU.v))}});
     ok(keys.colour&&keys.shade&&keys.cu&&keys.same,`a block's cache key changes with the colour, the shade and the close-up, not otherwise (${JSON.stringify(keys)})`);
     // rendered: the block's chest is the cloth's colour, not empty
-    const px=await p.evaluate(async()=>{const Q=__Q,o={suitDay:true,top:Q.tw,bot:Q.tw,shirt:Q.shirt,tie:Q.tie,vest:true},s=figureSvg(o,'r-').replace('width="100%"','width="390" height="390"');
+    const px=await p.evaluate(async()=>{const Q=__Q,o={suitDay:true,top:Q.tw,bot:Q.tw,shirt:Q.shirt,tie:Q.tie,vest:true},s=HOOK.figureSvg(o,'r-').replace('width="100%"','width="390" height="390"');
       const im=new Image();im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);await im.decode();const c=document.createElement('canvas');c.width=c.height=390;const g=c.getContext('2d');g.drawImage(im,0,0);
       const d=g.getImageData(250,160,20,20).data;let m=[0,0,0];for(let j=0;j<400;j++)for(let q=0;q<3;q++)m[q]+=d[4*j+q]/400;return m.map(Math.round)});
     ok(px.every(v=>v>8&&v<250),`the figure drawn as an image shows the block's cloth (chest ${px.join(',')})`);

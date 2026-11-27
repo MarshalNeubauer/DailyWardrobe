@@ -64,7 +64,7 @@ const T={'.html':'text/html','.js':'text/javascript','.css':'text/css','.webmani
   await ctx.setOffline(true);
   {const r=await deepRun();ok(deepOk(r),`offline, a deep link goes to the app's root with its query and #… and every page script runs once (${r.href}, ${r.n} scripts, twice: ${r.twice.join(' ')||'none'}${r.err?', '+r.err:''})`)}await page.reload();await page.waitForSelector('#n-today',{timeout:5000}).catch(()=>{});
   ok((await page.textContent('h1')).includes('Daily Wardrobe')&&await page.$('#n-today')!==null,'app loads offline from the cache');
-  ok(await page.evaluate(()=>typeof buildPlan==='function'&&typeof figureSvg==='function'&&typeof outfitMannequinSvg==='function'),'all scripts available offline');
+  ok(await page.evaluate(()=>typeof buildPlan==='function'&&'figureSvg' in HOOK&&typeof outfitMannequinSvg==='function'),'all scripts available offline');
   ok(await page.evaluate(()=>{const s=outfitMannequinSvg({kind:'vest',suit:{color:'#333'},shirt:{color:'#eee'},tie:{color:'#a00'}});return /viewBox="0 0 390 390"/.test(s)&&s.includes('fig-skin')}),'the traced mannequin\'s pose data comes from the cache offline (nothing fetched)');
   ok(await page.evaluate(()=>{const s=outfitMannequinSvg({kind:'vest',suit:{color:'#333'},shirt:{color:'#eee'},tie:{color:'#a00'}}),m=/class="fig-office" href="(data:image\/jpeg[^"]+)"/.exec(s);return m&&new Promise(r=>{const im=new Image();im.onload=()=>r(im.naturalWidth===200);im.onerror=()=>r(false);im.src=m[1]})}),'the office behind the mannequin comes with its pose offline (nothing fetched)');
   // a deep link offline: the app at its root, with its styles and scripts from this version's files

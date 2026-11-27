@@ -13,13 +13,13 @@ const garmentdraw=async({ok,chromium,url,ROOT})=>{
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(()=>{const I=(type,x)=>({id:'g-'+type,type,primaryColor:'navy',pattern:'solid',...x}),T=['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore'];
-      const th={};for(const t of T)th[t]=itemThumb(I(t));
-      const pat=t=>['solid','stripe','heather','cable'].filter(p=>(PATS_BY[t]||[]).includes(p)).map(p=>fabricDef('x',I(t,{pattern:p,secondaryColor:'white'}),'shirt'));
-      const sw=swatchSVG(I('tee',{pattern:'stripe',secondaryColor:'white'}),true),swPlain=swatchSVG(I('tee'),true);
-      const cargo=itemThumb({id:'c',type:'pants',primaryColor:'olive',pattern:'solid',trouserKind:'cargo'}),chinos=itemThumb({id:'d',type:'pants',primaryColor:'olive',pattern:'solid',trouserKind:'chinos'});
-      const dark=itemThumb(I('tee',{primaryColor:'black'}));
+      const th={};for(const t of T)th[t]=HOOK.itemThumb(I(t));
+      const pat=t=>['solid','stripe','heather','cable'].filter(p=>(PATS_BY[t]||[]).includes(p)).map(p=>HOOK.fabricDef('x',I(t,{pattern:p,secondaryColor:'white'}),'shirt'));
+      const sw=HOOK.swatchSVG(I('tee',{pattern:'stripe',secondaryColor:'white'}),true),swPlain=HOOK.swatchSVG(I('tee'),true);
+      const cargo=HOOK.itemThumb({id:'c',type:'pants',primaryColor:'olive',pattern:'solid',trouserKind:'cargo'}),chinos=HOOK.itemThumb({id:'d',type:'pants',primaryColor:'olive',pattern:'solid',trouserKind:'chinos'});
+      const dark=HOOK.itemThumb(I('tee',{primaryColor:'black'}));
       return {th,pats:{tee:pat('tee'),sweater:pat('sweater')},sw,swPlain,cargo,chinos,dark,
-        fig:fabricDef('f',I('sweater',{pattern:'cable'}),'shirt','fig'),boot:itemThumb({id:'b',type:'shoes',primaryColor:'brown',shoeStyle:'boot',leather:'suede'}),sneaker:itemThumb({id:'s',type:'shoes',primaryColor:'white',secondaryColor:'white',shoeStyle:'sneaker'})}});
+        fig:HOOK.fabricDef('f',I('sweater',{pattern:'cable'}),'shirt','fig'),boot:HOOK.itemThumb({id:'b',type:'shoes',primaryColor:'brown',shoeStyle:'boot',leather:'suede'}),sneaker:HOOK.itemThumb({id:'s',type:'shoes',primaryColor:'white',secondaryColor:'white',shoeStyle:'sneaker'})}});
     for(const [t,h] of Object.entries(r.th))ok(/<svg[^>]*aria-label="[^"]+"/.test(h)&&h.includes('url(#th')&&/<path d="M39,12 C44,14\.5/.test(h),`a ${t} is drawn: its outline in its cloth with the shading`);
     const n=(h,re)=>(h.match(re)||[]).length;
     ok(n(r.th.polo,/<circle /g)===2&&/L39\.4,11 C37/.test(r.th.polo),'a polo has its knit collar and a two-button placket');
@@ -48,7 +48,7 @@ const garmentdraw=async({ok,chromium,url,ROOT})=>{
           {id:'g',type:'pants',primaryColor:'denim',pattern:'solid',trouserKind:'jeans'},{id:'h',type:'tie',primaryColor:'burgundy',secondaryColor:'navy',pattern:'stripe'},{id:'i',type:'shoes',primaryColor:'brown',shoeStyle:'loafer'},
           {id:'j',type:'overcoat',primaryColor:'charcoal'},{id:'k',type:'watch',primaryColor:'black',band:'leather'}];
         const z=s=>s.replace(/(th|sw)\d+-/g,'$1-');const bad=[];
-        for(const it of L){if(z(O.itemThumb(it))!==z(itemThumb(it)))bad.push(it.id+' thumb');if(z(O.itemThumb(it,true))!==z(itemThumb(it,true)))bad.push(it.id+' full');if(z(O.swatchSVG(it,true))!==z(swatchSVG(it,true)))bad.push(it.id+' swatch')}
+        for(const it of L){if(z(O.itemThumb(it))!==z(HOOK.itemThumb(it)))bad.push(it.id+' thumb');if(z(O.itemThumb(it,true))!==z(HOOK.itemThumb(it,true)))bad.push(it.id+' full');if(z(O.swatchSVG(it,true))!==z(HOOK.swatchSVG(it,true)))bad.push(it.id+' swatch')}
         return bad},old);
       ok(!same.length,'the existing types draw exactly as on origin/main (shirts, blazer, suit, dress pants, chinos, jeans, tie, shoes, coat, watch)'+(same.length?': '+same.join(', '):''))}
     else ok(true,'(origin/main not available: the old drawings were not compared)');
@@ -66,7 +66,7 @@ const raincoat=async({ok,chromium,url})=>{
     const p=await browser.newPage({viewport:{width:390,height:900}});const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(()=>{const it=c=>({id:'r'+c,type:'raincoat',primaryColor:c,pattern:'solid'});
-      const blk=itemThumb(it('black')),tan=itemThumb(it('tan')),oc=itemThumb({id:'o1',type:'overcoat',primaryColor:'charcoal',pattern:'solid'});
+      const blk=HOOK.itemThumb(it('black')),tan=HOOK.itemThumb(it('tan')),oc=HOOK.itemThumb({id:'o1',type:'overcoat',primaryColor:'charcoal',pattern:'solid'});
       const nums=Object.values(HOOK.RAIN_D).join(' ').match(/-?[\d.]+/g).map(Number);
       const ids=[...blk.matchAll(/ id="([^"]+)"/g)].map(m=>m[1]);
       const host=document.createElement('div');host.innerHTML=blk;document.body.appendChild(host);const bb=host.querySelector('svg').getBBox();host.remove();

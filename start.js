@@ -2,6 +2,7 @@
    subOpen, openAdd, pagesOn) is nav.js's since the restructure S3f (2026-11-26); this file keeps the tabs' and Add's handlers, so a tap
    on a tab during loading counts from where it always did (this file's place in the list)
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14.) */
+import {ask} from './bus.js';
 import {backOn} from './back.js';
 import {PAGES,openAdd,pageBack,setPageWant,setPagesOn,show,showWanted,subBack} from './nav.js';
 import {$,applyCustom,cleanDay,cleanRecord,key,setWardrobe,settings,takeSettings,todayDate} from './core.js';
@@ -62,7 +63,7 @@ function startChecks(){checkPlanRules().then(()=>whenPulled(checkArrivals)).then
   whenPulled(()=>kitSampleMigrate())}
 /* after Today is drawn: the setup, the weather and holidays, the kept photos (then appReady) and the photo fix-ups, the safety checks */
 function startJobs(){afterScripts(()=>setupStart());loadWeather();afterScripts(()=>refreshHolidays());
-  loadRenders().then(()=>/** @type {any} */(asmLive()?asmLoad():0)).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>asmSync());if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();
+  loadRenders().then(()=>/** @type {any} */(asmLive()?ask('asm-load'):0)).then(()=>{afterDom(()=>{window.appReady=true});if(asmLive())afterScripts(()=>ask('asm-sync'));if(Object.keys(renders).length&&!$('#today').hidden)refreshToday();
     fixItemBackdrops().then(n=>{if(n&&!$('#today').hidden)refreshToday()});
     whenPulled(()=>texSwatches().then(n=>{if(n&&!$('#today').hidden)refreshToday()}));
     whenPulled(()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>upgradeCloseups()).then(()=>upgradePhotos()).then(()=>fixBlackBackdrops()).then(()=>smallPhotos()));
@@ -77,7 +78,7 @@ function startJobs(){afterScripts(()=>setupStart());loadWeather();afterScripts((
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(e=>console.warn('service worker not registered',e));
 /* sync brought new data: refresh the in-memory outfit history too */
 function onSyncedData(m){setWardrobe({days:Object.fromEntries((m.days||[]).map(d=>[d.date,d]))});const drawn=picsDrawn();if(m.settings){setWardrobe({settings:takeSettings(settings,m.settings)});setSetSeen(m.settings.updated||0);applyCustom(settings.custom)}dressSynced(m);loadWeather();if(typeof remindSoon==='function')remindSoon();   // (another device may have changed the coming outfits: the reminder lines follow, CR-4-09)
-  if(picsDrawn()!==drawn){picsSwitched();if(settingsOpen()){renderPicturesUI();renderAsmUI()}}}   // "Drawing only" chosen on another device
+  if(picsDrawn()!==drawn){picsSwitched();if(settingsOpen()){renderPicturesUI();ask('asm-ui')}}}   // "Drawing only" chosen on another device
 /* the markup's handlers (act.js): Add's ‹, the Wardrobe's round +, and the Wardrobe and Insights tabs (data-page: the page shown) */
 function addBackTap(){subBack()}
 function wardAddTap(){openAdd()}

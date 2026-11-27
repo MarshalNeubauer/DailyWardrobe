@@ -19,34 +19,34 @@ const tieweave=async({ok,chromium,url})=>{
     ok(btn==='Read pattern from photo','the item sheet offers to read the woven tie\'s pattern');
     // a motif reading (as Claude gave it for the owner's tie) gives the tie painter a tile
     const m=await p.evaluate(async()=>{const t=items[0];t.sett={v:3,motif:{grid:'diagonal',ground:'#20222b',figs:[{shape:'square',place:'cell',size:.5,cols:['#898d96']}]},cr:36,tr:40,a:45,src:'claude+pixels'};
-      const f=await asmTieFor(t);return {usable:!!usableSett(t),motif:f.motif,tile:!!f.c&&f.TW>0,across:f.across}});
+      const f=await HOOK.asmTieFor(t);return {usable:!!usableSett(t),motif:f.motif,tile:!!f.c&&f.TW>0,across:f.across}});
     ok(m.usable&&m.motif&&m.tile&&m.across===40,`with the reading the tie is painted from its motif (${JSON.stringify(m)})`);
     // the weave itself (a texture reading): kept and painted on a woven or tonal-check tie, a little stronger than on a shirt
     const x=await p.evaluate(async()=>{const tex={v:4,tex:{kind:'diamond',grid:['00011000','00100100','01000010','10000001','10000001','01000010','00100100','00011000'],aspect:1,lighter:true,contrast:'medium',rel:.35},a:0,cr:40,tr:32,src:'claude+pixels'};
       const tc={id:'tc',type:'tie',primaryColor:'black',secondaryColor:'charcoal',pattern:'tonal-check',sett:tex},st={id:'st',type:'tie',primaryColor:'navy',pattern:'stripe',sett:tex},
         sh={id:'sh',type:'shirt',primaryColor:'white',pattern:'dobby',sett:tex};
-      const f=await asmTieFor(tc),spec={layout:'texture',texture:{kind:'diamond',grid:tex.tex.grid,raised:{hex:'#333333'},ground:{hex:'#111111'},contrast:'medium',aspect:1},repeatsInCloseup:40,repeatsAcrossItem:32};
-      const fromSpec=HOOK.specSett(spec,{type:'tie'}),dTie=fabricDef('a',tc,'tie','asmtie'),dPlain=fabricDef('b',tc,'tie');
+      const f=await HOOK.asmTieFor(tc),spec={layout:'texture',texture:{kind:'diamond',grid:tex.tex.grid,raised:{hex:'#333333'},ground:{hex:'#111111'},contrast:'medium',aspect:1},repeatsInCloseup:40,repeatsAcrossItem:32};
+      const fromSpec=HOOK.specSett(spec,{type:'tie'}),dTie=HOOK.fabricDef('a',tc,'tie','asmtie'),dPlain=HOOK.fabricDef('b',tc,'tie');
       const tone=d=>(d.match(/fill="(#[0-9a-f]{6})"/)||[])[1];
-      return {usable:[!!usableSett(tc),!!usableSett(st),!!usableSett(sh)],tile:!!f.c&&f.TW>0&&f.across===Math.min(32,ASM_TIE_FIG_MAX),spec:!!(fromSpec&&fromSpec.tex),
-        stronger:tone(dTie)!==tone(dPlain),sig:asmTieSig(tc)!==asmTieSig({...tc,sett:null})}});
+      return {usable:[!!usableSett(tc),!!usableSett(st),!!usableSett(sh)],tile:!!f.c&&f.TW>0&&f.across===Math.min(32,HOOK.ASM_TIE_FIG_MAX),spec:!!(fromSpec&&fromSpec.tex),
+        stronger:tone(dTie)!==tone(dPlain),sig:HOOK.asmTieSig(tc)!==HOOK.asmTieSig({...tc,sett:null})}});
     ok(x.usable.join()==='true,false,true','a tonal-check tie keeps a weave reading; a striped tie does not (a shirt still does)');
     ok(x.spec&&x.tile,'Claude\'s weave answer becomes a tie reading, and the tie painter gets a tile repeated across the tie');
     ok(x.stronger&&x.sig,'on the model the weave is drawn stronger than in the app\'s swatch, and the reading is in the picture\'s key');
     // a twill (drawn by fabricDef's own twill branch) is strengthened on a tie too, and its ribs are no finer than ASM_TIE_TEX_MAX across
     const tw=await p.evaluate(async()=>{const s={v:4,tex:{kind:'twill',grid:['0001','0010','0100','1000'],aspect:1,lighter:true,contrast:'low',rel:.35},a:0,cr:60,tr:80,src:'claude+pixels'};
       const t={id:'bt',type:'tie',primaryColor:'burgundy',pattern:'woven',sett:s},op=d=>+((d.match(/stroke-opacity="([\d.]+)"/)||[])[1]||0);
-      const f=await asmTieFor(t);return {stronger:op(fabricDef('a',t,'tie','asmtie'))>op(fabricDef('b',t,'tie')),across:f.across,max:ASM_TIE_TEX_MAX}});
+      const f=await HOOK.asmTieFor(t);return {stronger:op(HOOK.fabricDef('a',t,'tie','asmtie'))>op(HOOK.fabricDef('b',t,'tie')),across:f.across,max:HOOK.ASM_TIE_TEX_MAX}});
     ok(tw.stronger&&tw.across===tw.max&&tw.max<80,`a twill tie's ribs are drawn stronger on the model and capped at ${tw.max} across (Claude counted 80)`);
     // on a phone the picture is shrunk ~1.75x: a figured weave repeats at most ASM_TIE_FIG_MAX across (a twill keeps ASM_TIE_TEX_MAX), and a
     // very dark tie's figured weave is drawn TIE_DARK_X stronger (the owner's black tonal check read flat black, 2026-11-13)
     const ph=await p.evaluate(async()=>{const dia={kind:'diamond',grid:['00011000','00100100','01000010','10000001','10000001','01000010','00100100','00011000'],aspect:1,lighter:true,contrast:'low',rel:.35};
       const black={id:'bk',type:'tie',primaryColor:'black',pattern:'tonal-check',sett:{v:4,tex:dia,a:0,cr:40,tr:32,src:'claude+pixels'}},grey={...black,id:'gy',primaryColor:'silver'};
       const tw={id:'tw',type:'tie',primaryColor:'black',pattern:'woven',sett:{v:4,tex:{...dia,kind:'twill',grid:['0001','0010','0100','1000']},a:0,cr:60,tr:80,src:'claude+pixels'}};
-      const fb=await asmTieFor(black),ft=await asmTieFor(tw),lo=(i,ctx)=>(fabricDef('t',i,'tie',ctx).match(/fill="(#[0-9a-f]{6})"/)||[])[1];
+      const fb=await HOOK.asmTieFor(black),ft=await HOOK.asmTieFor(tw),lo=(i,ctx)=>(HOOK.fabricDef('t',i,'tie',ctx).match(/fill="(#[0-9a-f]{6})"/)||[])[1];
       // the ground tone drawn on the model against the one each strength gives (the weave's light tone is inside the tile image)
-      const want=(i,k)=>texTones(colOf(i),i.sett.tex,k)[0];
-      return {fig:fb.across,twill:ft.across,max:[ASM_TIE_FIG_MAX,ASM_TIE_TEX_MAX],darkBoost:lo(black,'asmtie')===want(black,TIE_TEX_K*TIE_DARK_X)&&lo(black,'asmtie')!==want(black,TIE_TEX_K),lightPlain:lo(grey,'asmtie')===want(grey,TIE_TEX_K)}});
+      const want=(i,k)=>HOOK.texTones(colOf(i),i.sett.tex,k)[0];
+      return {fig:fb.across,twill:ft.across,max:[HOOK.ASM_TIE_FIG_MAX,HOOK.ASM_TIE_TEX_MAX],darkBoost:lo(black,'asmtie')===want(black,HOOK.TIE_TEX_K*HOOK.TIE_DARK_X)&&lo(black,'asmtie')!==want(black,HOOK.TIE_TEX_K),lightPlain:lo(grey,'asmtie')===want(grey,HOOK.TIE_TEX_K)}});
     ok(ph.fig===ph.max[0]&&ph.twill===ph.max[1]&&ph.max[0]<32,`a figured weave repeats at most ${ph.max[0]} times across a tie on the model (a twill ${ph.max[1]})`);
     ok(ph.darkBoost&&ph.lightPlain,"a very dark tie's weave is drawn stronger (TIE_DARK_X); a light tie's keeps the tie strength");
     ok(!errs.length,'no page errors: '+errs.join('; '));
@@ -61,7 +61,7 @@ const tiewoven=async({ok,chromium,url,ROOT})=>{
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(()=>{const T=x=>({id:'t',type:'tie',primaryColor:'navy',secondaryColor:'blue',pattern:'solid',...x});
-      const w=fabricDef('a',T({pattern:'woven'}),'tie'),s=fabricDef('b',T(),'tie'),w1=fabricDef('c',T({pattern:'woven',secondaryColor:null}),'tie');
+      const w=HOOK.fabricDef('a',T({pattern:'woven'}),'tie'),s=HOOK.fabricDef('b',T(),'tie'),w1=HOOK.fabricDef('c',T({pattern:'woven',secondaryColor:null}),'tie');
       return {list:PATS_BY.tie.includes('woven'),alias:['Textured','basket weave','Basketweave','oxford','grenadine','micro check','woven'].map(x=>normPat('tie',x)).join(),
         draws:w!==s&&w.includes(COLORS.blue)&&w.includes(COLORS.navy),one:w1!==s&&!w1.includes(COLORS.blue),solidRule:patInfo(T({pattern:'woven'}),'tie')===null,
         lum:Math.round(HOOK.tieLum(T({pattern:'woven'})))===Math.round(LUM(T())),label:desc(T({pattern:'woven'}))}});
@@ -75,7 +75,7 @@ const tiewoven=async({ok,chromium,url,ROOT})=>{
     ok(/tie:\n\s*solid, woven \(a textured solid/.test(src),'the tagger is told about woven ties');
     // tonal check (e.g. black on charcoal glen check)
     const t=await p.evaluate(()=>{const T=x=>({id:'t',type:'tie',primaryColor:'black',secondaryColor:'charcoal',pattern:'tonal-check',...x});
-      const d=fabricDef('d',T(),'tie'),chk=fabricDef('e',T({pattern:'check'}),'tie'),pi=patInfo(T(),'tie');
+      const d=HOOK.fabricDef('d',T(),'tie'),chk=HOOK.fabricDef('e',T({pattern:'check'}),'tie'),pi=patInfo(T(),'tie');
       return {list:PATS_BY.tie.includes('tonal-check'),alias:['tonal','Tone on tone','tonal glen check'].map(x=>normPat('tie',x)).join(),draws:d.includes(COLORS.charcoal)&&d!==chk,
         rule:pi&&pi.type==='check'&&pi.scale===1,label:desc(T())}});
     ok(t.list&&t.alias==='tonal-check,tonal-check,tonal-check','ties can be tagged tonal check (tonal, tone on tone, tonal glen check map to it)');

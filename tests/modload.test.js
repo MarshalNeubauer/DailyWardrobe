@@ -101,8 +101,8 @@ async function survey(eng,browser,{ok,url,C,page}){
     for(const i of I)await put(i);
     settings.setupDone=1;settings.workdays=[0,1,2,3,4];await saveUserSettings();try{localStorage.setItem('tour_seen','1')}catch(e){}
     return I.length});
-  const kmap=await sp.evaluate(ks=>{const o={};for(const k of ks){const [kind,n]=k.split('|');o[k]=asmCmKey(kind,n)}return o},Object.keys(recs));
-  const bg=await sp.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');x.fillStyle='#e6e2dc';x.fillRect(0,0,512,512);return {k:asmCmBgKey(),img:c.toDataURL('image/png')}});
+  const kmap=await sp.evaluate(ks=>{const o={};for(const k of ks){const [kind,n]=k.split('|');o[k]=HOOK.asmCmKey(kind,n)}return o},Object.keys(recs));
+  const bg=await sp.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=512;const x=c.getContext('2d');x.fillStyle='#e6e2dc';x.fillRect(0,0,512,512);return {k:HOOK.asmCmBgKey(),img:c.toDataURL('image/png')}});
   for(const [k,img] of Object.entries(recs))served[kmap[k]]={sig:'asm/cm test',img,model:'colormaster',t:1000};served[bg.k]={sig:'asm/cm bg',img:bg.img,model:'colormaster',t:1000};
   await sp.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','owner')},HOST);
   // bus.js's sockets in the page: the module every file imports gives serve and ask

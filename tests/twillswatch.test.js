@@ -11,7 +11,7 @@ module.exports=async({ok,chromium,url})=>{
       const tw={id:'tw1',type:'suit',primaryColor:'deeptaupe',pattern:'twill',texture:CU,swatch:sw,swSrc:'tex'};
       const first=ovlPiece(tw),host=document.createElement('div');host.innerHTML=first;document.body.appendChild(host);   // the placeholder where it shows
       const e=HOOK.OVL_CU.get(HOOK.ovlCuKey(tw));await e.p;const swapped=host.innerHTML,then=ovlPiece(tw);host.remove();
-      const T=await asmCuTile(tw),im=await new Promise(res=>{const m=new Image();m.onload=()=>res(m);m.src=e.url});
+      const T=await HOOK.asmCuTile(tw),im=await new Promise(res=>{const m=new Image();m.onload=()=>res(m);m.src=e.url});
       // the swatch's pixels are the painter's tile (sRGB of its linear values, under the swatches' faint light)
       const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,c.width,c.height).data;
       const g=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055);let diff=0,n=0;const mid=Math.floor(T.TW/2);

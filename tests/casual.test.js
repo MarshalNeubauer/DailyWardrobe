@@ -42,9 +42,9 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       setq(i,'trouserKind','jeans');setq(i,'primaryColor','denim');setq(i,'type','shoes');renderAdd();const style=!!document.querySelector('#nps-q select[data-f="shoeStyle"]');setq(i,'type','pants');return {kind,style}});
     ok(ui.kind&&ui.style,'the Add card has Kind for pants and Style for shoes');
     // each is drawn as what it is
-    const dr=await p.evaluate(()=>{const sh=(st,x={})=>itemThumb({id:'d',type:'shoes',primaryColor:'brown',pattern:'solid',leather:'calf',...(st?{shoeStyle:st}:{}),...x});
+    const dr=await p.evaluate(()=>{const sh=(st,x={})=>HOOK.itemThumb({id:'d',type:'shoes',primaryColor:'brown',pattern:'solid',leather:'calf',...(st?{shoeStyle:st}:{}),...x});
       const strip=s=>s.replace(/th\d+-/g,'');const svgs=['','derby','loafer','boot','sneaker'].map(st=>strip(sh(st)));
-      const pt=k=>strip(itemThumb({id:'p',type:'pants',primaryColor:'denim',pattern:'solid',...(k?{trouserKind:k}:{})}));
+      const pt=k=>strip(HOOK.itemThumb({id:'p',type:'pants',primaryColor:'denim',pattern:'solid',...(k?{trouserKind:k}:{})}));
       return {distinct:new Set(svgs).size,oxfordSame:svgs[0]===strip(sh('oxford')),sneakerSole:/#f4f2ec/.test(svgs[4])&&/#000000/i.test(strip(sh('sneaker',{secondaryColor:'black'})))||/#16161a/.test(strip(sh('sneaker',{secondaryColor:'black'}))),
         canvas:/<pattern[^>]+tx/.test(strip(sh('sneaker',{leather:'canvas'}))),jeans:/#b87333/.test(pt('jeans'))&&/#d9a441/.test(pt('jeans')),chinos:pt('chinos')!==pt('')&&!/#b87333/.test(pt('chinos')),dress:!/tw/.test(pt(''))}});
     ok(dr.distinct===5&&dr.oxfordSame,'oxford, derby, loafer, boot and sneaker each have a drawing of their own (no style is the oxford)');

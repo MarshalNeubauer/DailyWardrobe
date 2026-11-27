@@ -31,7 +31,7 @@ const canvasrefuse=async({ok,chromium,url})=>{
       if(s.off!==false||s.saved!==true||s.rot!==true)bad.push(s)}
     ok(!bad.length,'with canvases refused at any point, the card is drawn, Confirm is on and it saves in rotation ('+JSON.stringify(bad.slice(0,3))+')');
     // the textured swatch's tile: refused, nothing is cached; allowed again, it is drawn
-    const t=await p.evaluate(()=>{HOOK.TEX_TILES.clear();window.__n=0;window.__at=1;const a=texTileUrl(['10','01'],'#000000','#ffffff'),b=texTileSmooth(['10','01'],'#000000','#ffffff'),n=HOOK.TEX_TILES.size;window.__at=1e9;const c=texTileUrl(['10','01'],'#000000','#ffffff');return {a,b,n,c:!!c}});
+    const t=await p.evaluate(()=>{HOOK.TEX_TILES.clear();window.__n=0;window.__at=1;const a=HOOK.texTileUrl(['10','01'],'#000000','#ffffff'),b=HOOK.texTileSmooth(['10','01'],'#000000','#ffffff'),n=HOOK.TEX_TILES.size;window.__at=1e9;const c=HOOK.texTileUrl(['10','01'],'#000000','#ffffff');return {a,b,n,c:!!c}});
     ok(t.a===null&&t.b===null&&t.n===0&&t.c,'a swatch tile with no canvas is null and not cached; with one again it is drawn');
     ok(await p.evaluate(()=>{const q={id:'z',type:'shirt'};return /couldn’t be drawn/.test(cardSafe(q,0,()=>{throw new Error('x')}))&&/qconf-0/.test(cardSafe(q,0,()=>{throw new Error('x')}))}),'a card that throws while drawn becomes a plain card with Confirm');
     ok(!errs.length,'no uncaught errors ('+errs.slice(0,3).join(' | ')+')');

@@ -329,6 +329,26 @@
    "class": "optional",
    "group": "painter"
   },
+  "asm-look.js": {
+   "class": "today-no-picture",
+   "group": "painter",
+   "note": "a look's painted cloth and keys, worked out on the page (from assemble.js and asm-keys.js, the restructure S6p): as assemble.js"
+  },
+  "asm-cm-job.js": {
+   "class": "optional",
+   "group": "painter",
+   "note": "a look's job for the color-coded painter, worked out on the page (from asm-color.js, asm-watch.js, asm-pocket.js, asm-kinds.js and asm-ocp.js, the restructure S6p)"
+  },
+  "asm-today.js": {
+   "class": "today-no-picture",
+   "group": "painter",
+   "note": "Today's painted pictures on the page: kept, fetched, built ahead, the start-up sync (from assemble.js, the restructure S6p): as assemble.js"
+  },
+  "asm-cm-page.js": {
+   "class": "optional",
+   "group": "painter",
+   "note": "the color-coded painter's page parts: the manifest, warming, Today's hook, Settings' rows (from asm-color.js, asm-gl.js, asm-kinds.js and asm-ocp.js, the restructure S6p)"
+  },
   "stats.js": {
    "class": "today-no-picture",
    "group": "stats"

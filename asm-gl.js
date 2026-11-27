@@ -33,10 +33,11 @@
    The master-only arrays (shares, light, contact shadows, rim, sleeve cells, the kept zones' colours) are packed once per master on the
    CPU (asmGlPack) and uploaded as textures (asmGlUpload); each look sets a few uniforms, draws one full-screen triangle and reads the
    picture back. A lost context (webglcontextlost) paints on the CPU and tries the graphics chip again after ASM_GL_RETRY_MS. */
-import {ASM_CM_KINDS} from './asm-keys.js';
-import {ASM_FLOW,ASM_LIN,ASM_PX_MM,ASM_SIZE,ASM_TUBE_K,asmBarDraw,asmBuildAfter,asmData,asmJpeg,asmLinenTile,asmTq,asmTqn,asmTqr,asmTweedTile} from './assemble.js';
-import {ASM_CELL_FADE,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,ASM_CM_BG_SHADOW,ASM_CM_LIGHT,ASM_CM_LOD0,ASM_CM_LOOK,ASM_CM_MIPS,ASM_CM_U16,ASM_CM_WINK,ASM_CM_WLIGHT,ASM_TIE_LIT,asmCmButtons,asmCmCanvas,asmCmFinish,asmCmMips,asmCmMp,asmCmSetup,asmTieSheenK} from './asm-color.js';
+import {serve} from './bus.js';
 import {linSrgb8} from './srgb.js';
+import {ASM_CM_KINDS} from './asm-keys.js';
+import {ASM_FLOW,ASM_LIN,ASM_PX_MM,ASM_SIZE,ASM_TUBE_K,asmBarDraw,asmData,asmJpeg,asmLinenTile,asmTq,asmTqn,asmTqr,asmTweedTile} from './assemble.js';
+import {ASM_CELL_FADE,ASM_CM_AA,ASM_CM_AA_CUT,ASM_CM_AA_FADE,ASM_CM_BG_SHADOW,ASM_CM_LIGHT,ASM_CM_LOD0,ASM_CM_LOOK,ASM_CM_MIPS,ASM_CM_U16,ASM_CM_WINK,ASM_CM_WLIGHT,ASM_TIE_LIT,asmCmButtons,asmCmCanvas,asmCmFinish,asmCmMips,asmCmMp,asmBuildAfter,asmCmSetup,asmTieSheenK} from './asm-color.js';
 const ASM_GL_SEGS=7;   // body + two sleeves + two lapels (and room)
 const ASM_GL_TILE=4096;   // a band tile larger than this either way stays on the CPU (asmSuitTex's are about 256 across)
 const ASM_GL_CUFFS=15;   // (stage 4) turned shirt parts (P.cuffAng not 0) the shader takes: their index in the lighting texture's high byte
@@ -114,7 +115,7 @@ const asmGlCovers=(job,P)=>!asmGlWhy(job,P);
 function asmGlContext(S){
   let cv=null;try{cv=typeof OffscreenCanvas!=='undefined'?new OffscreenCanvas(S,S):typeof document!=='undefined'?Object.assign(document.createElement('canvas'),{width:S,height:S}):null}catch{cv=null}
   if(!cv)return null;let gl=null;try{gl=cv.getContext('webgl2',{antialias:false,depth:false,stencil:false,alpha:true,premultipliedAlpha:false,preserveDrawingBuffer:false,powerPreference:'high-performance'})}catch{gl=null}
-  if(!gl)return null;if(gl.getParameter(gl.MAX_TEXTURE_SIZE)<S)return null;
+  if(!gl)return null;{const g=/** @type {any} */(gl);if(g.getParameter(g.MAX_TEXTURE_SIZE)<S)return null}
   // a lost context (the system took the graphics chip back, a phone under memory pressure): the CPU paints until the retry
   if(cv.addEventListener)cv.addEventListener('webglcontextlost',e=>{e.preventDefault();asmGlLost(gl)},false);
   return gl}
@@ -674,11 +675,9 @@ function asmGlStatus(){const el=document.getElementById('gl-status');if(!el)retu
 function asmGlSet(v){try{if(v==='off')localStorage.setItem(ASM_GL,'0');else localStorage.removeItem(ASM_GL)}catch{}asmGlStatus()}
 /* a picture came back from the painter (asmRun): remember which way it was made, for the line above */
 function asmGlNote(r){if(!r||!('gl' in r))return;asmGlLast={gl:!!r.gl,ms:r.ms!=null?r.ms:null};asmGlStatus()}
-/* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
-Object.assign(globalThis,{asmGlPref,ASM_GL_KINDS,asmGlWhy,asmGlFree,asmGlProbe,asmGlOnPage,asmGlTry,asmGlPrepOff,asmGlFinOff,asmGlUI,asmGlNote,asmGlContext,asmGlProgram,asmGlRenderer,asmGlPack,asmGlUpload,asmGlUploadGeo});
-Object.defineProperties(globalThis,{asmGlNot:{get:()=>asmGlNot},asmGlState:{get:()=>asmGlState,set:v=>{asmGlState=v}},asmGlPaint:{get:()=>asmGlPaint,set:v=>{asmGlPaint=v}},asmGlPage:{get:()=>asmGlPage,set:v=>{asmGlPage=v}}});
+/* sockets (bus.js; the restructure S6p, 2026-11-27): what assemble.js (today-no-picture) asks of this optional file on the page, and asm-color.js's asmCmBuild in either thread (asm-gl.js imports asm-color.js); setAsmGlState for lab/gl-bench-run.js */
+serve('asm-gl-try',asmGlTry);serve('asm-gl-free',asmGlFree);serve('asm-gl-note',asmGlNote);serve('asm-gl-on-page',asmGlOnPage);serve('asm-gl-state',()=>asmGlState);serve('asm-gl-page',(...a)=>asmGlPage(...a));
+const setAsmGlState=v=>{asmGlState=v};
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,asmGlBytes,asmGlCuffs,asmGlInit,asmGlReset,get asmGlRetry(){return asmGlRetry},set asmGlRetry(v){asmGlRetry=v},asmGlSet,get asmGlPage(){return asmGlPage},set asmGlPage(v){asmGlPage=v},get asmGlPaint(){return asmGlPaint},set asmGlPaint(v){asmGlPaint=v}};
-export {asmGlCuffs,asmGlPref,ASM_GL_KINDS,asmGlWhy,asmGlFree,asmGlProbe,asmGlOnPage,asmGlInit,asmGlReset,asmGlBytes,asmGlTry,asmGlPrepOff,asmGlFinOff,asmGlUI,asmGlSet,asmGlNote,asmGlState,asmGlRetry,asmGlPaint,asmGlPage,asmGlContext,asmGlProgram,asmGlRenderer,asmGlPack,asmGlUpload,asmGlUploadGeo,asmGlNot};
-/* Settings' "Graphics-chip painting" (act.js; on the page only: the painting worker has no act.js) */
-if(typeof acts==='function')acts({asmGlPick:el=>asmGlSet(el.value)});
+globalThis.HOOK={__proto__:globalThis.HOOK||null,asmGlBytes,asmGlCuffs,asmGlInit,asmGlReset,get asmGlRetry(){return asmGlRetry},set asmGlRetry(v){asmGlRetry=v},asmGlSet,get asmGlPage(){return asmGlPage},set asmGlPage(v){asmGlPage=v},get asmGlPaint(){return asmGlPaint},set asmGlPaint(v){asmGlPaint=v},asmGlFree,asmGlNote,asmGlOnPage,asmGlProbe,get asmGlState(){return asmGlState},set asmGlState(v){asmGlState=v},asmGlUI,asmGlWhy};
+export {setAsmGlState,asmGlCuffs,asmGlPref,ASM_GL_KINDS,asmGlWhy,asmGlFree,asmGlProbe,asmGlOnPage,asmGlInit,asmGlReset,asmGlBytes,asmGlTry,asmGlPrepOff,asmGlFinOff,asmGlUI,asmGlSet,asmGlNote,asmGlState,asmGlRetry,asmGlPaint,asmGlPage,asmGlContext,asmGlProgram,asmGlRenderer,asmGlPack,asmGlUpload,asmGlUploadGeo,asmGlNot};

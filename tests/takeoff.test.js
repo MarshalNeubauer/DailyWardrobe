@@ -17,7 +17,7 @@ const takeoff=async({ok,chromium,url,settle})=>{
     // a tap that changes the day: waits for its record to be saved and Today drawn again
     const tap=async sel=>{const t0=await p.evaluate(()=>(dayRecs[key(sel)]||{}).updated||0);await p.click(sel);await p.waitForFunction(t=>((dayRecs[key(sel)]||{}).updated||0)>t,t0,{timeout:5000}).catch(()=>{});await settle(p,400)};
     const st=()=>p.evaluate(()=>{const o=planFor()[key(sel)],r=dayRecs[key(sel)]||{};return {ids:idsOf(o),vest:!!o.vest,suitDay:!!o.suitDay,suitBot:!!o.suitBot,off:o.off||null,offKind:o.offKind||null,
-      kind:asmCmKind(o),hard:rateOutfit(o).hard,rows:[...document.querySelectorAll('#ibox .row')].map(e=>e.textContent.replace(/\s+/g,' ').trim()),
+      kind:HOOK.asmCmKind(o),hard:rateOutfit(o).hard,rows:[...document.querySelectorAll('#ibox .row')].map(e=>e.textContent.replace(/\s+/g,' ').trim()),
       btns:[...document.querySelectorAll('#ibox .row button[aria-label]')].map(b=>b.getAttribute('aria-label')),rec:{off:r.off||null,kind:r.kind||null}}});
     const a=await st();
     ok(a.suitDay&&a.vest&&a.ids.top&&a.ids.tie&&a.kind==='vest'&&a.btns.includes('Take off the suit jacket')&&a.btns.includes('Take off the tie'),`a suit day shows − to take off the jacket and the tie (${a.btns.filter(b=>/Take off/.test(b)).join(', ')})`);
@@ -58,7 +58,7 @@ const takeoff=async({ok,chromium,url,settle})=>{
     ok(!rest.includes('2026-11-11'),`the blazer taken off is not counted as worn that day (${rest.join(', ')})`);
     // the painter: a suit's read stripes paint its trousers with the jacket's own cloth, at the shirt master's scale
     const r=await p.evaluate(()=>{const s={...items[0],sett:{v:2,a:0,bands:[['#1b2440',8],['#e8e8e8',1]],cr:4,tr:30}};
-      return {how:asmCmRoute(s,'trousers').how,pants:asmCmRoute({...items[3],sett:s.sett},'trousers').how,tag:HOOK.asmCmTrSc('trousers',s),jtag:HOOK.asmCmTrSc('jacket',s),
+      return {how:HOOK.asmCmRoute(s,'trousers').how,pants:HOOK.asmCmRoute({...items[3],sett:s.sett},'trousers').how,tag:HOOK.asmCmTrSc('trousers',s),jtag:HOOK.asmCmTrSc('jacket',s),
         z:Object.keys(HOOK.asmCmItems({shirt:items[4],bot:s,belt:items[11],tie:items[6]},'shirt-tie')).sort().join(),zo:Object.keys(HOOK.asmCmItems({shirt:items[4],top:s,vest:true},'vest-open')).sort().join()}});
     ok(r.how==='bands'&&r.pants==='tile'&&/^\/sc\/lg\d+$/.test(r.tag)&&r.jtag==='',`a suit's pants are painted with its jacket's cloth (${r.how}; odd pants keep ${r.pants}), and such looks get a new key`);
     ok(r.z==='belt,shirt,tie,trousers'&&r.zo==='jacket,shirt,waistcoat',`the masters' garments: ${r.z} / ${r.zo}`);
@@ -96,7 +96,7 @@ const todaypants=async({ok,chromium,url,settle})=>{
         I('tie','navy',{pattern:'stripe',secondaryColor:'white'}),I('watch','grey',{metal:'silver'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
       settings.workdays=[0,1,2,3,4];settings.blazerDays=[3];settings.vestMode='auto';HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};HOOK.listOpen=true;show('today')});
     const tap=async s=>{const t0=await p.evaluate(()=>(dayRecs[key(sel)]||{}).updated||0);await p.click(s);await p.waitForFunction(t=>((dayRecs[key(sel)]||{}).updated||0)>t,t0,{timeout:5000}).catch(()=>{});await settle(p,400)};
-    const st=()=>p.evaluate(()=>{const o=planFor()[key(sel)],r=dayRecs[key(sel)]||{};return {ids:idsOf(o),suitDay:!!o.suitDay,suitBot:!!o.suitBot,offKind:o.offKind||null,kind:asmCmKind(o),hard:rateOutfit(o).hard,
+    const st=()=>p.evaluate(()=>{const o=planFor()[key(sel)],r=dayRecs[key(sel)]||{};return {ids:idsOf(o),suitDay:!!o.suitDay,suitBot:!!o.suitBot,offKind:o.offKind||null,kind:HOOK.asmCmKind(o),hard:rateOutfit(o).hard,
       rows:[...document.querySelectorAll('#ibox .row')].map(e=>e.textContent.replace(/\s+/g,' ').trim()),btns:[...document.querySelectorAll('#ibox .row button[aria-label]')].map(b=>b.getAttribute('aria-label')),
       force:r.force||null,off:r.off||null,recIds:r.ids||null,recSuit:r.suitDay}});
     // the suit's rest on the next suit day (Tuesday), from a fresh simulation

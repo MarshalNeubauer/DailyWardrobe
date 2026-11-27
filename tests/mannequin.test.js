@@ -23,10 +23,10 @@ module.exports=async({ok,chromium,url,ROOT})=>{
         'shirt-open':{suitDay:false,top:null,bot:g('pants'),shirt:g('shirt'),tie:null,clip:null,watch:g('watch'),belt:g('belt'),vest:false}})[k]},k);
     for(const kind of KINDS){
       const o=await outfit(kind);
-      const r=await p.evaluate(([o,kind])=>{const d=document.createElement('div');d.style.cssText='position:absolute;left:0;top:0;width:390px';d.innerHTML=figureSvg(o,'k-');document.body.appendChild(d);
+      const r=await p.evaluate(([o,kind])=>{const d=document.createElement('div');d.style.cssText='position:absolute;left:0;top:0;width:390px';d.innerHTML=HOOK.figureSvg(o,'k-');document.body.appendChild(d);
         const s=d.querySelector('svg'),G=mqData(kind),pat=id=>s.querySelector(`pattern[id="k-${id}"]`),hasCol=(id,c)=>!!pat(id)&&pat(id).outerHTML.toLowerCase().includes(String(c).toLowerCase());
         const lap=G.parts.find(x=>x.id==='lapL'),watchFill=[...s.querySelectorAll('.fig-watch path')].map(e=>e.getAttribute('fill'));
-        const out={kind:asmCmKind(o),vb:s.getAttribute('viewBox'),skin:!!s.querySelector('.fig-skin path'),handsOld:!!s.querySelector('.fig-hand-l,.fig-hand-r'),
+        const out={kind:HOOK.asmCmKind(o),vb:s.getAttribute('viewBox'),skin:!!s.querySelector('.fig-skin path'),handsOld:!!s.querySelector('.fig-hand-l,.fig-hand-r'),
           shirt:hasCol('shirt',colOf(o.shirt)),tie:!o.tie||(hasCol('tie',colOf(o.tie))&&!!s.querySelector('use[href="#k-bladeP"]')),
           suit:!o.top||hasCol('suitB','#211d26'),lapel:!lap||(pat('suitL')&&pat('suitL').getAttribute('patternTransform').includes(`rotate(${lap.rot})`)),
           watch:watchFill.length>3&&watchFill.every(c=>G.watch.some(b=>b.c===c))&&!s.innerHTML.includes(METAL_TONES.gold[1]),
@@ -60,7 +60,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     }
     // the painter's stripe lift: the line takes Claude's named colour part of the way from the ground
     const lift=await p.evaluate(()=>{const s=items[0],l=HOOK.figStripeLift(s),lum=h=>{const v=[1,3,5].map(k=>parseInt(h.slice(k,k+2),16));return .2126*v[0]+.7152*v[1]+.0722*v[2]};
-      const o={suitDay:true,top:s,bot:s,shirt:items[1],tie:items[2],belt:items[6],vest:true},svg=figureSvg(o,'l-');
+      const o={suitDay:true,top:s,bot:s,shirt:items[1],tie:items[2],belt:items[6],vest:true},svg=HOOK.figureSvg(o,'l-');
       return {grey:l.sett.bands[1][0],was:s.sett.bands[1][0],brighter:lum(l.sett.bands[1][0])>lum(s.sett.bands[1][0])+20&&lum(l.sett.bands[3][0])>lum(s.sett.bands[3][0]),ground:l.sett.bands[0][0]===s.sett.bands[0][0],
         inFig:svg.toLowerCase().includes(l.sett.bands[1][0]),plain:HOOK.figStripeLift(items[1])===items[1]}});
     ok(lift.brighter&&lift.ground&&lift.inFig&&lift.plain,`a pinstripe's lines are lifted toward the reading's named colours as the painter draws them (${lift.was} -> ${lift.grey}); the ground and other cloths are unchanged`);
@@ -69,11 +69,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       const c=document.querySelector('#mannequin-container');return {svg:!!c.querySelector(':scope > svg .fig-skin'),vest:!!c.querySelector('.fig-vest'),ids:new Set([...c.querySelectorAll('[id]')].map(e=>e.id)).size===c.querySelectorAll('[id]').length}});
     ok(t.svg&&t.vest&&t.ids,'Today draws a waistcoat day as the waistcoat mannequin');
     // two on a page don't share ids
-    ok(await p.evaluate(()=>{const o=planFor()[key(sel)],a=figureSvg(o,'a-'),b=figureSvg(o,'b-'),A=new Set([...a.matchAll(/id="([^"]+)"/g)].map(m=>m[1]));return ![...b.matchAll(/id="([^"]+)"/g)].some(m=>A.has(m[1]))}),'two figures on a page use distinct ids');
+    ok(await p.evaluate(()=>{const o=planFor()[key(sel)],a=HOOK.figureSvg(o,'a-'),b=HOOK.figureSvg(o,'b-'),A=new Set([...a.matchAll(/id="([^"]+)"/g)].map(m=>m[1]));return ![...b.matchAll(/id="([^"]+)"/g)].some(m=>A.has(m[1]))}),'two figures on a page use distinct ids');
     // a day with no colour-coded master still gets the nearest mannequin (the earlier drawing is gone): no belt on a shirt day, no shirt
     const nm0=await p.evaluate(()=>{const g=t=>items.find(i=>i.type===t),r={};
       const a={suitDay:false,top:null,bot:g('pants'),shirt:g('shirt'),tie:null,belt:null,watch:g('watch')},b={suitDay:true,top:g('suit'),bot:g('suit'),shirt:null,tie:g('tie'),vest:false};
-      for(const [n,o] of [['noBelt',a],['noShirt',b]]){const s=figureSvg(o,'n'+n+'-');r[n]={master:asmCmKind(o),kind:HOOK.figKind(o),sq:/viewBox="0 0 390 390"/.test(s)&&s.includes('fig-skin')}}
+      for(const [n,o] of [['noBelt',a],['noShirt',b]]){const s=HOOK.figureSvg(o,'n'+n+'-');r[n]={master:HOOK.asmCmKind(o),kind:HOOK.figKind(o),sq:/viewBox="0 0 390 390"/.test(s)&&s.includes('fig-skin')}}
       r.old=typeof outfitFigureSvg==='undefined';return r});
     ok(nm0.noBelt.master===null&&nm0.noBelt.kind==='shirt-open'&&nm0.noBelt.sq&&nm0.noShirt.master===null&&nm0.noShirt.kind==='suit'&&nm0.noShirt.sq&&nm0.old,
       `an outfit with no colour-coded master is drawn on the nearest mannequin (${JSON.stringify(nm0)}); the earlier drawing is gone`);
@@ -83,11 +83,11 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // (the 150 ms is this machine's when quiet; times how much slower the machine running it is right now, tests/pace.js: GitHub's 4-core
     // runner took 217 ms against a flat 150, CR-10-03)
     const k=await pace(p);
-    const sp=await p.evaluate(async()=>{const o=planFor()[key(sel)],neu=figureSvg(o,'s-');
+    const sp=await p.evaluate(async()=>{const o=planFor()[key(sel)],neu=HOOK.figureSvg(o,'s-');
       const t=async s=>{const c=document.createElement('canvas');c.width=1170;c.height=1200;const g=c.getContext('2d');const r=[];
         for(let i=0;i<5;i++){const x=s.replace('width="100%"','width="1170"').replace(/(id="|url\(#|href="#)([a-z]+-)/g,(m,a,b)=>a+'r'+i+b),t0=performance.now(),im=new Image();im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(x);await im.decode();g.drawImage(im,0,0);g.getImageData(0,0,1,1);r.push(performance.now()-t0)}
         return r.sort((a,b)=>a-b)[2]};
-      const b0=performance.now(),built=figureSvg(o,'z-'),bms=performance.now()-b0;return {neu:await t(neu),bms}});
+      const b0=performance.now(),built=HOOK.figureSvg(o,'z-'),bms=performance.now()-b0;return {neu:await t(neu),bms}});
     ok(sp.neu<150*k&&sp.bms<20*k,`it draws within its budget (${sp.neu.toFixed(0)} ms, ${(150*k).toFixed(0)} allowed: 150 at this machine's pace ×${k.toFixed(2)}; its SVG built in ${sp.bms.toFixed(1)} ms)`);
     // the office behind the figure, as in the painted pictures (the owner, 2026-11-14): a small copy of the painter's background with the
     // pose's own soft wall shadow baked in, and nothing of the mannequin's own on the wall (its shading used to tint it); both themes

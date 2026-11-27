@@ -17,8 +17,9 @@
    - the cloth: the square's colour, its border along the top edge (the contrast edge folded to show), dots, a stripe, a check or a small
      figure in its second and third colours, a faint slub for white linen and woven squares
    Nothing of core.js may be read at load time (the picture worker has none): asmPocketJob works the colours out on the page. */
-import {asmData,asmJpeg} from './assemble.js';
+import {serve} from './bus.js';
 import {linSrgb8,srgbLin8} from './srgb.js';
+import {asmData,asmJpeg} from './assemble.js';
 const ASM_POCKETV=2;   // 2: folded cloth (a rolled, slightly uneven crease, two layers at the ends, relaxed creases, corner tucks, silk sheen / weave)
 const ASM_POCKET_GEO={suit:{l:[1325,532],r:[1559,506]},vest:{l:[1323,532],r:[1558,504]}};   // the welt's top edge (its opening), left and right ends, at 2048
 const ASM_POCKET_MASTER={'suit-open':'suit','vest-open':'vest'};
@@ -27,13 +28,6 @@ const ASM_POCKET_LIT=.84;   // the strip's light against the chest's just above 
 /* the strip's corners at 2048: b0, b1 its bottom (on the welt's opening, left and right), t0, t1 its top; null on a master with no pocket */
 function asmPocketQuad(kind){const g=ASM_POCKET_GEO[ASM_POCKET_MASTER[kind]||kind];if(!g)return null;const S=ASM_POCKET_SHAPE,at=t=>[g.l[0]+(g.r[0]-g.l[0])*t,g.l[1]+(g.r[1]-g.l[1])*t];
   const b0=at(S.t0),b1=at(S.t1);return {b0,b1,t0:[b0[0],b0[1]-S.h],t1:[b1[0],b1[1]-S.h]}}
-/* what the look's key carries for its square (asm-color.js asmCmSig) */
-const asmPocketSig=p=>['q'+ASM_POCKETV,colOf(p),p.pattern||'solid',p.secondaryColor||'',p.tertiaryColor||'',String(p.material||'')].join('/');
-/* the job's part (assemble.js asmJob): what to paint, or null (no square, no jacket, a master with no pocket) */
-function asmPocketJob(o,kind){const p=o&&o.pocket;if(!p||!o.top||!kind||!asmPocketQuad(kind))return null;
-  const c=k=>k&&COLORS[k]?COLORS[k]:null,pat=typeof patBase==='function'?patBase(p.pattern)||'solid':p.pattern||'solid';
-  const m=String(p.material||'').toLowerCase();
-  return {kind,col:colOf(p),c2:c(p.secondaryColor),c3:c(p.tertiaryColor),pat,linen:/linen/.test(m),silk:/silk/.test(m)}}
 /* paint the square on a finished picture: res {url} (a JPEG) or {px, S} (raw RGBA); returns res with the square painted */
 async function asmPocketPaint(res,J){if(!res||!J)return res;let img=null,px,S;
   if(res.px){px=res.px;S=res.S}else if(res.url){img=await asmData(res.url);px=img.data;S=img.width}else return res;
@@ -105,8 +99,8 @@ function asmPocketDo(px,S,J){const Q=asmPocketQuad(J.kind);if(!Q)return;const f=
       const c=cloth(bx-b0[0],v,vv);
       for(let q=0;q<3;q++){const base=c[q]*k*shade*weave,lit=base+(Math.min(1,k*1.05)-base)*sheen;out[q]=out[q]*(1-cov)+Math.min(1,lit)*cov}}
     for(let q=0;q<3;q++)px[i+q]=gam(out[q])}}
-/* the bridge (an ES module since C3, 2026-11-24): what the classic scripts, the other modules, asm-worker.js and the tests still use as globals (tests/bridge.test.js lists who) */
-Object.assign(globalThis,{asmPocketQuad,asmPocketSig,asmPocketJob,asmPocketPaint});
+/* sockets (bus.js; the restructure S6p, 2026-11-27): the pocket square painted on the finished picture (asm-color.js asmBuildAfter) and its quad for the drawn mannequin (mannequin.js): both live without this file */
+serve('asm-pocket-paint',asmPocketPaint);serve('asm-pocket-quad',asmPocketQuad);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,asmPocketDo};
-export {asmPocketQuad,asmPocketSig,asmPocketJob,asmPocketPaint,asmPocketDo};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,asmPocketDo,asmPocketQuad};
+export {asmPocketQuad,asmPocketPaint,asmPocketDo,ASM_POCKETV};

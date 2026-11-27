@@ -23,7 +23,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const files=fs.readdirSync(FIX),names=files.map(f=>f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/'));
-    const ck=await p.evaluate(ns=>ns.map(n=>asmCmKey('suit',n)),names);
+    const ck=await p.evaluate(ns=>ns.map(n=>HOOK.asmCmKey('suit',n)),names);
     files.forEach((f,i)=>{served[ck[i]]={sig:'asm/cm test',img:`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(path.join(FIX,f)).toString('base64'),model:'colormaster',t:1000}});
     // the default: painted pictures, and the start-up look at the server happens (the network watch sees it)
     await p.waitForFunction(()=>!HOOK.asmSyncing,null,{timeout:10000}).catch(()=>{});
@@ -35,7 +35,7 @@ module.exports=async({ok,chromium,url,settle})=>{
       for(const i of items)if(HOOK.ITEM_PIC_TYPES.includes(i.type))HOOK.renderTried.add(itemKey(i));   // (item pictures are their own feature, not the painter's)
       settings.workdays=[1,2,3,4,5];settings.blazerDays=[];settings.vestMode='never';HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};
       const o=planFor()[key(sel)];renders[comboKey(o)]={sig:comboSig(o),img:'data:image/jpeg;base64,/9j/KEPTPHOTO',model:'gpt',t:500};   // (older than the master: painting wins)
-      window.__paint=0;window.__ahead=0;if(!window.__P0){window.__P0=asmPhoto;window.__A0=HOOK.asmAhead}
+      window.__paint=0;window.__ahead=0;if(!window.__P0){window.__P0=HOOK.asmPhoto;window.__A0=HOOK.asmAhead}
       HOOK.asmPhoto=async(...a)=>{__paint++;return __P0(...a)};HOOK.asmAhead=async()=>{__ahead++};   // (building ahead counted, not run)
       show('today')});
     // Settings (the wardrobe comes after the switch: painted, its first drawing would start painting): the choice is there for everyone, outside the Advanced fold
@@ -54,9 +54,9 @@ module.exports=async({ok,chromium,url,settle})=>{
     const t1=await p.evaluate(()=>{const c=document.querySelector('#mannequin-container');return {svg:!!c.querySelector(':scope > svg'),img:!!c.querySelector(':scope > img'),photo:c.classList.contains('photo'),sw:!!document.querySelector('.swstack'),share:!!document.querySelector('.wshare'),kept:!!renders[comboKey(planFor()[key(sel)])]}});
     ok(t1.svg&&!t1.img&&!t1.photo&&!t1.sw&&t1.kept,`Today shows the traced mannequin, not the outfit photo kept for this look (still kept on the device), and no swatches (${JSON.stringify(t1)})`);
     ok(!t1.share,'there is no share button on Today to send anything else (it was removed 2026-11-14: a screenshot shares what is shown)');
-    await p.evaluate(async()=>{stepDay(1);stepDay(1);stepDay(-2);await asmSync(true);await __A0();await HOOK.prefetchRenders();await asmEnsure(planFor()[key(sel)]);document.dispatchEvent(new Event('visibilitychange'))});
+    await p.evaluate(async()=>{stepDay(1);stepDay(1);stepDay(-2);await HOOK.asmSync(true);await __A0();await HOOK.prefetchRenders();await HOOK.asmEnsure(planFor()[key(sel)]);document.dispatchEvent(new Event('visibilitychange'))});
     await new Promise(r=>setTimeout(r,2500));   // (waiting to see that nothing happens)
-    const t2=await p.evaluate(()=>({paint:__paint,ahead:__ahead,shown:!!renderFor(planFor()[key(sel)]),svg:!!document.querySelector('#mannequin-container > svg'),gap:asmGapNote({type:'blazer',pattern:'other',primaryColor:'navy'})}));
+    const t2=await p.evaluate(()=>({paint:__paint,ahead:__ahead,shown:!!renderFor(planFor()[key(sel)]),svg:!!document.querySelector('#mannequin-container > svg'),gap:HOOK.asmGapNote({type:'blazer',pattern:'other',primaryColor:'navy'})}));
     ok(t2.gap==='','the item sheet has no "Outfit pictures: painted plain" line either');
     ok(!log.length&&t2.paint===0&&!t2.shown&&t2.svg,`swiping, building ahead, the server look and prefetching ask the server for nothing and paint nothing (${log.length} requests: ${log.slice(0,3).join(' ')}; ${t2.paint} painted)`);
     // a restart with drawing only: not one picture request from start-up on
@@ -68,7 +68,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     await wardrobe();log.length=0;
     await p.evaluate(()=>{document.body.classList.add('owner');openSettings('photos')});await settle(p,300);
     await p.selectOption('#cfg-pictures','painted');
-    await p.waitForFunction(()=>!!asmFor(planFor()[key(sel)]),null,{timeout:60000,polling:250});
+    await p.waitForFunction(()=>!!HOOK.asmFor(planFor()[key(sel)]),null,{timeout:60000,polling:250});
     const b1=await p.evaluate(()=>({open:settingsOpen(),pictures:settings.pictures,adv:getComputedStyle(document.querySelector('#adv-photos')).display!=='none',help:document.querySelector('#pics-help').textContent,paint:__paint}));
     ok(b1.open&&b1.pictures==='painted'&&b1.adv&&/^Painted pictures:/.test(b1.help)&&b1.paint>=1&&log.some(l=>/key=/.test(l)),`switching back paints the day on screen at once, before Settings closes (${b1.paint} painted, ${log.length} picture requests); its controls come back`);
     await p.evaluate(()=>closeSettings());

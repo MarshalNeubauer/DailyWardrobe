@@ -30,7 +30,7 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));p.on('dialog',d=>d.accept());
     await p.goto(url);await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','t')},HOST);await p.reload();await p.waitForFunction(()=>window.appReady);
     const a=await p.evaluate(async()=>{const s={id:'sk1',type:'socks',primaryColor:'black',secondaryColor:'lightgrey',pattern:'solid',added:1},plain={id:'sk2',type:'socks',primaryColor:'black',pattern:'solid',added:1};
-      const th=itemThumb(s,true),th0=itemThumb(plain,true);HOOK.items=[s,plain];
+      const th=HOOK.itemThumb(s,true),th0=HOOK.itemThumb(plain,true);HOOK.items=[s,plain];
       await HOOK.renderItemPic(s);
       return {d:HOOK.itemDesc(s),d0:HOOK.itemDesc(plain),desc:desc(s),desc0:desc(plain),toe:/class="sock-toe"[^>]*fill="#[0-9a-f]{6}"/i.test(th)&&th.includes(COLORS.lightgrey),toe0:/sock-toe/.test(th0),traced:th.includes(HOOK.SOCK_D.back)&&th.includes(HOOK.SOCK_D.front)&&th.includes(HOOK.SOCK_D.cuff)&&/<clipPath id="[^"]+cb">/.test(th)&&/<clipPath id="[^"]+cf">/.test(th)&&/clip-path="url\(#[^)]+cf\)"/.test(th),
         keys:itemKey(s)!==itemKey(plain),form:itemBody(s),form0:itemBody({id:'t1',type:'tie',primaryColor:'navy',pattern:'solid'})}});

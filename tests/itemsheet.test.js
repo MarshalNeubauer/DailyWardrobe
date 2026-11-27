@@ -28,13 +28,13 @@ const itemfix=async({ok,chromium,url})=>{
     ok(f.suit.length===3,'patterned cloth keeps its second and third colors');
     // cufflinks: named and drawn in their colour, and the metal "other" is gunmetal
     const c=await p.evaluate(()=>{const l={id:'l1',type:'cufflinks',primaryColor:'lightblue',metal:'other',pattern:'solid'},s={id:'l2',type:'cufflinks',primaryColor:'silver',metal:'silver',pattern:'solid'};
-      return {d:desc(l),ds:desc(s),th:itemThumb(l),ths:itemThumb(s),sw:swatchSVG(l),opts:HOOK.METAL_OPTS.map(x=>x[1]).join(',')}});
+      return {d:desc(l),ds:desc(s),th:HOOK.itemThumb(l),ths:HOOK.itemThumb(s),sw:HOOK.swatchSVG(l),opts:HOOK.METAL_OPTS.map(x=>x[1]).join(',')}});
     ok(c.d==='light blue · gunmetal'&&c.ds==='silver',`cufflinks are named by color and metal (${c.d} | ${c.ds})`);
     ok(c.th.includes('class="link-face"')&&c.th.toLowerCase().includes(await p.evaluate(()=>COLORS.lightblue))&&!c.ths.includes('link-face'),'enamel cufflinks are drawn with a face in their color; silver ones stay all metal');
     ok(c.sw.toLowerCase().includes(await p.evaluate(()=>COLORS.lightblue)),'their swatch shows the color');
     ok(/gunmetal/.test(c.opts)&&!/other/.test(c.opts),`the metal dropdown says gunmetal, not other (${c.opts})`);
     // tie clip swatch in its colour
-    const clip=await p.evaluate(()=>[swatchSVG({id:'t',type:'tieclip',primaryColor:'rosegold'}),COLORS.rosegold,swatchSVG({id:'t2',type:'tieclip',primaryColor:'black'}),COLORS.black]);
+    const clip=await p.evaluate(()=>[HOOK.swatchSVG({id:'t',type:'tieclip',primaryColor:'rosegold'}),COLORS.rosegold,HOOK.swatchSVG({id:'t2',type:'tieclip',primaryColor:'black'}),COLORS.black]);
     ok(clip[0].toLowerCase().includes(clip[1].toLowerCase())&&clip[2].toLowerCase().includes(clip[3].toLowerCase()),'a tie clip\'s swatch is its own color (it was always silver)');
     // sneakers are leather, not calf; no season where a type has none
     const d=await p.evaluate(()=>[desc({type:'shoes',primaryColor:'cream',secondaryColor:'brown',leather:'calf',shoeStyle:'sneaker',pattern:'solid'}),desc({type:'cufflinks',primaryColor:'silver',metal:'silver',season:'warm'})]);
@@ -64,7 +64,7 @@ const itemfix=async({ok,chromium,url})=>{
     ok(/close-up/.test(adv.c),'a shirt\'s still suggests one');
     ok(!/readpat-btn/.test(adv.b)&&/Add a photo above to read its pattern/.test(adv.b),'an item with no photo offers no Read pattern from photo, and says to add a photo');
     // the drawn grain: a plain suit on Today's figure and in a small swatch has a fine, faint grain, no stripe-like lines; windowpane shows panes
-    const g=await p.evaluate(()=>{const s={id:'s',type:'suit',primaryColor:'navy',pattern:'solid'};const fig=fabricDef('f',s,'top','fig'),dot=fabricDef('d',s,'top','dot'),wp=fabricDef('w',{id:'w',type:'suit',primaryColor:'grey',pattern:'windowpane'},'top','dot'),pin=fabricDef('p',{id:'p',type:'suit',primaryColor:'navy',pattern:'pinstripe'},'top','fig');
+    const g=await p.evaluate(()=>{const s={id:'s',type:'suit',primaryColor:'navy',pattern:'solid'};const fig=HOOK.fabricDef('f',s,'top','fig'),dot=HOOK.fabricDef('d',s,'top','dot'),wp=HOOK.fabricDef('w',{id:'w',type:'suit',primaryColor:'grey',pattern:'windowpane'},'top','dot'),pin=HOOK.fabricDef('p',{id:'p',type:'suit',primaryColor:'navy',pattern:'pinstripe'},'top','fig');
       const W=d=>+d.match(/width="([\d.]+)"/)[1],O=d=>{const m=d.match(/stroke-opacity="([\d.]+)"/);return m?+m[1]:0};return {fw:W(fig),fo:O(fig),dw:W(dot),do_:O(dot),wp:W(wp),pin:/M-2,2 L2,-2/.test(pin)}});
     ok(g.fw<=1.5&&g.fo<=.05&&g.dw<=2&&g.do_<=.05,`a plain suit's grain is fine and faint on the figure (${g.fw}, ${g.fo}) and in swatches (${g.dw}, ${g.do_})`);
     ok(!g.pin,'no grain lines run under a pinstripe on the figure');

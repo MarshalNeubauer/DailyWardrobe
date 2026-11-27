@@ -15,13 +15,13 @@ module.exports=async({ok,chromium,url})=>{
         TEX={v:4,tex:{kind:'dobby',grid:[[1,0],[0,1]],lighter:true,contrast:.3,rel:.05},cr:20,tr:60,src:'claude+pixels'};
       const zone=HOOK.ASM_CM_ZONE,out={missing:tagged.filter(t=>!Object.values(PATS_BY).some(l=>l.includes(t))),bad:[],afterRead:[],painter:[],reading:[]};
       for(const [type,pats] of Object.entries(PATS_BY)){const z=zone[type];if(!z)continue;
-        for(const pat of pats){const it={id:'x',type,primaryColor:'navy',pattern:pat},rt=asmCmRoute(it,z),key=`${type}/${pat}`;
+        for(const pat of pats){const it={id:'x',type,primaryColor:'navy',pattern:pat},rt=HOOK.asmCmRoute(it,z),key=`${type}/${pat}`;
           if(rt.gap==='painter'){if(!HOOK.ASM_NO_PAINTER[z==='waistcoat'?'jacket':z].includes(pat))out.bad.push(key+': '+rt.why);out.painter.push(key)}
           else if(rt.gap==='reading'){if(!readable(type,pat,null))out.bad.push(key+' waits for a reading it can never get');out.reading.push(key)}
           else if(rt.how==='plain')out.bad.push(key+' plain with no reason');
           if(rt.gap&&!rt.why)out.bad.push(key+' gives no reason');
           // read: what the reader would give it
-          if(readable(type,pat,null)){const s=HOOK.motifPat(pat)?MOTIF:(texPat(type,pat)||tieWeave(type,pat))?TEX:BANDS,rr=asmCmRoute({...it,sett:s},z);
+          if(readable(type,pat,null)){const s=HOOK.motifPat(pat)?MOTIF:(texPat(type,pat)||tieWeave(type,pat))?TEX:BANDS,rr=HOOK.asmCmRoute({...it,sett:s},z);
             if(rr.gap)out.afterRead.push(`${key}: ${rr.why}`)}}}
       return out},tagged);
     ok(tagged.length>20&&!r.missing.length,`every pattern the tagger can answer is listed for some item type (${tagged.length}; missing: ${r.missing.join(', ')||'none'})`);
@@ -31,18 +31,18 @@ module.exports=async({ok,chromium,url})=>{
     const NOPAINT='blazer/other,pants/other,suit/other';
     ok(r.painter.sort().join()===NOPAINT,`the patterns with no painter yet are the known ones (${r.painter.sort().join(', ')})`);
     // the trousers' weaves are painted with the jacket's cloths; the owner's own pattern named twill and drawn like solid gets the ribs
-    const tr=await p.evaluate(()=>['twill','herringbone','tweed','windowpane'].map(pat=>asmCmRoute({id:'t',type:'pants',primaryColor:'grey',pattern:pat},'trousers')).map(x=>x.how+(x.gap?'/'+x.gap:'')));
+    const tr=await p.evaluate(()=>['twill','herringbone','tweed','windowpane'].map(pat=>HOOK.asmCmRoute({id:'t',type:'pants',primaryColor:'grey',pattern:pat},'trousers')).map(x=>x.how+(x.gap?'/'+x.gap:'')));
     ok(tr.join()==='twill,herringbone,tweed,plain/reading',`trousers in twill, herringbone and tweed are painted; a windowpane waits for its reading (${tr})`);
     // the small woven figures, and the knit and paisley ties, have their own painters; an own pattern named for one gets it
-    const mk=await p.evaluate(()=>[...['houndstooth','sharkskin','birdseye','nailhead'].map(pat=>asmCmRoute({id:'m',type:'suit',primaryColor:'grey',pattern:pat},'jacket').how),
-      asmCmRoute({id:'m',type:'pants',primaryColor:'grey',pattern:'houndstooth'},'trousers').how,asmCmRoute({id:'k',type:'tie',primaryColor:'navy',pattern:'knit'},'tie').how,
-      asmCmRoute({id:'k',type:'tie',primaryColor:'navy',pattern:'paisley'},'tie').how,asmCmRoute({id:'o',type:'suit',primaryColor:'grey',pattern:'own-micro-houndstooth'},'jacket').how,
-      asmMicroGrid('houndstooth').filter(v=>v<0).length,HOOK.asmCmWeaveTag('jacket',{id:'m',type:'suit',primaryColor:'grey',pattern:'birdseye'}).startsWith('/mbirdseye')]);
+    const mk=await p.evaluate(()=>[...['houndstooth','sharkskin','birdseye','nailhead'].map(pat=>HOOK.asmCmRoute({id:'m',type:'suit',primaryColor:'grey',pattern:pat},'jacket').how),
+      HOOK.asmCmRoute({id:'m',type:'pants',primaryColor:'grey',pattern:'houndstooth'},'trousers').how,HOOK.asmCmRoute({id:'k',type:'tie',primaryColor:'navy',pattern:'knit'},'tie').how,
+      HOOK.asmCmRoute({id:'k',type:'tie',primaryColor:'navy',pattern:'paisley'},'tie').how,HOOK.asmCmRoute({id:'o',type:'suit',primaryColor:'grey',pattern:'own-micro-houndstooth'},'jacket').how,
+      HOOK.asmMicroGrid('houndstooth').filter(v=>v<0).length,HOOK.asmCmWeaveTag('jacket',{id:'m',type:'suit',primaryColor:'grey',pattern:'birdseye'}).startsWith('/mbirdseye')]);
     ok(mk.join()==='houndstooth,sharkskin,birdseye,nailhead,houndstooth,knit,paisley,houndstooth,32,true',`houndstooth, sharkskin, birdseye and nailhead jackets and trousers, knit and paisley ties are painted (${mk})`);
     // the item sheet says so, and Settings lists it with one tap to read
     const ui=await p.evaluate(()=>{HOOK.items=[{id:'g1',type:'suit',primaryColor:'navy',pattern:'pinstripe'},{id:'g2',type:'blazer',primaryColor:'navy',pattern:'other'},{id:'g3',type:'suit',primaryColor:'navy',pattern:'solid'}];
-      const note=asmGapNote(items[0]),none=asmGapNote(items[2]),gaps=HOOK.asmCmGaps().map(x=>x.i.id+':'+x.r.gap);
-      const host=document.createElement('div');host.id='asm-group';document.body.appendChild(host);asmCmUI();const html=$('#cm-gaps').innerHTML;host.remove();
+      const note=HOOK.asmGapNote(items[0]),none=HOOK.asmGapNote(items[2]),gaps=HOOK.asmCmGaps().map(x=>x.i.id+':'+x.r.gap);
+      const host=document.createElement('div');host.id='asm-group';document.body.appendChild(host);HOOK.asmCmUI();const html=$('#cm-gaps').innerHTML;host.remove();
       return {note,none,gaps,list:/Painted plain \(2\)/.test(html),btn:/Read 1 pattern/.test(html)}});
     ok(/Read pattern from photo/.test(ui.note)&&ui.none===''&&ui.gaps.join()==='g1:reading,g2:painter',`the item sheet says why a piece is painted plain ("${ui.note.replace(/<[^>]+>/g,'')}"), and only for such a piece`);
     ok(ui.list&&ui.btn,'Settings lists the pieces painted plain, with one button to read the readable ones');

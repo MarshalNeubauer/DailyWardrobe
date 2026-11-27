@@ -12,7 +12,7 @@ module.exports=async({ok,chromium,url})=>{
       const im=await new Promise(res=>{const m=new Image();m.onload=()=>res(m);m.src=e.url});
       const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');x.drawImage(im,0,0,64,64);const d=x.getImageData(0,0,64,64).data,Y=[];let rr=0,gg=0,bb=0;
       for(let k=0;k<d.length;k+=4){Y.push(.2126*d[k]+.7152*d[k+1]+.0722*d[k+2]);rr+=d[k];gg+=d[k+1];bb+=d[k+2]}Y.sort((a,b)=>a-b);const n=Y.length;
-      const drawn=swatchSVG(pink,true);
+      const drawn=HOOK.swatchSVG(pink,true);
       const pq=ovlPiece(plainHb);await (HOOK.OVL_HB.get(HOOK.ovlHbKey(plainHb))||{}).p;
       return {placeholder:/data-hb=/.test(first)&&/<rect[^>]*fill=/.test(first),swapped:/^<img src="data:image\/png/.test(swapped),cached:then===`<img src="${e.url}" alt="">`,size:[im.naturalWidth,im.naturalHeight],
         p5:Y[Math.floor(n*.05)],p95:Y[Math.floor(n*.95)],pinkish:rr/n>gg/n+6&&bb/n>gg/n,drawnDark:/stroke-opacity="0\.[6-9]/.test(drawn),

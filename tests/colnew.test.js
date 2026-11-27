@@ -113,7 +113,7 @@ const colnew=async({ok,chromium,url,settle})=>{
     ok(await p.evaluate(()=>document.querySelectorAll('#col-sheet .cnbmp i').length===16&&/<image/.test(document.querySelector('#col-sheet .cppatbig').innerHTML)),'the weave map is shown and the blazer is drawn with its texture');
     await p.click('#cn-add');await p.waitForFunction(()=>items.find(x=>x.id==='b1').pattern==='own-hopsack');
     e=await p.evaluate(()=>{const b=items.find(x=>x.id==='b1'),pp=settings.custom.patterns.find(x=>x.key==='own-hopsack'),s=usableSett(b);
-      return {pp,s:s&&{v:s.v,grid:s.tex&&s.tex.grid.join(),tr:s.tr,look:s.look},def:/<image/.test(fabricDef('zz',b,'top')),plan:patOf(b),suit:PATS_BY.suit.includes('own-hopsack')}});
+      return {pp,s:s&&{v:s.v,grid:s.tex&&s.tex.grid.join(),tr:s.tr,look:s.look},def:/<image/.test(HOOK.fabricDef('zz',b,'top')),plan:patOf(b),suit:PATS_BY.suit.includes('own-hopsack')}});
     ok(e.pp&&e.pp.base==='nailhead'&&e.pp.look&&e.pp.look.tex.grid.join()==='1100,1100,0011,0011'&&e.pp.types.join()==='suit,blazer,pants'&&e.suit,'the pattern is added with its look, for suits, blazers and pants ('+JSON.stringify(e.pp&&e.pp.look)+')');
     ok(e.s&&e.s.v===4&&e.s.grid==='1100,1100,0011,0011'&&e.s.tr===70&&/^l/.test(e.s.look)&&e.def&&e.plan==='nailhead','the blazer draws the look\'s weave (a texture reading on a jacket) and plans as nailhead');
     // the tonal windowpane follows the item's colour

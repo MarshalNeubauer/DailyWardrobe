@@ -7,10 +7,13 @@
    OVL_LINE of a repeat, and a tie's pattern at half size (more repeats). Pictures only; it takes no touches and fades while zoomed. */
 import {CHECK_PATS,MOTIF_PATS,STRIPE_PATS,usableSett} from './detect.js';
 import {$,TEXTURE_TYPES,colOf,hexRgb,key,patBase} from './core.js';
-import {swatchSVG} from './draw.js';
+import {ask,served} from './bus.js';
+import {swatchSVG,texTileSmooth,texTileUrl,texTones} from './draw.js';
 import {srcOk} from './photo-keys.js';
 import {sel} from './app.js';
 import {planFor} from './today-plan.js';
+import {asmCmUse} from './asm-look.js';
+import {ASM_ON} from './assemble.js';
 const OVL_LINE=.1;
 function ovlItem(i){const s=usableSett(i),sp=i.patternSpec&&i.patternSpec.across;if(!s||!s.bands||i.type==='tie')return i;
   let b=s.bands.map(x=>[x[0],x[1]]);if(sp&&sp.bands&&sp.bands.length===b.length)b=b.map((x,k)=>[sp.bands[k].hex||x[0],x[1]]);
@@ -67,12 +70,12 @@ function ovlSuitPng(i){if(typeof document==='undefined')return null;const o=ovlI
    charcoal zigzags on near-white. The tile is rasterised, so it is made once per look, asynchronously: until then a plain patch of the
    shirt's colour (data-hb), replaced where it shows when ready; if it can't be made, the drawn swatch as before */
 const OVL_HB_PAIRS=5,OVL_HB_PX=512,OVL_HB=new Map();let ovlHbN=0;   // (CR-8-05) ids from a counter: the cache's size repeats after an eviction
-const ovlHbKey=i=>JSON.stringify([colOf(i),usableSett(i),i.pattern,typeof ASM_HB_COL_LIFT!=='undefined'?[ASM_HB_COL_LIFT,ASM_HB_SHIRT_Y]:0,OVL_HB_PAIRS]);
-function ovlHbShirt(i){if(!i||i.type!=='shirt'||typeof document==='undefined'||typeof asmHbShirt!=='function'||typeof asmCmTile!=='function'||!asmHbShirt(i))return null;
+const ovlHbKey=i=>JSON.stringify([colOf(i),usableSett(i),i.pattern,served('asm-hb-lift')?ask('asm-hb-lift'):0,OVL_HB_PAIRS]);
+function ovlHbShirt(i){if(!i||i.type!=='shirt'||typeof document==='undefined'||!served('asm-hb-shirt')||!served('asm-cm-tile')||!ask('asm-hb-shirt',i))return null;
   const k=ovlHbKey(i);let e=OVL_HB.get(k);
   if(!e){e={id:'hb'+(++ovlHbN),url:null,fail:false};OVL_HB.set(k,e);
     const put=h=>document.querySelectorAll(`[data-hb="${e.id}"]`).forEach(x=>{x.outerHTML=h});
-    e.p=asmCmTile(i,'shirt').then(T=>{if(!T)throw new Error('no tile');
+    e.p=ask('asm-cm-tile',i,'shirt').then(T=>{if(!T)throw new Error('no tile');
       const g=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055),tc=document.createElement('canvas');tc.width=T.TW;tc.height=T.TH;
       const tx=tc.getContext('2d'),d=tx.createImageData(T.TW,T.TH);for(let n=0;n<T.TW*T.TH;n++){for(let q=0;q<3;q++)d.data[4*n+q]=g(Math.max(0,Math.min(1,T.t[3*n+q])));d.data[4*n+3]=255}tx.putImageData(d,0,0);
       const S=OVL_HB_PX,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d'),s=S/(OVL_HB_PAIRS*T.TW);x.imageSmoothingQuality='high';
@@ -89,13 +92,13 @@ function ovlHbShirt(i){if(!i||i.type!=='shirt'||typeof document==='undefined'||t
    a plain patch of the jacket's colour meanwhile (data-hb, as the herringbone shirt's); with no tile (no clean patch in the close-up) the
    swatch is as before (the close-up) */
 const OVL_CU=new Map();let ovlCuN=0;
-const ovlCuKey=i=>JSON.stringify([i.id,colOf(i),i.pattern,(i.texture||'').length,(i.texture||'').slice(-12),typeof ASM_CU!=='undefined'?ASM_CU.v:0]);
-const ovlCuWants=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&typeof document!=='undefined'&&typeof asmCuTile==='function'&&typeof asmCmRoute==='function'&&asmCmRoute(i,'jacket').how==='twill'&&asmCuWants(i,'twill');
+const ovlCuKey=i=>JSON.stringify([i.id,colOf(i),i.pattern,(i.texture||'').length,(i.texture||'').slice(-12),served('asm-cu-v')?ask('asm-cu-v'):0]);
+const ovlCuWants=i=>!!i&&(i.type==='suit'||i.type==='blazer')&&typeof document!=='undefined'&&served('asm-cu-tile')&&served('asm-cm-route')&&ask('asm-cm-route',i,'jacket').how==='twill'&&ask('asm-cu-wants',i,'twill');
 const ovlSuitOld=i=>{if(ovlCloseup(i)&&!ovlDrawn(i))return `<img src="${srcOk(i.swatch)}" alt="">`;const u=ovlSuitPng(i);return u?`<img src="${u}" alt="">`:ovlSvg(i)};
 function ovlCuSuit(i){if(!ovlCuWants(i))return null;const k=ovlCuKey(i);let e=OVL_CU.get(k);
   if(!e){e={id:'cu'+(++ovlCuN),url:null,fail:false};OVL_CU.set(k,e);
     const put=h=>document.querySelectorAll(`[data-hb="${e.id}"]`).forEach(x=>{x.outerHTML=h});
-    e.p=asmCuTile(i).then(T=>{if(!T||!T.t)throw new Error('no tile');
+    e.p=ask('asm-cu-tile',i).then(T=>{if(!T||!T.t)throw new Error('no tile');
       const g=v=>255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055),S=T.TW,c=document.createElement('canvas');c.width=S;c.height=T.TH;
       const x=c.getContext('2d'),d=x.createImageData(S,T.TH);for(let n=0;n<S*T.TH;n++){for(let q=0;q<3;q++)d.data[4*n+q]=g(Math.max(0,Math.min(1,T.t[3*n+q])));d.data[4*n+3]=255}x.putImageData(d,0,0);
       const gr=x.createLinearGradient(0,0,S,T.TH);gr.addColorStop(0,'rgba(255,255,255,.08)');gr.addColorStop(1,'rgba(0,0,0,.10)');x.fillStyle=gr;x.fillRect(0,0,S,T.TH);   // the light, as the drawn swatches have

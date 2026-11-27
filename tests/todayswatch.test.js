@@ -10,7 +10,7 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
       const pin={id:'pin',type:'suit',primaryColor:'navy',secondaryColor:'lightgrey',pattern:'pinstripe',sett:{v:2,a:0,bands:[['#1b2a4a',.97],['#2d3550',.03]],tr:30,src:'claude+pixels'},
         patternSpec:{across:{bands:[{role:'ground',hex:'#1b2a4a',w:.97},{role:'line',hex:'#c8cbd2',w:.03}]}}};
       const tie={id:'tt',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'polka-dot'},shirt={id:'sh',type:'shirt',primaryColor:'lightblue',pattern:'solid'};
-      const ov=HOOK.ovlItem(pin),line=ov.sett.bands.find(b=>b[0]!=='#1b2a4a'),tsv=HOOK.ovlSvg(tie),plain=swatchSVG(tie,true);
+      const ov=HOOK.ovlItem(pin),line=ov.sett.bands.find(b=>b[0]!=='#1b2a4a'),tsv=HOOK.ovlSvg(tie),plain=HOOK.swatchSVG(tie,true);
       const full=HOOK.swatchStack({top:pin,shirt,tie},false),noTie=HOOK.swatchStack({top:pin,shirt,tie:null},true),none=HOOK.swatchStack({},false);
       const shot=d=>{HOOK.sel=d;const o=planOn(d);renders[comboKey(o)]={img:'${PH}',sig:comboSig(o)};return HOOK.figureStage(o)};   // a kept photo for the day, so the picture is drawn
       const past=shot(new Date(2026,10,10)),fut=shot(new Date(2026,10,16));
@@ -48,7 +48,7 @@ module.exports=async({ok,chromium,url,WARDROBES})=>{
     // a shirt's figured weave is drawn at higher fidelity in the overlay only (the owner's choice: smooth shapes with a thread grain)
     const wv=await p.evaluate(async()=>{const grid=['10000001','01000010','00100100','00011000','00011000','00100100','01000010','10000001'];
       const sh={id:'dw',type:'shirt',primaryColor:'lightblue',pattern:'dobby',sett:{v:4,tex:{kind:'diamond',grid,lighter:'raised',contrast:.3,rel:.12}}};
-      const [lo,hi]=texTones(colOf(sh),sh.sett.tex,1.7),soft=texTileUrl(grid,lo,hi),sm=texTileSmooth(grid,lo,hi),ov=HOOK.ovlSvg(sh),list=swatchSVG(sh,true);
+      const [lo,hi]=HOOK.texTones(colOf(sh),sh.sett.tex,1.7),soft=HOOK.texTileUrl(grid,lo,hi),sm=HOOK.texTileSmooth(grid,lo,hi),ov=HOOK.ovlSvg(sh),list=HOOK.swatchSVG(sh,true);
       const im=new Image();im.src=sm;await im.decode();const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);
       const d=x.getImageData(0,0,c.width,c.height).data,ls=new Set();for(let k=0;k<d.length;k+=4)ls.add(d[k]+','+d[k+1]+','+d[k+2]);
       const hb={...sh,id:'hb',pattern:'herringbone',sett:{v:4,tex:{kind:'herringbone',grid:['10','01'],rel:.1}}};

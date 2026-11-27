@@ -70,13 +70,13 @@ module.exports=async({ok,chromium,url,settle})=>{
     ok(f.plain==='Color|Toe cap'&&f.ribbed==='Color|Second color|Toe cap'&&f.dot==='Color|Second color|Toe cap'&&f.stripe==='Color|Second color|Third color|Toe cap'&&f.legacy==='Color|Toe cap',`colour fields by pattern: ${JSON.stringify(f)}`);
     // ---- drawing: every pattern on the traced pair, in the item's colours; a plain sock as on main
     const d=await p.evaluate(()=>{const out={};for(const pat of PATS_BY.socks){HOOK.thumbN=0;HOOK.swN=0;const i={id:'d'+pat,type:'socks',primaryColor:'navy',secondaryColor:'burgundy',tertiaryColor:'gold',pattern:pat,toeColor:'lightgrey'};
-        out[pat]={th:itemThumb(i),sw:swatchSVG(i,true)}}
+        out[pat]={th:HOOK.itemThumb(i),sw:HOOK.swatchSVG(i,true)}}
       const fnv=t=>{let h=0x811c9dc5;for(const c of new TextEncoder().encode(t))h=Math.imul(h^c,16777619)>>>0;return h.toString(16)};
       const legacy=[{id:'a',type:'socks',primaryColor:'navy',pattern:'solid'},{id:'b',type:'socks',primaryColor:'black',secondaryColor:'lightgrey',pattern:'solid'},{id:'c',type:'socks',primaryColor:'burgundy',secondaryColor:'grey',pattern:'solid',shade:-2}];
-      const h=[];for(const i of legacy){HOOK.thumbN=0;HOOK.swN=0;h.push(fnv(itemThumb(i)),fnv(swatchSVG(i,true)),fnv(desc(i)))}
+      const h=[];for(const i of legacy){HOOK.thumbN=0;HOOK.swN=0;h.push(fnv(HOOK.itemThumb(i)),fnv(HOOK.swatchSVG(i,true)),fnv(desc(i)))}
       // the same socks after the move of the toe cap: drawn the same
       const moved=[{id:'a',type:'socks',primaryColor:'navy',pattern:'solid',toeColor:'none'},{id:'b',type:'socks',primaryColor:'black',toeColor:'lightgrey',pattern:'solid'},{id:'c',type:'socks',primaryColor:'burgundy',toeColor:'grey',pattern:'solid',shade:-2}];
-      const h2=[];for(const i of moved){HOOK.thumbN=0;HOOK.swN=0;h2.push(fnv(itemThumb(i)),fnv(swatchSVG(i,true)),fnv(desc(i)))}
+      const h2=[];for(const i of moved){HOOK.thumbN=0;HOOK.swN=0;h2.push(fnv(HOOK.itemThumb(i)),fnv(HOOK.swatchSVG(i,true)),fnv(desc(i)))}
       return {out,h:h.join(' '),h2:h2.join(' '),burg:COLORS.burgundy,gold:COLORS.gold,grey:COLORS.lightgrey}});
     const bold=['argyle','stripe','polka-dot','other'],all=Object.keys(d.out).filter(x=>x!=='solid');
     ok(all.every(x=>d.out[x].th!==d.out.solid.th)&&new Set(all.map(x=>d.out[x].th.replace(/d[a-z-]+|th\d+-/g,''))).size===all.length,'every pattern draws differently from plain and from each other');
@@ -87,8 +87,8 @@ module.exports=async({ok,chromium,url,settle})=>{
     const MAIN='4bbf0e23 d29b618c a0fff1d1 fa226663 a975ff 17d19dff 93342286 89e3971d 78c36718';
     ok(d.h===MAIN,`a plain sock (with or without a toe cap, shaded) is drawn, swatched and named exactly as on main (${d.h})`);
     ok(d.h2===MAIN,`and the same once its toe cap has moved to toeColor (${d.h2})`);
-    if(shots){const svgs=await p.evaluate(()=>{const C=[['navy','burgundy','gold'],['charcoal','red','white'],['olive','rust','cream'],['burgundy','navy','lightgrey']],sv=i=>`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${itemThumb(i)}</svg>`;
-        const pats={};for(const pt of PATS_BY.socks)pats[pt]=C.map(([a,b,c])=>({cols:[a,b,c],svg:sv({id:'x',type:'socks',primaryColor:a,secondaryColor:b,tertiaryColor:c,pattern:pt,toeColor:pt==='solid'?'lightgrey':'none'}),sw:swatchSVG({type:'socks',primaryColor:a,secondaryColor:b,tertiaryColor:c,pattern:pt},true)}));
+    if(shots){const svgs=await p.evaluate(()=>{const C=[['navy','burgundy','gold'],['charcoal','red','white'],['olive','rust','cream'],['burgundy','navy','lightgrey']],sv=i=>`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${HOOK.itemThumb(i)}</svg>`;
+        const pats={};for(const pt of PATS_BY.socks)pats[pt]=C.map(([a,b,c])=>({cols:[a,b,c],svg:sv({id:'x',type:'socks',primaryColor:a,secondaryColor:b,tertiaryColor:c,pattern:pt,toeColor:pt==='solid'?'lightgrey':'none'}),sw:HOOK.swatchSVG({type:'socks',primaryColor:a,secondaryColor:b,tertiaryColor:c,pattern:pt},true)}));
         const others={tie:sv({id:'t',type:'tie',primaryColor:'burgundy',secondaryColor:'navy',pattern:'stripe'}),shoes:sv({id:'s',type:'shoes',primaryColor:'brown',leather:'calf'}),belt:sv({id:'b',type:'belt',primaryColor:'brown',leather:'calf',metal:'silver'}),shirt:sv({id:'h',type:'shirt',primaryColor:'white',pattern:'solid'})};
         const legacy={id:'L',type:'socks',primaryColor:'black',secondaryColor:'lightgrey',pattern:'solid'},moved={id:'L',type:'socks',primaryColor:'black',toeColor:'lightgrey',pattern:'solid'};
         return {pats,others,before:sv(legacy),after:sv(moved),beforeDesc:desc(legacy),afterDesc:desc(moved)}});
@@ -96,7 +96,7 @@ module.exports=async({ok,chromium,url,settle})=>{
     // ---- the move of the toe cap: once, stamped field by field, idempotent, again for a sock an older app syncs in
     const m=await p.evaluate(async()=>{const mk=(id,x)=>({id,type:'socks',primaryColor:'black',pattern:'solid',added:1,updated:5,...x});
       const list=[mk('m1',{secondaryColor:'lightgrey'}),mk('m2',{}),mk('m3',{secondaryColor:'grey',tertiaryColor:'red'}),mk('m4',{toeColor:'none',pattern:'argyle',secondaryColor:'red'}),{id:'m5',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'stripe',added:1,updated:5}];
-      for(const i of list)await putRaw(i);HOOK.items=list.map(i=>({...i}));const fnv=i=>{HOOK.thumbN=0;return itemThumb(i)},before=items.slice(0,3).map(fnv);
+      for(const i of list)await putRaw(i);HOOK.items=list.map(i=>({...i}));const fnv=i=>{HOOK.thumbN=0;return HOOK.itemThumb(i)},before=items.slice(0,3).map(fnv);
       let syncs=0;const was=window.setTimeout;window.setTimeout=(f,...a)=>{if(f===syncNow){syncs++;return 0}return was.call(window,f,...a)};const n=await sockToeMigrate(),again=await sockToeMigrate();
       const st=await tx('readonly',s=>s.getAll()),g=id=>st.find(x=>x.id===id);const after=['m1','m2','m3'].map(id=>fnv(items.find(x=>x.id===id)));
       // a sock from an older app, synced in

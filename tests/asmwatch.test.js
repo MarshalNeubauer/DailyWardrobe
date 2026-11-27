@@ -8,20 +8,20 @@ module.exports=async({ok,chromium,url})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(async()=>{const I=(type,primaryColor,x={})=>({id:type+Math.random(),type,primaryColor,pattern:'solid',...x});
       const seiko=I('watch','silver',{metal:'silver',dial:'white',band:'integrated'}),gold=I('watch','brown',{metal:'gold',dial:'charcoal',band:'leather'}),blackDial=I('watch','silver',{metal:'silver',dial:'black',band:'bracelet'});
-      const paints=[asmWatchPaints(seiko),asmWatchPaints(gold),asmWatchPaints(blackDial),asmWatchPaints(null)];
+      const paints=[HOOK.asmWatchPaints(seiko),HOOK.asmWatchPaints(gold),HOOK.asmWatchPaints(blackDial),HOOK.asmWatchPaints(null)];
       const o=w=>({top:I('suit','navy'),shirt:I('shirt','white'),tie:I('tie','burgundy'),watch:w,suitDay:true});
       const sigS=HOOK.asmCmSig({...o(seiko)}),sigG=HOOK.asmCmSig({...o(gold)});
       // the painting, on the 512 px suit master (geometry in the 2048 frame, scaled)
-      const M=await asmData('tests/fixtures/cm/suit/master.jpg'),S=M.width,before=Uint8ClampedArray.from(M.data),px=Uint8ClampedArray.from(M.data);
-      const W=asmWatchJob(o(gold),'suit'),Wo=asmWatchJob(o(gold),'suit-open'),Wn=asmWatchJob(o(seiko),'suit');
-      await asmWatchPaint({px,S},W);
+      const M=await HOOK.asmData('tests/fixtures/cm/suit/master.jpg'),S=M.width,before=Uint8ClampedArray.from(M.data),px=Uint8ClampedArray.from(M.data);
+      const W=HOOK.asmWatchJob(o(gold),'suit'),Wo=HOOK.asmWatchJob(o(gold),'suit-open'),Wn=HOOK.asmWatchJob(o(seiko),'suit');
+      await HOOK.asmWatchPaint({px,S},W);
       const f=S/2048,at=(x,y)=>{const q=4*(Math.round(y*f)*S+Math.round(x*f));return [px[q],px[q+1],px[q+2]]},was=(x,y)=>{const q=4*(Math.round(y*f)*S+Math.round(x*f));return [before[q],before[q+1],before[q+2]]};
       const g=HOOK.ASM_WATCH_GEO.suit,lum=c=>(c[0]+c[1]+c[2])/3;
       const dial=at(g.cx,g.cy),bez=at(g.cx+58,g.cy+8),strapUp=at(g.cx+g.ax[0]*95,g.cy+g.ax[1]*95);
       let outside=0,inside=0;for(let y=0;y<S;y++)for(let x=0;x<S;x++){const q=4*(y*S+x),X=x/f,Y=y/f,inSq=X>=g.x-14&&X<g.x+g.n+14&&Y>=g.y-14&&Y<g.y+g.n+14,d=Math.abs(px[q]-before[q])+Math.abs(px[q+1]-before[q+1])+Math.abs(px[q+2]-before[q+2]);if(d){if(inSq)inside++;else outside++}}
       // the JPEG path: a picture as a data URL comes back painted, as a data URL
-      const c=document.createElement('canvas');c.width=c.height=S;c.getContext('2d').putImageData(new ImageData(before,S,S),0,0);const r2=await asmWatchPaint({url:c.toDataURL('image/jpeg',.95)},W);
-      const back=await asmData(r2.url),q2=4*(Math.round(g.cy*f)*S+Math.round(g.cx*f)),dial2=[back.data[q2],back.data[q2+1],back.data[q2+2]];
+      const c=document.createElement('canvas');c.width=c.height=S;c.getContext('2d').putImageData(new ImageData(before,S,S),0,0);const r2=await HOOK.asmWatchPaint({url:c.toDataURL('image/jpeg',.95)},W);
+      const back=await HOOK.asmData(r2.url),q2=4*(Math.round(g.cy*f)*S+Math.round(g.cx*f)),dial2=[back.data[q2],back.data[q2+1],back.data[q2+2]];
       // the planner: clips with a gold watch and a silver buckle, and with a gold buckle
       const cl=metal=>{const w=I('watch','brown',{metal:'gold',dial:'charcoal',band:'leather'}),belt=I('belt','brown',{leather:'calf',metal}),gc=I('tieclip','gold'),sc=I('tieclip','silver');
         HOOK.items=[I('blazer','navy'),I('pants','grey'),I('shirt','white'),I('tie','burgundy'),I('shoes','brown',{leather:'calf'}),belt,I('socks','navy'),w,gc,sc];

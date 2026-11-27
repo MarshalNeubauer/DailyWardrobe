@@ -60,7 +60,7 @@ const sett=async({ok,chromium,url,ROOT,settle})=>{
     ok(Math.abs(flow.s.a+46)<=6&&Math.abs(flow.s.tr-.61)<.08,`direction and scale from the photo (${flow.s.a}°, ${flow.s.tr} repeats across; a tie's own count beats Claude's estimate of 0.7)`);
     ok(/Pattern: \d+ color bands with lines crossing the other way, read from the photo/.test(flow.note),'the card says what was read');
     // drawn: the swatch uses the bands; the figure keeps the repeat's share of the tie's width
-    const dr=await p.evaluate(()=>{const q=queue[0],th=itemThumb(q,true),fig=fabricDef('f',q,'tie','fig'),sw=fabricDef('s',q,'tie');const W=d=>+d.match(/width="([\d.]+)"/)[1];
+    const dr=await p.evaluate(()=>{const q=queue[0],th=HOOK.itemThumb(q,true),fig=HOOK.fabricDef('f',q,'tie','fig'),sw=HOOK.fabricDef('s',q,'tie');const W=d=>+d.match(/width="([\d.]+)"/)[1];
       return {all:q.sett.bands.every(([h])=>th.includes(h)),over:/opacity="\.5"/.test(th),rot:/rotate\(-46\)/.test(th),wf:W(fig),ws:W(sw),tr:q.sett.tr}});
     ok(dr.all&&dr.over&&dr.rot,'the swatch draws every band in its color, the crossing lines over them, at the tie\'s angle');
     ok(Math.abs(dr.wf-29/dr.tr)<1&&dr.ws>=14&&dr.ws<=110,`one repeat is ${dr.wf.toFixed(0)} units on the figure (the tie is 29 wide, ${dr.tr} repeats across) and ${dr.ws.toFixed(0)} in the swatch`);
@@ -115,7 +115,7 @@ const sett=async({ok,chromium,url,ROOT,settle})=>{
       const s=HOOK.settFrom({full,box:{x:100,y:100,w:800,h:800},tex,weave:{repeatsAcross:30,direction:'vertical'}});return s});
     ok(comb.src==='photo+closeup'&&comb.tr===30&&comb.a===0&&comb.bands.length===2,`the whole-jacket reading keeps its direction and scale and takes the close-up's sharper bands (${comb.src}, ${comb.bands.map(b=>b.join(':')).join(' ')})`);
     const fig=await p.evaluate(()=>{const it={id:'p1',type:'suit',primaryColor:'navy',pattern:'pinstripe',sett:{v:2,a:3,bands:[['#1f2a44',.94],['#c8ccd4',.06]],cross:null,cr:28,tr:30}};
-      const d=fabricDef('f',it,'top','fig'),sw=fabricDef('s',it,'top');return {w:+d.match(/width="([\d.]+)"/)[1],rot:/patternTransform/.test(d),ws:+sw.match(/width="([\d.]+)"/)[1]}});
+      const d=HOOK.fabricDef('f',it,'top','fig'),sw=HOOK.fabricDef('s',it,'top');return {w:+d.match(/width="([\d.]+)"/)[1],rot:/patternTransform/.test(d),ws:+sw.match(/width="([\d.]+)"/)[1]}});
     ok(Math.abs(fig.w-200/30)<.1&&!fig.rot&&fig.ws===14,`on the figure a 30-across pinstripe repeats every ${fig.w.toFixed(1)} units, upright (a jacket's stripes snap straight); the swatch shows several`);
     const tp=await p.evaluate(()=>({suit:settable('suit','pinstripe'),chalk:settable('blazer','chalk-stripe'),ging:settable('shirt','gingham'),herr:settable('suit','herringbone'),solid:settable('shirt','solid')}));
     ok(tp.suit&&tp.chalk&&tp.ging&&!tp.herr&&!tp.solid,'suits, blazers and pants read their stripes and checks; fine weaves and solids keep the drawn tile');

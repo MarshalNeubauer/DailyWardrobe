@@ -9,17 +9,17 @@ module.exports=async({ok,chromium,url})=>{
         bz={id:'b1',type:'blazer',primaryColor:'charcoal',pattern:'twill'},hb={id:'s2',type:'suit',primaryColor:'darkgrey',pattern:'herringbone'},
         pin={id:'s3',type:'suit',primaryColor:'navy',pattern:'pinstripe',sett:{v:2,a:0,bands:[['#1b2a4a',.95],['#cccccc',.05]],tr:40,src:'claude+pixels'}};
       HOOK.items=[tw,bz,hb,pin,{id:'sh',type:'shirt',primaryColor:'white',pattern:'solid'},{id:'t',type:'tie',primaryColor:'navy',pattern:'solid'},{id:'w',type:'watch',primaryColor:'silver',metal:'silver'}];
-      const o={top:tw,shirt:items[4],tie:items[5],watch:items[6],vest:true},t=asmTwillTex(tw),t1=asmTwillTex(bz);
-      return {tw:asmSuitTwill(tw),route:[tw,bz,hb,pin].map(i=>asmCmRoute(i,'jacket').how),pinTwill:asmSuitTwill(pin),
+      const o={top:tw,shirt:items[4],tie:items[5],watch:items[6],vest:true},t=HOOK.asmTwillTex(tw),t1=HOOK.asmTwillTex(bz);
+      return {tw:HOOK.asmSuitTwill(tw),route:[tw,bz,hb,pin].map(i=>HOOK.asmCmRoute(i,'jacket').how),pinTwill:HOOK.asmSuitTwill(pin),
         tile:{TW:t.TW,kind:t.cloth.kind,ss:t.cloth.ss,c2:!!t.cloth.c2,mix:t.cloth.mix,amp:t.cloth.amp,fleck:t.cloth.fleck},tile1:{c2:t1.cloth.c2,mix:t1.cloth.mix},
-        sig:[asmSuitSig(tw)!==asmSuitSig({...tw,secondaryColor:null}),asmSuitSig(tw)!==asmSuitSig({...tw,pattern:'solid'})],
-        hbTile:(c=>({kind:c.kind,cw:c.cw,amp:c.amp}))(asmTwillTex(hb).cloth),hbSig:asmSuitSig(hb)!==asmSuitSig({...hb,pattern:'twill'})}});
+        sig:[HOOK.asmSuitSig(tw)!==HOOK.asmSuitSig({...tw,secondaryColor:null}),HOOK.asmSuitSig(tw)!==HOOK.asmSuitSig({...tw,pattern:'solid'})],
+        hbTile:(c=>({kind:c.kind,cw:c.cw,amp:c.amp}))(HOOK.asmTwillTex(hb).cloth),hbSig:HOOK.asmSuitSig(hb)!==HOOK.asmSuitSig({...hb,pattern:'twill'})}});
     ok(r.tw&&!r.pinTwill&&r.route.join()==='twill,twill,herringbone,bands',`a twill suit and blazer are painted with their ribs, a herringbone with its cloth, a read pinstripe keeps its band painter (${r.route})`);
     ok(r.hbTile.kind==='herringbone'&&Math.abs(r.hbTile.cw-5.4*3.2)<.5&&r.hbTile.amp>.25&&r.hbSig,`a herringbone with no reading has the herringbone cloth, columns 5.4 mm (three half-ribs of 3.6 mm, so the ribs meet in clean V's), matched to the owner's reference picture, much stronger than a twill's ribs (${JSON.stringify(r.hbTile)}), and its own key`);
     // the owner's own patterns: a weave named in the pattern counts though its base is solid; a plain own pattern stays flat; the colour-coded key marks them
     const own=await p.evaluate(()=>{const mk=(id,pattern)=>({id,type:'suit',primaryColor:'black',pattern});
       const a=mk('o1','own-fine-worsted-twill'),h=mk('o2','own-fine-tonal-herringbone'),m=mk('o3','own-worsted-melange-plain-weave'),t=mk('o4','twill');
-      return {w:[a,h,m,t].map(asmSuitWeave),tw:[a,h,m,t].map(asmSuitTwill),tag:[a,h,m,t].map(i=>HOOK.asmCmWeaveTag('jacket',i)),shirt:HOOK.asmCmWeaveTag('shirt',a)}});
+      return {w:[a,h,m,t].map(HOOK.asmSuitWeave),tw:[a,h,m,t].map(HOOK.asmSuitTwill),tag:[a,h,m,t].map(i=>HOOK.asmCmWeaveTag('jacket',i)),shirt:HOOK.asmCmWeaveTag('shirt',a)}});
     ok(own.w.join()==='twill,herringbone,,twill'&&own.tw.join()==='true,true,false,true',`own patterns named twill or herringbone get their weave (${own.w})`);
     ok(own.tag[0]==='/tw'&&own.tag[1].startsWith('/hb')&&own.tag[2]===''&&own.tag[3]===''&&own.shirt==='',`only the looks the audit changed get a new key (${own.tag})`);
     ok(r.tile.TW===1&&r.tile.kind==='twill'&&r.tile.ss&&r.tile.c2&&r.tile.mix>0&&r.tile.amp<.16&&r.tile.fleck<.08,`the tile is one colour with fine, supersampled twill ribs, fainter than under a stripe (${JSON.stringify(r.tile)})`);
@@ -27,11 +27,11 @@ module.exports=async({ok,chromium,url})=>{
     ok(r.sig.every(Boolean),'the second colour and the pattern are in the painted picture\'s key');
     // tweed: painted with the tweed tile (a melange of short light and dark picks, a few nubs and flecks), its flecks in a second colour
     const w=await p.evaluate(()=>{const td={id:'td',type:'blazer',primaryColor:'slate',pattern:'tweed'},dg={...td,id:'dg',secondaryColor:'white'},chk={id:'ck',type:'blazer',primaryColor:'brown',pattern:'windowpane',sett:{v:2,a:0,bands:[['#5a3a22',.95],['#cccccc',.05]],tr:8,src:'hand'}};
-      const t=asmTweedTex(td),t2=asmTweedTex(dg),tile=asmTweedTile(),again=asmTweedTile();let m=0,s=0,fl=0,run=0,maxRun=0;
+      const t=HOOK.asmTweedTex(td),t2=HOOK.asmTweedTex(dg),tile=HOOK.asmTweedTile(),again=HOOK.asmTweedTile();let m=0,s=0,fl=0,run=0,maxRun=0;
       for(const v of tile.r)m+=v;m/=tile.r.length;for(const v of tile.r)s+=(v-m)**2;s=Math.sqrt(s/tile.r.length);for(const v of tile.f)fl+=v;
       for(let x=1;x<tile.T;x++){const a=tile.r[100*tile.T+x],b=tile.r[100*tile.T+x-1];run=Math.abs(a-b)<1e-6?run+1:0;maxRun=Math.max(maxRun,run)}
-      return {paint:[asmCmRoute(td,'jacket').how,asmSuitTweed(td),asmSuitTweed(chk),asmSuitTwill(td),asmCmRoute(chk,'jacket').how],tex:{tweed:t.tweed,c2:t.c2,c22:!!t2.c2,fmix:t2.fmix},mean:+m.toFixed(3),sd:+s.toFixed(3),fl:+(fl/tile.f.length).toFixed(3),maxRun,same:tile===again,
-        sig:asmSuitSig(td)!==asmSuitSig(dg)&&asmSuitSig(td)!==asmSuitSig({...td,pattern:'solid'})}});
+      return {paint:[HOOK.asmCmRoute(td,'jacket').how,HOOK.asmSuitTweed(td),HOOK.asmSuitTweed(chk),HOOK.asmSuitTwill(td),HOOK.asmCmRoute(chk,'jacket').how],tex:{tweed:t.tweed,c2:t.c2,c22:!!t2.c2,fmix:t2.fmix},mean:+m.toFixed(3),sd:+s.toFixed(3),fl:+(fl/tile.f.length).toFixed(3),maxRun,same:tile===again,
+        sig:HOOK.asmSuitSig(td)!==HOOK.asmSuitSig(dg)&&HOOK.asmSuitSig(td)!==HOOK.asmSuitSig({...td,pattern:'solid'})}});
     ok(w.paint.join()==='tweed,true,false,false,bands',`a tweed blazer is painted with the tweed (a tweed read as a check keeps the band painter: ${w.paint})`);
     ok(w.tex.tweed&&w.tex.c2===null&&w.tex.c22&&w.tex.fmix>0,'its tile is the tweed texture, its flecks in a second colour when it has one');
     ok(Math.abs(w.mean-1)<.06&&w.sd>.1&&w.sd<.25&&w.fl>.02&&w.fl<.12&&w.maxRun<12&&w.same,`the texture is a fine melange around the cloth's light, with flecks and no long streaks (mean ${w.mean}, sd ${w.sd}, flecks ${w.fl}, longest run ${w.maxRun} px), made once`);

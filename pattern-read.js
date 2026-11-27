@@ -1,7 +1,7 @@
 /* Daily Wardrobe: photo tagging, pattern readings (split from tagging.js, Round B CR-2-17): the full pattern (sett) from the pixels, Claude's
    reading (POST /pattern) coloured from the pixels, motifs, a dress shirt's weave texture and camouflage. */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {emit} from './bus.js';
+import {emit,serve} from './bus.js';
 import {CAMO_TR,CHECK_PATS,MOTIF_PATS,STRIPE_PATS,TEXTURE_PATS,settFromCanvas,texPat,tieWeave} from './detect.js';
 import {FABRIC,PATS_BY,camoPat,dE00,hexRgb,items,labHex,patBase,patName,rgbLab} from './core.js';
 import {BLUR_SHARP,applyWb,closeRead,measureAndApply,sharpness,wbRead} from './measure.js';
@@ -281,6 +281,7 @@ function texFromSpec(spec,{tex}){const t=spec&&spec.texture;if(!t||!t.grid||t.gr
 function settTap(el){toggleSett(cardIx(el))}
 Object.assign(globalThis,{settable,claudeOnly,readable,settSummary,TEX_WORDS});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,camoFromPixels,claudePattern,motifFromSpec,motifPat,settCheck,settFrom,specSett,texContrast,texFromSpec};
+serve('pattern-readable',readable);serve('pattern-reread',rereadSett);   // (the restructure S6p: the painter, asm-cm-job.js asmCmRoute and asm-cm-page.js Read N patterns, may not import this file)
+globalThis.HOOK={__proto__:globalThis.HOOK||null,camoFromPixels,claudePattern,motifFromSpec,motifPat,settCheck,settFrom,specSett,texContrast,texFromSpec,readable};
 export {settable,motifPat,claudeOnly,readable,specSett,settSummary,TEX_WORDS,settFrom,readSett,settCheck,missedPattern,settNote,rereadSett,claudePattern,settFromSpec,readPatternWithClaude,camoFromPixels,motifFromSpec,texContrast,texFromSpec};
 acts({settTap});

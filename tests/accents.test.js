@@ -74,7 +74,7 @@ module.exports=async({ok,chromium,url})=>{
       for(let k=0;k<d.length;k+=4)want.forEach((w,j)=>{if(Math.abs(d[k]-w[0])+Math.abs(d[k+1]-w[1])+Math.abs(d[k+2]-w[2])<12)cnt[j]++});
       // the accents' own colours are in it (muted toward the ground like the second and third: lightness kept), the made-up steps are not
       const Ls=st.camo.cols.map(h=>Math.round(rgbLab(...hexRgb(h))[0])),Lk=k=>Math.round(rgbLab(...hexRgb(COLORS[k]))[0]);
-      return {main:st.camo.cols[0]===colOf(it),distinct:new Set(st.camo.cols).size,hasAcc:['cream','black'].every(k=>Ls.some(x=>Math.abs(x-Lk(k))<=2)),cols:st.camo.cols,shares:st.camo.shares,frac:cnt.map(v=>+(v/n).toFixed(3)),pl:sp.camo.cols.length,pl0:sp.camo.cols[0]===colOf(plain),pl1:JSON.stringify(sp)===JSON.stringify(HOOK.camoTag({...plain},null)),sw:/<image href="data:image\/png/.test(swatchSVG(it,true))}});
+      return {main:st.camo.cols[0]===colOf(it),distinct:new Set(st.camo.cols).size,hasAcc:['cream','black'].every(k=>Ls.some(x=>Math.abs(x-Lk(k))<=2)),cols:st.camo.cols,shares:st.camo.shares,frac:cnt.map(v=>+(v/n).toFixed(3)),pl:sp.camo.cols.length,pl0:sp.camo.cols[0]===colOf(plain),pl1:JSON.stringify(sp)===JSON.stringify(HOOK.camoTag({...plain},null)),sw:/<image href="data:image\/png/.test(HOOK.swatchSVG(it,true))}});
     ok(s.main&&s.distinct===5&&s.hasAcc&&s.shares[0]===Math.max(...s.shares),'a camouflage with 2 accents takes 5 distinct colours, its accents among them, the ground (main) the largest share ('+s.cols.join(' ')+' · '+s.shares.join(', ')+')');
     ok(s.frac.every(v=>v>.02)&&s.sw,'its swatch draws all 5 distinct colours (share of pixels: '+s.frac.join(', ')+')');
     ok(s.pl===5&&s.pl0&&s.pl1,'one without accents is drawn as before');

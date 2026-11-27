@@ -126,8 +126,8 @@ const shirts=async({ok,chromium,url,ROOT})=>{
   ok(r.normPat==='fine-texture,fine-stripe,end-on-end,textured,solid',`texture names from the AI map correctly (${r.normPat})`);
   ok(r.lums[0]>r.lums[1]&&r.lums[1]>r.lums[2]&&r.lums[2]>r.lums[3],'brightness order: white > ivory > cream > pale yellow');
   // every texture draws a distinct pattern; none is a bold pattern for the planner except fine stripe / houndstooth (fine scale)
-  const d=await p.evaluate(TEX=>{const I=pattern=>({id:'s',type:'shirt',primaryColor:'lavender',pattern});const tiles=TEX.map(t=>fabricDef('x',I(t),'shirt'));
-    const solid=fabricDef('x',I('solid'),'shirt');return {distinct:new Set(tiles).size===TEX.length&&tiles.every(t=>t!==solid),
+  const d=await p.evaluate(TEX=>{const I=pattern=>({id:'s',type:'shirt',primaryColor:'lavender',pattern});const tiles=TEX.map(t=>HOOK.fabricDef('x',I(t),'shirt'));
+    const solid=HOOK.fabricDef('x',I('solid'),'shirt');return {distinct:new Set(tiles).size===TEX.length&&tiles.every(t=>t!==solid),
       bold:TEX.filter(t=>patInfo(I(t),'shirt')).join(','),scale:[patInfo(I('fine-stripe'),'shirt').scale,patInfo(I('houndstooth'),'shirt').scale].join(',')}},TEX);
   ok(d.distinct,'each texture is drawn with its own fabric');
   ok(d.bold==='fine-stripe,houndstooth'&&d.scale==='1,1','textures are quiet; fine stripe and houndstooth count as small-scale patterns');
@@ -148,7 +148,7 @@ const shirts=async({ok,chromium,url,ROOT})=>{
   ok(ed.col==='blue'&&ed.pat==='solid','changing a periwinkle end-on-end shirt into a tie gives a blue solid tie');
   // the figure draws a new-colour shirt
   ok(await p.evaluate(()=>{const o={suitDay:true,top:{id:'t',type:'suit',primaryColor:'navy',pattern:'solid'},shirt:{id:'s',type:'shirt',primaryColor:'lavender',pattern:'dobby'},tie:{id:'x',type:'tie',primaryColor:'navy',pattern:'solid'}};
-    const d=document.createElement('div');d.innerHTML=figureSvg(o,'q-');return d.querySelector('#q-shirt').innerHTML.includes(COLORS.lavender)}),'the figure draws the lavender dobby shirt');
+    const d=document.createElement('div');d.innerHTML=HOOK.figureSvg(o,'q-');return d.querySelector('#q-shirt').innerHTML.includes(COLORS.lavender)}),'the figure draws the lavender dobby shirt');
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
   await browser.close();
   // worker prompt and schema
@@ -247,7 +247,7 @@ const deeptaupe=async({ok,chromium,url,ROOT})=>{
       HOOK.items=[I('st','suit','deeptaupe'),I('sh','shirt','white'),I('tb','tie','burgundy'),I('tn','tie','navy'),I('bs','shoes','brown',{leather:'calf'}),I('bk','shoes','black',{leather:'calf'}),I('bb','belt','brown',{leather:'calf'})];
       settings.workdays=[0,1,2,3,4];settings.blazerDays=[];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};
       // (the real planner, buildPlan: planMonth gives tests/fixedplan.js's outfit, whose shoe the day number picks; the code review CR-10-05)
-      const days=['2026-11-10','2026-11-11','2026-11-12'],P=buildPlan(2026,10),o=P['2026-11-10'],allBrown=days.every(k=>P[k].shoes&&P[k].shoes.id==='bs');const div=document.createElement('div');div.innerHTML=figureSvg({suitDay:true,top:items[0],shirt:items[1],tie:items[2]},'q-');
+      const days=['2026-11-10','2026-11-11','2026-11-12'],P=buildPlan(2026,10),o=P['2026-11-10'],allBrown=days.every(k=>P[k].shoes&&P[k].shoes.id==='bs');const div=document.createElement('div');div.innerHTML=HOOK.figureSvg({suitDay:true,top:items[0],shirt:items[1],tie:items[2]},'q-');
       return {top:o.top&&o.top.id,shoes:o.shoes&&o.shoes.id,allBrown,drawn:div.innerHTML.includes(COLORS.deeptaupe),score:rateOutfit(o).score}});
     ok(d.top==='st'&&d.shoes==='bs'&&d.allBrown,`the planner dresses a deep taupe suit with brown shoes, three days running (${d.top}/${d.shoes})`);
     ok(d.drawn,'the figure draws the deep taupe suit');

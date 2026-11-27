@@ -33,7 +33,7 @@ module.exports=async({ok,chromium,url})=>{
     // the pattern sheet too: without a photo the item is drawn (its shape) in the pattern tapped, nothing saved until Use
     const pv=await p.evaluate(()=>{items.push({id:'t8',type:'tie',primaryColor:'navy',secondaryColor:'white',pattern:'solid',added:9});openColPick('e','t8','pattern');
       const draw=()=>document.querySelector('#col-sheet .cpdraw').innerHTML.replace(/th\d+-/g,''),strip=s=>{const t=document.createElement('div');t.innerHTML=s;return t.innerHTML.replace(/th\d+-/g,'')},before=draw();document.querySelector('#col-sheet .cptile[data-c="stripe"]').click();
-      const r={cap:document.querySelector('#col-sheet .cpph figcaption').textContent,shape:before===strip(itemThumb(items.find(x=>x.id==='t8'))),striped:draw()===strip(itemThumb(patVar(items.find(x=>x.id==='t8'),'stripe')))&&draw()!==before,saved:items.find(x=>x.id==='t8').pattern};
+      const r={cap:document.querySelector('#col-sheet .cpph figcaption').textContent,shape:before===strip(HOOK.itemThumb(items.find(x=>x.id==='t8'))),striped:draw()===strip(HOOK.itemThumb(patVar(items.find(x=>x.id==='t8'),'stripe')))&&draw()!==before,saved:items.find(x=>x.id==='t8').pattern};
       closeColPick();HOOK.items=items.filter(x=>x.id!=='t8');return r});
     ok(pv.cap==='As drawn'&&pv.shape&&pv.striped&&pv.saved==='solid','without a photo the pattern sheet draws the tie (its shape) in the pattern tapped, and nothing is saved until Use');
     // suits and blazers are their traced figure (SUIT_D, BLAZER_D) in the colour or pattern tapped: in place of the swatch without a
@@ -41,12 +41,12 @@ module.exports=async({ok,chromium,url})=>{
     const fg=await p.evaluate(()=>{const draw=()=>document.querySelector('#col-sheet .cpdraw').innerHTML.replace(/th\d+-/g,''),strip=s=>{const t=document.createElement('div');t.innerHTML=s;return t.innerHTML.replace(/th\d+-/g,'')},r={};
       items.push({id:'bz1',type:'blazer',primaryColor:'steelblue',pattern:'solid',added:9},{id:'bz2',type:'blazer',primaryColor:'steelblue',pattern:'solid',photo:'x',added:9});
       openColPick('e','bz1','primaryColor');r.fig=draw().includes(strip(HOOK.BLAZER_D.head))&&!!document.querySelector('#col-sheet .cpph.cpfig');
-      document.querySelector('#col-sheet .cptile[data-c="charcoal"]').click();r.col=draw()===strip(itemThumb({...items.find(x=>x.id==='bz1'),primaryColor:'charcoal'}));
+      document.querySelector('#col-sheet .cptile[data-c="charcoal"]').click();r.col=draw()===strip(HOOK.itemThumb({...items.find(x=>x.id==='bz1'),primaryColor:'charcoal'}));
       r.seg0=document.querySelectorAll('#col-sheet .cpseg button').length;closeColPick();
       openColPick('e','bz1','pattern');document.querySelector('#col-sheet .cptile[data-c="windowpane"]').click();
-      r.pat=draw()===strip(itemThumb(patVar(items.find(x=>x.id==='bz1'),'windowpane')))&&draw().includes(strip(HOOK.BLAZER_D.coat));closeColPick();
+      r.pat=draw()===strip(HOOK.itemThumb(patVar(items.find(x=>x.id==='bz1'),'windowpane')))&&draw().includes(strip(HOOK.BLAZER_D.coat));closeColPick();
       openColPick('e','bz2','primaryColor');const segs=[...document.querySelectorAll('#col-sheet .cpseg button')].map(e=>e.textContent);r.photo=!!document.querySelector('#col-sheet .cpph img');
-      HOOK.colPickView('draw');document.querySelector('#col-sheet .cptile[data-c="tan"]').click();r.drawn=!document.querySelector('#col-sheet .cpph img')&&draw()===strip(itemThumb({...items.find(x=>x.id==='bz2'),primaryColor:'tan'}));
+      HOOK.colPickView('draw');document.querySelector('#col-sheet .cptile[data-c="tan"]').click();r.drawn=!document.querySelector('#col-sheet .cpph img')&&draw()===strip(HOOK.itemThumb({...items.find(x=>x.id==='bz2'),primaryColor:'tan'}));
       r.segs=segs.join('|');r.saved=items.find(x=>x.id==='bz1').primaryColor+'/'+items.find(x=>x.id==='bz1').pattern+'/'+items.find(x=>x.id==='bz2').primaryColor;closeColPick();
       openColPick('e','s1','pattern');r.suit=[...document.querySelectorAll('#col-sheet .cpseg button')].some(e=>e.textContent==='Drawing');HOOK.colPickView('draw');r.suitFig=draw().includes(strip(HOOK.SUIT_D.out).slice(0,60));closeColPick();
       HOOK.items=items.filter(x=>!x.id.startsWith('bz'));return r});
