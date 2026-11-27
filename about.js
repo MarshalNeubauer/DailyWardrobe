@@ -272,11 +272,6 @@ function aboutStart(){
   aboutReadVersion().then(()=>checkForUpdate());
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-aboutLast>ABOUT_FRONT_MS)checkForUpdate()});
   setInterval(()=>{if(document.visibilityState==='visible')checkForUpdate()},ABOUT_CHECK_MS)}
-/* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals: safety (appVersion),
-   account (ABOUT_NOTE, wipeDevice), settings (renderAbout); the rest are read by tests; aboutNew is a getter, aboutUpdating a getter and
-   a setter (tests assign it). Above the file's top-level calls (aboutStart, then acts): the names are then still the page's. One
-   statement each: tools and tests cut this file's `^const` lines */
-Object.assign(globalThis,{appVersion,ABOUT_NOTE,wipeDevice,renderAbout});
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-category',k=>{if(k==='about')renderAbout()});   // only as About opens (CR-7-06)
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */

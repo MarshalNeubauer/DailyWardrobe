@@ -1,3 +1,4 @@
+/* global PLAN_RULES, items, metaGet, openSettings, queue, settings, syncNow, syncRun, syncing */   // an older build's globals, read on that build only (tests/bridge.test.js READS_KEPT; the app's bridge is down since the restructure S6f)
 // W1-4-01: a phone still on the 15 Nov a app (PLAN_RULES 14) saves a setting and backs up; today's phone (PLAN_RULES 15)
 // takes the synced settings with planRules 14 and, at its next start, re-plans the week again ("The planner was updated").
 // Standalone (verifier 4): lab on port 9640, fresh profiles verify4-r01-*, kv .work/kv/verify4-r01.json.

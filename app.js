@@ -4,9 +4,8 @@
    photos.js, settings.js, start.js (the start-up
    chain), ui.js and the rest, about.js last.
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14.) */
-import {emit,serve} from './bus.js';   // the Wardrobe's redraw: itemsheet.js pins renderWardrobe for 'wardrobe-changed'
-import {$,ACCENT_MAX,BELT_MATS,COLORS,FABRIC,LEATHERS,MATERIALS_BY,METAL,PATS_BY,SHOE_NAP,SHOE_STYLES,SHOE_TEXTILES,TAG_Q,TEXTURE_TYPES,TYPES,accentsFor,cleanDay,cleanRecord,cleanSettings,colOf,hexRgb,itemFields,items,labHex,matsFor,nextStamp,normCol,normColFor,normPat,ownMatName,rgbLab,settingsOpen,watchOpts} from './core.js';
-import {esc} from './photo-keys.js';
+import {emit,serve,askFor,need,served} from './bus.js';   // the Wardrobe's redraw: itemsheet.js pins renderWardrobe for 'wardrobe-changed'
+import {$,ACCENT_MAX,BELT_MATS,COLORS,FABRIC,LEATHERS,MATERIALS_BY,METAL,PATS_BY,SHOE_NAP,SHOE_STYLES,SHOE_TEXTILES,TAG_Q,TEXTURE_TYPES,TYPES,accentsFor,cleanDay,cleanRecord,cleanSettings,colOf,hexRgb,itemFields,items,labHex,matsFor,nextStamp,normCol,normColFor,normPat,ownMatName,rgbLab,settingsOpen,watchOpts,esc,inviteOver} from './core.js';
 let flt='all',queue=[];const now=new Date();let view={y:now.getFullYear(),m:now.getMonth()},sel=new Date(now.getFullYear(),now.getMonth(),now.getDate());
 
 /* storage */
@@ -105,13 +104,13 @@ function cleanStoredSettings(st){if(!st||typeof st!=='object')return st;const c=
   (async()=>{await txs('meta','readwrite',s=>{const r=s.get('settings'),k=s.get('set_kept');
       k.onsuccess=()=>{const prev=k.result&&k.result.v;s.put({k:'set_kept',v:[...(Array.isArray(prev)?prev:[]),{rec:st,at:Date.now()}]})};
       r.onsuccess=()=>{const cur=r.result&&r.result.v;if(cur&&(cur.updated||0)===(st.updated||0))s.put({k:'settings',v:cleanSettings(cur)})}});
-    flag();const say=()=>toast('Some of this phone’s settings couldn’t be shown safely and were set aside. Nothing was deleted: the originals are kept on this phone.',12000);setTimeout(say,1500)})()
+    flag();const say=()=>need('toast','Some of this phone’s settings couldn’t be shown safely and were set aside. Nothing was deleted: the originals are kept on this phone.',12000);setTimeout(say,1500)})()
     .catch(e=>console.warn('stored settings not cleaned',e));
   return c}
 /* said once, in plain words, whenever the start-up check set something aside (the originals stay in meta rec_kept on this phone) */
 function recKeptTell(kept){const n=kept.filter(x=>x.kind==='item'&&x.dropped).length,f=kept.filter(x=>x.kind==='item'&&!x.dropped).length;if(!n&&!f)return;
   const t=(n?`${n} item${n===1?'':'s'} in this phone’s storage couldn’t be shown safely and ${n===1?'was':'were'} set aside. `:'')+(f?`Some details of ${f} item${f===1?'':'s'} couldn’t be shown safely and were set aside. `:'')+'Nothing was deleted: the originals are kept on this phone.';
-  const say=()=>toast(t,12000);setTimeout(say,1500)}
+  const say=()=>need('toast',t,12000);setTimeout(say,1500)}
 // every local edit is timestamped and triggers a (debounced) backup; deletions leave a tombstone so they sync too
 const putRaw=i=>tx('readwrite',s=>s.put(i));
 /* a start-up fix-up saves an item only while it is still the copy on screen: an edit or a sync may have replaced it meanwhile, and saving the
@@ -120,12 +119,12 @@ const stillCur=it=>items.find(x=>x.id===it.id)===it;
 /* and redraws the Wardrobe only when it is on screen and Settings is not open (renderWardrobe closes Settings; these now run after the first
    pull, which can be while Settings is open); the Wardrobe is drawn afresh when it is opened */
 const fixupRedraw=()=>{if(settingsOpen())return;const w=$('#wardrobe');if(w&&!w.hidden)emit('wardrobe-changed')};
-const put=i=>{i.updated=nextStamp(stamp(i));if(typeof kitUserEdit==='function')kitUserEdit(i);   // (an edit in the item sheet makes a sample piece his: kit.js)
+const put=i=>{i.updated=nextStamp(stamp(i));askFor('kit-user-edit',i);   // (an edit in the item sheet makes a sample piece his: kit.js)
 // the fields changed since the stored copy get the edit's stamp, in the same transaction (core.js itemFields: two phones' changes to
 // different fields of one piece both stay, fix round 3; the stamp is nextStamp's, made one above the stored copy's only when it isn't)
-const r=atomic('items',i.id,cur=>{itemFields(i,cur);return {put:i}});r.then(()=>{window.scheduleSync&&scheduleSync()});return r};
+const r=atomic('items',i.id,cur=>{itemFields(i,cur);return {put:i}});r.then(()=>{askFor('sync-soon')});return r};
 // (the deletion's stamp is above the item's own, so it wins whatever the clocks say: core.js nextStamp; returned for an Undo)
-const del=async id=>{const was=items.find(x=>x.id===id),t=nextStamp(stamp(was));await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:t});window.scheduleSync&&scheduleSync();return t};
+const del=async id=>{const was=items.find(x=>x.id===id),t=nextStamp(stamp(was));await tx('readwrite',s=>s.delete(id));await addTombstones({[id]:t});askFor('sync-soon');return t};
 
 
 /* precision swatch: a 128 px square of the cloth, cut from the fabric close-up when the card has one (the cloth up close, white-
@@ -164,7 +163,7 @@ async function refreshSwatch(it){if(!FABRIC.includes(it.type))return;const src=i
 /* once: items that already have a close-up get their swatch cut from it, lightness set from the tagged colour (tex_swatch2) */
 async function texSwatches(){if(localStorage.getItem('tex_swatch2')==='1')return 0;let n=0;
   for(const it of items)if(it.texture&&TEXTURE_TYPES.includes(it.type)){await refreshSwatch(it);if(it.swSrc==='tex'&&stillCur(it)){await put(it);n++}}
-  localStorage.setItem('tex_swatch2','1');if(n)planDirty();return n}
+  localStorage.setItem('tex_swatch2','1');if(n)need('plan-dirty');return n}
 
 function updateSwatchParam(i, param, val){
   queue[i][param]=Number(val);
@@ -232,27 +231,27 @@ const aiLabel=q=>!q.ai?'Not tagged by AI: fill in the details.':/^claude/.test(q
    shared aiError / tagWhy / tagNetLast, still set for the Add page's note, could hold another card's reason by the time it was read) */
 async function ask(c,extra){
   const {signal,forType,out,...ex}=extra||{};   // signal: Stop on an Add card calls the reading off (add.js stopRead)
-  const fail=note=>{aiError=note;if(out)out.err={note,why:typeof tagWhy==='string'?tagWhy:'',net:typeof tagNetLast!=='undefined'&&!!tagNetLast};return null};
+  const fail=note=>{aiError=note;if(out)out.err={note,why:(w=>typeof w==='string'?w:'')(askFor('tag-why')),net:!!askFor('tag-net-last')};return null};
   try {
     const workerUrl=localStorage.getItem('worker_url');
     if(!workerUrl) return null;
-    if(typeof inviteOver==='function'&&inviteOver())return null;   // an ended invitation: the photo isn't sent (it was, and refused; re-audit 2026-11-15)
+    if(inviteOver())return null;   // an ended invitation: the photo isn't sent (it was, and refused; re-audit 2026-11-15)
     const dataUrl=typeof c==='string'?c:c.toDataURL('image/jpeg',TAG_Q);
     const res=await fetch(workerUrl,{
       method:'POST',
       headers:{'Content-Type':'application/json','x-app-token':localStorage.getItem('app_token')||''},   // (the code goes in the header only: the worker hasn't read a body appToken since 2026-11-12)
-      body:JSON.stringify({image:dataUrl,...tagExtras(ex)}),
+      body:JSON.stringify({image:dataUrl,...need('tag-extras',ex)}),
       ...(signal?{signal}:{})
     });
     if(!res.ok){let e='',j={};try{j=await res.json();e=j.detail||j.error||''}catch{}
       if(typeof endedAnswer==='function'&&endedAnswer(res.status,j)){inviteEnded(localStorage.getItem('app_token')||'',j);aiError='';return null}   // found out here: said as ended (sync.js), the card has no Try again
-      return fail(tagFailText(res.status,j,e))}
+      return fail(need('tag-fail-text',res.status,j,e))}
     aiError='';
     const result=await res.json();aiModel=result.model||'';
     return normTag(result,result.model,forType);   // (the worker parses Claude's answer itself: the old Workers AI text shape is gone)
   } catch(e) {
     if(e&&e.name==='AbortError')return null;   // stopped on purpose: no failure to report
-    return fail(tagFailText(0,null,e));
+    return fail(need('tag-fail-text',0,null,e));
   }
 }
 /* an AI tag -> the fields the Add form uses (type-checked, colours and patterns normalised) */
@@ -405,7 +404,7 @@ const ENDED='Your invitation has ended. Your wardrobe stays on this phone, and t
    deleted) is also marked invite_lost: the server holds no copy of this phone's wardrobe, so a new invitation link keeps the wardrobe and
    backs it up there instead of clearing it (account.js connectFromLink; 2026-11-15, the audit: nothing said how to recover) */
 function inviteEnded(token,j){if(j&&j.error==='forbidden token')try{localStorage.setItem('invite_lost',token)}catch{}
-  if(localStorage.getItem('invite_ended')===token)return;localStorage.setItem('invite_ended',token);tell(endedTold(j));
+  if(localStorage.getItem('invite_ended')===token)return;localStorage.setItem('invite_ended',token);need('tell',endedTold(j));
   emit('invite-ended')}   // what said "Connected" and "backed up" says so too: the Backup line (sync-status.js) and the account box (account.js), through bus.js
 /* what the one-time message says (fix round 3): a link the owner replaced with a new one (worker/people.js, 'invite off' with replaced) says the
    new link opens the same wardrobe; an account deleted (W1-6-03: after Delete everything on another phone this phone only heard "Your
@@ -416,7 +415,7 @@ const endedTold=j=>j&&j.replaced?ENDED_NEW:j&&j.error==='forbidden token'?ENDED_
 /* the server's answer means this invitation is over: switched off (403 'invite off'), or, for a tester, deleted (the account deleted
    on another phone, or its data deleted by the owner: the code is unknown, 403 'forbidden token'). A tester's phone said "Backups aren't
    available on this server yet" and kept trying. For the owner a refused code is a typing mistake, said as it is. */
-const endedAnswer=(status,j)=>status===403&&!!j&&(j.error==='invite off'||j.error==='forbidden token'&&typeof isTester==='function'&&isTester());
+const endedAnswer=(status,j)=>status===403&&!!j&&(j.error==='invite off'||j.error==='forbidden token'&&served('is-tester')&&askFor('is-tester'));
 /* (moved from safety.js with its text unchanged, the restructure S6a) */
 function storeFailure(e){if(!e)return false;if(e.dwStore||e.name==='QuotaExceededError')return true;const t=e.target;
   return !!(t&&typeof IDBRequest!=='undefined'&&(t instanceof IDBRequest||t instanceof IDBTransaction))}
@@ -432,11 +431,8 @@ function storeFailText(e){const x=storeErr(e),why=String(x.message||'').trim().r
 let editing=null;
 /* the setter item-view.js calls to assign editing (it opens, steps and closes the sheet) */
 function setEditing(v){editing=v}
-/* The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. At the end: nothing
-   above it can throw at load (the database's failures are its promises'), and the consts it hands over are declared all the way down */
-Object.assign(globalThis,{dbUnhold,db,dbGone,dbRetry,dbMark,txFail,txs,tx,metaGet,metaPut,connKeep,connRestored,atomic,addTombstones,cleanStored,cleanStoredSettings,putRaw,stillCur,fixupRedraw,put,del,generateSwatch,refreshSwatch,texSwatches,updateSwatchParam,fitNavSoon,afterScripts,afterDom,aiLabel,ask,normTag,imgOf,loadImg,DEAD_MSG,deadCanvas,deadPic,shrink,fill,cap1,S,announce,keepFocus,setSel,setView,setFlt,setAiError,setAiModel,setConnReady,setDbConn,setDbCur,setDbWiping,ENDED,inviteEnded,endedAnswer,storeFailure,storeFailText,cardOf,qAt,cardAt,cardIx,setEditing});
-Object.defineProperties(globalThis,{flt:{get:()=>flt,set:v=>{flt=v}},queue:{get:()=>queue,set:v=>{queue=v}},view:{get:()=>view,set:v=>{view=v}},sel:{get:()=>sel,set:v=>{sel=v}},dbCur:{get:()=>dbCur,set:v=>{dbCur=v}},dbConn:{get:()=>dbConn,set:v=>{dbConn=v}},dbWiping:{get:()=>dbWiping,set:v=>{dbWiping=v}},connReady:{get:()=>connReady,set:v=>{connReady=v}},aiError:{get:()=>aiError,set:v=>{aiError=v}},aiModel:{get:()=>aiModel,set:v=>{aiModel=v}},editing:{get:()=>editing,set:v=>{editing=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,busyLabelFor,cropSwatch,fitNav,get sel(){return sel},set sel(v){sel=v},get view(){return view},set view(v){view=v},get flt(){return flt},set flt(v){flt=v},get queue(){return queue},set queue(v){queue=v},addTombstones,S,ask,atomic,deadCanvas,deadPic,del,fill,generateSwatch,imgOf,normTag,putRaw,refreshSwatch,shrink,updateSwatchParam,db,get dbConn(){return dbConn},put,afterDom,connKeep,connRestored,metaGet,metaPut,texSwatches,tx,txs,qAt,cardIx,cardOf,get editing(){return editing},set editing(v){editing=v}};
 export {flt,queue,view,sel,dbCur,dbConn,dbWiping,dbUnhold,db,dbGone,dbRetry,dbMark,txFail,txs,tx,metaGet,metaPut,connReady,connKeep,connRestored,atomic,addTombstones,cleanStored,cleanStoredSettings,putRaw,stillCur,fixupRedraw,put,del,cropSwatch,generateSwatch,refreshSwatch,texSwatches,updateSwatchParam,aiError,aiModel,busyLabelFor,fitNav,fitNavSoon,afterScripts,afterDom,aiLabel,ask,normTag,imgOf,loadImg,DEAD_MSG,deadCanvas,deadPic,shrink,fill,cap1,S,announce,keepFocus,setSel,setView,setFlt,setAiError,setAiModel,setConnReady,setDbConn,setDbCur,setDbWiping,ENDED,inviteEnded,endedAnswer,storeFailure,storeFailText,cardOf,qAt,cardAt,cardIx,editing,ENDED_NEW,ENDED_GONE,endedTold,storeErr,storeFull,setEditing};
 serve('announce',announce);serve('conn-keep',connKeep);serve('meta-get',metaGet);serve('meta-put',metaPut);serve('sel-day',()=>sel);serve('after-dom',afterDom);serve('after-scripts',afterScripts);serve('stored-clean',cleanStored);serve('stored-settings-clean',cleanStoredSettings);serve('conn-restored',()=>connRestored);serve('sel-set',setSel);serve('view-set',setView);serve('tex-swatches',texSwatches);serve('tx',tx);serve('txs',txs);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
+serve('ended-answer',endedAnswer);serve('invite-ended',inviteEnded);   // the restructure S6f: photo-keys.js (it loads before this file) hears an ended invitation

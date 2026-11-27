@@ -1,9 +1,11 @@
 /* Daily Wardrobe: moving between pages (show), the pages opened over another (subOpen, subBack, openAdd) and whether start-up lets a
    page be shown yet (pagesOn). The router, split out of start.js (the restructure S3f, 2026-11-26; the owner's choice of 2026-11-25):
    start.js keeps the start-up chain. An ES module in the ui kit, before the screens that move between pages. */
-import {on,emit,ask,need,needFn} from './bus.js';   // (this file reads nothing of app.js's own ask(), the server request)
+import {on,emit,ask,need,needFn,served} from './bus.js';   // (this file reads nothing of app.js's own ask(), the server request)
 import {$,MONTH_EASE,TYPES} from './core.js';
 import {backDrop,backHold,backPush} from './back.js';
+import {noMotion} from './ui.js';
+import {toastDrop} from './toast.js';
 /* moving between pages: the page arriving eases in from the side its tab is on (Today, Wardrobe, Add left to right), a short slide and a
    fade on the cards' curve; a page opened from Settings (stats, packing, care) rises in instead. The tab bar's marker slides to the tab
    (styles.css nav::before, --ti). Only the page arriving moves: the one leaving goes at once, so nothing is laid out twice. */
@@ -33,10 +35,6 @@ function pageBack(kind){if(kind==='sub'&&subShown())subBack();else emit('page-ba
 let pagesOn=false,pageWant=null;
 function setPagesOn(v){pagesOn=v}
 function setPageWant(v){pageWant=v}
-/* The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals (start.js pins
-   pageBack for the phone's Back) */
-Object.assign(globalThis,{PAGES,pageBack,subShown,subOpen,subBack,openAdd,show,showWanted,setPagesOn,setPageWant});
-Object.defineProperties(globalThis,{pagesOn:{get:()=>pagesOn}});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,subBack,openAdd,show};
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-closed',v=>{if(v&&!$('#'+v).hidden)show(v)});   // the Wardrobe or stats page a sync changed while Settings was open
@@ -69,7 +67,7 @@ function show(t){
   if(from!==t)ask('shop-close');if(t!=='wardrobe'&&ask('item-open'))ask('item-drop');   // (What to buy stays open over its own tab redrawn by a sync, CR-4-04)
   for(const s of['today','wardrobe','add','stats']){const el=$('#'+s);if(el)el.hidden=s!==t;const btn=$('#n-'+s);if(btn){btn.classList.toggle('on',s===t);if(s===t)btn.setAttribute('aria-current','page');else btn.removeAttribute('aria-current')}}   // (spoken, not only shown: W2-19-05)
   if(from==='wardrobe'&&t!=='wardrobe'&&!ask('item-open')){const w=$('#wardrobe');if(w)w.textContent=''}   // the grid (about 4,900 elements at 107 items) is drawn again on coming back: kept, it stayed in memory and in every style recalculation (audit 2026-11-13)
-  const f={today:needFn('today-draw'),wardrobe:()=>ask('wardrobe-draw'),add:()=>ask('add-draw'),stats:()=>typeof statsShow==='function'?statsShow():need('stats-draw')};if(f[t])f[t]();
+  const f={today:needFn('today-draw'),wardrobe:()=>ask('wardrobe-draw'),add:()=>ask('add-draw'),stats:()=>served('stats-show')?ask('stats-show'):need('stats-draw')};if(f[t])f[t]();
   ask('pack-show',t);   // the packing list page (pack.js)
   if(t!=='wardrobe')ask('item-draw');   // the item page belongs to the Wardrobe
   pageIn(t,from);

@@ -131,13 +131,15 @@ async function survey(eng,browser,{ok,url,C,page,imports}){
     document.head.appendChild(s);for(let i=0;i<50&&!window.__sock;i++)await new Promise(r=>setTimeout(r,20));return window.__sock});
   ok(sock==='true,5',T+`bus.js's sockets in the page: ask for a name nobody serves gives undefined, a served one its answer (${sock})`);
   const state=await s.storageState({indexedDB:true});await s.close();
-  const look=async p=>p.evaluate(()=>{const q=s=>document.querySelector(s),t=q('#today');return {card:!!q('#start-fail'),today:!!(t&&t.children.length),fig:!!q('#today .fig svg,#today .fig img'),ready:!!window.appReady,ran:(globalThis.__ran||[]).slice()}});
+  const look=async p=>p.evaluate(()=>{const q=s=>document.querySelector(s),t=q('#today');return {card:!!q('#start-fail'),today:!!(t&&t.children.length),fig:!!q('#today .fig svg,#today .fig img'),ready:!!window.appReady,ran:(globalThis.__ran||[]).slice(),
+    failed:/went wrong while the app was starting/.test((q('#toast')||{}).textContent||'')}});   // (start.js startFailed's toast: the restructure S6f)
+  const failedBy={};
   const ranBy={};
   const one=async f=>{const ctx=await ctxFor(state,f||'');try{const p=await ctx.newPage();await p.goto(url,{waitUntil:'load'});const t0=Date.now();let r;
-      let drawn=0;for(;;){r=await look(p);if(r.today&&!drawn)drawn=Date.now();if(r.card||(r.today&&r.fig)||(drawn&&Date.now()-drawn>8000)||Date.now()-t0>20000)break;await wait(250)}
+      let drawn=0,failed=false;for(;;){r=await look(p);failed=failed||r.failed;if(r.today&&!drawn)drawn=Date.now();if(r.card||(r.today&&r.fig)||(drawn&&Date.now()-drawn>8000)||Date.now()-t0>20000)break;await wait(250)}
       // (the notes read once they stop coming: a second without a new one)
       for(let i=0,was=-1,still=0;i<40&&still<4;i++){const n=await p.evaluate(()=>(globalThis.__ran||[]).length);still=n===was?still+1:0;was=n;await wait(250)}
-      r.ran=await p.evaluate(()=>(globalThis.__ran||[]).slice());
+      r.ran=await p.evaluate(()=>(globalThis.__ran||[]).slice());failedBy[f||'(none)']=failed||(await look(p)).failed;
       ranBy[f||'(none)']=r.ran.concat([...(ctx.unmarked||[])]);return r.card?'card':!r.today?'no-today':r.fig?'picture':'no-picture'}
     catch(e){return 'error: '+e.message.split('\n')[0].slice(0,80)}finally{await ctx.close().catch(()=>{})}};
   const got={},ms={},queue=['(none)',...page];
@@ -148,6 +150,11 @@ async function survey(eng,browser,{ok,url,C,page,imports}){
   // runner, not on Windows' WebKit (no painted picture there in the lab survey), on Linux's WebKit and Chromium within seconds; so either, but never the card or no Today)
   const fits=(f,g)=>{const x=expected(C,f,E);return x==='painted'?g==='picture'||g==='no-picture':g===x};
   const off=page.filter(f=>!fits(f,got[f]));
+  /* the restructure S6f: an optional file's 404 loses only its feature, so start-up itself never fails (start.js startFailed: its toast,
+     the stored settings not applied), unless the contract records that it does (startFails, with the reason). On main merge.js's 404 failed
+     start-up and still drew the figure on the held Monday, so the figure alone let it pass (S6x, #666) */
+  const startBad=page.filter(f=>C.files[f].class==='optional'&&failedBy[f]&&!C.files[f].startFails),startStale=page.filter(f=>C.files[f].startFails&&got[f]&&!/^error/.test(got[f])&&!failedBy[f]);
+  ok(!failedBy['(none)']&&!startBad.length&&!startStale.length,T+`an optional file's 404 doesn't fail start-up, but where the contract says so (${page.filter(f=>C.files[f].startFails).join(', ')||'none'})`+(failedBy['(none)']?': start-up failed with every file there':'')+(startBad.length?': start-up failed without '+startBad.join(', '):'')+(startStale.length?'; the contract says start-up fails without '+startStale.join(', ')+', and it no longer does':''));
   const tally={};for(const f of page)tally[got[f]]=(tally[got[f]]||0)+1;
   // what else each optional file's 404 takes down: exactly the files that import it, directly or through others (its own group, or a
   // group that needs its group: they fail together), and every other page script still runs to its end
@@ -263,10 +270,10 @@ async function run(eng,browser,{ok,url,settle}){
   // (the three Back flags are the tests' alone, so back.js hands them over on HOOK, not the bridge: T2 phase 3; d finds a name's
   // accessor in HOOK's chain, which ends in the runner's root before any module's object: it is never reached for these)
   const md=await c.p.evaluate(()=>{const d=n=>{for(let o=HOOK;o;o=Object.getPrototypeOf(o)){const x=n in o&&Object.getOwnPropertyDescriptor(o,n);if(x)return x}return {}},has=(f,n)=>{try{return f[n]===null}catch(e){return 'throws'}};
-    return {fns:['backKind','backOn','backOver','backLand','backPush','backDrop','backBorrow','backReturn','backHold','backSettled','backWanted','histPush','histDrop'].every(n=>typeof globalThis[n]==='function'),
+    return {fns:['backKind','backOn','backOver','backLand','backPush','backDrop','backBorrow','backReturn','backHold','backSettled','backWanted','histPush','histDrop'].every(n=>typeof globalThis[n]==='undefined'),
       loc:HOOK.APP_LOC,get:['appHist','appKind','itemHist'].map(n=>typeof d(n).get+'/'+typeof d(n).set).join(),strict:has(HOOK.backPush,'caller')+'/'+has(mergeItem,'caller'),patched:!!Date.prototype._dwLoc}});
   md.own=await c.p.evaluate('[typeof BACK,typeof backPop,typeof appLocale].join()');   // (as text: these are not the page's names, and the checkers would take a function's use of them for one)
-  ok(md.own==='undefined,undefined,undefined'&&md.fns&&md.loc==='en-US'&&md.patched,T+`back.js and locale.js run as modules: their own names (BACK, backPop, appLocale) are not the page's, the bridged functions and APP_LOC are, and the Date patch is in (${JSON.stringify(md)})`);
+  ok(md.own==='undefined,undefined,undefined'&&md.fns&&md.loc==='en-US'&&md.patched,T+`back.js and locale.js run as modules: their own names (BACK, backPop, appLocale) are not the page's, nor (since the bridge came down, the restructure S6f) the functions other files import, APP_LOC is locale.js's (HOOK), and the Date patch is in (${JSON.stringify(md)})`);
   ok(md.get==='function/undefined,function/undefined,function/undefined'&&md.strict==='throws/true',T+'the three Back flags are getters with no setter, and back.js\'s functions are strict (reading a function\'s caller throws) where a classic script\'s are not');
   const flags=()=>c.p.evaluate(()=>HOOK.appHist+'/'+HOOK.appKind+'/'+HOOK.itemHist+'/'+HOOK.backKind());
   const live=[await flags()];

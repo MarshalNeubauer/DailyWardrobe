@@ -21,13 +21,9 @@ function applyRole(){const b=document.body;if(!b)return;const r=acctRole(),on=is
   b.classList.toggle('owner',on&&r==='owner');b.classList.toggle('tester',on&&r==='tester');b.classList.toggle('nocon',!on)}
 /* the setter other files call to assign acct (account.js: a new answer from the server; the restructure S1a's rule) */
 function setAcct(v){acct=v}
-/* the bridge (tests/bridge.test.js): ui, photos, colpick, look, add, settings, safety, sync, about, remind, kit, account and
-   sync-status read who is connected; app, photos, account, sync, snapshots and about hear an ended invitation (endedAnswer,
-   inviteEnded, ENDED). acct has a getter and a setter (tests assign it). Nothing here runs at load */
-Object.assign(globalThis,{rememberRole,acctRole,isTester,applyRole,setAcct});
-Object.defineProperties(globalThis,{acct:{get:()=>acct,set:v=>{acct=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,rememberRole,get acct(){return acct},set acct(v){acct=v},acctRole,applyRole,isTester};
 export {acct,rememberRole,acctRole,isTester,applyRole,setAcct};
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('acct-role',acctRole);serve('acct-me',()=>acct.me);
+serve('is-tester',isTester);serve('apply-role',applyRole);   // the restructure S6f: what required and today-no-picture files ask of this file

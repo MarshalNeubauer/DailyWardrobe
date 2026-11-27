@@ -8,7 +8,7 @@
    matched, gains held to 0.6-1.6. The sharp copy is kept again under the new close-up's signature. Another device has nothing to do. */
 /* a picture's mean colour in linear light (on a 64x64 copy), and a canvas's colours scaled so its mean matches another's, each channel's
    gain held to 0.6-1.6: the two remakes below (one copy: CR-2-15) */
-import {askFor} from './bus.js';
+import {askFor,serve} from './bus.js';
 import {PH_MAX,TEX_MAX,colOf,isoKey,items} from './core.js';
 import {fixupRedraw,imgOf,put,refreshSwatch,stillCur} from './app.js';
 import {planDirty} from './today-plan.js';
@@ -107,11 +107,7 @@ async function recolourSpecSetts(){if(localStorage.getItem('spec_recolour')==='3
     const s=settFromSpec(it.patternSpec,it.pbox&&full?{tex:c,full,box:it.pbox,type:it.type}:{tex:c,type:it.type});
     if(s&&stillCur(it)&&(JSON.stringify(s.bands)!==JSON.stringify(it.sett.bands)||JSON.stringify(s.cross)!==JSON.stringify(it.sett.cross))){it.sett=s;await put(it);n++}}catch(e){console.warn(e)}
   localStorage.setItem('spec_recolour','3');if(n)planDirty();return n}
-/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals:
-   start.js runs the four remakes (upgradeCloseups, upgradePhotos, fixBlackBackdrops, recolourSpecSetts), item-photo.js counts its
-   own remake within the day's (remakeLeft, remakeSpend); REMAKE_DAY is read by tests/tagreads.test.js. A module imports them.
-   At the file's end: nothing runs at load (declarations only), so nothing above can throw */
-Object.assign(globalThis,{upgradeCloseups,remakeLeft,remakeSpend,upgradePhotos,fixBlackBackdrops,recolourSpecSetts});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,REMAKE_DAY,fixBlackBackdrops,recolourSpecSetts,remakeLeft,remakeSpend,upgradeCloseups,upgradePhotos};
 export {upgradeCloseups,REMAKE_DAY,remakeLeft,remakeSpend,upgradePhotos,fixBlackBackdrops,recolourSpecSetts};
+serve('spec-recolour',recolourSpecSetts);serve('closeups-upgrade',upgradeCloseups);serve('photos-upgrade',upgradePhotos);serve('backdrops-fix',fixBlackBackdrops);   // the restructure S6f: start.js's one-time fix-ups

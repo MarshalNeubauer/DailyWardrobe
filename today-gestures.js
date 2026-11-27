@@ -132,9 +132,6 @@ function showPlan(p){const grid=document.querySelector('#mpanel-in .mgrid:not(.m
   root.addEventListener('click',e=>{if(noClick&&e.target.closest('#mpanel-in')){e.stopPropagation();e.preventDefault()}},true);
   root.addEventListener('contextmenu',e=>{if(e.target.closest('#mpanel-in .mc[data-mv]'))e.preventDefault()});
 })();
-/* the bridge (tests/bridge.test.js): sync.js, a classic script, asks todayBusy before it redraws (mvSig went to month.js, restructure
-   S3e); tests/moveoutfit.test.js calls moveRecs and reads outfitMove, which only this file writes: a getter; a module imports them */
-Object.assign(globalThis,{todayBusy});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,moveRecs,get outfitMove(){return outfitMove}};
 export {todayBusy,outfitMove,moveRecs};

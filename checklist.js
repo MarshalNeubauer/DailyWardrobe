@@ -4,8 +4,7 @@
    (An ES module, run in index.html's order; what the classic scripts still use of it is bridged in its last lines; nothing else runs at load.) */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit,ask} from './bus.js';
-import {esc} from './photo-keys.js';
-import {ACCENT_MAX,COLORS,SHADE_MAX,accentsOf,colName,items,primaryCol,shadeFor,shadeName,sockPatterned,sockToeKey,texSig} from './core.js';
+import {ACCENT_MAX,COLORS,SHADE_MAX,accentsOf,colName,items,primaryCol,shadeFor,shadeName,sockPatterned,sockToeKey,texSig,esc} from './core.js';
 import {cap1,cardOf,imgOf,put,queue} from './app.js';
 import {itemThumb} from './draw.js';
 import {measureCloth,paperKey,paperNow,paperOf} from './measure.js';
@@ -177,9 +176,6 @@ function matchShadeQ(i){const q=cardOf(i);if(!q||!q.meas)return;q.shade=shadeFor
 async function matchShadeE(id){const it=items.find(x=>x.id===id);if(!it)return;let lab=it.meas&&it.meas.src==='closeup'?it.meas.lab:null;
   if(!lab&&it.texture)try{const im=await imgOf(it.texture),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);lab=measureCloth(c,null,{}).lab}catch{}
   if(!lab)return;it.shade=shadeFor(it,lab);if(!it.shade)delete it.shade;await put(it);planDirty();emit('wardrobe-changed');toast(it.shade?`Swatch set ${shadeName(it.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
-/* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it): the Add card, the item sheet, the color sheet and the Look beta, classic scripts, draw their sections and the close-up comparison with
-   these; CK_OPEN is also what most tests open the sections with. */
-Object.assign(globalThis,{CK_OPEN,ckIsOpen,ckSec,ckToggle,ckChip,ckColSum,accRow,ckSure,cmpDrawn,cmpHtml,cmpMount,cmpLab,cmpDiff,cmpSteps,cmpDiffText,cmpMatchHtml,cmpPaper,cmpPaperLine,matchShadeQ,matchShadeE});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,CK_OPEN};
 export {CK_OPEN,ckIsOpen,ckSec,ckToggle,ckChip,ckColSum,accRow,ckSure,cmpDrawn,cmpHtml,cmpMount,cmpLab,cmpDiff,cmpSteps,cmpDiffText,cmpMatchHtml,cmpPaper,cmpPaperLine,matchShadeQ,matchShadeE};
 acts({ckHeadTap,cmpGoTap,cmpUndoTap});

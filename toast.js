@@ -1,6 +1,6 @@
 /* Daily Wardrobe: toasts and the Wardrobe's round Undo button
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
-import {ask,need} from './bus.js';   // the piece open in the item sheet (item-view.js serves it). (This file reads nothing of app.js's ask())
+import {ask,need,serve} from './bus.js';   // the piece open in the item sheet (item-view.js serves it). (This file reads nothing of app.js's ask())
 import {$} from './core.js';
 let toastTimer=null;
 const TOAST_ACT_MS=8000;   // a toast with Undo stays at least this long (audit 2026-11-14: gone after 5 s, and Delete has no question)
@@ -25,9 +25,7 @@ function toastOff(e){if(e.contains(document.activeElement)&&e.querySelector('but
   e.classList.remove('on','act');setTimeout(()=>{if(!e.classList.contains('on'))e.textContent=''},250)}
 /* a toast with a button (Undo) taken away at once (start.js show(): leaving Add takes its "Saved … Undo" with it) */
 function toastDrop(){undoOff();const e=$('#toast');if(!e||!e.classList.contains('act'))return;clearTimeout(toastTimer);e.classList.remove('on','act');e.textContent=''}
-/* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals: toast (34 page
-   scripts), toastDrop (start.js), TOAST_ACT_MS (tests/a11y.test.js). The file has no top-level call, so the bridge is its last lines */
-Object.assign(globalThis,{toast,toastDrop});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,TOAST_ACT_MS,toast,toastDrop};
 export {TOAST_ACT_MS,toast,toastDrop};
+serve('toast',toast);   // the restructure S6f: app.js, which loads before this file, says what it set aside

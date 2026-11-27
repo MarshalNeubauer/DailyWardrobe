@@ -39,7 +39,7 @@ function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
     return days<=0?'today':days===1?'yesterday':d.toLocaleDateString(undefined,{month:'short',day:'numeric'})};
   // (2026-11-15, the audit: "Backed up today" while the day's saves were used up and none of the new items was on the server)
   const pz=+localStorage.getItem('sync_pause')||0;
-  if(typeof syncPaused==='function'?syncPaused():pz>nowMs()){const p=pausedUntil(pz);return last?`Paused until ${p} · last saved ${when(last)}`:`Paused until ${p}: not backed up yet`}
+  if(served('sync-paused')?ask('sync-paused'):pz>nowMs()){const p=pausedUntil(pz);return last?`Paused until ${p} · last saved ${when(last)}`:`Paused until ${p}: not backed up yet`}
   if(/^Backups held/.test(st))return 'Held: deleted from the server on another device';   // (sync.js syncWiped)
   if(/^Backing up/.test(st))return last?`Backing up photos · last saved ${when(last)}`:'Backing up photos: not finished yet';   // (photos going up in batches, sync-photos.js phBatch)
   if(/^Not backed up:/.test(st))return last?`Waiting for a connection · last saved ${when(last)}`:'Waiting for a connection: not backed up yet';
@@ -131,7 +131,7 @@ function saveSettings(){
   catch(e){console.warn('connection not saved',e);setTimeout(()=>toast('Couldn’t save the server address: this browser’s storage is full or blocked.',5000),0)}
   need('conn-keep');   // the database's copy of the connection follows (app.js)
   closeSettings();
-  try{renderAdd()}catch(e){console.warn('Add page not drawn',e)}
+  try{need('add-draw')}catch(e){console.warn('Add page not drawn',e)}
   emit('connection-saved');   // a backup now (sync.js syncNow)
 }
 
@@ -150,7 +150,7 @@ async function saveUserSettings(){stampSettings(settings);need('plan-dirty');   
   setSeen=settings.updated||0;
   await need('meta-put','settings',settings);need('plan-dirty');try{if(setChan)setChan.postMessage({u:setSeen})}catch{}emit('settings-saved')}   // (sync.js: a backup soon)
 /* testers have daily limits instead of costs: no "about 7¢" for them (account.js knows who is connected) */
-const showCost=()=>!(typeof isTester==='function'&&isTester());
+const showCost=()=>!(served('is-tester')&&ask('is-tester'));
 /* the parts of Settings drawn by later scripts (Round B, CR-7-11: account.js and remind.js replaced renderSettingsExtras with a wrapper
    at load, so a reader of this file couldn't see that every redraw also draws the account box, asks /me and draws the reminder):
    each registers once with settingsPart(fn), and renderSettingsExtras runs them last, in the order they registered (script order).
@@ -214,10 +214,6 @@ function darkPick(el){setDarkShirts(el.value)}
 /* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
 function setSetSeen(v){setSeen=v}
 function setViewStale(v){viewStale=v}
-/* The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above acts({…}),
-   the file's only top-level call that can throw: without act.js its names are still the page's */
-Object.assign(globalThis,{SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayDirty,refreshToday,closeSettings,saveSettings,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,picsSwitched,setVestMode,toggleDay,setWanted,setSetSeen,setViewStale});
-Object.defineProperties(globalThis,{viewStale:{get:()=>viewStale,set:v=>{viewStale=v}},setSeen:{get:()=>setSeen,set:v=>{setSeen=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 serve('refresh-today',refreshToday);   // (the restructure S6p: the painter, asm-today.js and asm-cm-page.js, redraws Today when a picture is ready; it loads before this file)
 globalThis.HOOK={__proto__:globalThis.HOOK||null,SET_CATS,saveSettings,setCatOpen,setDarkShirts,setOpenTap,get setOther(){return setOther},setPictures,get todayStale(){return todayStale},backupSummary,toggleDay,settingsSummaries,closeSettings,openSettings,refreshToday,renderSettingsExtras,saveUserSettings,showCost,toggleCat};
@@ -228,3 +224,4 @@ on('page-back',()=>{if(settingsOpen())saveSettings()});   // the phone's Back wi
 on('sub-opening',S=>{const m=$('#settings-modal');if(settingsOpen()&&m)S.set={cats:SET_CATS.filter(k=>{const e=$('#sc-'+k);return e&&e.classList.contains('open')}),top:m.scrollTop}});   // a page opened from Settings: how Settings was
 on('sub-back',set=>{openSettings();for(const k of set.cats)setCatOpen(k,true,true);settingsSummaries();const m=$('#settings-modal');if(m)m.scrollTop=set.top});   // and back to Settings as it was
 acts({dayTap,picsPick,setOpenTap,setBackdropTap,setDoneTap,catTap,vestPick,darkPick});
+serve('settings-open',openSettings);serve('settings-close',closeSettings);serve('cat-toggle',toggleCat);serve('settings-extras',renderSettingsExtras);serve('show-cost',showCost);serve('settings-save-user',saveUserSettings);serve('today-dirty',todayDirty);serve('week-first',weekFirst);   // the restructure S6f: what files loaded before this one ask of it

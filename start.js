@@ -9,8 +9,9 @@ import {$,applyCustom,cleanDay,cleanRecord,key,setWardrobe,settings,settingsOpen
 import {toast} from './toast.js';
 import {openSettings,picsSwitched,refreshToday,renderPicturesUI,setSetSeen,setWanted} from './settings.js';
 import {acts} from './act.js';
-/* The bridge (tests/bridge.test.js): what index.html's last script (startUp), sync.js (onSyncedData) and the tests still use as globals */
-Object.assign(globalThis,{startUp,onSyncedData});
+/* The page's one global from a module (the restructure S6f, tests/bridge.test.js GLOBALS): index.html's last script calls startUp(), and
+   its start-up catcher looks for window.startUp to tell a start-up that never came */
+Object.assign(globalThis,{startUp});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,startPlain,tabTap,startUp};
 export {startPlain,startUp,onSyncedData,tabTap};
@@ -30,12 +31,12 @@ function startFailed(e){console.warn(e);
     setWardrobe({items:(startRead.r||[]).map(x=>one(cleanRecord,x)).filter(Boolean)});
     setWardrobe({days:Object.fromEntries((startRead.d||[]).map(x=>one(cleanDay,x)).filter(Boolean).map(x=>[x.date,x]))})}
   if(!startRead)setWardrobe({items:[]});
-  else{need('after-scripts',()=>errNote(e,'Start-up'));
+  else{need('after-scripts',()=>need('err-note',e,'Start-up'));
     setTimeout(()=>toast('Something went wrong while the app was starting. Your wardrobe is safe on this phone: nothing was deleted. Close the app fully and open it again; if this keeps happening, tell us in Settings → About → Feedback.',15000),0)}
   setPagesOn(true);setPageWant(null);setWanted();   // (a failed start-up stays on Today, where its message is)
-  try{show('today')}catch(e2){console.warn(e2);if(startRead)need('after-scripts',()=>errNote(e2,'Start-up: Today'));startPlain()}
-  window.appReady=true;need('after-scripts',()=>storageDown(e));
-  if(startRead)need('after-scripts',()=>{try{safetyStart()}catch(x){console.warn(x)}})}   // (Add's unsaved cards come back, the error report goes)
+  try{show('today')}catch(e2){console.warn(e2);if(startRead)need('after-scripts',()=>need('err-note',e2,'Start-up: Today'));startPlain()}
+  window.appReady=true;need('after-scripts',()=>need('storage-down',e));
+  if(startRead)need('after-scripts',()=>{try{need('safety-start')}catch(x){console.warn(x)}})}   // (Add's unsaved cards come back, the error report goes)
 /* Today couldn't be drawn: a plain card says so, with Try again */
 function startPlain(){const t=$('#today');if(!t)return;for(const s of PAGES){const el=$('#'+s);if(el)el.hidden=s!=='today'}
   t.innerHTML='<div class="mbox"><p><b>Today couldn’t be shown.</b></p><p class="shelp">Your wardrobe is safe on this phone: nothing was deleted.</p><div class="sactions"><button type="button" data-act="reloadTap">Try again</button></div></div>'}
@@ -57,17 +58,17 @@ function applyStored(r,d,st,sn){startRead={r,d};const kept=need('stored-clean',r
   if(key(need('sel-day'))===key(todayDate())){const h=need('home-day');need('sel-set',new Date(h));need('view-set',{y:h.getFullYear(),m:h.getMonth()})}
   need('plan-snap-use',sn)}
 /* started before Today is first drawn: the plan rules check and the one-time fix-ups of old records */
-function startChecks(){need('plan-rules-check').then(()=>need('when-pulled',checkArrivals)).then(()=>{if(!$('#today').hidden)refreshToday()});
-  need('after-scripts',()=>migrateVests());need('when-pulled',needFn('learn-drop'));
-  need('when-pulled',()=>need('after-scripts',()=>kitFixOldImports().then(n=>{if(n&&!$('#today').hidden)refreshToday()})));
-  need('when-pulled',()=>kitSampleMigrate())}
+function startChecks(){need('plan-rules-check').then(()=>need('when-pulled',needFn('check-arrivals'))).then(()=>{if(!$('#today').hidden)refreshToday()});
+  need('after-scripts',()=>need('vests-migrate'));need('when-pulled',needFn('learn-drop'));
+  need('when-pulled',()=>need('after-scripts',()=>need('kit-fix-old').then(n=>{if(n&&!$('#today').hidden)refreshToday()})));
+  need('when-pulled',()=>need('kit-sample-migrate'))}
 /* after Today is drawn: the setup, the weather and holidays, the kept photos (then appReady) and the photo fix-ups, the safety checks */
-function startJobs(){need('after-scripts',()=>setupStart());need('weather-load');need('after-scripts',()=>need('holidays-refresh'));
+function startJobs(){need('after-scripts',()=>need('setup-start'));need('weather-load');need('after-scripts',()=>need('holidays-refresh'));
   need('renders-load').then(()=>/** @type {any} */(need('asm-live')?ask('asm-load'):0)).then(()=>{need('after-dom',()=>{window.appReady=true});if(need('asm-live'))need('after-scripts',()=>ask('asm-sync'));if(Object.keys(need('renders')).length&&!$('#today').hidden)refreshToday();
     need('item-backdrops-fix').then(n=>{if(n&&!$('#today').hidden)refreshToday()});
     need('when-pulled',()=>need('tex-swatches').then(n=>{if(n&&!$('#today').hidden)refreshToday()}));
-    need('when-pulled',()=>recolourSpecSetts().then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>upgradeCloseups()).then(()=>upgradePhotos()).then(()=>fixBlackBackdrops()).then(()=>need('small-photos')));
-    need('after-scripts',()=>safetyStart())})}
+    need('when-pulled',()=>need('spec-recolour').then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>need('closeups-upgrade')).then(()=>need('photos-upgrade')).then(()=>need('backdrops-fix')).then(()=>need('small-photos')));
+    need('after-scripts',()=>need('safety-start'))})}
 
 /* (Today opens on the home day once the settings are read: today, or the next workday when today is a weekend or a day off; it opened on the
    calendar day, an empty "Saturday isn't a workday" page, while the Today tab went to Sunday's outfit (audit 2026-11-14))
@@ -77,7 +78,7 @@ function startJobs(){need('after-scripts',()=>setupStart());need('weather-load')
 /* service worker: fresh files on every load, offline fallback (only over http/https) */
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(e=>console.warn('service worker not registered',e));
 /* sync brought new data: refresh the in-memory outfit history too */
-function onSyncedData(m){setWardrobe({days:Object.fromEntries((m.days||[]).map(d=>[d.date,d]))});const drawn=need('pics-drawn');if(m.settings){setWardrobe({settings:takeSettings(settings,m.settings)});setSetSeen(m.settings.updated||0);applyCustom(settings.custom)}dressSynced(m);need('weather-load');if(typeof remindSoon==='function')remindSoon();   // (another device may have changed the coming outfits: the reminder lines follow, CR-4-09)
+function onSyncedData(m){setWardrobe({days:Object.fromEntries((m.days||[]).map(d=>[d.date,d]))});const drawn=need('pics-drawn');if(m.settings){setWardrobe({settings:takeSettings(settings,m.settings)});setSetSeen(m.settings.updated||0);applyCustom(settings.custom)}need('dress-synced',m);need('weather-load');ask('remind-soon');   // (another device may have changed the coming outfits: the reminder lines follow, CR-4-09)
   if(need('pics-drawn')!==drawn){picsSwitched();if(settingsOpen()){renderPicturesUI();ask('asm-ui')}}}   // "Drawing only" chosen on another device
 /* the markup's handlers (act.js): Add's ‹, the Wardrobe's round +, and the Wardrobe and Insights tabs (data-page: the page shown) */
 function addBackTap(){subBack()}

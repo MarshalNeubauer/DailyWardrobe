@@ -102,9 +102,5 @@ async function recordTagResult(q,it){if(!q.ai||!q.aiTag)return;const st={n:0,wro
   for(const f of ['type','primaryColor','secondaryColor','pattern']){const from=q.aiTag[f]||'none',to=it[f]||'none';if(f==='pattern'&&!hasPat(it.type))continue;
     if(from!==to&&!claudes(f,to)){st.wrong[f]=(st.wrong[f]||0)+1;if(from!=='none'||to!=='none')fixes.push({field:f,type:it.type,from,to,id:it.id,t:Date.now()})}}
   settings.tagStats=st;settings.tagFixes=fixes.slice(-60);await saveUserSettings()}
-/* An ES module since 2026-11-23: saveCard is its own. The bridge (tests/bridge.test.js lists it): add.js, add-card.js, add-sheet.js,
-   kit.js and the tests read these as globals (save, saveAll). saveAllOn is written here only: a getter */
-Object.assign(globalThis,{cardReady,saveAll,savedTitle,save,recordTagResult});
-Object.defineProperties(globalThis,{saveAllOn:{get:()=>saveAllOn}});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,save,saveAll,get saveAllOn(){return saveAllOn},savedTitle};
 export {cardReady,saveAllOn,saveAll,savedTitle,save,recordTagResult};

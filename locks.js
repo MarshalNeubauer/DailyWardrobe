@@ -54,10 +54,6 @@ async function unlockClash(k,past){const o=planFor()[k];if(!o||(o.frozen&&!past)
     w++}
   if(!clash)return 0;const from=keyDate(k),n=await releaseLocks(r=>keyDate(r.date)>from&&keyDate(r.date)>=T);   // (a kept trip stays locked: CR-3-05)
   if(n)askFor('sync-soon');return n}
-/* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals (clearLocks and
-   lockIds are days.js's since the restructure S6a): lockUpcoming (today), careUnlock (add-more, care), unlockClash
-   (history). The file has no top-level call, so the bridge is its last lines */
-Object.assign(globalThis,{lockUpcoming,careUnlock,unlockClash});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,lockUpcoming};
 export {lockUpcoming,careUnlock,unlockClash};
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */

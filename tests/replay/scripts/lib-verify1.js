@@ -1,3 +1,4 @@
+/* global items */   // an older build's globals, read on that build only (tests/bridge.test.js READS_KEPT; the app's bridge is down since the restructure S6f)
 // Shared helpers for verifier 1's repro scripts (port 9610). Starts/stops a lab, taps by text.
 const RP = require('../harness/paths.js');
 const fs = require('fs'), { spawn } = require('child_process');

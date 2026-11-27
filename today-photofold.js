@@ -46,7 +46,5 @@ function picShut(el){picStop(el);const close=()=>{el.classList.add('pfast');el.c
 /* shut at once (another photo is opening): when it lay above `keep`, scroll by what it gave back, so `keep` doesn't move */
 function picSnap(r,keep){picStop(r);const above=keep&&r.getBoundingClientRect().bottom<=keep.getBoundingClientRect().top+1,h0=r.getBoundingClientRect().height;
   r.classList.add('pfast');r.classList.remove('open','instant');if(above){const dh=h0-r.getBoundingClientRect().height;if(dh>0)scrollBy(0,-dh)}}
-/* the bridge (tests/bridge.test.js): today.js, a classic script, opens and shuts a piece's photo with these; a module imports them */
-Object.assign(globalThis,{picStop,picOpenReady,picShut,picSnap});
 export {picStop,picOpenReady,picShut,picSnap};
 serve('pic-open-ready',picOpenReady);serve('pic-shut',picShut);serve('pic-snap',picSnap);serve('pic-stop',picStop);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

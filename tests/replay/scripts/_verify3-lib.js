@@ -1,3 +1,4 @@
+/* global items, kitEdited, settings */   // an older build's globals, read on that build only (tests/bridge.test.js READS_KEPT; the app's bridge is down since the restructure S6f)
 // Shared helpers for the verifier-3 reproductions (W1-3-*). Each repro starts its own lab on port 9630 with a fresh kv file
 // (kv\verify3-<id>.json), fixed phone/server clocks, prints REPRODUCED / NOT REPRODUCED, stops the lab and exits.
 // buildLegacy(): a phone on 15 Nov a (c4a549b, dw-v364), connected, loads the sample, renames the sample navy suit

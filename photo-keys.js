@@ -5,10 +5,9 @@
    right after srgb.js, before the painter, which reads the keys, and before every screen. */
 /* ---- kept outfit photos (made by the retired photo generator, worker /render): saved per outfit combination, not per day, so any
    day that wears the same pieces shows the photo; the worker keeps a copy (KV) so every device can show it. ---- */
-import {serve} from './bus.js';
-import {REC_PHOTO,patBase,primaryCol,settings} from './core.js';
+import {serve,ask,need,served} from './bus.js';   // (the restructure S6f: detect.js's readings, app.js's store and an ended invitation, files that run after this one)
+import {REC_PHOTO,patBase,primaryCol,settings,esc,inviteOver} from './core.js';
 let renders={};   // kept pictures by key: outfit photos made before 2026-11-14 (renderFor shows them), item pictures, assembled pictures
-const esc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');   // ' too: some go into onclick='…'
 /* (fix round 3, W2-13-02) a value inside a quoted JS string inside an inline handler (an onclick calling f('…')): the browser decodes the attribute
    first, so esc alone gives the JS string its ' back; jsq escapes for JS, then for the attribute */
 const jsq=t=>esc(String(t??'').replace(/[\\'"\n\r\u2028\u2029<>&]/g,c=>'\\u'+c.charCodeAt(0).toString(16).padStart(4,'0')));
@@ -21,7 +20,7 @@ const srcOk=s=>{s=String(s??'');return /^(?:data:image\/[\w.+-]+;base64,[A-Za-z0
    is, so identical items share too. */
 const LOOK_FIELDS=['primaryColor','secondaryColor','tertiaryColor','pattern','metal','dial','band','bezel','watchStyle'];
 /* how one piece looks, for photo keys: a shirt by its colour (and its pattern or read texture), anything else by its look fields, details and read pattern */
-const lookSig=(s,i)=>s==='shirt'?'shirt/'+primaryCol(i)+(shirtPatterned(i)?'/'+i.pattern+(i.sett?'/'+settSig(i.sett):'')+(i.patternText?'/'+i.patternText:''):shirtTextured(i)?'/tex/'+settSig(i.sett):''):[i.type,...LOOK_FIELDS.map(f=>i[f]??'')].join('/')+(i.details?'/'+i.details:'')+(i.sett?'/'+settSig(i.sett):'')+(i.patternText?'/'+i.patternText:'');
+const lookSig=(s,i)=>s==='shirt'?'shirt/'+primaryCol(i)+(shirtPatterned(i)?'/'+i.pattern+(i.sett?'/'+need('sett-sig',i.sett):'')+(i.patternText?'/'+i.patternText:''):shirtTextured(i)?'/tex/'+need('sett-sig',i.sett):''):[i.type,...LOOK_FIELDS.map(f=>i[f]??'')].join('/')+(i.details?'/'+i.details:'')+(i.sett?'/'+need('sett-sig',i.sett):'')+(i.patternText?'/'+i.patternText:'');
 const comboSig=o=>(o.vest?'vest|':'')+(!o.top&&o.bot?'nojacket/'+[o.bot.type,...LOOK_FIELDS.map(f=>o.bot[f]??'')].join('/')+'|':'')+['top','shirt','tie','clip','watch'].map(s=>o[s]?lookSig(s,o[s]):'-').join('|');
 const fnvMemo=new Map();   // the same looks are hashed over and over (every render, every history record): remember them
 const fnv64=t=>{let v=fnvMemo.get(t);if(v)return v;let h=0xcbf29ce484222325n;for(const c of new TextEncoder().encode(t)){h^=BigInt(c);h=(h*0x100000001b3n)&0xffffffffffffffffn}
@@ -29,10 +28,10 @@ const fnv64=t=>{let v=fnvMemo.get(t);if(v)return v;let h=0xcbf29ce484222325n;for
 const comboKey=o=>'c'+fnv64(comboSig(o));
 /* a picture record whose img isn't a data:image/jpeg|png|webp;base64 picture is not kept (fix round 3, W2-13-06: the server took any text
    after the prefix, and the img went into src) */
-async function keepRender(ck,rec,share){if(!rec||typeof rec.img!=='string'||!REC_PHOTO.test(rec.img))return;renders[ck]=rec;await metaPut('render:'+ck,rec);if(share)shareRender(ck,rec)}
+async function keepRender(ck,rec,share){if(!rec||typeof rec.img!=='string'||!REC_PHOTO.test(rec.img))return;renders[ck]=rec;await need('meta-put','render:'+ck,rec);if(share)shareRender(ck,rec)}
 // (an ended invitation: null, so nothing is asked with the dead code: the photo list, item and outfit pictures, the masters, holiday lists.
 // Every open sent 12-45 refused requests; re-audit 2026-11-15)
-const workerBase=()=>{const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');return w&&tok&&!(typeof inviteOver==='function'&&inviteOver())?{url:new URL('render',w.replace(/\/*$/,'/')).href,tok}:null};
+const workerBase=()=>{const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');return w&&tok&&!inviteOver()?{url:new URL('render',w.replace(/\/*$/,'/')).href,tok}:null};
 function shareRender(ck,rec){const W=workerBase();if(W)fetch(W.url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':W.tok},body:JSON.stringify({key:ck,rec})}).catch(()=>{})}
 /* Settings → Outfit pictures → "Drawing only" (settings.pictures 'drawn', synced like every setting; absent or 'painted' = painted
    pictures, as before). 2026-11-14, the owner: "let the user turn off the painter and only use the mannequin". With it on, Today always
@@ -61,25 +60,18 @@ function workerList(force){const W=workerBase();if(!W)return Promise.resolve(nul
       // the code refused (401/403): an ended invitation is said and kept as such (sync.js), so workerBase gives nothing from now on; any
       // other refusal (the owner's mistyped code) holds every picture request for this code until it changes
       if(r.status===401||r.status===403){const j=await r.json().catch(()=>null);listRefused=of;
-        if(typeof endedAnswer==='function'&&endedAnswer(r.status,j)&&typeof inviteEnded==='function')inviteEnded(W.tok,j);return listKeys}
+        if(served('ended-answer')&&ask('ended-answer',r.status,j)&&served('invite-ended'))ask('invite-ended',W.tok,j);return listKeys}
       const j=r.ok?await r.json().catch(()=>null):null;
       if(j&&Array.isArray(j.keys)){listKeys=new Set(j.keys);listAt=Date.now();listFailAt=0;try{localStorage.removeItem('list_pause')}catch{}}else listFailAt=Date.now()}
     catch(e){listFailAt=Date.now();console.warn('no list',e)}
     finally{listP=null}return listKeys})();
   return listP}
-async function loadRenders(){try{const all=await txs('meta','readonly',s=>s.getAll(IDBKeyRange.bound('render:','render;',false,true)));renders={};for(const x of all||[])renders[String(x.k).slice(7)]=x.v}catch(e){console.warn(e)}}   // (only the photos' key range: the kept assembled pictures are read by asmLoad)
+async function loadRenders(){try{const all=await need('txs','meta','readonly',s=>s.getAll(IDBKeyRange.bound('render:','render;',false,true)));renders={};for(const x of all||[])renders[String(x.k).slice(7)]=x.v}catch(e){console.warn(e)}}   // (only the photos' key range: the kept assembled pictures are read by asmLoad)
 /* a striped or checked shirt has its own photo key (a plain or finely woven one counts by its colour alone) */
-const shirtPatterned=i=>!!i&&([...STRIPE_PATS,...CHECK_PATS,'houndstooth'].includes(patBase(i.pattern))||!!(usableSett(i)||{}).motif);
+const shirtPatterned=i=>!!i&&([...need('stripe-pats'),...need('check-pats'),'houndstooth'].includes(patBase(i.pattern))||!!(need('usable-sett',i)||{}).motif);
 /* a shirt whose weave texture was read (dobby diamonds, herringbone…): it has its own photo key too */
-const shirtTextured=i=>!!i&&!shirtPatterned(i)&&!!(usableSett(i)||{}).tex;
-/* the bridge (tests/bridge.test.js): esc is called by 36 page scripts, srcOk by ten, jsq by add-save.js and look.js; the painter
-   reads the kept pictures and their keys (renders, comboSig, comboKey, fnv64, keepRender, workerBase, workerList, listAt, picsDrawn);
-   photos.js draws and fetches with all of them (shareRender, listPaused, loadRenders too); start.js loads the kept pictures
-   (loadRenders). renders is replaced by tests (care, navfit, socktoe), listKeys and listAt by tests: a getter and a setter each.
-   Nothing here runs at load */
-Object.assign(globalThis,{esc,jsq,srcOk,comboSig,fnv64,comboKey,keepRender,shareRender,workerBase,picsDrawn,workerList,listPaused,loadRenders});
-Object.defineProperties(globalThis,{renders:{get:()=>renders,set:v=>{renders=v}},listAt:{get:()=>listAt,set:v=>{listAt=v}}});
+const shirtTextured=i=>!!i&&!shirtPatterned(i)&&!!(need('usable-sett',i)||{}).tex;
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get listKeys(){return listKeys},set listKeys(v){listKeys=v},get renders(){return renders},set renders(v){renders=v},get listAt(){return listAt},set listAt(v){listAt=v},shirtPatterned,comboKey,comboSig,keepRender,workerBase,workerList,esc,picsDrawn};
-export {renders,esc,jsq,srcOk,comboSig,fnv64,comboKey,keepRender,shareRender,workerBase,picsDrawn,listKeys,listAt,workerList,listPaused,loadRenders,shirtPatterned,shirtTextured};
+export {renders,jsq,srcOk,comboSig,fnv64,comboKey,keepRender,shareRender,workerBase,picsDrawn,listKeys,listAt,workerList,listPaused,loadRenders,shirtPatterned,shirtTextured};
 serve('pics-drawn',picsDrawn);serve('renders-load',loadRenders);serve('renders',()=>renders);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

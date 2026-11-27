@@ -286,10 +286,6 @@ function acctStart(){applyRole();
 function acctRetryLink(){if(acctWhy==='offline'&&hasInviteHash()&&!acctLinkRun)connectFromLink(location.href,{address:true})}
 /* the invitation has ended (switched off, or the account deleted; who.js inviteEnded announces 'invite-ended'): what said "Connected" is drawn again */
 function acctEndedUI(){setAcct({...acct,me:null,state:'',invites:null});try{applyRole();renderAccountUI();acctLinkDrawn();addGate()}catch(e){console.warn(e)}}
-/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
-   as globals. Above the file's first top-level call that can throw (acctStart, then acts): the names are then still the page's */
-Object.assign(globalThis,{acctFailText,connectFromLink,acctTyped,limitNote});
-Object.defineProperties(globalThis,{acctWhy:{get:()=>acctWhy},inviteChecking:{get:()=>inviteChecking,set:v=>{inviteChecking=v}}});
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-summaries',()=>applyRole());
 on('invite-ended',()=>acctEndedUI());   // an ended invitation (who.js inviteEnded): what said "Connected" is drawn again

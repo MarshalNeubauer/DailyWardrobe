@@ -1,7 +1,7 @@
 /* Daily Wardrobe: Add, a card found by its id, and what state it is in (the restructure S3c, 2026-11-26: moved here from add-save.js and
    add.js, so the files that draw and read a card, loaded before those two, find it in a file that ran before them). Nothing here draws. (cardOf, qAt, cardAt and cardIx are app.js's since the restructure S6a, beside the queue.) */
-import {esc,jsq} from './photo-keys.js';
-import {TAG_Q,inviteOver} from './core.js';
+import {jsq} from './photo-keys.js';
+import {TAG_Q,inviteOver,esc} from './core.js';
 import {applyWb,closeRead} from './measure.js';
 import {cardAt} from './app.js';
 const qh=q=>`qAt('${jsq(q.id)}')`;
@@ -27,8 +27,5 @@ function readAbort(q){const r=READS.get(q);if(!r)return;for(const k of ['refine'
 /* (moved from safety.js with its text unchanged, the restructure S6c) */
 /* the card says what to do once: not when the reason already does ("Try again later, or add the item by hand.") */
 const tagFailNote=q=>q.tagErr&&!inviteOver()?`<div class="tagfail" role="alert"><p><b>This photo wasn’t tagged.</b> ${esc(q.tagErr)}${/try again|by hand|yourself/i.test(q.tagErr)?'':' <span class="tagfail-do">Fill in the details yourself, or try again.</span>'}</p><button type="button" class="tagfail-btn" data-act="cardRetryTag" ${cardAt(q)}>Try again</button></div>`:'';
-/* An ES module: the bridge (tests/bridge.test.js lists it). Every Add file, tagging.js, pattern-read.js, colpick.js, look.js,
-   checklist.js, own-lists.js and kit.js read these as globals; the tests call needType and cardReading. No top-level call */
-Object.assign(globalThis,{qh,cardReading,needType,closeTagImg,readBegin,readEnd,readAbort,tagFailNote});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,cardReading,needType,tagFailNote};
 export {qh,cardReading,needType,closeTagImg,readBegin,readEnd,readAbort,READS,tagFailNote};

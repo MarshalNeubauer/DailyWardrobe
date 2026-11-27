@@ -1,11 +1,10 @@
 /* Daily Wardrobe: photo tagging, the person's own lists (split from tagging.js, Round B CR-2-17): adding a colour or a pattern the lists
    lack, own materials from Claude's offers, and their Settings lists. */
 import {askFor,emit,on} from './bus.js';   // emit: a card changed (add.js redraws Add on 'card-changed'; this file loads before add.js since the restructure S3c)
-import {$,CASUAL_JACKETS,CASUAL_TOPS,COLORS,COLS_BY,CUSTOM_COL,CUSTOM_PAT,MATERIALS_BY,OWN_COL_RE,OWN_MAT_MAX,OWN_PAT_RE,PATS_BY,TYPES,applyCustom,colName,colNameTaken,colsFor,items,matTypeWord,matsFor,normCol,ownColFind,ownColKey,ownDescClean,ownFreeKey,ownMatName,ownMats,ownNameBad,ownNameClean,ownNameShort,ownPatKey,patLabel,patNameTaken,settings} from './core.js';
+import {$,CASUAL_JACKETS,CASUAL_TOPS,COLORS,COLS_BY,CUSTOM_COL,CUSTOM_PAT,MATERIALS_BY,OWN_COL_RE,OWN_MAT_MAX,OWN_PAT_RE,PATS_BY,TYPES,applyCustom,colName,colNameTaken,colsFor,items,matTypeWord,matsFor,normCol,ownColFind,ownColKey,ownDescClean,ownFreeKey,ownMatName,ownMats,ownNameBad,ownNameClean,ownNameShort,ownPatKey,patLabel,patNameTaken,settings,esc} from './core.js';
 import {planDirty} from './today-plan.js';
 import {saveUserSettings} from './settings.js';
 import {cap1,queue} from './app.js';
-import {esc} from './photo-keys.js';
 import {swatchSVG} from './draw.js';
 import {toast} from './toast.js';
 import {addKeepSoon} from './add-keep.js';
@@ -108,10 +107,6 @@ function renderOwnMatUI(){const el=$('#ownmat-list');if(!el)return;const rows=[]
   el.innerHTML=rows.length?rows.join('')+'<p class="mut"><small>Removing one leaves the items that use it as they are; it just stops being offered.</small></p>'
     :'<p class="mut"><small>None yet. When Claude reads a material that is on no list (cupro, say), the Add card offers to add it here.</small></p>';
   if(lookOn())el.insertAdjacentHTML('beforeend',askFor('look-own-mat-ui')??'')}   // (the Look beta: leathers and metals too, and "+ New material": look.js)
-/* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it), above acts({…}), the file's one top-level
-   call: colpick.js, look.js, settings.js and add-card.js, classic scripts, and tagging.js (openColForm, openPatForm, read as globals: it
-   comes before this file in the list) use these; guessPatBase is called by tests/asmroute.test.js only */
-Object.assign(globalThis,{groupOf,typePl,ownColOffer,newColHex,addCustomColor,addCustomPattern,renderCustomUI,removeCustom,addOwnMaterial,removeOwnMaterial,matOffer,matGuessUse,renderOwnMatUI});
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-draw',()=>{renderCustomUI();renderOwnMatUI()});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */

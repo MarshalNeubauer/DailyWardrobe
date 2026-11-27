@@ -87,10 +87,6 @@ function renderRemindUI(){const el=document.querySelector('#remind-box');if(!el)
     <label class="srow">Time <input type="time" id="remind-time" value="${p.time}" data-act-change="remindTimePick"></label>`;
   el.innerHTML=`<div class="slabel">Morning reminder</div>${body}<p class="shelp remind-msg" role="status">${remindMsg?acctEsc(remindMsg):''}</p>`}
 async function remindTime(v){if(!/^\d\d:\d\d$/.test(v))return;const p={...remindPrefs(),time:v};remindSave(p);if(remindAny(p)){localStorage.removeItem('remind_sent');await remindRefresh();remindMsg=`Notifications at ${v}.`;renderRemindUI()}}
-/* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it), above the file's first top-level call
-   that can throw (settingsPart, then acts): history.js, settings.js, start.js and care.js, classic scripts, call remindSoon; the rest
-   are read by the remind, connkeep and restacts tests, remindBusy too, which only this file writes: a getter */
-Object.assign(globalThis,{remindSoon});
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-summaries',()=>remindSoon());
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */

@@ -10,9 +10,8 @@
    - the Care page (#care, from Settings), a quiet tag in the Wardrobe grid and one line on Today when today's wear reaches the limit.
    The shirt rule (settings.laundryDays) is in planner.js outfit(). */
 import {on,emit,serve,askFor} from './bus.js';
-import {$,CARE_ABLE,CARE_MAX,TYPES,careLimit,careTimes,careWashed,careWord,dayRecs,fmtDay,isWorkday,isoKey,items,key,keyDate,nameHtml,sentence,settings,shortDesc,todayDate} from './core.js';
+import {$,CARE_ABLE,CARE_MAX,TYPES,careLimit,careTimes,careWashed,careWord,dayRecs,fmtDay,isWorkday,isoKey,items,key,keyDate,nameHtml,sentence,settings,shortDesc,todayDate,esc} from './core.js';
 import {cache,planDirty,planFor,planMonth} from './today-plan.js';
-import {esc} from './photo-keys.js';
 import {openSettings,refreshToday,saveUserSettings,todayDirty} from './settings.js';
 import {clearLocks,saveDay} from './days.js';
 import {cap1,put,sel} from './app.js';
@@ -221,10 +220,6 @@ function careLimitPick(el){setCareLimit(el.dataset.t,el.value)}
 /* Today's: "See what is due" (a link: its jump to # is called off), and Enter or Space on the cleaning banner (its tap is careBandTap itself) */
 function careDueTap(el,ev){openCare();ev.preventDefault()}
 function careBandKey(el,ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();careBandTap()}}
-/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
-   as globals: itemsheet, cost, wardrobe, add-more, settings, today, today-picture and remind; the rest are read by tests. Above the
-   file's last top-level call (acts, when act.js did not load): the names are then still the page's */
-Object.assign(globalThis,{careState,careTag,careBadge,careBackText,careLog,careCard,renderCare,careNote,careFrame,careBandSoon,careReminders,renderCareUI});
 /* the laundry's words and record, asked for by wardrobe.js and add-more.js (loaded before this file, of other groups: tests/bus.test.js SOCKETS) */
 serve('care-tag',careTag);serve('care-badge',careBadge);serve('care-log',careLog);serve('care-back-text',careBackText);
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
@@ -236,3 +231,4 @@ export {careName,careCounts,careState,careTag,careBadge,careBackText,careLog,car
 acts({laundryPick,careSendTap,careDoneTap,careBackDate,careBackTap,careTypeDone,careLimitsTap,careLimitPick,careDueTap,careBandTap,careBandKey});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('care-band-soon',careBandSoon);serve('care-state',careState);serve('care-card',careCard);serve('care-reminders',careReminders);
+serve('care-frame',careFrame);serve('care-note',careNote);   // the restructure S6f: Today's cleaning frame and note (today.js)

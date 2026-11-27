@@ -1,11 +1,10 @@
 /* Daily Wardrobe: the item sheet itself: open, close, swipe down, ‹ › and the sideways swipe, the phone's Back, the focus back, and a
    sync's change to the piece open. (An ES module since 2026-11-23; split out of itemsheet.js on 2026-11-17, no behavior change.) */
 import {askFor,served,serve,emit} from './bus.js';   // emit: the Wardrobe's redraw (itemsheet.js, later); serve: the piece open, its redraw and its drop
-import {$,TYPES,itemName,itemTitle,items,nm,titleCls} from './core.js';
+import {$,TYPES,itemName,itemTitle,items,nm,titleCls,esc} from './core.js';
 import {backLand,backOn,histDrop,histPush} from './back.js';
 import {cropKeep,phEdit} from './item-photo.js';
 import {layerFrom,layerInert,layerOpen,noMotion,sheetSwipe,tell} from './ui.js';
-import {esc} from './photo-keys.js';
 import {editing,keepFocus,setEditing} from './app.js';
 import {acts} from './act.js';
 import {cmpMount} from './checklist.js';
@@ -24,14 +23,6 @@ let ivAt=0;
 const wardList=()=>{const l=askFor('ward-view');if(!editing||l.some(x=>x.id===editing))return l;const it=items.find(x=>x.id===editing);if(!it)return l;
   const c=l.slice();c.splice(Math.min(ivAt,c.length),0,it);return c};
 let itemFrom=null;   // the item the sheet was opened on: closing on another one brings that one's box into view first
-/* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. editing is read by twelve page scripts
-   (item-photo, itemsheet, toast, start, wardrobe, colpick, look, kit …) and set by 31 tests: a getter and a setter; wardrobe.js, cost.js
-   and kit.js open a piece (openItem), start.js and wardrobe.js drop the sheet (dropItem), sync.js says a sync changed the piece open
-   (itemSynced), itemsheet.js and start.js redraw it (renderItem; nav.js and checklist.js through the socket below); itemGoneTell: itemsheet, wardrobe,
-   look, cost (noMotion is ui.js's since the restructure S3d); closeItem, stepItem and wardList are called by tests only; a module imports them.
-   Above the file's first call that can throw (backLand, when back.js did not load; then $ and acts): the names are then still the
-   page's, as a classic script's were */
-Object.assign(globalThis,{itemSynced,renderItem,openItem,dropItem});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,closeItem,stepItem,wardList,dropItem,renderItem,openItem};
 export {wardList,itemSynced,renderItem,openItem,closeItem,dropItem,stepItem};

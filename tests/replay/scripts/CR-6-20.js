@@ -1,3 +1,4 @@
+/* global openSettings, settings */   // an older build's globals, read on that build only (tests/bridge.test.js READS_KEPT; the app's bridge is down since the restructure S6f)
 // CR-6-20 (Round D, the review's R6 N2, 2026-11-25): the phone reads the calendar, the server only relays it (POST /calendar/feed); the
 // parser moved to calparse.js, shared by the app and the server's POST /calendar. Phones still on the app before this change ask the
 // server to parse (POST /calendar), so that must answer exactly as before. For each made-up calendar (the personal fixture, 1.4 MB and

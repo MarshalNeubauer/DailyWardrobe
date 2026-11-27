@@ -5,10 +5,9 @@
    pattern-read.js (pattern readings, camouflage). */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit,askFor} from './bus.js';
-import {COLORS,COLS_BY,FABRIC,PATS_BY,TEXTURE_TYPES,TYPES,accentsFor,accentsOf,colName,colsFor,dE00,isConnected,matsFor,normColFor,normPat,oneStop,ownMatName,patBase,patName} from './core.js';
+import {COLORS,COLS_BY,FABRIC,PATS_BY,TEXTURE_TYPES,TYPES,accentsFor,accentsOf,colName,colsFor,dE00,isConnected,matsFor,normColFor,normPat,oneStop,ownMatName,patBase,patName,esc} from './core.js';
 import {BLUR_SHARP,FAR_DE,MEAS_GAP,aiSignals,colRef,colourVerdicts,measHint,measKL,measureCard,undoMeasured} from './measure.js';
 import {ask,cardAt,cardIx,cardOf,generateSwatch,queue} from './app.js';
-import {esc} from './photo-keys.js';
 import {aiFields,fieldLabel,valName} from './tag-request.js';
 import {closeTagImg,readAbort,readBegin,readEnd} from './add-ids.js';
 import {measureAndApply,readPatternWithClaude,readSett,settNote} from './pattern-read.js';
@@ -111,10 +110,6 @@ function tagNotes(q){if(q.manual)return '';const out=[];if(q.meas)q.measV=colour
   return out.join('')}
 function tagNewCol(el){askFor('col-form',cardIx(el))}   // (colpick.js, later: a socket)
 function tagNewPat(el){askFor('pat-form',cardIx(el))}
-/* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it), above acts({…}), the file's one top-level
-   call: add.js, add-card.js, measure.js, pattern-read.js, colpick.js and safety.js, classic scripts, and the modules add-save.js and
-   tag-request.js (fieldLabel, valName), which read them as globals (they come before this file in the list), use these; confTxt is read by tests/records.test.js only */
-Object.assign(globalThis,{takeExtras,refineFromCloseup,tagNotes});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,confTxt,takeExtras};
 export {takeExtras,refineFromCloseup,confTxt,tagNotes};

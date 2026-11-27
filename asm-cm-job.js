@@ -4,9 +4,9 @@
    paisley, camouflage, OCP), the new garments' masters, the watch's and pocket square's parts, and the master's records' keys. It reads
    core.js, detect.js, draw.js and photo-keys.js; lab/gl-bench.html loads it too. */
 import {ask,serve,served} from './bus.js';
-import {CASUAL_JACKETS,CASUAL_TOPS,COLORS,OCP_CAMO,blouseTapes,camoImage,colOf,dressOut,inRotation,isOcp,items,ocpImage,patBase,patName,trouserKind,watchOpts} from './core.js';
+import {CASUAL_JACKETS,CASUAL_TOPS,COLORS,OCP_CAMO,blouseTapes,camoImage,colOf,dressOut,inRotation,isOcp,items,ocpImage,patBase,patName,trouserKind,watchOpts,esc} from './core.js';
 import {CAMO_TR,CHECK_PATS,STRIPE_PATS,settSig,usableSett} from './detect.js';
-import {esc,fnv64,renders} from './photo-keys.js';
+import {fnv64,renders} from './photo-keys.js';
 import {ASM_CMV,ASM_CM_KINDS} from './asm-keys.js';
 import {ASM_BAR_AT,ASM_BAR_LEN,ASM_BAR_MM,ASM_CLOSEUP_MM,ASM_CREASE_DEG,ASM_FLOW,ASM_FORE_K,ASM_HB_AMP,ASM_HB_BREAK,ASM_HB_FLECK,ASM_HB_FLOAT,ASM_HB_FLOATL,ASM_HB_GRAIN,ASM_HB_MM,ASM_HB_MOTTLE,ASM_HB_PBRK,ASM_HB_RIB,ASM_HB_SNAP,ASM_HB_SOFT,ASM_HB_THIN,ASM_HB_TR,ASM_HB_YARN,ASM_LIN,ASM_LINE_PX,ASM_METAL,ASM_MICRO,ASM_MICRO_KINDS,ASM_ON,ASM_PX_MM,ASM_SHIRT_MM,ASM_SIZE,ASM_SLEEVE_FLOW,ASM_STRIPE,ASM_STRIPE_PX,ASM_SUITV,ASM_TEX_MIN_MM,ASM_TIEV,ASM_TIE_FIG_MAX,ASM_TIE_TEX_MAX,ASM_TR_CAP,ASM_TUBE_K,ASM_TWEED,ASM_TWILL,asmAreas,asmBarDraw,asmBodyFlow,asmData,asmFlowAt,asmHbCw,asmImg,asmJpeg,asmLinen,asmLinenTile,asmMicroGrid,asmPolyAt,asmRepeatPx,asmSleeveFlow,asmSleeveSegs,asmStripeCount,asmTexMm,asmTq,asmTqn,asmTqr,asmTried,asmTubeAt,asmTubePart,asmTubePartQ,asmTubeRaw,asmTubeTabs,asmTweedTile} from './assemble.js';
 import {ASM_WATCHV,ASM_WATCH_GEO,ASM_WATCH_MASTER,ASM_WATCH_STRAPS,asmWatchMetal} from './asm-watch.js';

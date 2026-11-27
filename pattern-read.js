@@ -3,11 +3,10 @@
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit,serve,askFor} from './bus.js';
 import {CAMO_TR,CHECK_PATS,MOTIF_PATS,STRIPE_PATS,TEXTURE_PATS,settFromCanvas,texPat,tieWeave} from './detect.js';
-import {FABRIC,PATS_BY,camoPat,dE00,hexRgb,inviteOver,items,labHex,patBase,patName,rgbLab,settingsOpen} from './core.js';
+import {FABRIC,PATS_BY,camoPat,dE00,hexRgb,inviteOver,items,labHex,patBase,patName,rgbLab,settingsOpen,esc} from './core.js';
 import {BLUR_SHARP,applyMeasured,applyWb,closeRead,measureCard,sharpness,wbRead} from './measure.js';
 import {linSrgb8,srgbLin8} from './srgb.js';
 import {cardAt,cardIx,imgOf,put,queue} from './app.js';
-import {esc} from './photo-keys.js';
 import {sharpCloseOf,tagImgOf} from './tag-request.js';
 import {planDirty} from './today-plan.js';
 import {closeTagImg,readBegin,readEnd} from './add-ids.js';
@@ -21,10 +20,6 @@ function measureAndApply(q){measureCard(q);missedPattern(q);return applyMeasured
    area that is all patterned cloth), else from the close-up, else from Claude's own reading (weave.colours). Claude's
    weave also gives the direction (for a close-up, whose angle says nothing), the repeats across the item (the drawing's
    scale on the figure) and a description for the photo generator. ---- */
-/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
-   as globals. The functions are handed over here, above the next line, which reads other files' lists while loading and throws when
-   they did not load (a classic script kept its functions then); the consts, declared further down, above acts({…}) */
-Object.assign(globalThis,{readSett,missedPattern,settNote,rereadSett,settFromSpec,readPatternWithClaude,measureAndApply});
 const SETT_PATS={tie:[...STRIPE_PATS,...CHECK_PATS,'tonal-check','other',...MOTIF_PATS],shirt:[...STRIPE_PATS,...CHECK_PATS,'other',...TEXTURE_PATS],suit:[...STRIPE_PATS,...CHECK_PATS],blazer:[...STRIPE_PATS,...CHECK_PATS],pants:[...STRIPE_PATS,...CHECK_PATS]};
 const settable=(type,pat,weave)=>{const p=patBase(pat)||'solid';return p!=='solid'&&((SETT_PATS[type]||[]).includes(p)||!!(weave&&weave.layout&&FABRIC.includes(type)))};
 const DIR_ANG={'upper-left to lower-right':-45,'lower-left to upper-right':45,vertical:0,horizontal:90};
@@ -284,7 +279,6 @@ function texFromSpec(spec,{tex}){const t=spec&&spec.texture;if(!t||!t.grid||t.gr
     a:0,cr:+(+spec.repeatsInCloseup||8).toFixed(2),tr:+(+spec.repeatsAcrossItem||100).toFixed(2),src:'claude+pixels'}}
 /* the Add card's "Use the pattern from the photo" / "Use the simple pattern" (act.js; the card by its id: add-save.js cardIx) */
 function settTap(el){toggleSett(cardIx(el))}
-Object.assign(globalThis,{settable,claudeOnly,readable,settSummary,TEX_WORDS});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 serve('pattern-readable',readable);serve('pattern-reread',rereadSett);   // (the restructure S6p: the painter, asm-cm-job.js asmCmRoute and asm-cm-page.js Read N patterns, may not import this file)
 globalThis.HOOK={__proto__:globalThis.HOOK||null,camoFromPixels,claudePattern,motifFromSpec,motifPat,settCheck,settFrom,specSett,texContrast,texFromSpec,readable,claudeOnly,missedPattern,readPatternWithClaude,readSett,rereadSett,settFromSpec,settSummary,settable};

@@ -10,11 +10,10 @@
    reads it (planner.js favLooks, favItemSet: a look comes back about every three weeks, a piece rests a fifth less). Nothing is learned:
    only what is marked counts.
    (An ES module, run in index.html's order; what the classic scripts still use of it is bridged in its last lines.) */
-import {TYPES,dayRecs,di,inRotation,isHandPick,itemTitle,items,key,keyDate,nm,sentence,settings,shortDesc,titleCls,todayDate} from './core.js';
+import {TYPES,dayRecs,di,inRotation,isHandPick,itemTitle,items,key,keyDate,nm,sentence,settings,shortDesc,titleCls,todayDate,esc} from './core.js';
 import {favItemSet,favKey,favLookKey,favLookOf,favLooks,isFavItem} from './planner.js';
 import {planFor} from './today-plan.js';
 import {sel} from './app.js';
-import {esc} from './photo-keys.js';
 const FAV_HEART='<svg class="favic" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.3C1 8.4 3 5 6.4 5c2.1 0 3.6 1.2 4.4 2.5h2.4C14 6.2 15.5 5 17.6 5 21 5 23 8.4 21.6 11.7 19.5 16.4 12 21 12 21z"/></svg>';
 const FAV_HEART0='<svg class="favic" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" d="M12 20s-7-4.3-9-8.7C1.7 8.3 3.5 6 6.4 6c2 0 3.4 1.2 4.2 2.5h2.8C14.2 7.2 15.6 6 17.6 6c2.9 0 4.7 2.3 3.4 5.3C19 15.7 12 20 12 20z"/></svg>';
 const FAV_UNDO_MS=5000;   // (toast.js keeps a toast with Undo up at least TOAST_ACT_MS)
@@ -82,9 +81,6 @@ function favLookTap(){favToggleLook()}
 function favWearTap(el){wearFav(el.dataset.k)}
 function favItemTap(el){favToggleItem(el.dataset.id)}
 function favChipTap(){favWard=true;emit('wardrobe-changed')}
-/* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it): Today, the picker, the item sheet, the Wardrobe, the score card and Insights, classic scripts, call these; favData, favSave and
-   favToggleItem are read by the favorites tests. favWard is a `let` only this file writes (wardrobe.js reads it): a getter, no setter. */
-Object.assign(globalThis,{FAV_UNDO_MS,favPieces,favPillSeg,favLastIcon,favStrip,favItemRow,favMark,favChip,favWhy,favStatsCard,favOff});
 /* the socket Insights asks for its favorites card (bus.js; stats.js no longer names this file) */
 import {serve,emit,ask} from './bus.js';
 import {saveUserSettings} from './settings.js';
@@ -95,10 +91,10 @@ import {statDate,statName,statPic} from './stats.js';
 import {wearFav} from './history.js';
 import {acts} from './act.js';
 serve('fav-stats-card',favStatsCard);
-Object.defineProperties(globalThis,{favWard:{get:()=>favWard}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,favData,favSave,favToggleItem,favWhy};
 export {FAV_UNDO_MS,favData,favSave,favPieces,favPillSeg,favLastIcon,favStrip,favItemRow,favToggleItem,favMark,favChip,favWhy,favStatsCard,favWard,favOff};
 acts({favLookTap,favWearTap,favItemTap,favChipTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('fav-ward',()=>!!(favWard&&favItemSet()));serve('fav-mark',favMark);serve('fav-item-row',favItemRow);serve('fav-chip',favChip);serve('fav-off',favOff);
+serve('fav-strip',favStrip);serve('fav-pieces',favPieces);serve('fav-undo-ms',()=>FAV_UNDO_MS);serve('fav-why',favWhy);serve('fav-last-icon',favLastIcon);serve('fav-pill-seg',favPillSeg);   // the restructure S6f: what today-no-picture files ask of this file

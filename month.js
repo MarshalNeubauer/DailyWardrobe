@@ -2,15 +2,14 @@
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14.) */
 /* a day opened from the month says emit('day-changed') (bus.js; the restructure S3e, 2026-11-26): today.js, which runs after this file,
    pins renderToday for it */
-import {emit,serve} from './bus.js';
+import {emit,serve,ask,served} from './bus.js';
 import {fabricDef} from './draw.js';
-import {$,MONTH_EASE,MONTH_MS,colName,dayRecs,isWorkday,itemName,key,keyDate,occOf,offName,patName,primaryCol,shortCol,todayDate,wearsJacket} from './core.js';
+import {$,MONTH_EASE,MONTH_MS,colName,dayRecs,isWorkday,itemName,key,keyDate,occOf,offName,patName,primaryCol,shortCol,todayDate,wearsJacket,esc} from './core.js';
 import {cache,hasOutfit,planFor,planMonth} from './today-plan.js';
 import {PAIR_DAYS,pairSeen,rateOutfit} from './planner.js';
 import {sel,setSel,setView,view} from './app.js';
-import {esc} from './photo-keys.js';
 import {acts} from './act.js';
-import {foldEdge,foldQuiet,keepInView,monthBelow,pageScroll,revealNeed} from './ui.js';
+import {foldEdge,foldQuiet,keepInView,monthBelow,noMotion,pageScroll,revealNeed} from './ui.js';
 /* ---- month view (wear plan): a calendar of fabric stacks, from the design concept ---- */
 /* stacked bands for one outfit: jacket, trousers on blazer days, shirt, tie (drawn from the tagged fabrics) */
 let stkN=0;
@@ -47,7 +46,7 @@ const mvSig=o=>o?[o.top&&o.top.id,o.bot&&o.bot.id,o.shirt&&o.shirt.id,o.tie&&o.t
 /* the wardrobe can't dress a day yet (setup.js setupNeeds: the "Get your first outfit" checklist shows): a half-outfit gets no score,
    no "This look last worn" and no outfit count (after removing the sample a suit and a shirt showed a red "50 Incomplete", "last worn
    Thu, Nov 19" and "12 outfits", re-audit 2026-11-15) */
-const wardShort=()=>typeof setupNeeds==='function'&&setupNeeds().some(r=>!r.ok);
+const wardShort=()=>served('setup-needs')&&ask('setup-needs').some(r=>!r.ok);
 /* a date's calendar day, at midnight */
 const dayOnly=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
 const shortTop=o=>{const t=o.top;if(!t)return o.bot?(wearsJacket()?`No jacket: ${colName(primaryCol(o.bot))} pants`:`${colName(primaryCol(o.bot))} pants`.replace(/^./,c=>c.toUpperCase())):'No jacket';const p=t.pattern&&t.pattern!=='solid'&&t.pattern!=='other'?' '+patName(t.pattern):'',n=colName(primaryCol(t))+p;
@@ -69,7 +68,7 @@ let monthOpen=false,monthPanel=null;
 const monthPlan=planMonth;
 function monthGridHtml(){
   const {y,m}=monthPanel,p=monthPlan(y,m),f=new Date(y,m,1),T=todayDate(),cells=[];let n=0;
-  const w0=typeof weekFirst==='function'?weekFirst():0;   // the week starts on the work week's first day (settings.js weekFirst; audit 2026-11-15)
+  const w0=served('week-first')?ask('week-first'):0;   // the week starts on the work week's first day (settings.js weekFirst; audit 2026-11-15)
   for(let k=0;k<(f.getDay()-w0+7)%7;k++)cells.push('<span class="mc blank"></span>');
   for(const d=new Date(f);d.getMonth()===m;d.setDate(d.getDate()+1)){const k=key(d),o=p[k],wd=isWorkday(d),off=offName(d),work=wd&&hasOutfit(o),isT=+d===+T,past=d<T;
     // a past day marked "✕ Didn't" is not shown as worn (it was, exactly like one, audit 2026-11-14): faded, its number struck through;
@@ -162,13 +161,6 @@ function monthLink(){
 }
 /* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
 function setMonthOpen(v){monthOpen=v}
-/* the bridge (tests/bridge.test.js): the classic scripts that draw with the month's pieces: today.js (the box, the pieces line, the home
-   day), today-gestures.js and today-photofold.js (the drags, the scroll), boxfold.js, scorecard.js, history.js, fav.js, daysoff.js,
-   pack.js, remind.js, stats.js, start.js and the painter (planOn); monthGridHtml and monthStep are called by tests only. today.js and
-   the tests set monthOpen, tests/setup.test.js sets monthPanel: setters; a module imports them.
-   Before acts(), the file's one call that can throw (act.js not loaded): the names are then still the page's, as a classic script's were */
-Object.assign(globalThis,{stackSVG,planOn,nextWorkday,homeDay,dayWord,recentWork,mvSig,wardShort,dayOnly,shortTop,shortRest,piecesLine,piecesParts,monthPlan,toggleMonth,monthDrag,monthRelease,openDay,monthLink,setMonthOpen});
-Object.defineProperties(globalThis,{monthOpen:{get:()=>monthOpen,set:v=>{monthOpen=v}},monthPanel:{get:()=>monthPanel,set:v=>{monthPanel=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 serve('plan-on',planOn);   // (the restructure S6p: the painter's building ahead and Pictures ahead, asm-today.js and asm-cm-page.js, load before this file)
 globalThis.HOOK={__proto__:globalThis.HOOK||null,monthGridHtml,monthStep,get monthOpen(){return monthOpen},set monthOpen(v){monthOpen=v},get monthPanel(){return monthPanel},set monthPanel(v){monthPanel=v},monthPlan,openDay,shortRest,shortTop,toggleMonth,planOn,homeDay,piecesLine};

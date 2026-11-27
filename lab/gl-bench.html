@@ -111,7 +111,10 @@ var GLB_WORKER_SRC='',GLB_APP_VERSION=null;
       //  restructure S6p, so this page puts what gl-bench-run.js and gl-bench.js call on its own globals, a setter where an export has one)
       if(/^export \{/m.test(src[u])){let ns;try{ns=await import(blob[u])}catch(e){throw new Error('could not run '+u+': '+(e&&e.message||e))}
         if(/\/(assemble|asm-[\w-]+)\.js$/.test(u))Object.keys(ns).forEach(function(k){if(k in window)return;var set=ns['set'+k[0].toUpperCase()+k.slice(1)];
-          Object.defineProperty(window,k,{configurable:true,get:function(){return ns[k]},set:function(v){if(typeof set!=='function')throw new Error(k+' has no setter');set(v)}})});continue}
+          Object.defineProperty(window,k,{configurable:true,get:function(){return ns[k]},set:function(v){if(typeof set!=='function')throw new Error(k+' has no setter');set(v)}})});
+        // (core.js hands nothing to globalThis since the restructure S6f: gl-bench.js reads and sets the wardrobe, `items`, through core.js's setWardrobe)
+        if(/\/core\.js$/.test(u))Object.defineProperty(window,'items',{configurable:true,get:function(){return ns.items},set:function(v){ns.setWardrobe({items:v})}});
+        continue}
       await new Promise(function(ok,no){var s=document.createElement('script');s.src=blob[u];
         s.onload=ok;s.onerror=function(){no(new Error('could not run '+u))};document.head.appendChild(s)})}
   }catch(e){document.getElementById('boot').textContent='Could not load the bench: '+(e&&e.message||e);glbErrors.push(String(e&&e.message||e))}

@@ -7,8 +7,7 @@
 // is this error (or IndexedDB error event) a failure of the device's storage: marked by txs/atomic in app.js, a full disk, or a failed request
 import {askFor,served,serve} from './bus.js';
 import {db,queue,storeErr,storeFailText,storeFailure} from './app.js';
-import {esc} from './photo-keys.js';
-import {TAGIMG_CACHE,askPersist,inviteOver,isConnected,items,oneStop,settingsOpen} from './core.js';
+import {TAGIMG_CACHE,askPersist,inviteOver,isConnected,items,oneStop,settingsOpen,esc} from './core.js';
 import {toast} from './toast.js';
 import {plainErr} from './ui.js';
 import {acts} from './act.js';
@@ -24,16 +23,6 @@ function setStoreToldAt(v){storeToldAt=v}
 /* this phone's storage failed during a sync: said in a toast every time (safety.js storeFailText), unless the full-page message already says it */
 function syncStoreTell(e){console.warn('storage failure during sync',e);if(dbDown)return;
   try{setStoreToldAt(Date.now())}catch{}toast(storeFailText(e),9000)}
-/* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals:
-   start.js calls safetyStart and storageDown, add-save.js and kit.js storeFailure, saveFailed and askPersist, sync.js storeFailure,
-   storeFailText and adoptBackupSettings, add.js, add-card.js and app.js the tagging failure's (tagFailText, tagFailed, retryTag),
-   add-keep.js guardUnsaved, seven page scripts errNote; pruneTagImgs is called by tests only. dbDown is read by sync.js and only this
-   file assigns it: a getter; sync.js sets storeToldAt with setStoreToldAt (the tests through HOOK), tests set errTapAt, tagWhy and tagNetLast: a getter and a setter
-   each (the three declared further down can't be read before their own line has run, as in the classic script); a module imports them.
-   Above the file's first call that can throw (db, when app.js did not load; then acts): the names are then still the page's, as a
-   classic script's were; the five consts declared further down are handed over above the handler */
-Object.assign(globalThis,{saveFailed,errNote,storageDown,safetyStart,tagFailText,tagFailed,guardUnsaved,setStoreToldAt});
-Object.defineProperties(globalThis,{dbDown:{get:()=>dbDown},tagWhy:{get:()=>tagWhy,set:v=>{tagWhy=v}},tagNetLast:{get:()=>tagNetLast,set:v=>{tagNetLast=v}}});
 db.then(()=>{dbDown=false},e=>{dbDown=true;dbErr=e});
 /* a storage failure nobody caught is shown; every other rejection is left alone */
 addEventListener('unhandledrejection',ev=>{const e=ev.reason;errNote(e);
@@ -136,9 +125,6 @@ let guardOn=false;
 function guardUnsaved(){if(guardOn)return;guardOn=true;
   addEventListener('beforeunload',e=>{if(queue.some(q=>!q.err)){e.preventDefault();e.returnValue=''}})}
 
-/* the rest of the bridge: the consts declared above (about.js: errReport; tagging.js: oneStop; add.js: tagNetText; add-card.js:
-   tagFailNote; tests/errreport.test.js: errList) */
-Object.assign(globalThis,{errReport});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,errList,get errTapAt(){return errTapAt},set errTapAt(v){errTapAt=v},pruneTagImgs,get storeToldAt(){return storeToldAt},set storeToldAt(v){storeToldAt=v},get tagWhy(){return tagWhy},set tagWhy(v){tagWhy=v},get tagNetLast(){return tagNetLast},set tagNetLast(v){tagNetLast=v},errNote,storageDown,tagFailText,tagFailed};
 export {storeToldAt,saveFailed,dbDown,errTapAt,errList,errNote,errReport,storageDown,pruneTagImgs,safetyStart,tagWhy,tagNetLast,tagFailText,tagFailed,guardUnsaved,setStoreToldAt,syncStoreTell};
@@ -147,3 +133,4 @@ function nostoreAgainTap(){location.reload()}
 acts({nostoreAgainTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('err-note',errNote);serve('save-failed',saveFailed);serve('tag-failed',tagFailed);serve('guard-unsaved',guardUnsaved);serve('err-report',errReport);serve('sync-store-tell',syncStoreTell);
+serve('tag-why',()=>tagWhy);serve('tag-net-last',()=>tagNetLast);serve('tag-fail-text',tagFailText);serve('storage-down',storageDown);serve('safety-start',safetyStart);   // the restructure S6f: what required and today-no-picture files ask of this file

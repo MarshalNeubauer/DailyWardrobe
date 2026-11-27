@@ -3,7 +3,7 @@
    cards that are not a form yet (being read, couldn't be read, asking for the type). */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit,askFor,serve} from './bus.js';
-import {$,BANDS,BEZELS,BLOUSE_TAPE_MAX,COLORS,CUFFS,DIAL_OPTS,FABRIC,MATERIALS_BY,METAL_TYPES,OCP_RANKS,PATS_BY,SEASONS,SEASON_TYPES,SHADE_MAX,SHOE_STYLES,TEXTURE_TYPES,TROUSER_KINDS,TYPES,VESTS,WATCH_STYLES,desc,hasPat,inviteOver,isConnected,items,leatherLabel,leatherWord,leathersFor,matTypeOne,matsFor,metalOptsFor,normColFor,normPat,paperCloth,patName,sentence,shadeName,tapeText,watchOpts} from './core.js';
+import {$,BANDS,BEZELS,BLOUSE_TAPE_MAX,COLORS,CUFFS,DIAL_OPTS,FABRIC,MATERIALS_BY,METAL_TYPES,OCP_RANKS,PATS_BY,SEASONS,SEASON_TYPES,SHADE_MAX,SHOE_STYLES,TEXTURE_TYPES,TROUSER_KINDS,TYPES,VESTS,WATCH_STYLES,desc,hasPat,inviteOver,isConnected,items,leatherLabel,leatherWord,leathersFor,matTypeOne,matsFor,metalOptsFor,normColFor,normPat,paperCloth,patName,sentence,shadeName,tapeText,watchOpts,esc} from './core.js';
 import {cardReading,needType,qh,tagFailNote} from './add-ids.js';
 import {S,aiLabel,cap1,cardAt,cardIx,cardOf,generateSwatch,put,qAt,queue,updateSwatchParam} from './app.js';
 import {WARD_FIELDS,WARD_MAX,fldRow,matLabel,matPicked,matRow,matTidy,notesRow,optLab} from './fields.js';
@@ -11,7 +11,7 @@ import {addKeep,addKeepSoon} from './add-keep.js';
 import {BLUR_SHARP,nearestCols,paperSteps} from './measure.js';
 import {readSett} from './pattern-read.js';
 import {itemThumb,swatchSVG} from './draw.js';
-import {esc,srcOk} from './photo-keys.js';
+import {srcOk} from './photo-keys.js';
 import {planDirty} from './today-plan.js';
 import {CK_OPEN,accRow,ckColSum,ckIsOpen,ckSec,ckSure,cmpDiff,cmpDiffText,cmpDrawn,cmpHtml,cmpLab,cmpMatchHtml,cmpPaper,cmpPaperLine,matchShadeE,matchShadeQ} from './checklist.js';
 import {closeupBtn,cuGot,cuTouch} from './ui.js';
@@ -183,11 +183,6 @@ function tagSet(el){setq(cardIx(el),el.dataset.f,el.dataset.v)}
 function cardRetryTag(el){askFor('retry-tag',cardIx(el))}   // (add.js, later: a socket)
 function cardCuRemove(el){askFor('drop-texture',cardIx(el))}
 function cardCuFile(el,ev,f){cuGot(el,f,x=>askFor('add-texture',cardIx(el),x))}   // (a close-up chosen: ui.js closeupBtn, cuGot)
-/* An ES module since 2026-11-23: its other names are its own. The bridge (tests/bridge.test.js lists it): add.js, add-sheet.js, add-more.js,
-   itemsheet.js, look.js, tagging.js, colpick.js and checklist.js draw and change cards with these; setq, cardSafe, ckCheck and addCkSecs
-   are also called by the tests. Before acts(), the file's one call that can throw (act.js not loaded): the names are then still the
-   page's, as a classic script's were */
-Object.assign(globalThis,{shirtColFix,setq,setQField,shadeRow,photoPair,cardSafe,matNewOf,matGuessOf,ckLr,ckLeftLine,formCard,confBtn,busyCard,multiErrCard,errCard,typeCard});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,addCkSecs,ckCheck,cardSafe,setQField,setq};
 export {shirtColFix,setq,setQField,matOn,shadeRow,photoPair,cardSafe,matNewOf,matGuessOf,ckLr,ckCheck,addCkSecs,ckLeftLine,formCard,confBtn,busyCard,multiErrCard,errCard,typeCard,tagSet};

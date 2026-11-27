@@ -14,12 +14,11 @@
    - read again at start-up and on coming back at most every CAL_EVERY, and by Read now; new matches are a small banner on Today
      ("2 new calendar events"), never applied by themselves
    - the last answer is kept on this phone only (localStorage cal_last), for the review list and Today's trip note */
-import {on,askFor} from './bus.js';
-import {$,DAY_NAMES,dayRecs,isConnected,isWorkday,isoKey,isoToDate,key,occOf,offName,settings,settingsOpen,todayDate,yearDate} from './core.js';
+import {on,askFor,serve} from './bus.js';
+import {$,DAY_NAMES,dayRecs,isConnected,isWorkday,isoKey,isoToDate,key,occOf,offName,settings,settingsOpen,todayDate,yearDate,esc} from './core.js';
 import {closeSettings,openSettings,refreshToday,saveUserSettings,settingsPart,settingsSummaries,todayDirty} from './settings.js';
 import {setOccasion,whenPulled} from './history.js';
 import {afterScripts,announce} from './app.js';
-import {esc} from './photo-keys.js';
 import {toast} from './toast.js';
 import {homeDay} from './month.js';
 import {acts} from './act.js';
@@ -157,12 +156,6 @@ async function calSync(force){const url=calLink();if(!url||calBusy||!isConnected
   if(settingsOpen())renderCalUI();
   return n}
 const calAuto=()=>{if(calLink())calSync(false).catch(e=>console.warn('calendar not read',e))};
-/* An ES module (2026-11-23): its names are its own, and this is what the other scripts and the tests still use as globals (the bridge;
-   tests/bridge.test.js lists it): settings.js (calSummary), today.js (calBanner) and the calendar and restacts tests. calBusy is read by
-   the restacts test only, and only this file writes it: a getter and no setter.
-   Above the file's first call that can throw (whenPulled, when history.js did not load; then settingsPart and acts): the names are
-   then still the page's, as a classic script's were. CAL_GUIDES, declared further down, is the tests' alone (on HOOK). */
-Object.assign(globalThis,{calSummary,calBanner});
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-summaries',S=>{S.calendar=calSummary});
 whenPulled(()=>afterScripts(calAuto));
@@ -299,3 +292,4 @@ function calPackTap(){askFor('pack-open')}
 globalThis.HOOK={__proto__:globalThis.HOOK||null,CAL_GUIDES,CAL_X,get calBusy(){return calBusy},calGuide,calNew,calPlan,renderCalUI,calSummary};
 export {calBusy,CAL_X,calPlan,calNew,calSummary,renderCalUI,calBanner,CAL_GUIDES,calGuide};
 acts({calConnectTap,calReadTap,calOffTap,calGuideTap,calKeepTap,calDismissTap,calUndoTap,calReviewTap,calPackTap});
+serve('cal-banner',calBanner);   // the restructure S6f: Today's calendar banner (today.js)

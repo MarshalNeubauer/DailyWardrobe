@@ -6,9 +6,11 @@
    - tell(message): a plain notice (a toast that stays long enough to read)
    - isConnected(), needConn(): what the buttons that need the server show while the app is not connected
    - advToggle(button), advClose(): the "Advanced" folds in Settings */
-import {on} from './bus.js';
+import {on,ask,need,served,serve} from './bus.js';   // (the restructure S6f: what this file asks of later and optional files)
+import {ACTS,acts} from './act.js';
+import {toast} from './toast.js';
 import {backBorrow,backOn,backReturn,backSettled} from './back.js';
-import {$,MONTH_EASE,MONTH_MS,inviteOver,isConnected,items,settingsOpen} from './core.js';
+import {$,MONTH_EASE,MONTH_MS,hasInviteHash,inviteOver,isConnected,items,settingsOpen} from './core.js';
 /* the person asked for less motion, or the browser can't animate (moved here from item-view.js, the restructure S3d: the pages, sheets
    and cards all ask it) */
 const noMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches||!Element.prototype.animate;
@@ -149,11 +151,6 @@ function sheetSwipe(v,o){if(!v||v.dataset.swipe)return;v.dataset.swipe='1';let s
   v.addEventListener('pointermove',e=>{if(!st||st.pid!==e.pointerId)return;if(move(e.clientX,e.clientY,e.timeStamp))e.preventDefault()});
   const pend=e=>{if(!st||st.pid!==e.pointerId)return;try{v.releasePointerCapture(e.pointerId)}catch{}end()};
   v.addEventListener('pointerup',pend);v.addEventListener('pointercancel',pend);v.addEventListener('dragstart',e=>{if(st&&st.pid!==undefined)e.preventDefault()})}   // (a photo in the handle would be dragged off as a picture)
-/* An ES module since 2026-11-24. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
-   as globals. Above the file's first top-level call that can throw (backOn): its functions are then still the page's. A getter reads its
-   `let` when asked, so the ones declared below are here too; the consts declared below are handed over above acts({…}) */
-Object.assign(globalThis,{noMotion,askAnswer,askConfirm,closeupBtn,cuGot,closeupPick,tell,layerInert,layerOpen,layerClose,plainErr,needConn,connSummary,renderConnUI,addGate,advClose,itemGoneTell,boxUnfold,foldEdge,boxFold,revealNeed,pageScroll,monthBelow,keepInView,sheetSwipe});
-Object.defineProperties(globalThis,{asking:{get:()=>asking},cuOpen:{get:()=>cuOpen},foldQuiet:{get:()=>foldQuiet}});
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-open',()=>advClose());   // the Advanced folds start closed every time Settings opens
 on('settings-draw',()=>renderConnUI());
@@ -244,7 +241,7 @@ function layerInert(){const up=layerUp(),on=up.length>0||!!document.querySelecto
   // the item sheet under a sheet of its own (the color sheet, the close-up chooser, the reading sheet, a question, the picker): out of
   // reach too (fix round 3, W2-19-03: 18 of 40 Tabs from the color sheet landed in the item sheet behind it)
   const iv=document.querySelector('#item-view');if(iv)iv.inert=!!up.length&&up[0]!==iv&&iv.classList.contains('on');
-  if((!on||npsTop)&&npsId)npsInert(true)}   // the "Add without a photo" sheet (in main) still up: the page around it stays out of reach (add-sheet.js)
+  if((!on||npsTop)&&need('nps-id'))need('nps-inert',true)}   // the "Add without a photo" sheet (in main) still up: the page around it stays out of reach (add-sheet.js)
 function layerOpen(el){if(!el)return;if(!layerFrom.has(el)){const a=document.activeElement;layerFrom.set(el,a);if(a&&a.id)layerFromId.set(el,a.id);else layerFromId.delete(el)}
   if(!el.hasAttribute('tabindex'))el.tabIndex=-1;layerInert();
   if(!el.contains(document.activeElement))try{el.focus({preventScroll:true})}catch{}}
@@ -257,9 +254,9 @@ const layerFocusables=el=>[...el.querySelectorAll(LAYER_FOCUS)].filter(x=>x.getC
 window.addEventListener('keydown',e=>{if(e.key!=='Tab'&&e.key!=='Escape')return;
   const top=layerUp()[0];if(!top||top.id==='ask-sheet'||top.id==='col-sheet'&&e.key==='Escape')return;   // a question handles its own keys, the color sheet its Escape (its Tab stays inside it here)
   if(e.key==='Escape'){if(e.defaultPrevented)return;
-    if(top.id==='settings-modal'){e.preventDefault();e.stopPropagation();closeSettings()}
-    else if(top.id==='pick-sheet'){e.preventDefault();e.stopPropagation();closePicker()}
-    else if(top.id==='nps-sheet'){e.preventDefault();e.stopPropagation();if(!npsAsking)npsCancel()}   // (here, not on the sheet: with the focus on <body> the sheet's own listener never heard it)
+    if(top.id==='settings-modal'){e.preventDefault();e.stopPropagation();need('settings-close')}
+    else if(top.id==='pick-sheet'){e.preventDefault();e.stopPropagation();need('picker-close')}
+    else if(top.id==='nps-sheet'){e.preventDefault();e.stopPropagation();if(!need('nps-asking'))need('nps-cancel')}   // (here, not on the sheet: with the focus on <body> the sheet's own listener never heard it)
     return}   // What to buy, the item sheet and the tour close on their own listeners
   const f=layerFocusables(top);if(!f.length){e.preventDefault();return}
   const at=f.indexOf(document.activeElement);
@@ -268,7 +265,7 @@ window.addEventListener('keydown',e=>{if(e.key!=='Tab'&&e.key!=='Escape')return;
 /* ---- the server's set-up errors in plain words: "Add an OPENAI_API_KEY secret to the worker…" reached a new user's Today (audit
    2026-11-13). Only the owner (acctRole 'owner', account.js) sees the technical sentence, which says what to set up. ---- */
 const TECH_RE=/\bAPI key\b|\bsecret\b|\bbinding\b|\bworker\b|Workers AI|Cloudflare|\btoken\b/i,TECH_NAMES=/[A-Z]+_API_KEY|\bKV\b|\bWARDROBE\b|APP_TOKEN|RENDER_QUEUE|RENDER_HUB|VAPID/;   // (the names case-sensitive: "your wardrobe" is plain English)
-const ownerHere=()=>typeof acctRole==='function'&&acctRole()==='owner';
+const ownerHere=()=>served('acct-role')&&ask('acct-role')==='owner';
 /* the browser's own words for a request that never reached the server (Safari "Load failed", Chrome "Failed to fetch", Firefox
    "NetworkError…") -> a plain sentence for everyone, or null (2026-11-15, the audit: "Backup failed: Load failed", "4 failed (Load failed)") */
 const NET_RE=/^(TypeError: )?(Load failed|Failed to fetch|NetworkError when attempting to fetch resource\.?|Network request failed|The network connection was lost\.?|The Internet connection appears to be offline\.?)$/i;
@@ -292,15 +289,15 @@ function needConn(btn){if(!btn)return false;const off=!isConnected(),box=btn.clo
 /* the reason as a line of text ('' when connected) */
 /* Settings → Connection: its one-line summary, and the box at its top. Not connected: what a connection adds, and a field for the
    invite link (the address and the code themselves are under Advanced). Who is connected is the account box under it (account.js). */
-function connSummary(){if(typeof inviteChecking!=='undefined'&&inviteChecking)return 'Checking your invitation…';if(inviteOver())return 'Invitation ended';if(!isConnected())return 'Not connected';const m=typeof acct!=='undefined'&&acct&&acct.me;
+function connSummary(){if(ask('invite-checking'))return 'Checking your invitation…';if(inviteOver())return 'Invitation ended';if(!isConnected())return 'Not connected';const m=ask('acct-me');
   return m?(m.role==='owner'?'Connected as the owner':'Connected as '+(m.name||'a tester')):'Connected'}
 let connMsg='',connBusy=false;
 function renderConnUI(){const el=document.querySelector('#conn-box');if(!el)return;const typed=el.querySelector('#conn-link')?el.querySelector('#conn-link').value:'';
-  const checking=typeof inviteChecking!=='undefined'&&inviteChecking,waiting=!checking&&typeof acctWhy!=='undefined'&&acctWhy==='offline'&&typeof hasInviteHash==='function'&&hasInviteHash();
+  const checking=!!ask('invite-checking'),waiting=!checking&&ask('acct-why')==='offline'&&hasInviteHash();
   el.innerHTML=checking?'<p class="shelp" id="conn-state" role="status">Checking your invitation…</p>'
-   :isConnected()?`<p class="shelp" id="conn-state"><span class="conn-tick" aria-hidden="true">✓</span> Photos of your clothes are read automatically, item pictures can be made, and ${typeof backedUpWords==='function'?backedUpWords():'your wardrobe is backed up'}.</p>`+
+   :isConnected()?`<p class="shelp" id="conn-state"><span class="conn-tick" aria-hidden="true">✓</span> Photos of your clothes are read automatically, item pictures can be made, and ${served('backed-up-words')?ask('backed-up-words'):'your wardrobe is backed up'}.</p>`+
      // (audit 2026-11-15, W1-7-02) the owner's phone moved to a tester's invitation keeps the owner's way back (account.js acctOwnerPhone)
-     (typeof isTester==='function'&&isTester()&&localStorage.getItem('acct_was_owner')==='1'?'<p class="shelp conn-own" id="conn-own"><button type="button" class="linkbtn" data-act="connOwnTap">I run the server: connect with its address and code</button></p>':'')
+     (served('is-tester')&&ask('is-tester')&&localStorage.getItem('acct_was_owner')==='1'?'<p class="shelp conn-own" id="conn-own"><button type="button" class="linkbtn" data-act="connOwnTap">I run the server: connect with its address and code</button></p>':'')
    :`<p class="shelp" id="conn-state">${inviteOver()?'Your invitation has ended, so photos aren’t read automatically and nothing is backed up. Your wardrobe stays on this phone, and the app keeps working without a connection. If you were given a new invitation link, paste it here.'
      :waiting?'Your invitation link couldn’t be checked: the server couldn’t be reached. It is tried again when you come back to the app or your connection returns, or tap Connect.'
      :'The app works without a connection: you add your items by hand. With an invite link, photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.'}</p>
@@ -309,13 +306,13 @@ function renderConnUI(){const el=document.querySelector('#conn-box');if(!el)retu
 <p class="shelp conn-own" id="conn-own"><button type="button" class="linkbtn" data-act="connOwnTap">I run the server: connect with its address and code</button></p>`;
   const f=el.querySelector('#conn-link');if(f)f.value=typed||(waiting?location.href:'');
   for(const ph of document.querySelectorAll('.conn-off-note'))ph.innerHTML=isConnected()?'':`${uiEsc(ph.dataset.what||'This')} needs a connection. <button type="button" class="linkbtn" data-act="connOffTap">Connect</button>`;
-  if(typeof applyRole==='function')applyRole()}
+  ask('apply-role')}
 /* not connected, the owner's fold (the server's address and code) stays out of sight until asked for: a new tester was invited to type
    into "Code" (audit 2026-11-14). The owner connecting a new phone taps this line (styles.css: body.nocon:not(.srv-open)) */
 function connOwn(){document.body.classList.add('srv-open');const f=document.querySelector('#adv-connection');if(f&&!f.classList.contains('open')){const b=f.querySelector('.adv-head');if(b)advToggle(b)}
   const o=document.querySelector('#conn-own');if(o)o.hidden=true}
 /* from a section that needs the server: open Connection and put the cursor in the invite-link field */
-function goConnect(){const c=document.querySelector('#sc-connection');if(c&&!c.classList.contains('open'))toggleCat('connection');
+function goConnect(){const c=document.querySelector('#sc-connection');if(c&&!c.classList.contains('open'))need('cat-toggle','connection');
   setTimeout(()=>{const f=document.querySelector('#conn-link');if(f){f.scrollIntoView({block:'center',behavior:'smooth'});f.focus({preventScroll:true})}},350)}
 /* the Add tab: "Several items" finds the items in one photo on the server, so it is switched off (with the reason) while not connected */
 const ADD_GROUP_SUB='One photo of a rail, a pile or a few on hangers';
@@ -326,10 +323,10 @@ function addGate(){const l=document.querySelector('#add-group'),s=document.query
   if(n){n.hidden=!off;n.innerHTML=off?'Several items in one photo are found by the server, so that needs a connection. <button type="button" class="linkbtn" data-act="addConnTap">Connect</button>':''}}
 async function connPaste(){const inp=document.querySelector('#conn-link'),t=(inp&&inp.value||'').trim();if(!t||connBusy)return;
   connBusy=true;connMsg='';renderConnUI();let ok=false;
-  try{ok=typeof connectFromLink==='function'&&!!(await connectFromLink(t))}catch(e){ok=false}
+  try{ok=served('connect-link')&&!!(await ask('connect-link',t))}catch(e){ok=false}
   // why it didn't connect, in this line (offline isn't a wrong link; a kept connection was said by its toast)
-  connBusy=false;connMsg=ok?'':typeof acctFailText==='function'?acctFailText():'That link didn’t work. Check that you copied all of it.';renderConnUI();
-  if(ok)renderSettingsExtras()}
+  connBusy=false;connMsg=ok?'':served('acct-fail-text')?ask('acct-fail-text'):'That link didn’t work. Check that you copied all of it.';renderConnUI();
+  if(ok)need('settings-extras')}
 
 /* ---- Settings: what only the owner needs sits in an "Advanced" fold inside its category, closed until tapped ---- */
 function advToggle(btn){const f=btn.closest('.adv');if(!f)return;const open=!f.classList.contains('open');f.classList.toggle('open',open);btn.setAttribute('aria-expanded',open)}
@@ -344,9 +341,9 @@ function connOwnTap(){connOwn()}
 function connLinkKey(el,ev){if(ev.key==='Enter'){ev.preventDefault();connPaste()}}
 function connGoTap(){connPaste()}
 function connOffTap(){goConnect()}
-function addConnTap(){openSettings('connection');goConnect()}
-Object.assign(globalThis,{cuTouch,layerFrom,netErr,NEED_CONN});
+function addConnTap(){need('settings-open','connection');goConnect()}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,closeupClose,get connBusy(){return connBusy},get connMsg(){return connMsg},set connMsg(v){connMsg=v},askAnswer,get asking(){return asking},closeupPick,get cuOpen(){return cuOpen},cuTouch,renderConnUI,NEED_CONN,askConfirm,plainErr,tell};
 export {noMotion,asking,askAnswer,askConfirm,cuTouch,cuOpen,closeupBtn,cuGot,closeupPick,closeupClose,tell,layerFrom,layerInert,layerOpen,layerClose,netErr,plainErr,NEED_CONN,needConn,connSummary,connMsg,connBusy,renderConnUI,addGate,advClose,itemGoneTell,boxUnfold,foldEdge,boxFold,revealNeed,pageScroll,monthBelow,keepInView,foldQuiet,sheetSwipe,BOX_LIFT,boxStop};
 acts({advTap,askNoTap,askYesTap,cuBtnTap,connOwnTap,connLinkKey,connGoTap,connOffTap,addConnTap});
+serve('tell',tell);   // the restructure S6f: app.js, which loads before this file, tells of an ended invitation

@@ -1,3 +1,4 @@
+/* global PLAN_RULES, items, queue, settings */   // an older build's globals, read on that build only (tests/bridge.test.js READS_KEPT; the app's bridge is down since the restructure S6f)
 // Verifier 2's shared helpers (port 9620): start/stop a lab, tap by text, build 14 Nov (7a28f96, dw-v350) data, update to today.
 const RP = require('../harness/paths.js');
 const fs = require('fs'), { spawn } = require('child_process');
