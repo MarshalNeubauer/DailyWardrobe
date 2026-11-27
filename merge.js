@@ -159,7 +159,7 @@ function mergeDay(a,b){
     const fw=w===a?fa:fb;if(w!==hi&&!sameVal(fw[k],fh[k]))mixed=true;
     if(fw[k]!==undefined)out[k]=fw[k];s[k]=Math.max(sa,sb)}
   if(!mixed)return hi;
-  const u=Math.max(ua,ub)+1,r={date:hi.date,...dayUnflat(out),updated:u};
+  const u=Math.max(ua,ub)+1,r=/** @type {Record<string, any>} */ ({date:hi.date,...dayUnflat(out),updated:u});
   if(r.lock&&lockW&&lockW.lockAt!=null)r.lockAt=lockW.lockAt;r.fs=fsPack(u,s);return r}
 /* compact fingerprint of a snapshot, to tell whether a merge changed anything (lax: as mergeStateBy's) */
 function stateSig(s,lax){
