@@ -7,6 +7,7 @@
    day that wears the same pieces shows the photo; the worker keeps a copy (KV) so every device can show it. ---- */
 import {serve,ask,need,served} from './bus.js';   // (the restructure S6f: detect.js's readings, app.js's store and an ended invitation, files that run after this one)
 import {REC_PHOTO,patBase,primaryCol,settings,esc,inviteOver} from './core.js';
+function setRenders(v){renders=v}   // (lab/gl-bench.js starts the kept pictures afresh: the restructure S6f, where it assigned the bridged name)
 let renders={};   // kept pictures by key: outfit photos made before 2026-11-14 (renderFor shows them), item pictures, assembled pictures
 /* (fix round 3, W2-13-02) a value inside a quoted JS string inside an inline handler (an onclick calling f('…')): the browser decodes the attribute
    first, so esc alone gives the JS string its ' back; jsq escapes for JS, then for the attribute */
@@ -73,5 +74,5 @@ const shirtPatterned=i=>!!i&&([...need('stripe-pats'),...need('check-pats'),'hou
 const shirtTextured=i=>!!i&&!shirtPatterned(i)&&!!(need('usable-sett',i)||{}).tex;
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get listKeys(){return listKeys},set listKeys(v){listKeys=v},get renders(){return renders},set renders(v){renders=v},get listAt(){return listAt},set listAt(v){listAt=v},shirtPatterned,comboKey,comboSig,keepRender,workerBase,workerList,esc,picsDrawn};
-export {renders,jsq,srcOk,comboSig,fnv64,comboKey,keepRender,shareRender,workerBase,picsDrawn,listKeys,listAt,workerList,listPaused,loadRenders,shirtPatterned,shirtTextured};
+export {renders,setRenders,jsq,srcOk,comboSig,fnv64,comboKey,keepRender,shareRender,workerBase,picsDrawn,listKeys,listAt,workerList,listPaused,loadRenders,shirtPatterned,shirtTextured};
 serve('pics-drawn',picsDrawn);serve('renders-load',loadRenders);serve('renders',()=>renders);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

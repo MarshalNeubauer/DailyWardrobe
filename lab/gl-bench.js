@@ -2,7 +2,7 @@
    device, builds the four looks' jobs from the suit fixtures (tests/fixtures/cm/suit, 512 px, enlarged to the chosen size), runs the
    bench in a Web Worker (lab/gl-bench-run.js), and on the page thread when the Worker has no WebGL, then shows the results with a
    "Copy results" button. Nothing is sent anywhere and nothing heavy runs before Start is tapped. */
-/* global asmCmKey, asmCmBgKey, asmCmJob, glbRun, GLB_WORKER_SRC, GLB_APP_VERSION, glbErrors, items:writable */
+/* global asmCmKey, asmCmBgKey, asmCmJob, glbRun, GLB_WORKER_SRC, GLB_APP_VERSION, glbErrors, items:writable, renders:writable */
 const GLB_VER='2026-11-14.2';
 /* the CPU painter compared against: the app's own asm-color.js against the app's own asm-gl.js (since stage 1 of the port, both from main:
    their random cloth details share one 32-bit hash, asmH32 / asmCellV, so they agree within 2 levels; before, the bench pinned a copy of

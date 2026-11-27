@@ -15,7 +15,7 @@ const takeoff=async({ok,chromium,url,settle})=>{
         I('tie','navy',{pattern:'stripe',secondaryColor:'pink'}),I('tieclip','silver'),I('watch','grey',{metal:'silver'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','navy')];
       HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.blazerDays=[3];HOOK.settings.vestMode='always';HOOK.dayRecs={};HOOK.weather={};HOOK.TODAY_OVERRIDE='2026-11-09T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,9);HOOK.view={y:2026,m:10};HOOK.listOpen=true;HOOK.show('today')});
     // a tap that changes the day: waits for its record to be saved and Today drawn again
-    const tap=async sel=>{const t0=await p.evaluate(()=>(HOOK.dayRecs[HOOK.key(sel)]||{}).updated||0);await p.click(sel);await p.waitForFunction(t=>((HOOK.dayRecs[HOOK.key(sel)]||{}).updated||0)>t,t0,{timeout:5000}).catch(()=>{});await settle(p,400)};
+    const tap=async sel=>{const t0=await p.evaluate(()=>(HOOK.dayRecs[HOOK.key(HOOK.sel)]||{}).updated||0);await p.click(sel);await p.waitForFunction(t=>((HOOK.dayRecs[HOOK.key(HOOK.sel)]||{}).updated||0)>t,t0,{timeout:5000}).catch(()=>{});await settle(p,400)};
     const st=()=>p.evaluate(()=>{const o=HOOK.planFor()[HOOK.key(HOOK.sel)],r=HOOK.dayRecs[HOOK.key(HOOK.sel)]||{};return {ids:HOOK.idsOf(o),vest:!!o.vest,suitDay:!!o.suitDay,suitBot:!!o.suitBot,off:o.off||null,offKind:o.offKind||null,
       kind:HOOK.asmCmKind(o),hard:HOOK.rateOutfit(o).hard,rows:[...document.querySelectorAll('#ibox .row')].map(e=>e.textContent.replace(/\s+/g,' ').trim()),
       btns:[...document.querySelectorAll('#ibox .row button[aria-label]')].map(b=>b.getAttribute('aria-label')),rec:{off:r.off||null,kind:r.kind||null}}});
