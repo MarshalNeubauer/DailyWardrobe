@@ -89,7 +89,7 @@ const SOCKETS={
   'asm-suit-weave':{serve:'asm-look.js',ask:['draw.js'],what:'the weave the painter reads from a jacket, for the drawn figure (asmSuitWeave)'},
   'pattern-readable':{serve:'pattern-read.js',ask:['asm-cm-job.js'],what:'whether a piece\'s pattern can be read, for Painted plain (readable; the painter may not import the Add group)'},
   'pattern-reread':{serve:'pattern-read.js',ask:['asm-cm-page.js'],what:'Read N patterns: a piece\'s pattern read again (rereadSett)'},
-  'refresh-today':{serve:'settings.js',ask:['asm-today.js','asm-cm-page.js','photos.js','missed.js','today.js'],what:'Today redrawn when its picture is ready (refreshToday; settings.js loads after the painter)'},
+  'refresh-today':{serve:'settings.js',ask:['asm-today.js','asm-cm-page.js','photos.js','missed.js','today.js','migrate.js'],what:'Today redrawn when its picture is ready, or a read sett was recolored at start-up (refreshToday; settings.js loads after the painter)'},
   'plan-on':{serve:'month.js',ask:['asm-today.js','asm-cm-page.js'],what:'a day\'s planned outfit, for building ahead and Pictures ahead (planOn; month.js loads after the painter)'},
   // the restructure S6b (2026-11-27, STEP6 rule 2): what a required or today-no-picture file asks of a file it may not import, through
   // need (a ReferenceError when nothing is served, as the bare name threw when the file was missing)

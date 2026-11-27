@@ -249,7 +249,7 @@ export interface Sockets {
   'list-open-set': typeof import('../today.js').setListOpen;
   /** whether a finger is on Today (todayBusy) (today-gestures.js) */
   'today-busy': typeof import('../today-gestures.js').todayBusy;
-  /** Today redrawn when its picture is ready (refreshToday; settings.js loads after the painter) (settings.js) */
+  /** Today redrawn when its picture is ready, or a read sett was recolored at start-up (refreshToday; settings.js loads after the painter) (settings.js) */
   'refresh-today': typeof import('../settings.js').refreshToday;
   /** Settings opens, on a part (openSettings) (the restructure S6f) (settings.js) */
   'settings-open': typeof import('../settings.js').openSettings;

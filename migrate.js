@@ -8,7 +8,7 @@
    matched, gains held to 0.6-1.6. The sharp copy is kept again under the new close-up's signature. Another device has nothing to do. */
 /* a picture's mean colour in linear light (on a 64x64 copy), and a canvas's colours scaled so its mean matches another's, each channel's
    gain held to 0.6-1.6: the two remakes below (one copy: CR-2-15) */
-import {askFor,register} from './bus.js';
+import {askFor,need,register} from './bus.js';
 import {$,PH_MAX,TEX_MAX,colOf,isoKey,items} from './core.js';
 import {fixupRedraw,imgOf,put,refreshSwatch,stillCur} from './app.js';
 import {planDirty} from './today-plan.js';
@@ -16,7 +16,6 @@ import {cropSource,makeSmall} from './measure.js';
 import {linSrgb8,srgbLin8} from './srgb.js';
 import {keepCloseImg,resignTagImg,sharpCloseOf,tagImgOf} from './tag-request.js';
 import {toast} from './toast.js';
-import {refreshToday} from './settings.js';
 import {settFromSpec} from './pattern-read.js';
 function linMean64(im){const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,64,64);const d=x.getImageData(0,0,64,64).data,m=[0,0,0];
   for(let k=0;k<d.length;k+=4)for(let q=0;q<3;q++)m[q]+=srgbLin8(d[k+q]);return m.map(v=>v/4096)}
@@ -113,7 +112,7 @@ globalThis.HOOK={__proto__:globalThis.HOOK||null,REMAKE_DAY,fixBlackBackdrops,re
 export {upgradeCloseups,REMAKE_DAY,remakeLeft,remakeSpend,upgradePhotos,fixBlackBackdrops,recolourSpecSetts};
 /* start-up's one-time fix-ups once the backup is merged (start.js, after-pull-fixups, one after another in load order: these, then item-photo.js's
    small photos): the read setts recolored (Today drawn again when one was), the close-ups, the photos, the cut-outs on black */
-async function remakeAfterPull(){const n=await recolourSpecSetts();if(n&&!$('#today').hidden)refreshToday();await upgradeCloseups();await upgradePhotos();await fixBlackBackdrops()}
+async function remakeAfterPull(){const n=await recolourSpecSetts();if(n&&!$('#today').hidden)need('refresh-today');await upgradeCloseups();await upgradePhotos();await fixBlackBackdrops()}
 export {remakeAfterPull};
 /* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
 register('migrate',{'after-pull-fixups':remakeAfterPull});
