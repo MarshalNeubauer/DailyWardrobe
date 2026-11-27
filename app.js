@@ -5,7 +5,7 @@
    chain), ui.js and the rest, about.js last.
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14.) */
 import {emit,serve} from './bus.js';   // the Wardrobe's redraw: itemsheet.js pins renderWardrobe for 'wardrobe-changed'
-import {$,ACCENT_MAX,BELT_MATS,COLORS,FABRIC,LEATHERS,MATERIALS_BY,METAL,PATS_BY,SHOE_NAP,SHOE_STYLES,SHOE_TEXTILES,TAG_Q,TEXTURE_TYPES,TYPES,accentsFor,cleanDay,cleanRecord,cleanSettings,colOf,hexRgb,itemFields,items,labHex,matsFor,nextStamp,normCol,normColFor,normPat,ownMatName,rgbLab,watchOpts} from './core.js';
+import {$,ACCENT_MAX,BELT_MATS,COLORS,FABRIC,LEATHERS,MATERIALS_BY,METAL,PATS_BY,SHOE_NAP,SHOE_STYLES,SHOE_TEXTILES,TAG_Q,TEXTURE_TYPES,TYPES,accentsFor,cleanDay,cleanRecord,cleanSettings,colOf,hexRgb,itemFields,items,labHex,matsFor,nextStamp,normCol,normColFor,normPat,ownMatName,rgbLab,settingsOpen,watchOpts} from './core.js';
 import {esc} from './photo-keys.js';
 let flt='all',queue=[];const now=new Date();let view={y:now.getFullYear(),m:now.getMonth()},sel=new Date(now.getFullYear(),now.getMonth(),now.getDate());
 

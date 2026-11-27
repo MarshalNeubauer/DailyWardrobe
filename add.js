@@ -8,22 +8,23 @@
    item, Several items, reading again once online), the double-tap guard and renderAdd. */
 /* the parts loaded before it announce a changed card on the notice board (bus.js 'card-changed'), and Add is drawn again here:
    they never call renderAdd (the restructure S3c, 2026-11-26) */
-import {on,serve} from './bus.js';
-import {aiSignals,applyWb,closeRead,measureAndApply,measureCard,measureCloth,nearestCols,wbGains} from './measure.js';
+import {on,serve,askFor} from './bus.js';
+import {aiSignals,applyWb,closeRead,measureCard,measureCloth,nearestCols,wbGains} from './measure.js';
 import {aiError,aiModel,ask,cardAt,cardIx,cardOf,fill,generateSwatch,imgOf,keepFocus,loadImg,normTag,queue,setAiError,setAiModel,shrink} from './app.js';
-import {customForTag,tagFixes} from './tag-request.js';
-import {cardReading,needType} from './add-ids.js';
+import {aiFields,customForTag,tagFixes} from './tag-request.js';
+import {cardReading,needType,readAbort} from './add-ids.js';
 import {toast} from './toast.js';
 import {addKeep,addKeepSoon,addRestoreState,addWatch} from './add-keep.js';
-import {aiFields,readAbort,refineFromCloseup,takeExtras} from './tagging.js';
-import {$,CLOSE_MAX,COLORS,PH_MAX,TAG_MAX,TAG_Q,TEX_MAX,TEX_MIN_PX,TYPES,tagTypesNow,watchOpts} from './core.js';
-import {addGate,inviteOver,isConnected,noMotion,plainErr} from './ui.js';
+import {refineFromCloseup,takeExtras} from './tagging.js';
+import {$,CLOSE_MAX,COLORS,PAIR_TYPES,PH_MAX,TAG_MAX,TAG_Q,TEX_MAX,TEX_MIN_PX,TYPES,hasInviteHash,inviteOver,isConnected,tagNetText,tagTypesNow,watchOpts} from './core.js';
+import {addGate,noMotion,plainErr} from './ui.js';
 import {npsDraw,npsId,renderAddFor} from './add-sheet.js';
 import {cardReady,saveAll,saveAllOn} from './add-save.js';
 import {busyCard,cardSafe,errCard,formCard,multiErrCard,typeCard} from './add-card.js';
 import {cmpMount} from './checklist.js';
 import {closeColPick,colPick} from './colpick.js';
 import {acts} from './act.js';
+import {measureAndApply} from './pattern-read.js';
 /* ---- automatic white balance (wbRead/wbGains/applyWb in measure.js): the light's colour is read from the brightest near-neutral pixels (a white wall, backdrop,
    shirt or label), which should be grey, and every pixel is scaled to make them so. Conservative: no correction when there
    are too few of them, when they fill nearly the whole photo (then they are the item itself, e.g. a close-up of a cream
@@ -76,8 +77,8 @@ async function addFiles(files,multi){
       const ac=typeof AbortController==='function'?new AbortController():null;q.abort=ac;if(ac)renderAdd();
       const out={},aiResult=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff),out,...(ac?{signal:ac.signal}:{})});q.abort=null;   // wb: whether the photo was white-balanced (the tagger is told)
       if(q.stopped){delete q.stopped;fill(q,null);q.unread=1;q.tagErr=STOPPED}
-      else{fill(q,aiResult);if(aiResult){takeExtras(q,aiResult);measureAndApply(q)}else{q.unread=1;tagFailed(q,out.err)}}   // out.err: this card's own reason (CR-2-07)
-    }catch(e){console.warn('photo card',e);if(typeof errNote==='function')errNote(e,'Photo card'+(q.type?' ('+q.type+')':''));if(!q.photo){q.err='open'}else{if(!q.type)fill(q,null);if(!q.ai)q.unread=1;q.tagErr=q.tagErr||'Something went wrong while reading it.'}}
+      else{fill(q,aiResult);if(aiResult){takeExtras(q,aiResult);measureAndApply(q)}else{q.unread=1;askFor('tag-failed',q,out.err)}}   // out.err: this card's own reason (CR-2-07)
+    }catch(e){console.warn('photo card',e);askFor('err-note',e,'Photo card'+(q.type?' ('+q.type+')':''));if(!q.photo){q.err='open'}else{if(!q.type)fill(q,null);if(!q.ai)q.unread=1;q.tagErr=q.tagErr||'Something went wrong while reading it.'}}
     q.busy=0;q.abort=null;
     addKeep();   // the reading kept at once: a kill in the next moment brought the card back as "closed before it was read", and Try again paid again
     renderAdd();if(q===cards[0][0])addShowCard(q.id);   // (the small "Reading" card fitted; the full one grows below the screen)
@@ -123,8 +124,6 @@ function cropBox(img,box,max){
   const k=Math.min(1,max/Math.max(w,h)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*k));c.height=Math.max(1,Math.round(h*k));
   c.getContext('2d').drawImage(img,x,y,w,h,0,0,c.width,c.height);return c;
 }
-/* "1 pair of shoes", "2 dress shirts", "1 trousers" no more */
-const PAIR_TYPES=['pants','shoes','socks','cufflinks'];
 function countWord(t,c){const n=(TYPES[t]||'item').toLowerCase();if(PAIR_TYPES.includes(t))return `${c} pair${c===1?'':'s'} of ${n}`;return `${c} ${n}${c===1?'':/(s|x|ch|sh)$/.test(n)?'es':'s'}`}   // "4 watches" ("4 watchs")
 /* the most items one photo gives (worker/tag.js keeps the first 40) */
 const MULTI_CAP=40;
@@ -181,8 +180,8 @@ function multiAgain(id){const q=queue.find(x=>x.id===id);if(!q||!q.file||q.busy)
 function addNoteText(){const workerSet=typeof isConnected==='function'?isConnected():!!localStorage.getItem('worker_url');   // (an ended invitation reads nothing: ui.js)
   // (no model name: a tester read "Last photo read by Claude (claude-…)")
   if(workerSet)return aiError||'Photos are read automatically: the type, colors and pattern are filled in for you.';
-  if(typeof inviteChecking!=='undefined'&&inviteChecking)return 'Checking your invitation… Photos you add meanwhile can be read once it’s done.';
-  if(typeof acctWhy!=='undefined'&&acctWhy==='offline'&&typeof hasInviteHash==='function'&&hasInviteHash())return 'Your invitation is checked once you’re back online. Photos you add meanwhile can be read then.';
+  if(askFor('invite-checking'))return 'Checking your invitation… Photos you add meanwhile can be read once it’s done.';
+  if(askFor('acct-why')==='offline'&&typeof hasInviteHash==='function'&&hasInviteHash())return 'Your invitation is checked once you’re back online. Photos you add meanwhile can be read then.';
   if(typeof inviteOver==='function'&&inviteOver())return 'Your invitation has ended, so photos aren’t read automatically: add items by hand, or paste a new invitation link in Settings → Connection.';
   return 'Photos won’t be read automatically. Paste your invite link in Settings → Connection, or add items by hand.'}
 /* (it no longer closes Settings: a reading coming back or the connection returning redrew Add and shut Settings mid-use; the pages
@@ -217,11 +216,22 @@ function saveAllTap(){saveAll()}
 /* the markup's handler (act.js): the photos picked with "One item" or "Several items" (data-multi), the field emptied so the same
    photo can be picked again */
 function addPhotosPick(el){addFiles([...el.files],el.dataset.multi==='1');el.value=''}
+/* (moved from safety.js with its text unchanged, the restructure S6c) */
+async function retryTag(i){const q=queue[i];if(!q||q.busy||!q.tagImg)return;
+  const ac=typeof AbortController==='function'?new AbortController():null;q.abort=ac;   // Stop on the card (add.js stopRead)
+  q.busy=1;renderAdd();let ai=null;const out={};try{ai=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff),out,...(ac?{signal:ac.signal}:{})})}catch(e){console.warn(e)}
+  q.busy=0;q.abort=null;if(q.stopped){delete q.stopped;delete q.tagNet;q.tagErr=STOPPED}
+  else if(ai){try{delete q.tagErr;delete q.tagNet;await fill(q,ai);takeExtras(q,ai);measureAndApply(q)}catch(e){console.warn('answer not applied',e);askFor('err-note',e,'Try again: answer not applied')}}else askFor('tag-failed',q,out.err);
+  // drawn again however it went (a step that threw left the card as it was, Confirm off: tagging.js refineFromCloseup, 2026-11-16)
+  addKeep();
+  if(queue.includes(q))renderAdd()}
 /* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above the file's
    one top-level call that can throw (acts, when act.js did not load): the names are then still the page's */
-Object.assign(globalThis,{addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,measureGuess,errToHand,skipCard,multiMsg,PAIR_TYPES,multiAgain,renderAdd,addBackOnline});
+Object.assign(globalThis,{addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,measureGuess,errToHand,skipCard,multiMsg,multiAgain,renderAdd,addBackOnline,retryTag});
 Object.defineProperties(globalThis,{addCalm:{get:()=>addCalm}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,addNoteText,cardPics,countWord,errToHand,multiAgain,addFiles,addTexture,dropTexture,renderAdd,skipCard};
-export {cardPics,addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,addCalm,measureGuess,errToHand,skipCard,multiMsg,PAIR_TYPES,countWord,multiAgain,addNoteText,renderAdd,addBackOnline};
+export {cardPics,addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,addCalm,measureGuess,errToHand,skipCard,multiMsg,countWord,multiAgain,addNoteText,renderAdd,addBackOnline,retryTag};
 acts({cardWb,cardSkip,cardStop,cardMultiAgain,cardByHand,saveAllTap,addPhotosPick});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('add-texture',addTexture);serve('retry-tag',retryTag);serve('drop-texture',dropTexture);serve('multi-msg',multiMsg);serve('add-calm',()=>addCalm);serve('measure-guess',measureGuess);serve('wb-note',wbNote);serve('skip-card',skipCard);serve('add-back-online',addBackOnline);

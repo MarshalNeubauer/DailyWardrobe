@@ -7,7 +7,7 @@
    this file, which runs before today.js, no longer calls it */
 import {emit,need,serve} from './bus.js';
 import {afterScripts,metaGet,metaPut,sel} from './app.js';
-import {$,CASUAL_JACKETS,CASUAL_TOPS,DAY_NAMES,SLOTS,SLOT_TYPE,TYPES,dayRecs,di,handPickSlot,hasVest,inRotation,isCargo,isHandPick,isWorkday,itemTitle,items,key,keyDate,nm,occLabel,offName,phSm,sentence,settings,shortDate,titleCls,todayDate,trueToday} from './core.js';
+import {$,CASUAL_JACKETS,CASUAL_TOPS,DAY_NAMES,SLOTS,SLOT_TYPE,TYPES,dayRecs,di,handPickSlot,hasVest,inRotation,isCargo,isHandPick,isWorkday,itemTitle,items,key,keyDate,nm,occLabel,offName,phSm,sentence,settings,settingsOpen,shortDate,titleCls,todayDate,trueToday} from './core.js';
 import {firstReal,missedNote} from './missed.js';
 import {clearLocks,idsOf,notAhead,saveDay} from './days.js';
 import {PLAN_RULES,favLookKey,favLooks,idsAhead} from './planner.js';

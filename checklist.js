@@ -5,13 +5,14 @@
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit,ask} from './bus.js';
 import {esc} from './photo-keys.js';
-import {ACCENT_MAX,COLORS,SHADE_MAX,accentsOf,colName,items,primaryCol,shadeFor,sockPatterned,sockToeKey,texSig} from './core.js';
+import {ACCENT_MAX,COLORS,SHADE_MAX,accentsOf,colName,items,primaryCol,shadeFor,shadeName,sockPatterned,sockToeKey,texSig} from './core.js';
 import {cap1,cardOf,imgOf,put,queue} from './app.js';
 import {itemThumb} from './draw.js';
 import {measureCloth,paperKey,paperNow,paperOf} from './measure.js';
 import {planDirty} from './today-plan.js';
 import {acts} from './act.js';
 import {lookHasPat} from './look-base.js';
+import {toast} from './toast.js';
 
 /* ---- sections: a status mark (✓ done, ! worth a look, ○ optional or not checked yet, ✦ Claude suggests), a title and a one-line summary;
    a tap on the header folds or unfolds it. Which are open is kept in memory while the app runs (CK_OPEN, by sheet and section): the item
@@ -41,10 +42,6 @@ function accRow(src,ref,it){const a=accentsOf(it);if(!a.length&&!lookHasPat(it.t
   const chip=c=>`<span class="accchip" data-c="${esc(c)}">${ckChip(c)}<span>${esc(cap1(colName(c)))}</span><button type="button" class="accx" aria-label="Remove ${esc(colName(c).toLowerCase())}" data-act="accDelTap" ${r} data-c="${esc(c)}">×</button></span>`;
   return `<div class="accrow" role="group" aria-label="Also has"><span class="acclab">Also has</span><span class="accchips">${a.map(chip).join('')}`+
     `${a.length<ACCENT_MAX?`<button type="button" class="accadd" data-act="accAddTap" ${r} aria-haspopup="dialog">+ Add a color</button>`:''}</span></div>`}
-/* the row's controls (act.js; data-s, data-k as accRow's src and ref, data-c the color: the three attributes keepFocus tells two controls
-   apart by, app.js focusFind): × and "+ Add a color" (colpick.js) */
-function accDelTap(el){accDel(el.dataset.s,el.dataset.k,el.dataset.c)}
-function accAddTap(el){openColPick(el.dataset.s,el.dataset.k,'accents')}
 /* how sure Claude was, in words */
 const ckSure=c=>c==='high'?'Claude is sure':c==='medium'?'Claude is fairly sure':c==='low'?'Claude isn’t sure':'';
 
@@ -175,9 +172,14 @@ function cmpPaper(src,it){const n=paperNow(it);if(n)return n;if(src==='q'&&it.me
 function cmpPaperLine(p,retake){if(!p)return '';
   return p.ref?`<div class="wbst ok cmpwb" role="status"><span class="ic" aria-hidden="true">✓</span><span class="tx">White paper found<small>Colors set from it.</small></span></div>`
     :`<div class="wbst no cmpwb" role="status"><span class="ic" aria-hidden="true">!</span><span class="tx">${p.warm?'No white paper, and the light looks warm<small>Colors may come out yellower than the cloth.</small>':'No white paper<small>Colors may be off.</small>'}</span>${retake||''}</div>`}
+/* (moved from add-card.js with its text unchanged, the restructure S6c) */
+function matchShadeQ(i){const q=cardOf(i);if(!q||!q.meas)return;q.shade=shadeFor(q,q.meas.lab);if(!q.shade)delete q.shade;emit('card-changed');toast(q.shade?`Swatch set ${shadeName(q.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
+async function matchShadeE(id){const it=items.find(x=>x.id===id);if(!it)return;let lab=it.meas&&it.meas.src==='closeup'?it.meas.lab:null;
+  if(!lab&&it.texture)try{const im=await imgOf(it.texture),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);lab=measureCloth(c,null,{}).lab}catch{}
+  if(!lab)return;it.shade=shadeFor(it,lab);if(!it.shade)delete it.shade;await put(it);planDirty();emit('wardrobe-changed');toast(it.shade?`Swatch set ${shadeName(it.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it): the Add card, the item sheet, the color sheet and the Look beta, classic scripts, draw their sections and the close-up comparison with
    these; CK_OPEN is also what most tests open the sections with. */
-Object.assign(globalThis,{CK_OPEN,ckIsOpen,ckSec,ckToggle,ckChip,ckColSum,accRow,ckSure,cmpDrawn,cmpHtml,cmpMount,cmpLab,cmpDiff,cmpSteps,cmpDiffText,cmpMatchHtml,cmpPaper,cmpPaperLine});
+Object.assign(globalThis,{CK_OPEN,ckIsOpen,ckSec,ckToggle,ckChip,ckColSum,accRow,ckSure,cmpDrawn,cmpHtml,cmpMount,cmpLab,cmpDiff,cmpSteps,cmpDiffText,cmpMatchHtml,cmpPaper,cmpPaperLine,matchShadeQ,matchShadeE});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,CK_OPEN};
-export {CK_OPEN,ckIsOpen,ckSec,ckToggle,ckChip,ckColSum,accRow,ckSure,cmpDrawn,cmpHtml,cmpMount,cmpLab,cmpDiff,cmpSteps,cmpDiffText,cmpMatchHtml,cmpPaper,cmpPaperLine};
-acts({ckHeadTap,accDelTap,accAddTap,cmpGoTap,cmpUndoTap});
+export {CK_OPEN,ckIsOpen,ckSec,ckToggle,ckChip,ckColSum,accRow,ckSure,cmpDrawn,cmpHtml,cmpMount,cmpLab,cmpDiff,cmpSteps,cmpDiffText,cmpMatchHtml,cmpPaper,cmpPaperLine,matchShadeQ,matchShadeE};
+acts({ckHeadTap,cmpGoTap,cmpUndoTap});

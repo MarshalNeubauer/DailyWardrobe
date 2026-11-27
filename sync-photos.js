@@ -4,6 +4,8 @@
    own server value; a shorter one (the 128 px JPEG swatch, a few KB) stays inline in the record, so an item added costs one write less.
    Strings from PH_OLD (the rule before) may still be references in records saved by an older app or worker (a PNG swatch): they are
    still matched to this device's copy and taken when downloaded. worker/backup.js has the same two numbers */
+
+import {serve} from './bus.js';
 import {SYNC_SEND_MAX} from './sync.js';
 const PH_MIN=16384,PH_OLD=256,PH_RE=/^dwph:[0-9a-f]{20}$/,PH_BATCH=40;
 const isPh=s=>typeof s==='string'&&s.length>=PH_MIN&&s.startsWith('data:');
@@ -47,3 +49,5 @@ Object.assign(globalThis,{phIn,phOut,phBatch});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,PH_MIN,isPh,phMap,phStrings};
 export {PH_MIN,isPh,phStrings,phMap,phIn,phOut,phBatch};
+/* the sockets sync.js asks (the restructure S6c: sync.js loads first and imports nothing of this file, so its 404 takes only the photos down) */
+serve('ph-in',phIn);serve('ph-batch',phBatch);serve('ph-out',phOut);

@@ -5,7 +5,8 @@
    ended (endedAnswer, inviteEnded, ENDED) to app.js (S6a, 2026-11-27: every class may import them there). Data: nothing is drawn here. Loaded right after
    srgb.js, before photo-keys.js, app.js, ui.js and every screen that asks who is connected or hears an ended invitation; account.js (the invitation link, the account box) and
    sync-status.js (the Backup line) come later. */
-import {acctBase} from './core.js';
+import {serve} from './bus.js';
+import {acctBase,isConnected} from './core.js';
 let acct={me:null,state:'',invites:null,link:null,busy:false,msg:'',at:0};   // state: '' not asked, 'wait', 'ok', 'old' (a server without accounts), 'no' (refused), 'off' (unreachable)
 /* who this device is connected as, remembered for the connection's code ({tok, role} in localStorage.acct_role), so the app
    knows it at start-up without asking the server: testers see no costs (showCost in app.js) */
@@ -28,3 +29,5 @@ Object.defineProperties(globalThis,{acct:{get:()=>acct,set:v=>{acct=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,rememberRole,get acct(){return acct},set acct(v){acct=v},acctRole,applyRole,isTester};
 export {acct,rememberRole,acctRole,isTester,applyRole,setAcct};
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('acct-role',acctRole);serve('acct-me',()=>acct.me);

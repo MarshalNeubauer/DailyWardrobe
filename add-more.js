@@ -1,7 +1,7 @@
 /* Daily Wardrobe: Add, the More section's rows (split from add.js, Round C 2026-11-17): How many, Bought on the way and its
    Arrives date (one rule with the item sheet), and checkArrivals, which puts items back in rotation once they arrive or are back. */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {emit,ask} from './bus.js';
+import {emit,ask,askFor,served,serve} from './bus.js';
 import {cardAt,cardIx,cardOf,put,queue} from './app.js';
 import {addKeep} from './add-keep.js';
 import {$,TYPES,arriveN,di,fmtDay,isoKey,items,keyDate,todayDate} from './core.js';
@@ -35,7 +35,7 @@ function setArrives(i,v){const q=cardOf(i);if(!q)return;const a=arriveVal(v);
   if(a)q.arrives=a;else delete q.arrives;emit('card-changed')}
 async function checkArrivals(){const T=di(todayDate()),done=items.filter(i=>i.paused&&arriveN(i)!=null&&T>arriveN(i));
   const cb=done.filter(i=>i.away);   // back from the cleaner's or the laundry (care.js): cleaned on the day it was due back
-  if(cb.length&&typeof careUnlock==='function')await careUnlock(null,Math.min(...cb.map(i=>+keyDate(i.away.since||isoKey(todayDate())))));   // the locks made while away let go (history.js)
+  if(cb.length&&served('care-unlock'))await askFor('care-unlock',null,Math.min(...cb.map(i=>+keyDate(i.away.since||isoKey(todayDate())))));   // the locks made while away let go (history.js)
   for(const it of done){if(it.away){it.cleaned=it.away.back||isoKey(todayDate());ask('care-log',it,it.cleaned);delete it.away}delete it.paused;delete it.order;delete it.arrives;await put(it)}
   if(done.length){planDirty();toast((cb.length===done.length?ask('care-back-text',cb):undefined)??(done.length===1?`Your ${(TYPES[done[0].type]||'item').toLowerCase()} has arrived: it's in rotation now.`:`${done.length} items have arrived: they're in rotation now.`),4000)}return done.length}
 /* what the More section's controls do (act.js; the card by its id in data-card: add-save.js cardAt, cardIx) */
@@ -51,3 +51,5 @@ Object.assign(globalThis,{orderHint,qtyOf,qtyLabel,qtyRow,orderRow,arriveVal,ARR
 globalThis.HOOK={__proto__:globalThis.HOOK||null,setArrives,setOrder,checkArrivals};
 export {orderHint,qtyOf,qtyLabel,qtyRow,orderRow,setOrder,arriveVal,ARRIVE_PAST,setArrives,checkArrivals};
 acts({cardQty,cardOrder,cardArrives});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('check-arrivals',checkArrivals);

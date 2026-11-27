@@ -8,7 +8,7 @@
    - advToggle(button), advClose(): the "Advanced" folds in Settings */
 import {on} from './bus.js';
 import {backBorrow,backOn,backReturn,backSettled} from './back.js';
-import {$,MONTH_EASE,MONTH_MS,items} from './core.js';
+import {$,MONTH_EASE,MONTH_MS,inviteOver,isConnected,items,settingsOpen} from './core.js';
 /* the person asked for less motion, or the browser can't animate (moved here from item-view.js, the restructure S3d: the pages, sheets
    and cards all ask it) */
 const noMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches||!Element.prototype.animate;
@@ -282,11 +282,6 @@ function plainErr(m){m=String(m==null?'':m);const n=netErr(m);if(n)return n;
 
 /* ---- connection ---- */
 const NEED_CONN='Needs a connection (Settings → Connection).';
-/* the stored code's invitation has ended (switched off, or the account deleted: sync-status.js inviteEnded keeps that code in invite_ended).
-   The address and code stay stored (a new link replaces them), but the app is not connected: it said "Connected", "backed up" and
-   "Photos are read automatically" while nothing worked (audit 2026-11-14) */
-const inviteOver=()=>{const t=(localStorage.getItem('app_token')||'').trim();return !!t&&localStorage.getItem('invite_ended')===t};
-const isConnected=()=>!!((localStorage.getItem('worker_url')||'').trim()&&(localStorage.getItem('app_token')||'').trim())&&!inviteOver();
 /* a button that needs the server: its row is hidden while the app is not connected -> true when it was hidden. A switched-off
    button with "Needs a connection" under it made the app look broken to someone who had not connected yet; the sections that
    only work connected say once, at their top, what connecting turns on (renderConnUI, body.nocon in styles.css). */
@@ -350,8 +345,8 @@ function connLinkKey(el,ev){if(ev.key==='Enter'){ev.preventDefault();connPaste()
 function connGoTap(){connPaste()}
 function connOffTap(){goConnect()}
 function addConnTap(){openSettings('connection');goConnect()}
-Object.assign(globalThis,{cuTouch,layerFrom,netErr,NEED_CONN,inviteOver,isConnected});
+Object.assign(globalThis,{cuTouch,layerFrom,netErr,NEED_CONN});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,closeupClose,get connBusy(){return connBusy},get connMsg(){return connMsg},set connMsg(v){connMsg=v},askAnswer,get asking(){return asking},closeupPick,get cuOpen(){return cuOpen},cuTouch,renderConnUI,NEED_CONN,askConfirm,isConnected,plainErr,tell};
-export {noMotion,asking,askAnswer,askConfirm,cuTouch,cuOpen,closeupBtn,cuGot,closeupPick,closeupClose,tell,layerFrom,layerInert,layerOpen,layerClose,netErr,plainErr,NEED_CONN,inviteOver,isConnected,needConn,connSummary,connMsg,connBusy,renderConnUI,addGate,advClose,itemGoneTell,boxUnfold,foldEdge,boxFold,revealNeed,pageScroll,monthBelow,keepInView,foldQuiet,sheetSwipe,BOX_LIFT,boxStop};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,closeupClose,get connBusy(){return connBusy},get connMsg(){return connMsg},set connMsg(v){connMsg=v},askAnswer,get asking(){return asking},closeupPick,get cuOpen(){return cuOpen},cuTouch,renderConnUI,NEED_CONN,askConfirm,plainErr,tell};
+export {noMotion,asking,askAnswer,askConfirm,cuTouch,cuOpen,closeupBtn,cuGot,closeupPick,closeupClose,tell,layerFrom,layerInert,layerOpen,layerClose,netErr,plainErr,NEED_CONN,needConn,connSummary,connMsg,connBusy,renderConnUI,addGate,advClose,itemGoneTell,boxUnfold,foldEdge,boxFold,revealNeed,pageScroll,monthBelow,keepInView,foldQuiet,sheetSwipe,BOX_LIFT,boxStop};
 acts({advTap,askNoTap,askYesTap,cuBtnTap,connOwnTap,connLinkKey,connGoTap,connOffTap,addConnTap});

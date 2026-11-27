@@ -3,11 +3,11 @@
    signals. sRGB <-> linear is srgb.js's (srgbLin8, linSrgb8). */
 /* an Add card changed (undoMeasured): add.js redraws Add on it (bus.js 'card-changed'; this file loads before add.js) */
 import {emit} from './bus.js';
-import {COLORS,TAG_Q,colsFor,dE00,hexRgb,items,labHex,labOf,patBase,phSm,primaryCol,rgbLab,texSig} from './core.js';
-import {sharpCloseOf} from './tag-request.js';
+import {COLORS,TAG_Q,colsFor,dE00,hexRgb,items,labHex,labOf,patBase,phSigOf,phSm,primaryCol,rgbLab,texSig} from './core.js';
+import {aiFields,sharpCloseOf,tagImgOf} from './tag-request.js';
 import {linSrgb8,srgbLin8} from './srgb.js';
 import {CHECK_PATS,MOTIF_PATS,STRIPE_PATS} from './detect.js';
-import {generateSwatch,queue} from './app.js';
+import {deadCanvas,generateSwatch,imgOf,queue,shrink} from './app.js';
 
 /* ---- the light reading of a picture: white-balance gains from its brightest near-neutral pixels, whether such a white
    reference is there at all, and how bright it is once corrected (for the exposure of a close-up with white paper in it) ---- */
@@ -259,11 +259,46 @@ function applyMeasured(q){if(!q||q.manual)return [];const done=[];q.auto=q.auto|
   return done}
 function undoMeasured(i,f){const q=queue[i];if(!q||!q.auto||!q.auto[f])return;const a=q.auto[f];q[f]=a.from;delete q.auto[f];q.autoUndo={...q.autoUndo,[f]:a.to};q.edited={...q.edited,[f]:true};
   if(q.texCanvas)generateSwatch(q);q.measV=colourVerdicts(q);emit('card-changed')}
-/* measure the card and take what is sure (the first tag, tagging again from the close-up, Try again) */
-function measureAndApply(q){measureCard(q);missedPattern(q);return applyMeasured(q)}
+/* (moved from item-photo.js with its text unchanged, the restructure S6c) */
+/* the photo's small copy for grids and lists (the wardrobe, stats, the piece picker): PH_SM px, kept on the item with the photo's signature
+   (photoSm, phSig) and made again whenever the photo changes (makeSmall); every redraw of the wardrobe would otherwise carry the full photos */
+const PH_SM=480;
+async function makeSmall(it){if(!it)return false;if(!it.photo){const had=!!it.photoSm;delete it.photoSm;delete it.phSig;return had}
+  const sig=phSigOf(it.photo);if(it.photoSm&&it.phSig===sig)return false;
+  try{const im=await imgOf(it.photo);let sm=it.photo;if(Math.max(im.naturalWidth,im.naturalHeight)>PH_SM){const c=shrink(im,PH_SM);if(deadCanvas(c))return false;sm=c.toDataURL('image/jpeg',.82)}   // drawn black: keep the old copy
+    it.photoSm=sm;it.phSig=sig;return true}catch{return false}}
+/* ---- white paper in the close-up (2026-11-15, the owner's choice: option A "juiced up" + screens 04-06, photo-wb-mockups): one line of help
+   under the close-up buttons with a small drawing beside it (the item's cloth with a strip of white paper along one edge and the
+   tap on it, drawn in CSS: no picture to download, both themes); the drawing opens the short tip (PAPER_CARD in kit.js). After a close-up
+   is added or replaced here, a line under the photos says whether paper was found (paperOf in measure.js), with Retake close-up. ---- */
+/* the hint as "3 tiny steps" (2026-11-15, paper-hint-proposals A, the owner's choice; it was a sentence and a "Tips for a good close-up"
+   link): "True color in 3 steps", Paper on an edge › Tap the paper › Take the photo, each with a small drawing (the owner's, at 40 px).
+   The whole card is one button that opens the short tip (paperTip; its last line opens the full guide). Also in the Add card's Step 2. */
+const PAPER_CAM='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.6"/></svg>';
+const paperSteps=cloth=>{const pic=cls=>`<span class="wbpic ${cls}" style="--cloth:${cloth}"><i></i></span>`;
+  return `<div class="wbsteps"><button type="button" class="wbstcard" data-act="paperTipTap" aria-label="True color in 3 steps: lay white paper along one edge, tap the paper on screen, take the photo. Open tips.">
+<span class="hd" aria-hidden="true"><span class="eb">True color in 3 steps</span><span class="more">Tips ›</span></span>
+<span class="ol" aria-hidden="true"><span class="li"><span class="n"><b>1</b>${pic('nobox noring')}</span>Paper on an edge</span><span class="arr">›</span>
+<span class="li"><span class="n"><b>2</b>${pic('')}<span class="tap"></span></span>Tap the paper</span><span class="arr">›</span>
+<span class="li"><span class="n"><b>3</b><span class="cam">${PAPER_CAM}</span></span>Take the photo</span></span></button></div>`};
+/* the best copy to crop from: the sharp copy kept on this device when the photo was read (tag-request.js, up to 2048px), turned as the
+   photo is now, when it shows the same picture (same shape, and alike at 24x24); else the photo itself. A crop from the kept photo
+   alone came out at the size of its piece of a 360px picture (a suit at 270px). A photo replaced, or already cropped, no longer
+   matches the sharp copy, so it is cropped from itself */
+const CROP_MATCH=12;   // the largest mean grey difference (0-255) at 24x24 that still counts as the same picture
+async function cropSource(it){const ph=await imgOf(it.photo);
+  let sharp=null;try{const u=typeof tagImgOf==='function'?await tagImgOf(it.id):null;sharp=u?await imgOf(u):null}catch{sharp=null}
+  if(!sharp||sharp.naturalWidth<=ph.naturalWidth)return ph;
+  const grey=src=>{const N=24,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');x.drawImage(src,0,0,N,N);
+    const d=x.getImageData(0,0,N,N).data,g=[];for(let k=0;k<d.length;k+=4)g.push(.3*d[k]+.59*d[k+1]+.11*d[k+2]);return g};
+  const want=grey(ph),ar=ph.naturalWidth/ph.naturalHeight;
+  for(let q=0;q<4;q++){const W=q%2?sharp.naturalHeight:sharp.naturalWidth,H=q%2?sharp.naturalWidth:sharp.naturalHeight;if(Math.abs(W/H-ar)>.02*ar)continue;
+    const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.translate(W/2,H/2);x.rotate(q*Math.PI/2);x.drawImage(sharp,-sharp.naturalWidth/2,-sharp.naturalHeight/2);
+    const g=grey(c);let s=0;for(let k=0;k<g.length;k++)s+=Math.abs(g[k]-want[k]);if(s/g.length<=CROP_MATCH)return c}
+  return ph}
 /* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals. The file has no top-level call, so the bridge is its last lines */
-Object.assign(globalThis,{wbRead,wbGains,applyWb,closeRead,paperKey,paperOf,paperNow,paperCopy,measureCloth,measKL,colRef,nearestCols,FAR_DE,MEAS_GAP,measureCard,measHint,multiCol,measureParts,BLUR_SHARP,sharpness,colourVerdicts,aiSignals,undoMeasured,measureAndApply});
+Object.assign(globalThis,{wbRead,wbGains,applyWb,closeRead,paperKey,paperOf,paperNow,paperCopy,measureCloth,measKL,colRef,nearestCols,FAR_DE,MEAS_GAP,measureCard,measHint,multiCol,measureParts,BLUR_SHARP,sharpness,colourVerdicts,aiSignals,undoMeasured,makeSmall,paperSteps,cropSource});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,AI_HIGH_FLAG,AI_LOW_AUTO,MEAS_AUTO,PAPER,applyMeasured,calibLab,urlCanvas,wbRead,aiSignals,applyWb,closeRead,colourVerdicts,measHint,measureCard,measureCloth,nearestCols,paperKey,wbGains};
-export {wbRead,wbGains,applyWb,closeRead,PAPER,paperKey,urlCanvas,paperOf,paperNow,paperCopy,measureCloth,calibLab,measKL,colRef,nearestCols,FAR_DE,MEAS_GAP,measureCard,measHint,multiCol,measureParts,BLUR_SHARP,sharpness,MEAS_AUTO,colourVerdicts,AI_LOW_AUTO,AI_HIGH_FLAG,aiSignals,applyMeasured,undoMeasured,measureAndApply};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,AI_HIGH_FLAG,AI_LOW_AUTO,MEAS_AUTO,PAPER,applyMeasured,calibLab,urlCanvas,wbRead,aiSignals,applyWb,closeRead,colourVerdicts,measHint,measureCard,measureCloth,nearestCols,paperKey,wbGains,makeSmall};
+export {wbRead,wbGains,applyWb,closeRead,PAPER,paperKey,urlCanvas,paperOf,paperNow,paperCopy,measureCloth,calibLab,measKL,colRef,nearestCols,FAR_DE,MEAS_GAP,measureCard,measHint,multiCol,measureParts,BLUR_SHARP,sharpness,MEAS_AUTO,colourVerdicts,AI_LOW_AUTO,AI_HIGH_FLAG,aiSignals,applyMeasured,undoMeasured,makeSmall,paperSteps,cropSource,PH_SM,PAPER_CAM,CROP_MATCH};

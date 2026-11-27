@@ -4,6 +4,8 @@
 import {$} from './core.js';
 import {toast} from './toast.js';
 import {cap1} from './app.js';
+import {renderToday} from './today.js';
+import {acts} from './act.js';
 const THEMES={auto:['◐','automatic'],light:['☀︎','light'],dark:['☾','dark']};
 function applyTheme(t){
   if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;else{delete document.documentElement.dataset.theme;t='auto'}

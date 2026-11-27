@@ -5,9 +5,9 @@
 import {ask,need,needFn} from './bus.js';
 import {backOn} from './back.js';
 import {PAGES,openAdd,pageBack,setPageWant,setPagesOn,show,showWanted,subBack} from './nav.js';
-import {$,applyCustom,cleanDay,cleanRecord,key,setWardrobe,settings,takeSettings,todayDate} from './core.js';
+import {$,applyCustom,cleanDay,cleanRecord,key,setWardrobe,settings,settingsOpen,takeSettings,todayDate} from './core.js';
 import {toast} from './toast.js';
-import {openSettings,picsSwitched,refreshToday,renderPicturesUI,setSetSeen,setWanted,settingsOpen} from './settings.js';
+import {openSettings,picsSwitched,refreshToday,renderPicturesUI,setSetSeen,setWanted} from './settings.js';
 import {acts} from './act.js';
 /* The bridge (tests/bridge.test.js): what index.html's last script (startUp), sync.js (onSyncedData) and the tests still use as globals */
 Object.assign(globalThis,{startUp,onSyncedData});

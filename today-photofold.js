@@ -7,7 +7,7 @@
    lifts out with the days' dip, then the space closes. A row's running animations are kept on it (el._pa). */
 import {serve} from './bus.js';
 import {$,MONTH_EASE} from './core.js';
-import {foldEdge,foldQuiet,keepInView,pageScroll,revealNeed} from './ui.js';
+import {foldEdge,foldQuiet,keepInView,noMotion,pageScroll,revealNeed} from './ui.js';
 const PIC_MS=380;
 function picStop(el){const a=el._pa;el._pa=null;if(!a)return;for(const x of a.list)x.cancel();if(a.end)a.end()}
 /* what lies below el on Today (top at or under `bottom`), and the cards el sits in */

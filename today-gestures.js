@@ -4,23 +4,25 @@
 /* fast swipes one after another (audit 2026-11-14: five quick swipes moved three days): a swipe made while the last one's fly-out is still
    running is added to it (fly.n), and the day is drawn only once no finger is down: drawing Today removes the element a touch started on,
    and the browser then stops sending that touch's moves and its end, so the swipe under way was lost */
+import {askFor,served,serve} from './bus.js';
 import {foldAll,planWith,renderToday,stepDay} from './today.js';
 import {picker} from './history.js';
-import {$,dayRecs,keyDate} from './core.js';
+import {$,dayRecs,keyDate,settingsOpen} from './core.js';
 import {monthDrag,monthPanel,monthRelease,mvSig,stackSVG} from './month.js';
 import {hasOutfit,planDirty,planFor,planMonth} from './today-plan.js';
 import {idsOf,saveDay} from './days.js';
 import {toast} from './toast.js';
+import {noMotion} from './ui.js';
 const fly={n:0,t:null,wait:false,from:0};
 function flyGo(){clearTimeout(fly.t);fly.t=null;fly.wait=false;const n=fly.n;fly.n=0;if(n)stepDay(Math.sign(n),fly.from,Math.abs(n));todayFree()}
 /* a layer over Today: Settings, the piece picker, What to buy, or anything that makes main inert (a sheet, a question) */
-const todayCovered=()=>!!((typeof settingsOpen==='function'&&settingsOpen())||picker||(typeof shopOpen!=='undefined'&&shopOpen)||document.querySelector('main[inert]'));
+const todayCovered=()=>!!((typeof settingsOpen==='function'&&settingsOpen())||picker||askFor('shop-open')||document.querySelector('main[inert]'));
 /* a finger is on Today (a swipe under way, a month cell held or moved) or a swipe's fly-out is still to be drawn: a sync's redraw waits
    (sync.js syncRedraw, syncLater; CR-4-11), as drawing Today removes the element the touch started on and the gesture stops */
 let todayTouch=()=>false;
 const todayBusy=()=>!!(todayTouch()||outfitMove||fly.t||fly.wait);
 /* the gesture ended: a sync's redraw that waited runs now */
-const todayFree=()=>{if(!todayBusy()&&typeof syncLaterRun==='function')setTimeout(()=>{if(!todayBusy())syncLaterRun('today')},0)};
+const todayFree=()=>{if(!todayBusy()&&served('sync-later-run'))setTimeout(()=>{if(!todayBusy())askFor('sync-later-run','today')},0)};
 (()=>{const el=$('#today');let st=null;todayTouch=()=>!!st;
   const slide=()=>$('#slide');
   el.addEventListener('touchstart',e=>{
@@ -29,7 +31,7 @@ const todayFree=()=>{if(!todayBusy()&&typeof syncLaterRun==='function')setTimeou
     // the gesture can start anywhere on Today (e.g. a Saturday shows only a one-line message); only the outfit moves
     // nor while the picture is zoomed: then a drag on it pans the picture
     // inside the open month a sideways drag changes the month instead (the day stays)
-    st=e.touches.length>1||t.clientX<24||t.clientX>innerWidth-24||(zoom&&e.target.closest('#mannequin-container'))?null:{x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0,month:!!e.target.closest('#mpanel-in')};
+    st=e.touches.length>1||t.clientX<24||t.clientX>innerWidth-24||(askFor('zoomed')&&e.target.closest('#mannequin-container'))?null:{x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0,month:!!e.target.closest('#mpanel-in')};
   },{passive:true});
   el.addEventListener('touchmove',e=>{
     if(outfitMove)st=null;if(!st)return;const t=e.touches[0],dx=t.clientX-st.x,dy=t.clientY-st.y;
@@ -136,3 +138,5 @@ Object.assign(globalThis,{todayBusy});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,moveRecs,get outfitMove(){return outfitMove}};
 export {todayBusy,outfitMove,moveRecs};
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('today-busy',todayBusy);

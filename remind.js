@@ -7,8 +7,8 @@
    switch follows the morning reminder's until it is set by itself (remindPrefs().care: undefined = as the morning reminder).
    Needs the connection, a phone that can receive Web Push (on an iPhone: the app on the Home Screen, iOS 16.4 or later) and the
    VAPID keys on the server. The choice is this phone's own (localStorage.remind {on, care, time}); each phone subscribes for itself. */
-import {on} from './bus.js';
-import {acctBase,acctCall,acctEsc,iosInSafari,isWorkday,isoKey,key,sentence,todayDate} from './core.js';
+import {on,askFor,serve} from './bus.js';
+import {acctBase,acctCall,acctEsc,homeShareShort,iosInSafari,isWorkday,isoKey,key,sentence,todayDate} from './core.js';
 import {piecesLine} from './month.js';
 import {planMonth} from './today-plan.js';
 import {settingsPart} from './settings.js';
@@ -31,7 +31,7 @@ function remindLines(){const out={},T=todayDate();
 /* keep both kinds where the service worker reads them (only the kinds switched on) -> the dates a push is wanted on */
 async function remindKeep(p=remindPrefs()){const lines=p.on?remindLines():{};
   // (a cleaning reminder that throws must not stop the outfit lines from being kept and sent: Round D, after the code review's R3 N2)
-  let care={};if(remindCareOn(p)){try{care=careReminders(REMIND_DAYS,p.time)}catch(e){console.warn('cleaning reminders',e)}}
+  let care={};if(remindCareOn(p)){try{care=askFor('care-reminders',REMIND_DAYS,p.time)??{}}catch(e){console.warn('cleaning reminders',e)}}
   try{if(self.caches){const c=await caches.open(REMIND_CACHE),put=(u,o)=>c.put(u,new Response(JSON.stringify(o),{headers:{'content-type':'application/json'}}));await put(REMIND_URL,lines);await put(CARE_URL,care)}}catch(e){console.warn('reminder lines',e)}
   return [...new Set([...Object.keys(lines),...Object.keys(care)])].sort()}
 async function remindCall(body){const r=await acctCall('push',{method:'POST',body:JSON.stringify(body)});if(r.status!==200)throw new Error(r.j&&r.j.message||'The reminder couldn’t be set. Try again.');return r.j}
@@ -110,3 +110,5 @@ function remindSwTap(el){if(el.getAttribute('aria-checked')==='true')remindOff()
 function careRemSwTap(el){if(el.getAttribute('aria-checked')==='true')careRemindOff();else careRemindOn()}
 function remindTimePick(el){remindTime(el.value)}
 acts({remindSwTap,careRemSwTap,remindTimePick});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('remind-soon',remindSoon);

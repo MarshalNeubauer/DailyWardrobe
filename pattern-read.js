@@ -1,16 +1,22 @@
 /* Daily Wardrobe: photo tagging, pattern readings (split from tagging.js, Round B CR-2-17): the full pattern (sett) from the pixels, Claude's
    reading (POST /pattern) coloured from the pixels, motifs, a dress shirt's weave texture and camouflage. */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {emit,serve} from './bus.js';
+import {emit,serve,askFor} from './bus.js';
 import {CAMO_TR,CHECK_PATS,MOTIF_PATS,STRIPE_PATS,TEXTURE_PATS,settFromCanvas,texPat,tieWeave} from './detect.js';
-import {FABRIC,PATS_BY,camoPat,dE00,hexRgb,items,labHex,patBase,patName,rgbLab} from './core.js';
-import {BLUR_SHARP,applyWb,closeRead,measureAndApply,sharpness,wbRead} from './measure.js';
+import {FABRIC,PATS_BY,camoPat,dE00,hexRgb,inviteOver,items,labHex,patBase,patName,rgbLab,settingsOpen} from './core.js';
+import {BLUR_SHARP,applyMeasured,applyWb,closeRead,measureCard,sharpness,wbRead} from './measure.js';
 import {linSrgb8,srgbLin8} from './srgb.js';
 import {cardAt,cardIx,imgOf,put,queue} from './app.js';
 import {esc} from './photo-keys.js';
 import {sharpCloseOf,tagImgOf} from './tag-request.js';
 import {planDirty} from './today-plan.js';
+import {closeTagImg,readBegin,readEnd} from './add-ids.js';
+import {toast} from './toast.js';
+import {acts} from './act.js';
 
+/* (moved from measure.js with its text unchanged, the restructure S6c) */
+/* measure the card and take what is sure (the first tag, tagging again from the close-up, Try again) */
+function measureAndApply(q){measureCard(q);missedPattern(q);return applyMeasured(q)}
 /* ---- the full pattern (detect.js analyzeSett): read in colour from the sharp item photo (Claude's patternBox: the largest
    area that is all patterned cloth), else from the close-up, else from Claude's own reading (weave.colours). Claude's
    weave also gives the direction (for a close-up, whose angle says nothing), the repeats across the item (the drawing's
@@ -18,7 +24,7 @@ import {planDirty} from './today-plan.js';
 /* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals. The functions are handed over here, above the next line, which reads other files' lists while loading and throws when
    they did not load (a classic script kept its functions then); the consts, declared further down, above acts({…}) */
-Object.assign(globalThis,{readSett,missedPattern,settNote,rereadSett,settFromSpec,readPatternWithClaude});
+Object.assign(globalThis,{readSett,missedPattern,settNote,rereadSett,settFromSpec,readPatternWithClaude,measureAndApply});
 const SETT_PATS={tie:[...STRIPE_PATS,...CHECK_PATS,'tonal-check','other',...MOTIF_PATS],shirt:[...STRIPE_PATS,...CHECK_PATS,'other',...TEXTURE_PATS],suit:[...STRIPE_PATS,...CHECK_PATS],blazer:[...STRIPE_PATS,...CHECK_PATS],pants:[...STRIPE_PATS,...CHECK_PATS]};
 const settable=(type,pat,weave)=>{const p=patBase(pat)||'solid';return p!=='solid'&&((SETT_PATS[type]||[]).includes(p)||!!(weave&&weave.layout&&FABRIC.includes(type)))};
 const DIR_ANG={'upper-left to lower-right':-45,'lower-left to upper-right':45,vertical:0,horizontal:90};
@@ -66,7 +72,7 @@ const readable=(t,p,w)=>settable(t,p,w)||claudeOnly(t,p);
 /* Claude's reading drawn with the photo's colours: bands (stripes, checks, plaids) or a motif (small figures on a grid) */
 /* an answer of a shape it can't draw (2026-11-16: across without bands threw, and the Add card's Confirm stayed off) gives null: the
    pixel reader takes over, as when Claude sent nothing */
-const specSett=(spec,args)=>{try{return specSett1(spec,args)}catch(e){console.warn('pattern answer not drawn',e);errNote(e,'Pattern answer not drawn ('+(args&&args.type||'?')+', '+(spec&&(spec.texture?'texture':spec.motif?'motif':spec.across?'bands':spec.layout)||'?')+')');return null}};
+const specSett=(spec,args)=>{try{return specSett1(spec,args)}catch(e){console.warn('pattern answer not drawn',e);askFor('err-note',e,'Pattern answer not drawn ('+(args&&args.type||'?')+', '+(spec&&(spec.texture?'texture':spec.motif?'motif':spec.across?'bands':spec.layout)||'?')+')');return null}};
 const specSett1=(spec,args)=>spec&&(spec.camo?camoFromSpec(spec,args):spec.texture?(args.type==='shirt'||args.type==='tie'?texFromSpec(spec,args):null):spec.motif?motifFromSpec(spec,args):spec.across?settFromSpec(spec,args):null);
 function readSett(q){const ok=!q.settOff&&readable(q.type,q.pattern,q.weave)&&q.raw,args={full:q.raw&&q.raw.full,box:q.patternBox,tex:q.raw&&q.raw.tex,wb:q.wbOff?null:q.wb,type:q.type};q.settReject=null;
   let s=null;if(ok&&q.spec)s=specSett(q.spec,args);
@@ -113,7 +119,7 @@ async function rereadSett(id){const it=items.find(x=>x.id===id);if(!it)return;
   if(!chk.s){toast(spec===null&&patternFail?'Claude couldn’t read the pattern right now (the server had a problem). Try again later.':'No clear pattern found. Add a fabric close-up (or a sharper photo) and try again.',6000);return}
   // drawn again at once, the open sheet included (it shows the reading); with Settings opened while Claude read it waits for Settings to
   // close (renderWardrobe closes Settings: the 2026-11-24 review's R1 N1)
-  it.sett=chk.s;delete it.stripes;await put(it);planDirty();if(settingsOpen())syncRedraw('wardrobe');else emit('wardrobe-changed');toast(`Pattern read: ${settSummary(s)}.`)}
+  it.sett=chk.s;delete it.stripes;await put(it);planDirty();if(settingsOpen())askFor('sync-redraw','wardrobe');else emit('wardrobe-changed');toast(`Pattern read: ${settSummary(s)}.`)}
 
 /* ---- the pattern read by Claude (worker POST /pattern) and coloured from the pixels. The pixel reader alone is thrown by the
    noise in a photo (a seam, moire, panes made uneven by drape); Claude reports the pattern as woven: every band of a repeat each
@@ -127,7 +133,7 @@ let patternFail=false;
 async function claudePattern({image,closeup,type,wb,signal}){const w=localStorage.getItem('worker_url');patternFail=false;if(!w||!image||inviteOver())return null;
   try{const r=await fetch(new URL('pattern',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},
       body:JSON.stringify({image,...(closeup?{closeup}:{}),type,...(typeof wb==='boolean'?{wb}:{})}),...(signal?{signal}:{})});   // wb: both pictures white-balanced (worker.js); signal: Skip or a newer close-up calls it off (readBegin)
-    const j=await r.json().catch(()=>({}));if(r.status>=500||r.status===401||r.status===403)patternFail=true;if(r.status===429&&j.message)limitNote(j.message);   // today's limit on pattern readings: say so (the pixel reader takes over)
+    const j=await r.json().catch(()=>({}));if(r.status>=500||r.status===401||r.status===403)patternFail=true;if(r.status===429&&j.message)askFor('limit-note',j.message);   // today's limit on pattern readings: say so (the pixel reader takes over)
     // any of the four answers (a camouflage has only camo: CR-2-01, it was paid for and dropped)
     return r.ok&&(j.across||j.motif||j.texture||j.camo)&&j.layout!=='none'?j:null}catch(e){if(!(e&&e.name==='AbortError'))patternFail=true;return null}}
 function sampleLabs(c){const x=c.getContext('2d',{willReadFrequently:true}),d=x.getImageData(0,0,c.width,c.height).data,st=Math.max(1,Math.round(c.width*c.height/120000)),out=[];
@@ -180,13 +186,13 @@ function settFromSpec(spec,{tex,full,box,wb,type}){
 async function readPatternWithClaude(q){if(!q||!queue.includes(q)||!q.raw||!q.raw.tex||!q.tagImg||!readable(q.type,q.pattern,q.weave)||!localStorage.getItem('worker_url'))return;   // a card saved or skipped meanwhile: no paid call
   const me=readBegin(q,'pattern');q.patternReading=1;emit('card-changed');let spec=null;
   try{const closeup=await closeTagImg(q);if(!queue.includes(q)){readEnd(q,'pattern',me);q.patternReading=0;return}
-    spec=await claudePattern({image:q.tagImg,closeup,type:q.type,wb:!!(q.wb&&!q.wbOff),...(me.ac?{signal:me.ac.signal}:{})})}catch(e){console.warn('pattern reading failed',e);errNote(e,'Pattern reading')}   // wb: one flag for both pictures (the close-up takes the photo's correction, or its own paper's)
+    spec=await claudePattern({image:q.tagImg,closeup,type:q.type,wb:!!(q.wb&&!q.wbOff),...(me.ac?{signal:me.ac.signal}:{})})}catch(e){console.warn('pattern reading failed',e);askFor('err-note',e,'Pattern reading')}   // wb: one flag for both pictures (the close-up takes the photo's correction, or its own paper's)
   if(!readEnd(q,'pattern',me))return;   // called off (a newer close-up, Skip): its answer is not used
   q.patternReading=0;
   // the card is drawn again however the answer goes (a step that threw here left Confirm switched off: refineFromCloseup)
   try{if(spec){q.spec=spec;if(spec.description)q.weave={...(q.weave||{}),description:spec.description}}else q.specFailed=1;
-    readSett(q);if(q.meas)measureAndApply(q)}catch(e){console.warn('pattern answer not applied',e);q.specFailed=1;errNote(e,'Pattern answer not applied ('+q.type+')')}
-  finally{if(queue.includes(q)){emit('card-changed');addKeep()}}}
+    readSett(q);if(q.meas)measureAndApply(q)}catch(e){console.warn('pattern answer not applied',e);q.specFailed=1;askFor('err-note',e,'Pattern answer not applied ('+q.type+')')}
+  finally{if(queue.includes(q)){emit('card-changed');askFor('add-keep')}}}
 
 /* ---- camouflage (2026-11-16, the owner's MultiCam pants): irregular blotches, no grid to read. Its colours come from the pixels: the
    close-up (else the pattern's box in the photo, else the photo's middle) sampled at about CAMO_SAMPLE px and clustered in Lab (k-means,
@@ -282,5 +288,5 @@ Object.assign(globalThis,{settable,claudeOnly,readable,settSummary,TEX_WORDS});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 serve('pattern-readable',readable);serve('pattern-reread',rereadSett);   // (the restructure S6p: the painter, asm-cm-job.js asmCmRoute and asm-cm-page.js Read N patterns, may not import this file)
 globalThis.HOOK={__proto__:globalThis.HOOK||null,camoFromPixels,claudePattern,motifFromSpec,motifPat,settCheck,settFrom,specSett,texContrast,texFromSpec,readable,claudeOnly,missedPattern,readPatternWithClaude,readSett,rereadSett,settFromSpec,settSummary,settable};
-export {settable,motifPat,claudeOnly,readable,specSett,settSummary,TEX_WORDS,settFrom,readSett,settCheck,missedPattern,settNote,rereadSett,claudePattern,settFromSpec,readPatternWithClaude,camoFromPixels,motifFromSpec,texContrast,texFromSpec};
+export {settable,motifPat,claudeOnly,readable,specSett,settSummary,TEX_WORDS,settFrom,readSett,settCheck,missedPattern,settNote,rereadSett,claudePattern,settFromSpec,readPatternWithClaude,camoFromPixels,motifFromSpec,texContrast,texFromSpec,measureAndApply};
 acts({settTap});

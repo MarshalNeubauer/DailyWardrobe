@@ -9,7 +9,7 @@
      one: the Care page shows them as one line with "All washed today".
    - the Care page (#care, from Settings), a quiet tag in the Wardrobe grid and one line on Today when today's wear reaches the limit.
    The shirt rule (settings.laundryDays) is in planner.js outfit(). */
-import {on,emit,serve} from './bus.js';
+import {on,emit,serve,askFor} from './bus.js';
 import {$,CARE_ABLE,CARE_MAX,TYPES,careLimit,careTimes,careWashed,careWord,dayRecs,fmtDay,isWorkday,isoKey,items,key,keyDate,nameHtml,sentence,settings,shortDesc,todayDate} from './core.js';
 import {cache,planDirty,planFor,planMonth} from './today-plan.js';
 import {esc} from './photo-keys.js';
@@ -28,7 +28,7 @@ const careNoun=i=>i.type==='pants'?'pants':(TYPES[i.type]||'item').toLowerCase()
 const careName=i=>`${TYPES[i.type]||'Item'}: ${String(i.name||'').trim()?nameHtml(String(i.name).trim()):sentence(shortDesc(i)||careNoun(i))}`;
 /* wears since cleaning for every item: {id: count}. Kept on the plan cache, which is dropped whenever items, days or settings change */
 function careCounts(){if(cache.careW)return cache.careW;const w={},by=Object.fromEntries(items.map(i=>[i.id,i]));
-  for(const r of wornDays()){const k=isoKey(r.d);
+  for(const r of askFor('worn-days')){const k=isoKey(r.d);
     for(const id of new Set(Object.values(r.ids))){const i=id&&by[id];if(!i||(i.cleaned&&k<=i.cleaned))continue;w[id]=(w[id]||0)+1}}
   return cache.careW=w}
 /* where a piece stands: wears, its type's limit, and due (at the limit) / near (one wear short, for limits of 3 and more).
@@ -55,7 +55,7 @@ function careCard(i){if(!CARE_ABLE.includes(i.type)||i.order)return '';
     :`<div class="btns">${i.paused?'':first.map(w=>`<button type="button" class="caresend" data-why="${w}" data-act="careSendTap" data-id="${esc(id)}">${lab[w]}</button>`).join('')}${s.wears?`<button type="button" class="caredone" data-act="careDoneTap" data-id="${esc(id)}">${careWashed(i.type)?'Washed':'Cleaned'} today</button>`:''}</div>`;
   return `<section class="card ivsec ivcare" id="ivcare"><h3>Care</h3><p class="shelp carecount${s.due?' due':''}">${careWornLine(i)}${s.due?' · due now':''}</p>${body}</section>`}
 /* redraw whichever page the change was made on */
-function careRedraw(){remindSoon();/* the cleaning reminders follow a piece sent away or cleaned */careSum();const c=$('#sc-laundry');if(c&&c.classList.contains('open'))renderCare();else if($('#wardrobe')&&!$('#wardrobe').hidden)emit('wardrobe-changed');else if($('#today')&&!$('#today').hidden)refreshToday()}
+function careRedraw(){askFor('remind-soon');/* the cleaning reminders follow a piece sent away or cleaned */careSum();const c=$('#sc-laundry');if(c&&c.classList.contains('open'))renderCare();else if($('#wardrobe')&&!$('#wardrobe').hidden)emit('wardrobe-changed');else if($('#today')&&!$('#today').hidden)refreshToday()}
 /* upcoming days the piece was pinned to (a swap, a hand pick) let go of it, as when it is taken out of rotation: they are planned again */
 async function careRelease(id){const T=todayDate();let n=0;
   for(const r of Object.values(dayRecs)){const d=keyDate(r.date);if(d<T||r.worn===true||!r.force)continue;const f={...r.force};let hit=false;
@@ -66,15 +66,15 @@ async function careRelease(id){const T=todayDate();let n=0;
 async function careSend(id,why,back){const it=items.find(x=>x.id===id);if(!it||it.away||it.paused||!CARE_ABLE.includes(it.type))return;
   const ok=/^\d{4}-\d{2}-\d{2}$/.test(back||'');
   it.away={why:why==='laundry'?'laundry':'cleaner',since:isoKey(todayDate()),back:ok?back:null};it.paused=true;if(ok)it.arrives=back;else delete it.arrives;
-  await careRelease(id);await careUnlock(id);await put(it);planDirty();careRedraw();   // (the week planned again around it: history.js)
+  await careRelease(id);await askFor('care-unlock',id);await put(it);planDirty();careRedraw();   // (the week planned again around it: history.js)
   toast(it.away.why==='laundry'?'In the laundry.':'At the cleaner\'s.',5000,{label:'Undo',fn:()=>careUnsend(id)})}
 async function careUnsend(id){const it=items.find(x=>x.id===id);if(!it||!it.away)return;delete it.away;delete it.paused;delete it.arrives;await put(it);planDirty();careRedraw()}
 /* the day it is back (empty = no date: it waits for "It's back") */
 async function careSetBack(id,v){const it=items.find(x=>x.id===id);if(!it||!it.away)return;const ok=/^\d{4}-\d{2}-\d{2}$/.test(v||'');
-  it.away={...it.away,back:ok?v:null};if(ok)it.arrives=v;else delete it.arrives;await put(it);planDirty();await checkArrivals();careRedraw()}
+  it.away={...it.away,back:ok?v:null};if(ok)it.arrives=v;else delete it.arrives;await put(it);planDirty();await askFor('check-arrivals');careRedraw()}
 /* it is back: in rotation again, cleaned today */
 async function careBack(id){const it=items.find(x=>x.id===id);if(!it||!it.away)return;
-  await careUnlock(null,+keyDate(it.away.since||isoKey(todayDate())));   // the locks made while it was away let go (history.js)
+  await askFor('care-unlock',null,+keyDate(it.away.since||isoKey(todayDate())));   // the locks made while it was away let go (history.js)
   it.cleaned=isoKey(todayDate());careLog(it,it.cleaned);delete it.away;delete it.paused;delete it.arrives;await put(it);planDirty();careRedraw();toast('Back in rotation, freshly cleaned.')}
 /* cleaned without being sent away: the count starts again */
 async function careCleaned(id){const it=items.find(x=>x.id===id);if(!it)return;const was=it.cleaned,log=it.cleans;
@@ -96,7 +96,7 @@ function careSum(){const s=$('#sum-laundry');if(!s)return;if(!items.length){s.te
   s.textContent=p.length?cap1(p.join(' · ')):'Nothing is due'}
 function renderCare(){const el=$('#care-in');if(!el)return;careSum();const head='';
   if(!items.length){el.innerHTML='<p class="mut empty">Your wardrobe is empty.</p>';return}
-  const L=careLists(),pic=i=>statPic(i);
+  const L=careLists(),pic=i=>askFor('stat-pic',i)??'';
   const row=(x,btns)=>`<div class="care-row" id="care-${x.id}">${pic(x)}<div class="care-main"><span class="cap care-nm">${careName(x)}</span><small class="mut">${x.away?careTag(x)+' · since '+fmtDay(x.away.since):careWornLine(x)}</small></div><div class="care-acts">${btns}</div></div>`;
   const sendBtns=x=>{const w=careWashed(x.type)?'laundry':'cleaner';return `<button type="button" class="caresend" data-act="careSendTap" data-id="${esc(x.id)}" data-why="${w}">${w==='laundry'?'In the laundry':'Send to the cleaner'}</button><button type="button" class="caredone" data-act="careDoneTap" data-id="${esc(x.id)}">${careWashed(x.type)?'Washed':'Cleaned'} today</button>`};
   const card=(id,title,sub,rows)=>`<section class="card care-card" id="${esc(id)}"><h3>${title}</h3>${sub?`<p class="shelp">${sub}</p>`:''}${rows}</section>`;
@@ -203,7 +203,7 @@ function renderCareUI(){const el=$('#care-limits');
     s.innerHTML=opts.map(n=>`<option value="${n}"${n===d?' selected':''}>${n?`${n} day${n===1?'':'s'}`:'Not at all'}</option>`).join('')}
   const sum=$('#sum-care');if(sum){const lim=t=>{const v=careLimit(t);return v?`${CARE_PLURAL[t].toLowerCase()} after ${v} wear${v===1?'':'s'}`:''},parts=[lim('suit'),lim('blazer')].filter(Boolean);
     const d=laundryDays();sum.textContent=cap1((parts.length?parts.join(', '):'no wear limits')+` · ${d?'a worn shirt waits '+d+' day'+(d===1?'':'s'):'worn shirts aren’t held back'}`)}
-  if(typeof cpwSettingsUI==='function')cpwSettingsUI()}   // the currency and what a cleaning costs (cost.js)
+  askFor('cpw-settings-ui')}   // the currency and what a cleaning costs (cost.js)
 async function setCareLimit(t,v){if(!CARE_TYPES.includes(t))return;settings.care={...(settings.care||{}),[t]:Math.max(0,Math.min(CARE_MAX,Math.round(+v)||0))};await saveUserSettings();todayDirty();renderCareUI()}
 /* the shirt rule changes the plan: the days shown for the coming week are planned again with it */
 async function setLaundryDays(v){settings.laundryDays=Math.max(0,Math.min(14,Math.round(+v)||0));await clearLocks();await saveUserSettings();todayDirty();renderCareUI()}
@@ -234,3 +234,5 @@ on('settings-category',k=>{if(k==='laundry')renderCare()});   // Laundry & clean
 globalThis.HOOK={__proto__:globalThis.HOOK||null,careBack,careCleaned,careCounts,careDayState,careLists,careName,careSend,openCare,renderCare,careBadge,careReminders,careState};
 export {careName,careCounts,careState,careTag,careBadge,careBackText,careLog,careCard,careSend,careBack,careCleaned,careLists,renderCare,openCare,careNote,careDayState,careFrame,careBandSoon,careReminders,renderCareUI};
 acts({laundryPick,careSendTap,careDoneTap,careBackDate,careBackTap,careTypeDone,careLimitsTap,careLimitPick,careDueTap,careBandTap,careBandKey});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('care-band-soon',careBandSoon);serve('care-state',careState);serve('care-card',careCard);serve('care-reminders',careReminders);

@@ -4,11 +4,11 @@
    (outfit: without jackets every workday is a shirt and trousers, without ties none is picked; a formal day, a wedding
    or a funeral is still dressed in full from what is owned). This file holds the Settings switches and the one-time
    change of the waistcoat default. */
-import {on,serve} from './bus.js';
+import {on,askFor,serve} from './bus.js';
 import {$,items,settings,syncUrl,wearsJacket,wearsTie} from './core.js';
 import {saveUserSettings,settingsSummaries,todayDirty} from './settings.js';
 import {planDirty} from './today-plan.js';
-import {shoeSuits} from './planner.js';
+import {shoeSuits,shoesWhyUnused} from './planner.js';
 import {metaPut,put,tx} from './app.js';
 import {acts} from './act.js';
 import {clearLocks} from './days.js';
@@ -62,7 +62,7 @@ async function migrateVests(synced){
   const old=((await tx('readonly',s=>s.getAll()))||[]).filter(legacyVest);if(!old.length||settings.vestDef||vestMigrating)return 0;
   if(!synced&&syncUrl()&&localStorage.getItem('app_token')){
     // wait for a sync that went through; it calls back here (dressSynced) only if it changed something, so ask again after it
-    vestMigrating=true;let ok=false;try{ok=await syncNow()}catch(e){}vestMigrating=false;
+    vestMigrating=true;let ok=false;try{ok=await askFor('sync-now')}catch(e){}vestMigrating=false;
     return ok&&!settings.vestDef?migrateVests(true):0}
   vestMigrating=true;
   try{for(const r of old){const i=items.find(x=>x.id===r.id)||r;i.vest='yes';await put(i)}
@@ -76,8 +76,7 @@ function dressNewItem(){if(settings.vestDef||vestMigrating||items.some(legacyVes
 function dressSynced(m){
   if(m&&m.settings){if(!m.settings.vestDef)delete settings.vestDef;if(!m.settings.dress)delete settings.dress}
   if(!vestMigrating)migrateVests(true);
-  if(m&&(m.items||[]).some(matRenameTo))matMigrate();
-  if(m&&(m.items||[]).some(sockLegacy))sockToeMigrate()}   // a sock from an older app: its toe cap to toeColor (wardrobe.js)   // a shirt still "nylon/spandex" or "nylon" from another device (wardrobe.js)
+  askFor('ward-synced',m)}   // a sock from an older app: its toe cap to toeColor (wardrobe.js)   // a shirt still "nylon/spandex" or "nylon" from another device (wardrobe.js)
 /* a dress-code switch (act.js; which one in data-k): a tap turns it the other way from what it shows */
 function dressSwTap(el){setDress(el.dataset.k,el.getAttribute('aria-checked')!=='true')}
 /* An ES module (2026-11-23): its names are its own, and this is what the other scripts and the tests still use as globals (the bridge;
@@ -91,4 +90,6 @@ on('settings-summaries',S=>{S.dress=dressSummary});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get vestMigrating(){return vestMigrating},dressSynced,migrateVests,newSuitVest};
 export {renderDressUI,newSuitVest,dressSummary,dressWhyUnused,vestMigrating,migrateVests,dressNewItem,dressSynced};
 acts({dressSwTap});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('new-suit-vest',newSuitVest);serve('dress-new-item',dressNewItem);
 serve('dress-why-unused',dressWhyUnused);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)

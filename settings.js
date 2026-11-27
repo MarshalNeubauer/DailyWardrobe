@@ -9,8 +9,8 @@
    answers a file asked for under another folder with the root's copy, so an import resolved against the root ran the file a second
    time; bus.js keeps nothing on the page, so a second copy of it is harmless). Everything else it still reads as globals. */
 import {on,heard,emit,ask,served,serve,need,needFn} from './bus.js';
-import {$,DAY_NAMES,MATERIALS_BY,applyCustom,dayRecs,isoKey,key,keyDate,keySettings,mergeSettings,nowMs,occOf,ownMats,setWardrobe,settings,stampSettings,todayDate,wearsJacket,wearsTie} from './core.js';
-import {inviteOver,layerClose,layerOpen,tell} from './ui.js';
+import {$,DAY_NAMES,MATERIALS_BY,applyCustom,dayRecs,inviteOver,isoKey,key,keyDate,keySettings,mergeSettings,nowMs,occOf,ownMats,setWardrobe,settings,settingsOpen,stampSettings,todayDate,wearsJacket,wearsTie} from './core.js';
+import {layerClose,layerOpen,tell} from './ui.js';
 import {backDrop,backKind,backPush} from './back.js';
 import {pagesOn,subShown} from './nav.js';
 import {toast} from './toast.js';
@@ -101,7 +101,6 @@ let todayStale=false;   // a change made in Settings that Today should show once
 /* the one writer of todayStale (Round B, CR-7-07: it was set from 8 files); todayDirty(false) when Today was just drawn (the setup) */
 function todayDirty(stale=true){todayStale=stale}
 let viewStale=null;   // the Wardrobe or stats page, when a sync brought changes while Settings was open (syncRedraw): redrawn once it closes
-const settingsOpen=()=>!!$('#settings-modal')&&$('#settings-modal').style.display==='block';
 /* a redraw from work done in the background (photos arriving, the weather, the plan rules check at start-up): while Settings is open
    it waits for Settings to close (todayStale), since drawing Today closes Settings, which snapped shut when opened right after launch */
 function refreshToday(){if(settingsOpen()){todayDirty();return}need('today-draw')}
@@ -217,12 +216,12 @@ function setSetSeen(v){setSeen=v}
 function setViewStale(v){viewStale=v}
 /* The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above acts({…}),
    the file's only top-level call that can throw: without act.js its names are still the page's */
-Object.assign(globalThis,{SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayDirty,settingsOpen,refreshToday,closeSettings,saveSettings,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,picsSwitched,setVestMode,toggleDay,setWanted,setSetSeen,setViewStale});
+Object.assign(globalThis,{SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayDirty,refreshToday,closeSettings,saveSettings,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,picsSwitched,setVestMode,toggleDay,setWanted,setSetSeen,setViewStale});
 Object.defineProperties(globalThis,{viewStale:{get:()=>viewStale,set:v=>{viewStale=v}},setSeen:{get:()=>setSeen,set:v=>{setSeen=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 serve('refresh-today',refreshToday);   // (the restructure S6p: the painter, asm-today.js and asm-cm-page.js, redraws Today when a picture is ready; it loads before this file)
-globalThis.HOOK={__proto__:globalThis.HOOK||null,SET_CATS,saveSettings,setCatOpen,setDarkShirts,setOpenTap,get setOther(){return setOther},setPictures,get todayStale(){return todayStale},backupSummary,toggleDay,settingsSummaries,closeSettings,openSettings,refreshToday,renderSettingsExtras,saveUserSettings,settingsOpen,showCost,toggleCat};
-export {SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayStale,todayDirty,viewStale,settingsOpen,refreshToday,closeSettings,saveSettings,setSeen,setOther,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,setPictures,picsSwitched,setVestMode,setDarkShirts,toggleDay,setWanted,setOpenTap,setSetSeen,setViewStale};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,SET_CATS,saveSettings,setCatOpen,setDarkShirts,setOpenTap,get setOther(){return setOther},setPictures,get todayStale(){return todayStale},backupSummary,toggleDay,settingsSummaries,closeSettings,openSettings,refreshToday,renderSettingsExtras,saveUserSettings,showCost,toggleCat};
+export {SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayStale,todayDirty,viewStale,refreshToday,closeSettings,saveSettings,setSeen,setOther,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,setPictures,picsSwitched,setVestMode,setDarkShirts,toggleDay,setWanted,setOpenTap,setSetSeen,setViewStale};
 /* the notice board (bus.js): what Settings does when the router announces it (nav.js no longer names this file; the restructure S3f) */
 on('page-showing',()=>closeSettings());   // another page is shown: Settings closes
 on('page-back',()=>{if(settingsOpen())saveSettings()});   // the phone's Back with no page over Settings: what Done does
