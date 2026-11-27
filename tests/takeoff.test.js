@@ -237,9 +237,9 @@ const offpins=async({ok,chromium,url,WARDROBES})=>{
   const browser=await chromium.launch();const p=await (await browser.newContext({viewport:{width:390,height:900}})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
-    const setup=()=>p.evaluate(async W=>{W=eval(W);HOOK.items=W.realistic.map(i=>({...i}));HOOK.settings.workdays=[1,2,3,4,5];HOOK.settings.blazerDays=[4];HOOK.settings.holidays=null;HOOK.settings.daysOff=[];HOOK.weather={};HOOK.climate=null;
+    const seedDays=()=>p.evaluate(async W=>{W=eval(W);HOOK.items=W.realistic.map(i=>({...i}));HOOK.settings.workdays=[1,2,3,4,5];HOOK.settings.blazerDays=[4];HOOK.settings.holidays=null;HOOK.settings.daysOff=[];HOOK.weather={};HOOK.climate=null;
       HOOK.TODAY_OVERRIDE='2026-11-11T09:00:00';HOOK.dayRecs={};HOOK.cache={};try{await HOOK.recordRun}catch{}HOOK.view={y:2026,m:10}},WARDROBES);
-    await setup();
+    await seedDays();
     const occ=await p.evaluate(async()=>{const k='2026-11-19',out={};   // Thursday 19 November, a blazer day
       for(const o of ['funeral','wedding','formal']){HOOK.dayRecs={};HOOK.cache={};HOOK.sel=HOOK.keyDate(k);HOOK.renderToday();await HOOK.setOff('tie',true);const kind=HOOK.dayRecs[k].kind;
         await HOOK.setOccasion(o,k);const top=HOOK.planFor()[k].top;
@@ -247,7 +247,7 @@ const offpins=async({ok,chromium,url,WARDROBES})=>{
         out[o]={kind,type:top&&top.type,fresh:fresh&&fresh.type}}
       return out});
     for(const [o,v] of Object.entries(occ))ok(v.kind==='blazer'&&v.type==='suit'&&v.fresh==='suit',`a ${o} set on a blazer day whose tie was taken off is a suit day, as a fresh ${o} day (${v.type}, fresh ${v.fresh}; the tie off pinned ${v.kind})`);
-    await setup();
+    await seedDays();
     const mv=await p.evaluate(async()=>{const src='2026-11-13',dst='2026-11-16';   // Friday 13 November (a suit day) moved to Monday 16 November
       HOOK.sel=HOOK.keyDate(src);HOOK.renderToday();await HOOK.setOff('top',true);await HOOK.setOff('tie',true);
       const ids=x=>({top:x.top&&x.top.id,bot:x.bot&&x.bot.id,shirt:x.shirt&&x.shirt.id,tie:x.tie&&x.tie.id});
@@ -257,7 +257,7 @@ const offpins=async({ok,chromium,url,WARDROBES})=>{
     const same=(a,b)=>a.top===b.top&&a.bot===b.bot&&a.shirt===b.shirt&&a.tie===b.tie;
     ok(!mv.shown.top&&!mv.shown.tie&&mv.shown.bot&&same(mv.moved,mv.shown)&&same(mv.preview,mv.shown),`an outfit with its jacket and tie taken off moves as shown (${JSON.stringify(mv.shown)} → ${JSON.stringify(mv.moved)}, preview ${JSON.stringify(mv.preview)})`);
     ok(mv.left.top&&mv.left.tie&&!mv.left.off&&!(mv.srcRec&&mv.srcRec.off),`the day it left is planned afresh, its jacket and tie on (${JSON.stringify(mv.left)})`);
-    await setup();
+    await seedDays();
     const rev=await p.evaluate(async()=>{const src='2026-11-13',dst='2026-11-16';
       HOOK.sel=HOOK.keyDate(dst);HOOK.renderToday();await HOOK.setOff('tie',true);
       const ids=x=>({top:x.top&&x.top.id,bot:x.bot&&x.bot.id,shirt:x.shirt&&x.shirt.id,tie:x.tie&&x.tie.id});

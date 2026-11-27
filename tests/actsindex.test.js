@@ -90,7 +90,7 @@ async function run(eng,browser,{ok,url,settle}){
           if(how==='enter')ev.preventDefault();if(how==='file'||how==='files')el.value=''}}
       if(typeof f!=='function'){if(!via)window.__calls.push('missing:'+n);continue}
       window[n]=function(...a){
-        window.__calls.push(n==='addFiles'?`addFiles(${fmt(a[0])},${a[1]?'several':'one'})`:`${n}(${a.map(fmt).join(',')})`);
+        window.__calls.push(n==='addFiles'?`${n}(${fmt(a[0])},${a[1]?'several':'one'})`:`${n}(${a.map(fmt).join(',')})`);
         return FN[n]?f.apply(this,a):undefined}}
     document.addEventListener('click',()=>window.__calls.push('doc:click'));
     window.addEventListener('keydown',e=>window.__calls.push('key:'+e.key+':'+(e.defaultPrevented?'prevented':'default')))},[FN,VIA]);
@@ -120,7 +120,7 @@ async function run(eng,browser,{ok,url,settle}){
 
   /* ---- Settings: each category's head opens and closes it ---- */
   for(const k of CATS){
-    await step(`a tap on the ${k} category’s head opens it`,()=>tap(`#sc-${k} .scat-head`),`toggleCat("${k}")`,E(k=>{const s=document.querySelector('#sc-'+k);return s.classList.contains('open')&&s.querySelector('.scat-head').getAttribute('aria-expanded')==='true'},k));
+    await step(`a tap on the ${k} category’s head opens it`,()=>tap(`#sc-${k} .scat-head`),C('toggleCat',`"${k}"`),E(k=>{const s=document.querySelector('#sc-'+k);return s.classList.contains('open')&&s.querySelector('.scat-head').getAttribute('aria-expanded')==='true'},k));
     await settle(p,550);
     if(k==='schedule'){
       await step('choosing "Every suit day" for the Suit vest sets it',()=>p.selectOption('#cfg-vest','always'),'setVestMode("always")',E(()=>HOOK.settings.vestMode==='always'));
@@ -130,7 +130,7 @@ async function run(eng,browser,{ok,url,settle}){
       if(await p.evaluate(()=>!!document.querySelector('#ask-sheet.on #ask-cancel'))){await tap('#ask-cancel');await until(()=>!document.querySelector('#ask-sheet').classList.contains('on'));await settle(p,300)}}
     if(k==='daysoff'){
       const cc=await p.evaluate(()=>{const o=[...document.querySelector('#cfg-country').options].find(o=>o.value);return o&&o.value});
-      await step(`choosing a country (${cc}) for public holidays sets it`,()=>p.selectOption('#cfg-country',cc),`setHolidayCountry("${cc}")`,E(c=>!!HOOK.settings.holidays&&HOOK.settings.holidays.country===c,cc));
+      await step(`choosing a country (${cc}) for public holidays sets it`,()=>p.selectOption('#cfg-country',cc),C('setHolidayCountry',`"${cc}"`),E(c=>!!HOOK.settings.holidays&&HOOK.settings.holidays.country===c,cc));
       await p.fill('#cfg-off-from','2026-12-24');
       await step('a tap on Add under "Your own days off" adds the day',()=>tap('#sp-daysoff .offadd button'),C('addDayOff'),E(()=>(HOOK.settings.daysOff||[]).some(x=>x.d==='2026-12-24')&&!!document.querySelector('#off-list button')));
       await p.fill('#cfg-formal-date','2026-11-18');
@@ -177,7 +177,7 @@ async function run(eng,browser,{ok,url,settle}){
       await step('a tap on the feedback’s Send sends it',()=>tap('#fb-send'),C('sendFeedback'));
       await step('a tap on "Delete my data" asks first',()=>tap('#del-open'),C('askDelete'),E(()=>!document.querySelector('#del-confirm').hidden));
       await p.evaluate(()=>{document.querySelector('#del-confirm').hidden=true;document.querySelector('#del-confirm').innerHTML='';document.querySelector('#del-open').hidden=false})}
-    await step(`a second tap on the ${k} category’s head closes it`,()=>tap(`#sc-${k} .scat-head`),`toggleCat("${k}")`,E(k=>{const s=document.querySelector('#sc-'+k);return !s.classList.contains('open')&&s.querySelector('.scat-head').getAttribute('aria-expanded')==='false'},k));
+    await step(`a second tap on the ${k} category’s head closes it`,()=>tap(`#sc-${k} .scat-head`),C('toggleCat',`"${k}"`),E(k=>{const s=document.querySelector('#sc-'+k);return !s.classList.contains('open')&&s.querySelector('.scat-head').getAttribute('aria-expanded')==='false'},k));
     await settle(p,550)}
 
   /* ---- Settings: the buttons under the categories, the Packing list link, Done and the backdrop ---- */
