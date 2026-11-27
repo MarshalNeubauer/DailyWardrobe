@@ -1,5 +1,6 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
 # tested	dd245cbc6df84bd9bcaa
+# tested	eecdfdefe03241d9d426
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -599,6 +600,7 @@ actsindex.test.js	sync.js	<any>	<loaded>	@connRestored.then	@onconnectionsaved	@
 actsindex.test.js	tag-request.js	<any>	<loaded>	tagStatsCard
 actsindex.test.js	tagging.js	<any>	<loaded>	tagNotes
 actsindex.test.js	tests/fixedplan.js	<any>
+actsindex.test.js	tests/webkit.js	<any>
 actsindex.test.js	theme.js	<any>	<loaded>	applyTheme	cycleTheme	themeTap
 actsindex.test.js	toast.js	<any>	<loaded>	toast	toastDrop	toastOff	undoOff
 actsindex.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup
@@ -9740,6 +9742,7 @@ kitsetup-taps.test.js	sync.js	<loaded>	@connRestored.then	@onsettingssaved	after
 kitsetup-taps.test.js	tag-request.js	<loaded>
 kitsetup-taps.test.js	tagging.js	<loaded>
 kitsetup-taps.test.js	tests/fixedplan.js	<any>
+kitsetup-taps.test.js	tests/webkit.js	<any>
 kitsetup-taps.test.js	theme.js	<loaded>	applyTheme
 kitsetup-taps.test.js	toast.js	<loaded>	toast	toastDrop	toastOff	undoFab	undoHere	undoOff
 kitsetup-taps.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	todayBusy	todayCovered	todayFree
@@ -14286,6 +14289,7 @@ restacts.test.js	tag-request.js	<loaded>	describeEstimate	keepCloseImg	readEstim
 restacts.test.js	tagging.js	<loaded>	confTxt	tagLive	tagMeasUndo	tagNewCol	tagNewPat	tagNotes	tagPatternAgain	tagRefineAgain	tagRefineUndo	undoRefine
 restacts.test.js	tests/fixedplan.js	<any>
 restacts.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<any>
+restacts.test.js	tests/webkit.js	<any>
 restacts.test.js	theme.js	<loaded>	applyTheme
 restacts.test.js	toast.js	<loaded>	toast	toastDrop	toastOff	undoHere	undoOff
 restacts.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	todayBusy	todayFree
@@ -16572,6 +16576,10 @@ serverchecks.test.js	worker/records.js	<any>	<loaded>	colOk	getBlob	getRender	it
 serverchecks.test.js	worker/remind.js	<any>	<loaded>	b64u	dueDay	handlePush	localNow	pushReady	pushTo	sendReminders	subId	unb64u	vapidAuth
 serverchecks.test.js	worker/render.js	<any>	<loaded>	RenderHub	dataUrlToBlob	fetch	handleRender	hubOf	logHub	logOp	serial	sget	sput
 serverchecks.test.js	worker/tag.js	<any>	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
+setmeta.test.js	bus.js	<any>
+setmeta.test.js	merge.js	<any>
+setmeta.test.js	tests/appsrc.js	<any>
+setmeta.test.js	tests/webkit.js	<any>
 sett.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 sett.test.js	account.js	<loaded>	acctStart	loadAccount	renderAccountUI
 sett.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -20757,6 +20765,7 @@ todayacts.test.js	sync-status.js	<loaded>	showSyncStatus
 todayacts.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	afterPull	pulledYet	scheduleSync	syncLaterRun	syncNeedsPull	syncNow	syncOnce
 todayacts.test.js	tag-request.js	<loaded>
 todayacts.test.js	tagging.js	<loaded>	tagNotes
+todayacts.test.js	tests/webkit.js	<any>
 todayacts.test.js	theme.js	<loaded>	applyTheme
 todayacts.test.js	toast.js	<loaded>	toast	toastDrop	toastOff	undoOff
 todayacts.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	@{constroot$today}>start	todayBusy	todayCovered	todayFree
