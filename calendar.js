@@ -14,15 +14,16 @@
    - read again at start-up and on coming back at most every CAL_EVERY, and by Read now; new matches are a small banner on Today
      ("2 new calendar events"), never applied by themselves
    - the last answer is kept on this phone only (localStorage cal_last), for the review list and Today's trip note */
-import {on} from './bus.js';
-import {$,DAY_NAMES,dayRecs,isWorkday,isoKey,isoToDate,key,occOf,offName,todayDate,yearDate} from './core.js';
-import {closeSettings,openSettings,refreshToday,saveUserSettings,settingsOpen,settingsPart,settingsSummaries,todayDirty} from './settings.js';
-import {whenPulled} from './history.js';
+import {on,askFor} from './bus.js';
+import {$,DAY_NAMES,dayRecs,isConnected,isWorkday,isoKey,isoToDate,key,occOf,offName,settings,settingsOpen,todayDate,yearDate} from './core.js';
+import {closeSettings,openSettings,refreshToday,saveUserSettings,settingsPart,settingsSummaries,todayDirty} from './settings.js';
+import {setOccasion,whenPulled} from './history.js';
 import {afterScripts,announce} from './app.js';
 import {esc} from './photo-keys.js';
 import {toast} from './toast.js';
 import {homeDay} from './month.js';
 import {acts} from './act.js';
+import {askConfirm,netErr} from './ui.js';
 const CAL_EVERY=3*3600e3;   // read again at most this often by itself
 // ... and this often when the calendar's host sends neither an ETag nor a Last-Modified, or nothing could be kept: then every read
 // downloads the whole feed (at most twice a day by itself: 2.8 MB a day for a 1.4 MB calendar, 12 MB for 6 MB; Read now still reads it)
@@ -224,13 +225,13 @@ const calById=id=>calFound().find(x=>x.ev.id===id);
 async function calKeep(id){const x=calById(id);if(!x||!x.can)return;const e=x.ev;let msg='';
   try{
     if(CAL_OCC[x.k]){for(const d of x.days)await setOccasion(CAL_OCC[x.k],key(d));msg=`${calDateTxt(e.start,e.end)}: ${x.label.toLowerCase()} set.`}
-    else if(x.k==='off'){const T=isoKey(todayDate()),r=await dayOffAdd(e.start<T?T:e.start,e.end,e.title);if(!r.ok){calMsg=r.msg;renderCalUI();return}msg=r.msg}
-    else if(x.k==='trip'){const t=packSetTrip(e.start<isoKey(todayDate())?isoKey(todayDate()):e.start,e.end);if(!t)return;msg=`Packing list set for ${calDateTxt(t.a,t.b)}.`;
+    else if(x.k==='off'){const T=isoKey(todayDate()),r=await askFor('day-off-add',e.start<T?T:e.start,e.end,e.title);if(!r.ok){calMsg=r.msg;renderCalUI();return}msg=r.msg}
+    else if(x.k==='trip'){const t=askFor('pack-set-trip',e.start<isoKey(todayDate())?isoKey(todayDate()):e.start,e.end);if(!t)return;msg=`Packing list set for ${calDateTxt(t.a,t.b)}.`;
       if(e.pair)await calSetSeen(e.pair,'k')}
     await calSetSeen(id,'k');todayDirty()}
   catch(err){console.warn('calendar event not used',err);calMsg='That couldn’t be set. Try again.';renderCalUI();return}
   calMsg=msg;renderCalUI();announce(msg);
-  if(x.k==='trip')toast(msg,6000,{label:'Open',fn:()=>openPack()});
+  if(x.k==='trip')toast(msg,6000,{label:'Open',fn:()=>askFor('pack-open')});
   if(settingsOpen())settingsSummaries()}
 async function calDismiss(id){const x=calById(id);await calSetSeen(id,'x');if(x&&x.ev.pair)await calSetSeen(x.ev.pair,'x');calMsg='';todayDirty();renderCalUI()}
 /* takes the mark off (the event is offered again); what keeping it set stays (remove a day off or an occasion in Days off & occasions) */
@@ -282,7 +283,7 @@ const CAL_GUIDES={
       body:`<ol class="kit-list"><li>Two links appear. Select the <b>ICS</b> one (it ends in <b>.ics</b>), not HTML.</li><li>Choose <b>Copy link</b>.</li></ol><p>Anyone with it can read that calendar; <b>Unpublish</b> there stops it.</p>`},
     CAL_PASTE]};
 /* opened from Settings → Calendar; closing goes back there */
-function calGuide(which){const c=CAL_GUIDES[which];if(!c)return;closeSettings();kitOpen(c,()=>openSettings('calendar'))}
+function calGuide(which){const c=CAL_GUIDES[which];if(!c)return;closeSettings();askFor('kit-open',c,()=>openSettings('calendar'))}
 /* what the calendar's controls do (act.js): Settings → Calendar's Connect, Read now, Disconnect and the three guides (data-g), an
    event's ✓, ✕ and Undo (the event's id in data-id), and Today's "Review" and "Packing list" */
 function calConnectTap(){calConnect()}
@@ -293,7 +294,7 @@ function calKeepTap(el){calKeep(el.dataset.id)}
 function calDismissTap(el){calDismiss(el.dataset.id)}
 function calUndoTap(el){calUndoSeen(el.dataset.id)}
 function calReviewTap(){openSettings('calendar')}
-function calPackTap(){openPack()}
+function calPackTap(){askFor('pack-open')}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,CAL_GUIDES,CAL_X,get calBusy(){return calBusy},calGuide,calNew,calPlan,renderCalUI,calSummary};
 export {calBusy,CAL_X,calPlan,calNew,calSummary,renderCalUI,calBanner,CAL_GUIDES,calGuide};

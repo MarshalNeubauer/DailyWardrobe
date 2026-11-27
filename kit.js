@@ -10,8 +10,8 @@
    - a sample wardrobe to try the app with (kitSampleLoad): 22 pieces marked sample, a note on Today while they are there, removed in one tap */
 
 /* ---- one sheet for the tour and the guide: cards with a picture, Back and Next, the last one closes it ---- */
-import {$,COLORS,CUSTOM_COL,CUSTOM_PAT,MATERIALS_BY,METAL_TYPES,PATS_BY,PAT_ALIAS,SEASON_TYPES,SHIRT_WEAVE_MAT,TYPES,accentsFor,accentsOf,askPersist,colName,colsFor,dayRecs,dressOut,fitCol,hasPat,itemFields,itemName,itemTitle,items,keyDate,leatherWord,leathersFor,matAlias,mergeState,metalWord,myInviteLink,nextStamp,normCol,nowMs,patLabel,patName,sentence,setWardrobe,settings,shortDesc,syncUrl,todayDate,typeWord,watchOpts,wearsJacket,wearsTie} from './core.js';
-import {askConfirm,inviteOver,isConnected,layerInert,noMotion,sheetSwipe} from './ui.js';
+import {$,COLORS,CUSTOM_COL,CUSTOM_PAT,KIT_TOUR,MATERIALS_BY,METAL_TYPES,PATS_BY,PAT_ALIAS,SEASON_TYPES,SHIRT_WEAVE_MAT,TYPES,accentsFor,accentsOf,askPersist,colName,colsFor,dayRecs,dressOut,fitCol,hasPat,homeAndroid,homeBrowser,homeIOS,homeNeeded,homeStandalone,inviteOver,isConnected,itemFields,itemName,itemTitle,items,keyDate,leatherWord,leathersFor,matAlias,mergeState,metalWord,myInviteLink,nextStamp,normCol,nowMs,patLabel,patName,sentence,setWardrobe,settings,shortDesc,syncUrl,todayDate,typeWord,watchOpts,wearsJacket,wearsTie} from './core.js';
+import {askConfirm,layerInert,noMotion,sheetSwipe} from './ui.js';
 import {backBorrow,backOn,backPush,backReturn} from './back.js';
 import {closeSettings,openSettings,refreshToday,todayDirty} from './settings.js';
 import {toast} from './toast.js';
@@ -24,8 +24,6 @@ import {clearLocks} from './days.js';
 import {acts} from './act.js';
 let kit=null;   // {cards, at, then}
 let kitImpBusy=false;   // an import being written (kitImportGo)
-const KIT_TOUR='tour_seen';
-const tourSeen=()=>{try{return localStorage.getItem(KIT_TOUR)==='1'}catch{return false}};
 function kitEl(){let e=$('#kitsheet');if(!e){e=document.createElement('div');e.id='kitsheet';e.setAttribute('role','dialog');e.setAttribute('aria-modal','true');e.setAttribute('aria-labelledby','kit-title');document.body.appendChild(e)}return e}
 function kitInert(on){for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on;if(!on)layerInert()}
 /* the phone's Back closes the sheet (fix round 2, 2026-11-15: it left the app from the tour and the Home Screen sheet, and closed Add
@@ -36,10 +34,15 @@ function setKitNoMine(v){kitNoMine=v}
 /* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals. Above the file's first top-level call that can throw (backOn): its functions are then still the page's. A getter reads its
    `let` when asked, so the ones declared below are here too; the consts declared below are handed over above homeAbout() */
-Object.assign(globalThis,{tourSeen,kitOpen,kitClose,tourOpen,kitSaved,kitDuplicate,kitImportOpen,kitFixOldImports,kitSampleMigrate,kitSampleLoad,kitShareDone,kitShareFilter,kitSampleBanner,homeSteps,safariRemind,homeOpen,homeAbout,setKitNoMine});
+Object.assign(globalThis,{kitOpen,kitClose,tourOpen,kitSaved,kitDuplicate,kitImportOpen,kitFixOldImports,kitSampleMigrate,kitSampleLoad,kitShareDone,kitShareFilter,kitSampleBanner,homeSteps,safariRemind,homeOpen,homeAbout,setKitNoMine});
 Object.defineProperties(globalThis,{kit:{get:()=>kit},kitQuiet:{get:()=>kitQuiet},kitNoMine:{get:()=>kitNoMine,set:v=>{kitNoMine=v}}});
 /* the notice board (bus.js): "Try a sample wardrobe" on an empty Insights or Packing list (stats.js no longer names this file) */
-import {on} from './bus.js';
+import {on,askFor,served,serve,emit} from './bus.js';
+import {savedTitle} from './add-save.js';
+import {addKeep,addRevive} from './add-keep.js';
+import {multiMsg,renderAdd} from './add.js';
+import {WARD_MAX,wardSaveFields} from './fields.js';
+import {goToday,recordRun} from './today.js';
 on('sample-asked',kitSampleLoad);
 backOn('kit',()=>{if(kit)kitClose(true)});
 function kitOpen(cards,then){const prev=kit?kit.hist:undefined;kit={cards,at:0,then:then||null,from:document.activeElement};if(prev!==undefined)kit.hist=prev;kitBs(false);kitDraw();kitEl().classList.add('on');kitInert(true);kitHist();
@@ -133,7 +136,7 @@ async function kitUnsave(b){if(!b)return;
   if(back.length)await addKeep();
   try{await kitDelMany(b.its,b.olds||[])}catch(e){for(const q of back){const k=queue.indexOf(q);if(k>=0)queue.splice(k,1)}if(back.length)addKeep();throw e}
   if(kitBatch===b)kitBatch=null;planDirty();todayDirty();if(b.qs.length)multiMsg('');   // ("Saved 5 items to your wardrobe." stayed over the cards Undo brought back)
-  if(b.qs.length&&$('#add')&&!$('#add').hidden)renderAdd();else if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
+  if(b.qs.length&&$('#add')&&!$('#add').hidden)renderAdd();else if($('#wardrobe')&&!$('#wardrobe').hidden)emit('wardrobe-changed');
   const ol=(b.olds||[]).length;   // (b.olds: pieces an import updated, put back as they were)
   toast(ol?`Undone: ${b.its.length?`${b.its.length} item${b.its.length===1?'':'s'} taken out, `:''}${ol} piece${ol===1?'':'s'} as ${ol===1?'it was':'they were'}.`:b.its.length===1?'Undone: the item is back on Add.':`Undone: ${b.its.length} items taken out.`,3000)}
 
@@ -145,7 +148,7 @@ const kitTx=(stores,f)=>dbRetry('readwrite',d=>new Promise((ok,no)=>{const t=d.t
 function kitTombs(t,ids,now){if(!ids.length)return;const m=t.objectStore('meta'),q=m.get('tombstones');
   q.onsuccess=()=>{const v={...(q.result&&q.result.v||{})};for(const id of ids)v[id]=Math.max(v[id]||0,now);m.put({k:'tombstones',v})}}
 /* a failed write is said, as Confirm says it (add-save.js save) */
-function kitFail(e){console.warn('save failed',e);if(storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000)}
+function kitFail(e){console.warn('save failed',e);if(storeFailure(e))askFor('save-failed',e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000)}
 /* an item made from a card with no photo, as add-save.js saveCard makes one (a hand-added card: the fields it keeps for each type) */
 function kitItem(c){const f=hasPat(c.type),it={id:c.id||crypto.randomUUID(),type:c.type,primaryColor:c.primaryColor,secondaryColor:c.secondaryColor||null,tertiaryColor:c.tertiaryColor||null,pattern:f?c.pattern||'solid':'solid',added:nowMs()};
   {const a=accentsOf(c);if(a.length)it.accents=a}   // an import's "Also has" colours
@@ -168,21 +171,21 @@ function kitItem(c){const f=hasPat(c.type),it={id:c.id||crypto.randomUUID(),type
 async function kitStore(list,prog,upd){upd=upd||[];if(!list.length&&!upd.length)return true;const now=nowMs();let k=0;
   try{await kitTx(['items'],t=>{const s=t.objectStore('items');for(const it of list){it.updated=now;const r=s.put(it);if(prog)r.onsuccess=()=>prog(++k,list.length)}
     for(const it of upd){it.updated=nextStamp(stamp(it));const g=s.get(it.id);g.onsuccess=()=>{itemFields(it,g.result);s.put(it)}}})}catch(e){kitFail(e);return false}
-  items.push(...list);for(const it of upd){const j=items.findIndex(x=>x.id===it.id);if(j>=0)items[j]=it}planDirty();todayDirty();if(list.length)dressNewItem();
-  if(window.scheduleSync)scheduleSync();askPersist();return true}
+  items.push(...list);for(const it of upd){const j=items.findIndex(x=>x.id===it.id);if(j>=0)items[j]=it}planDirty();todayDirty();if(list.length)askFor('dress-new-item');
+  askFor('sync-soon');askPersist();return true}
 /* delete items (each with a tombstone, as Delete does), with changed items (put) and day records (days) in the same transaction */
 async function kitDelMany(ids,put=[],days=[]){ids=[...new Set(ids)];const now=nowMs(),gone=new Set(ids);
   await kitTx(['items','meta','days'],t=>{const s=t.objectStore('items');for(const id of ids)s.delete(id);for(const it of put){it.updated=now;s.put(it)}
     const d=t.objectStore('days');for(const r of days){if(r.updated!==KIT_YIELD)r.updated=now;delete r.lockOnly;delete r.base;d.put(r)}kitTombs(t,ids,now)});   // (KIT_YIELD: a sample-only day keeps its stamp of 1, kitSampleRemove)
   setWardrobe({items:items.filter(x=>!gone.has(x.id))});for(const it of put){const k=items.findIndex(x=>x.id===it.id);if(k>=0)items[k]=it}
-  for(const r of days)dayRecs[r.date]=r;planDirty();todayDirty();if(window.scheduleSync)scheduleSync()}
+  for(const r of days)dayRecs[r.date]=r;planDirty();todayDirty();askFor('sync-soon')}
 
 /* ---- Duplicate (the item sheet): the same piece again, with a new id and no history, opened for any difference ---- */
 const KIT_NO_COPY=['id','added','updated','paused','order','arrives','away','cleaned','cleans','sample','sampleMine'];
 async function kitDuplicate(id){const it=items.find(x=>x.id===id);if(!it)return;const c=JSON.parse(JSON.stringify(it));for(const k of KIT_NO_COPY)delete c[k];
   c.id=crypto.randomUUID();c.added=nowMs();await put(c);items.push(c);planDirty();todayDirty();
-  if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
-  openItem(c.id);toast('Duplicated. Change anything that differs, like its name.',3500)}
+  if($('#wardrobe')&&!$('#wardrobe').hidden)emit('wardrobe-changed');
+  askFor('item-show',c.id);toast('Duplicated. Change anything that differs, like its name.',3500)}
 
 /* ---- import from a spreadsheet ----
    A CSV file (Excel, Numbers and Google Sheets all save one) or rows pasted straight from the spreadsheet (tab-separated). The first row
@@ -526,7 +529,7 @@ async function kitImportGo(){if(!kitImp||kitImpBusy)return;const rows=kitImp.row
   let ok=false,list=[];try{list=cards.map(kitItem);ok=await kitStore(list,cards.length>40?prog:null,news)}finally{kitImpBusy=false;for(const x of cx)if(x)x.disabled=false}
   if(!ok){kitImpBtn();return}
   const ids=list.map(i=>i.id);kitImp=null;if(ids.length)try{localStorage.setItem(KIT_IMP_LAST,JSON.stringify({ids,at:Date.now()}))}catch{}
-  kitClose();if($('#add')&&!$('#add').hidden)renderAdd();else if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();
+  kitClose();if($('#add')&&!$('#add').hidden)renderAdd();else if($('#wardrobe')&&!$('#wardrobe').hidden)emit('wardrobe-changed');
   const said=[ids.length?`Imported ${ids.length} item${ids.length===1?'':'s'}`:'',news.length?`${ids.length?'updated':'Updated'} ${news.length} piece${news.length===1?'':'s'}`:''].filter(Boolean).join(' and ');
   toast(`${said}.`,KIT_IMP_UNDO_MS,{label:'Undo',fn:()=>kitUnsave({its:ids,qs:[],olds})})}
 /* imports made on the 14 Nov version saved a row naming an own colour as its place in settings.custom.colors ("0", "1"), shown as "None",
@@ -544,7 +547,7 @@ async function kitFixOldImports(){const list=settings.custom&&Array.isArray(sett
 /* the last import taken out again, after its Undo has gone (from the import sheet) */
 /* (fix round 3, W1-6-05: judged on this phone's copy alone, a piece renamed on another phone went too) a connected phone syncs first, so
    "changed since" counts changes made anywhere; offline it goes on with what it has */
-async function kitUnimport(){if(syncUrl()&&localStorage.getItem('app_token')&&!inviteOver())try{await syncNow()}catch{}
+async function kitUnimport(){if(syncUrl()&&localStorage.getItem('app_token')&&!inviteOver())try{await askFor('sync-now')}catch{}
   const l=kitLastImp();if(!l){const r=$('#kit-last');if(r)r.remove();return}
   if(!await askConfirm(`Take out the ${l.ids.length} item${l.ids.length===1?'':'s'} of your last import?\n\nAnything you added another way stays${l.kept?`, and so ${l.kept===1?'does the imported piece':`do the ${l.kept} imported pieces`} you changed since`:''}.`,{ok:'Take them out',danger:true}))return;
   try{await kitDelMany(l.ids)}catch(e){kitFail(e);return}
@@ -585,7 +588,7 @@ async function kitSampleMigrate(){try{if(localStorage.getItem('kit_mine'))return
   if(l.length){const now=Date.now();
     try{await kitTx(['items'],t=>{const s=t.objectStore('items');for(const it of l){it.updated=now;s.put(it)}})}catch(e){console.warn('sample pieces not kept as his',e);return}
     for(const it of l){const k=items.findIndex(x=>x.id===it.id);if(k>=0)items[k]=it}
-    planDirty();todayDirty();if(window.scheduleSync)scheduleSync();
+    planDirty();todayDirty();askFor('sync-soon');
     toast(`${l.length===1?'The sample piece':`The ${l.length} sample pieces`} you changed ${l.length===1?'is':'are'} yours: Remove the sample keeps ${l.length===1?'it':'them'}.`,6000)}
   try{localStorage.setItem('kit_mine','1')}catch{}}
 /* does a day's record, with the sample's pieces taken out (kitSampleDay), still hold anything of his? His own pieces, a pick, the week's
@@ -617,7 +620,7 @@ async function kitSampleLoad(){if(kitSampling)return;kitSampling=true;kitSampleB
     toast(have.size?`The rest of the sample wardrobe is here: ${missing.length} more piece${missing.length===1?'':'s'}.`:`A sample wardrobe of ${missing.length} pieces: swipe through the days to see outfits.`,4500)}
   finally{kitSampling=false;kitSampleBusy(false)}}
 /* then Today on the next workday; from the setup's last step the setup finishes first, as Skip and "Add my first item" finish it */
-function kitSampleDone(){if(setupShown())setupFinish(false);
+function kitSampleDone(){if(askFor('setup-shown'))askFor('setup-finish',false);
   planDirty();todayDirty();show('today');goToday()}   // on a weekend, the next workday's outfit
 /* Remove the sample: every sample piece the owner didn't change goes, with what the days recorded of them (worn days, locks, picks;
    occasions stay), in one transaction; a changed one stays as his */
@@ -636,7 +639,7 @@ async function kitSampleRemove(quiet){if(kitSampling)return;   // quiet: already
     await kitDelMany([...ids],mine,days);await clearLocks();
     undo.wrote=Object.fromEntries(days.map(c=>[c.date,c.updated]));kitRmUndo=undo;
     // connected: the account's records of those days come in before Today records anything from the plan (kitSampleUndo)
-    if(isConnected()&&window.syncNow)await Promise.race([syncNow().catch(()=>{}),new Promise(r=>setTimeout(r,KIT_RM_SYNC))])}
+    if(isConnected()&&served('sync-now'))await Promise.race([askFor('sync-now').catch(()=>{}),new Promise(r=>setTimeout(r,KIT_RM_SYNC))])}
   catch(e){kitFail(e);return}finally{kitSampling=false;kitSampleBusy(false)}
   if(quiet){planDirty();todayDirty();if(!$('#today').hidden)refreshToday();return}
   show(items.length?'today':'wardrobe');toast(kn?`The sample wardrobe is gone. The ${kn===1?'piece':`${kn} pieces`} you changed stayed.`:'The sample wardrobe is gone.',8000,{label:'Undo',fn:kitSampleUndo})}
@@ -649,7 +652,7 @@ async function kitSampleUndo(){const u=kitRmUndo;if(!u||kitSampling)return;kitRm
     const days=u.days.filter(r=>dayRecs[r.date]&&dayRecs[r.date].updated===u.wrote[r.date]).map(r=>({...r,updated:u.wrote[r.date]===KIT_YIELD?r.updated:now}));
     await kitTx(['items','days'],t=>{const s=t.objectStore('items'),d=t.objectStore('days');for(const it of its)s.put(it);for(const r of days)d.put(r)});
     const back=new Map(its.map(i=>[i.id,i]));setWardrobe({items:items.filter(i=>!back.has(i.id)).concat(its)});for(const r of days)dayRecs[r.date]=r;
-    planDirty();todayDirty();if(window.scheduleSync)scheduleSync()}
+    planDirty();todayDirty();askFor('sync-soon')}
   catch(e){kitFail(e);return}finally{kitSampling=false;kitSampleBusy(false)}
   show('today');toast('The sample wardrobe is back.',3000)}
 /* a day's record with the sample's pieces taken out (re-audit 2026-11-15, N2: the record was cut to its occasion, and history.js recordDays
@@ -718,7 +721,7 @@ function kitShareFilter(st,remote,join){kitSdNew={};const off=new Set((st.items|
   return {...st,items:st.items.filter(i=>!off.has(i.id)),days}}
 /* a sample piece kept as the owner's own (the item sheet) */
 async function kitKeepSample(id){const it=items.find(i=>i.id===id);if(!it||!it.sample)return;delete it.sample;delete it.sampleMine;await put(it);planDirty();todayDirty();
-  if($('#wardrobe')&&!$('#wardrobe').hidden)renderWardrobe();toast('It’s yours now: Remove the sample keeps it.',3000)}
+  if($('#wardrobe')&&!$('#wardrobe').hidden)emit('wardrobe-changed');toast('It’s yours now: Remove the sample keeps it.',3000)}
 /* marks: the Wardrobe grid's tag and the item sheet's note */
 const kitSampleTag=i=>i.sample&&!kitEdited(i)?'<span class="pausetag sampletag">Sample</span>':'';
 const kitSampleNote=i=>i.sample&&!kitEdited(i)?`<section class="card ivsec ivsample"><p class="shelp">A piece of the sample wardrobe: Remove the sample takes it away. Change anything on it, or keep it, and it stays as yours.</p><div class="btns"><button type="button" id="iv-keep" data-act="kitKeepTap" data-id="${esc(i.id)}">Keep it as mine</button></div></section>`:'';
@@ -735,20 +738,8 @@ function kitAddOwnTap(){openAdd()}
 function kitSampleRemoveTap(){kitSampleRemove()}
 function kitTourTap(){tourOpen()}
 function kitSampleTap(){kitSampleLoad()}
-function kitSetupSampleTap(el,ev){setupSample(ev)}
+function kitSetupSampleTap(el,ev){askFor('setup-sample',ev)}
 
-/* ---- Add to Home Screen (2026-11-14, the owner: show a new person on an iPhone how to add it as a web app) ----
-   iPhone and iPad only, in a browser tab (homeNeeded): the setup's Home Screen step (setup.js) and Settings → About (#home-again). The app
-   on the Home Screen opens full screen, and it is the only way iOS lets a web app show notifications (the morning reminder). It keeps its
-   own storage apart from Safari's, so the step comes before anything is set up. window.DW_STANDALONE / DW_IOS: tests */
-const homeIOS=()=>window.DW_IOS===true||/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-const homeStandalone=()=>window.DW_STANDALONE===true||navigator.standalone===true||(typeof matchMedia==='function'&&matchMedia('(display-mode: standalone)').matches);
-/* Android (2026-11-14, the owner: "the same thing for android with an install button"): Chrome and other Android browsers offer the install
-   themselves (beforeinstallprompt, kept in homeEvt): the step's Install button opens the browser's own dialog; where the browser gives none
-   (Firefox, an install dismissed, a browser that never offers it) the step shows the menu steps instead. The installed app shares the
-   browser's storage, so nothing is said about setting up first. window.DW_ANDROID: tests */
-const homeAndroid=()=>window.DW_ANDROID===true||(!homeIOS()&&/Android/i.test(navigator.userAgent));
-const homeNeeded=()=>(homeIOS()||homeAndroid())&&!homeStandalone();
 let homeEvt=null;
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();homeEvt=e;homeSync()});
 addEventListener('appinstalled',()=>{homeEvt=null;homeSync();toast('Installed. Open Daily Wardrobe from its new icon.')});
@@ -758,17 +749,12 @@ async function homeInstall(){const e=homeEvt;if(!e)return homeSync();homeEvt=nul
   try{await e.prompt();const r=await e.userChoice;if(r&&r.outcome==='accepted'){toast('Installing… open Daily Wardrobe from its new icon.')}}catch(_){}
   homeSync()}
 const homeIPad=()=>/iPad/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-/* which browser the app is open in on an iPhone or iPad (2026-11-16, a tester used Chrome and was shown Safari's steps): every iOS browser
-   draws with Safari's engine but has its own buttons, and a Home Screen app added from any of them keeps its own storage. window.DW_BROWSER: tests */
-const homeBrowser=()=>window.DW_BROWSER||(/CriOS/.test(navigator.userAgent)?'Chrome':/FxiOS/.test(navigator.userAgent)?'Firefox':/EdgiOS/.test(navigator.userAgent)?'Edge':'Safari');
 /* the first step, per browser: Chrome's Share is at the right end of its address bar (in its ⋯ menu when not); Firefox's and Edge's are in their menu */
 function homeShareStep(pad){const b=homeBrowser();
   if(b==='Chrome')return '<li><span class="home-n">1</span><span>Tap Share '+HOME_SHARE+' at the right end of Chrome\'s address bar.<small>Not there? Tap <b>⋯</b>, then <b>Share</b>.</small></span></li>';
   if(b!=='Safari')return '<li><span class="home-n">1</span><span>Open '+b+'\'s menu and tap <b>Share</b> '+HOME_SHARE+'.</span></li>';
   return pad?'<li><span class="home-n">1</span><span>Tap Share '+HOME_SHARE+' at the top right of Safari.</span></li>'
     :'<li><span class="home-n">1</span><span>Tap <b>⋯</b> at the bottom right of Safari, then <b>Share</b> '+HOME_SHARE+'.<small>If you see Share '+HOME_SHARE+' there instead, tap it.</small></span></li>'}
-/* the same in a few words, for a line elsewhere (Settings → reminders) */
-const homeShareShort=()=>{const b=homeBrowser();return b==='Chrome'?'tap Share in Chrome’s address bar, then “Add to Home Screen”':b==='Safari'?'tap ⋯, then Share, then “Add to Home Screen”':`open ${b}’s menu, tap Share, then “Add to Home Screen”`};
 const HOME_SHARE='<svg viewBox="0 0 24 24" class="home-ico" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 10H5v11h14V10h-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
 const HOME_DL='<svg viewBox="0 0 24 24" class="home-ico" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const HOME_ADD='<svg viewBox="0 0 24 24" class="home-ico" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
@@ -786,7 +772,7 @@ function homeStepsAndroid(inSetup){
 /* (audit 2026-11-15, H12) the one explanation of the Home Screen app on an iPhone: the setup's step, About's button and the sheet a tester
    gets after connecting from a link (account.js homeScreenGuide) all show this. iOS 26's Safari shows ⋯ at the bottom (Share is in its
    menu); the Home Screen app keeps its own storage and starts unconnected, so a tester copies the invitation link here to paste there */
-const homeTester=()=>isTester()&&!!myInviteLink();
+const homeTester=()=>askFor('acct-role')==='tester'&&!!myInviteLink();
 const homeCopyBtn=()=>'<p class="home-cta"><button type="button" class="pri home-copy" data-act="homeCopyTap">Copy my invitation link</button></p><input type="text" class="home-mylink" readonly hidden aria-label="Your invitation link">';
 async function homeCopy(){const l=myInviteLink();if(!l)return false;
   try{await navigator.clipboard.writeText(l);toast('Your invitation link is copied. Paste it in the Home Screen app.',4500);return true}
@@ -814,20 +800,20 @@ const SAFARI_MIN=10,SAFARI_EVERY=30*864e5;
 function safariRemind(){try{if(!homeIOS()||homeStandalone()||isConnected())return false;
   if(items.filter(i=>!i.sample).length<SAFARI_MIN||localStorage.getItem('last_sync')||localStorage.getItem('backup_file_at'))return false;
   if(Date.now()-(+localStorage.getItem('safari_remind')||0)<SAFARI_EVERY)return false;
-  if(setupShown())return false;
+  if(askFor('setup-shown'))return false;
   const t=$('#toast');if(t&&t.classList.contains('on')){setTimeout(safariRemind,6000);return false}   // (not over another message)
   localStorage.setItem('safari_remind',Date.now());
-  toast(`Your ${items.filter(i=>!i.sample).length} items are only in ${homeBrowser()} on this ${homeIPad()?'iPad':'iPhone'}, and ${homeBrowser()} can clear a website’s data. Download a backup to keep a copy in Files.`,12000,{label:'Download backup',fn:downloadBackup});return true}
+  toast(`Your ${items.filter(i=>!i.sample).length} items are only in ${homeBrowser()} on this ${homeIPad()?'iPad':'iPhone'}, and ${homeBrowser()} can clear a website’s data. Download a backup to keep a copy in Files.`,12000,{label:'Download backup',fn:()=>askFor('backup-download')});return true}
   catch{return false}}
 const homeLabel=()=>homeAndroid()?'Install the app':'Add to Home Screen';
 const HOME_CARD={key:'home',get title(){return homeLabel()},pic:()=>'',last:'Got it',get body(){return homeSteps(false)}};
 function homeOpen(){kitOpen([HOME_CARD])}
 /* Settings → About: the button only where it helps */
 function homeAbout(){const b=$('#home-again');if(b){b.hidden=!homeNeeded();b.textContent=homeLabel()}}
-Object.assign(globalThis,{PAPER_CARD,kitUserEdit,kitEdited,kitSentStamp,kitSampleTag,kitSampleNote,kitStartRow,homeIOS,homeStandalone,homeAndroid,homeNeeded,homeBrowser,homeShareShort,homeTester,homeCopyBtn,HOME_CARD});
+Object.assign(globalThis,{PAPER_CARD,kitUserEdit,kitEdited,kitSentStamp,kitSampleTag,kitSampleNote,kitStartRow,homeTester,homeCopyBtn,HOME_CARD});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,KIT_IMP_LAST,KIT_IMP_UNDO_MS,KIT_MINE_CUT,KIT_TEMPLATE,KIT_YIELD,homeAgain,kitDelMany,kitDraw,kitDupMark,kitEdited,kitEl,get kitImp(){return kitImp},get kitImpBusy(){return kitImpBusy},kitImportFile,kitImportGo,kitImportText,kitItem,kitLastImp,kitRead,kitSampleRemove,kitSampleSig,get kitSampling(){return kitSampling},get kitSdNew(){return kitSdNew},set kitSdNew(v){kitSdNew=v},kitSends,kitStore,kitTemplate,kitTx,kitType,kitUnimport,kitUnsave,tourAgain,homeBrowser,homeOpen,homeShareShort,homeSteps,get kit(){return kit},kitClose,kitFixOldImports,kitImportOpen,kitSampleLoad,kitSampleMigrate,kitShareDone,kitShareFilter,kitUserEdit,safariRemind,tourOpen,tourSeen};
-export {kit,kitImpBusy,tourSeen,kitEl,kitOpen,kitClose,kitDraw,tourOpen,tourAgain,homeAgain,PAPER_CARD,kitQuiet,kitSaved,kitUnsave,kitTx,kitItem,kitStore,kitDelMany,kitDuplicate,kitType,kitRead,KIT_TEMPLATE,kitTemplate,kitImp,KIT_IMP_LAST,KIT_IMP_UNDO_MS,kitLastImp,kitImportOpen,kitImportFile,kitDupMark,kitImportText,kitImportGo,kitFixOldImports,kitUnimport,kitNoMine,kitUserEdit,kitEdited,KIT_MINE_CUT,kitSampleMigrate,KIT_YIELD,kitSampleSig,kitSampling,kitSampleLoad,kitSampleRemove,kitSdNew,kitShareDone,kitSentStamp,kitSends,kitShareFilter,kitSampleTag,kitSampleNote,kitSampleBanner,kitStartRow,homeIOS,homeStandalone,homeAndroid,homeNeeded,homeBrowser,homeShareShort,homeTester,homeCopyBtn,homeSteps,safariRemind,HOME_CARD,homeOpen,homeAbout,setKitNoMine};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,KIT_IMP_LAST,KIT_IMP_UNDO_MS,KIT_MINE_CUT,KIT_TEMPLATE,KIT_YIELD,homeAgain,kitDelMany,kitDraw,kitDupMark,kitEdited,kitEl,get kitImp(){return kitImp},get kitImpBusy(){return kitImpBusy},kitImportFile,kitImportGo,kitImportText,kitItem,kitLastImp,kitRead,kitSampleRemove,kitSampleSig,get kitSampling(){return kitSampling},get kitSdNew(){return kitSdNew},set kitSdNew(v){kitSdNew=v},kitSends,kitStore,kitTemplate,kitTx,kitType,kitUnimport,kitUnsave,tourAgain,homeOpen,homeSteps,get kit(){return kit},kitClose,kitFixOldImports,kitImportOpen,kitSampleLoad,kitSampleMigrate,kitShareDone,kitShareFilter,kitUserEdit,safariRemind,tourOpen};
+export {kit,kitImpBusy,kitEl,kitOpen,kitClose,kitDraw,tourOpen,tourAgain,homeAgain,PAPER_CARD,kitQuiet,kitSaved,kitUnsave,kitTx,kitItem,kitStore,kitDelMany,kitDuplicate,kitType,kitRead,KIT_TEMPLATE,kitTemplate,kitImp,KIT_IMP_LAST,KIT_IMP_UNDO_MS,kitLastImp,kitImportOpen,kitImportFile,kitDupMark,kitImportText,kitImportGo,kitFixOldImports,kitUnimport,kitNoMine,kitUserEdit,kitEdited,KIT_MINE_CUT,kitSampleMigrate,KIT_YIELD,kitSampleSig,kitSampling,kitSampleLoad,kitSampleRemove,kitSdNew,kitShareDone,kitSentStamp,kitSends,kitShareFilter,kitSampleTag,kitSampleNote,kitSampleBanner,kitStartRow,homeTester,homeCopyBtn,homeSteps,safariRemind,HOME_CARD,homeOpen,homeAbout,setKitNoMine};
 homeAbout();   // (once at start: the device doesn't change; Settings can open straight on About, where renderAbout doesn't run)
 /* the Home Screen step's Install and "Copy my invitation link" (act.js) */
 function homeInstallTap(){homeInstall()}
@@ -839,3 +825,5 @@ function homeAgainTap(){homeAgain()}
 acts({kitShut,kitBackTap,kitNextTap,kitGuideTap,kitUnimportTap,kitTemplateTap,kitFilePick,kitPasteFocus,kitPasteType,kitImpTap,kitTickPick,kitAsNewTap,
   kitKeepTap,kitAddOwnTap,kitSampleRemoveTap,kitTourTap,kitSampleTap,kitSetupSampleTap,homeInstallTap,homeCopyTap,
   importOpenTap,tourAgainTap,homeAgainTap});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('kit-quiet',()=>kitQuiet);serve('kit-saved',kitSaved);serve('paper-tip',()=>kitOpen([PAPER_CARD]));serve('kit-sample-tag',kitSampleTag);serve('kit-duplicate',kitDuplicate);serve('kit-sample-note',kitSampleNote);serve('kit-no-mine',setKitNoMine);serve('kit-share-filter',kitShareFilter);serve('kit-sent-stamp',kitSentStamp);serve('kit-share-done',kitShareDone);serve('kit-shown',()=>!!kit);serve('home-open',homeOpen);serve('safari-remind',safariRemind);serve('kit-home-close',()=>{if(kit&&kit.cards[0]===HOME_CARD)kitClose()});serve('tour-open',tourOpen);serve('home-steps',homeSteps);serve('kit-start-row',kitStartRow);serve('home-tester',homeTester);serve('home-copy-btn',homeCopyBtn);serve('kit-sample-load',kitSampleLoad);serve('kit-import-open',kitImportOpen);serve('kit-open',kitOpen);serve('home-about',homeAbout);

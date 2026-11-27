@@ -2,7 +2,7 @@
    since the restructure S3b, 2026-11-26)
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14.) */
 import {emit} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
-import {$,COLORS,colName,dayRecs,isCargo,items,key,keyDate,nm,patLabel,patName,primaryCol,shoeStyle,sockPatterned,sockToe,todayDate,trouserKind,watchText} from './core.js';
+import {$,COLORS,colName,dayRecs,isCargo,items,key,keyDate,nm,patLabel,patName,primaryCol,settingsOpen,shoeStyle,sockPatterned,sockToe,todayDate,trouserKind,watchText} from './core.js';
 import {comboKey,comboSig,fnv64,keepRender,listPaused,picsDrawn,renders,shareRender,srcOk,workerBase,workerList} from './photo-keys.js';
 import {hasOutfit,planFor,planMonth} from './today-plan.js';
 import {editing,sel,view} from './app.js';

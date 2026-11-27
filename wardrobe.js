@@ -1,7 +1,7 @@
 /* Daily Wardrobe: the Wardrobe tab's search and sort, an item's own name, brand, material and notes, and Delete with Undo.
    Loaded after app.js and stats.js (an ES module since 2026-11-23); app.js calls in here from renderWardrobe, wardList,
    itemBody, save and rm. */
-import {emit,ask} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
+import {askFor,served,serve,emit,ask} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
 import {$,MATERIALS_BY,MAT_ALIAS,TYPES,accentsOf,colName,colorDesc,dayRecs,desc,fmtDay,hasPat,isCargo,itemFields,itemName,itemTitle,items,lumCol,matAlias,nameIso,nextStamp,nm,noBidi,patName,phSm,planCol,primaryCol,setWardrobe,sockPatterned,sockToeKey,strapBand,titleCls,trouserKind} from './core.js';
 import {fam,favItemSet,isFavItem} from './planner.js';
 import {wornDays} from './stats.js';
@@ -17,6 +17,7 @@ import {saveDay} from './days.js';
 import {show} from './nav.js';
 import {acts} from './act.js';
 import {itemGoneTell} from './ui.js';
+import {WARD_FIELDS,WARD_MAX,fldRow,matPicked,matRow,notesRow} from './fields.js';
 
 /* ---- an item's own name (its fields, sizes and rows are fields.js's since the restructure S3c: WARD_FIELDS, WARD_MAX) ---- */
 const WATCH_DETAILS_MAX=120;   // a watch's Details (itemsheet.js; W2-12-04: 5,036 letters were kept and synced)
@@ -71,7 +72,7 @@ function wardOrder(list,sort,wear){
   return list.slice().sort(f)}
 /* the Wardrobe list on screen: the chip's type, what the search matches, in the chosen order. The item sheet steps through it. */
 /* the chip chosen: 'all', a type, or 'fav' (the favorite pieces: fav.js favWard), which goes back to the type chip once no piece is a favorite */
-const wardFlt=()=>typeof favWard!=='undefined'&&favWard&&favItemSet()?'fav':flt;
+const wardFlt=()=>askFor('fav-ward')?'fav':flt;
 function wardView(){
   const ft=wardFlt(),q=wardNorm(wardQ),s=wardSort(),k=ft+'|'+s+'|'+q+(ft==='fav'?'|'+[...favItemSet()].join():'');
   if(wardMemo&&wardMemo.items===items&&wardMemo.n===items.length&&wardMemo.k===k)return wardMemo.list;
@@ -89,16 +90,16 @@ function wardBar(){
     `<button type="button" class="wclear" id="wclear" aria-label="Clear search" data-act="wardClearTap"${wardQ?'':' hidden'}>×</button></div>`+
     `<select class="wsort" id="wsort" aria-label="Sort the wardrobe" data-act-change="wardSortPick">${WARD_SORTS.map(([k,l])=>`<option value="${k}"${k===s?' selected':''}>${l}</option>`).join('')}</select></div>`}
 /* a box's tag: Sample, Out of rotation, On the way, away being cleaned, due for cleaning */
-function giTag(i){return i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:i.away?ask('care-tag',i)??'Out of rotation':'Out of rotation'}</span>`:i.sample&&typeof kitSampleTag==='function'?kitSampleTag(i):ask('care-badge',i)??''}
+function giTag(i){return i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:i.away?ask('care-tag',i)??'Out of rotation':'Out of rotation'}</span>`:i.sample&&served('kit-sample-tag')?askFor('kit-sample-tag',i):ask('care-badge',i)??''}
 /* ...read out with the box's name: the aria-label took its place, so a sample piece sounded like one's own (re-audit 2026-11-15) */
 function giNote(tag){const t=String(tag||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();return t?', '+t:''}
 /* the grid, or what to say when there is nothing to show */
 function wardGrid(list){
   if(list.length){const m=wardMemo&&wardMemo.list===list?wardMemo:null,w=m&&m.wear,
       wl=i=>!w?'':`<small class="wwear">${m.sort==='worn'?(w.n[i.id]?`Worn ${w.n[i.id]} time${w.n[i.id]===1?'':'s'}`:'Not worn yet'):w.last[i.id]?`Last worn ${w.last[i.id].toLocaleDateString(undefined,{month:'short',day:'numeric'})}`:'Not worn yet'}</small>`;
-    return `<div class="grid">${list.map(i=>{const tag=giTag(i),wp=wardPic(i);return `<div class="gi${i.paused?' paused':''}" id="gi-${esc(i.id)}"><button class="giopen" data-act="wardOpenTap" data-id="${esc(i.id)}" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(itemTitle(i))}${giNote(tag)}${isFavItem(i.id)?', favorite':''}">${typeof favMark==='function'?favMark(i):''}${wp?`<img class="ph" src="${srcOk(wp)}" alt="">`:i.photo?`<img class="ph" src="${srcOk(phSm(i))}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${isCargo(i)?'Cargo pants':i.type==='pants'&&trouserKind(i)!=='dress'?cap1(trouserKind(i)):TYPES[i.type]||'Item'}</small><b class="${titleCls(i)}">${esc(itemTitle(i))}</b>${wl(i)}</span>${tag}</button></div>`}).join('')}</div>`}   // (wardPic once a box: each call schedules the picture's download)
+    return `<div class="grid">${list.map(i=>{const tag=giTag(i),wp=wardPic(i);return `<div class="gi${i.paused?' paused':''}" id="gi-${esc(i.id)}"><button class="giopen" data-act="wardOpenTap" data-id="${esc(i.id)}" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(itemTitle(i))}${giNote(tag)}${isFavItem(i.id)?', favorite':''}">${askFor('fav-mark',i)??''}${wp?`<img class="ph" src="${srcOk(wp)}" alt="">`:i.photo?`<img class="ph" src="${srcOk(phSm(i))}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${isCargo(i)?'Cargo pants':i.type==='pants'&&trouserKind(i)!=='dress'?cap1(trouserKind(i)):TYPES[i.type]||'Item'}</small><b class="${titleCls(i)}">${esc(itemTitle(i))}</b>${wl(i)}</span>${tag}</button></div>`}).join('')}</div>`}   // (wardPic once a box: each call schedules the picture's download)
   const q=wardNorm(wardQ);
-  if(!items.length&&typeof setupWardEmpty==='function')return setupWardEmpty();   // setup.js: the empty Wardrobe's card
+  if(!items.length&&served('setup-ward-empty'))return askFor('setup-ward-empty');   // setup.js: the empty Wardrobe's card
   if(!q||!items.length)return '<p class="mut">Nothing here yet. Add one with the + button.</p>';
   const all=flt==='all'?0:items.filter(i=>wardMatch(i,q)).length,tl=(TYPES[flt]||'').toLowerCase();
   return `<div class="wnone" id="wnone"><b>Nothing matches “${esc(wardQ.trim())}”${flt==='all'?'':` in ${esc(tl)}`}</b><p class="mut">${all?`${all} item${all===1?' matches':'s match'} in the rest of your wardrobe.`:'Search looks at names, brands, notes, materials, types, colors and patterns.'}</p>`+
@@ -160,7 +161,7 @@ async function matMigrate(){if(matMigrating)return 0;matMigrating=true;let n=0;
   try{const stored=((await tx('readonly',s=>s.getAll()))||[]).filter(matRenameTo);
     for(const r of stored){const i=items.find(x=>x.id===r.id)||r,to=matRenameTo(i);if(!to)continue;i.material=to;i.updated=nextStamp(stamp(i));
       await atomic('items',i.id,cur=>{itemFields(i,cur);return {put:i}});n++}   // (CR-5-08: the material alone stamped, by the corrected clock, as app.js put does; it was the whole item at Date.now())
-    if(n){if(window.scheduleSync)scheduleSync();wardMemo=null;fixupRedraw()}}
+    if(n){askFor('sync-soon');wardMemo=null;fixupRedraw()}}
   catch(e){console.warn('material rename',e)}finally{matMigrating=false}
   return n}
 /* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. itemsheet.js draws the Wardrobe and
@@ -187,7 +188,7 @@ async function sockToeMigrate(){if(sockMigrating)return 0;sockMigrating=true;let
     for(const r of stored){const i=items.find(x=>x.id===r.id)||r;if(!sockLegacy(i))continue;
       i.toeColor=sockToeKey(i)||'none';if(!sockPatterned(i)){delete i.secondaryColor;delete i.tertiaryColor}i.updated=nextStamp(stamp(i));
       await atomic('items',i.id,cur=>{itemFields(i,cur);return {put:i}});n++}
-    if(n){if(window.scheduleSync)scheduleSync();wardMemo=null;fixupRedraw()}}
+    if(n){askFor('sync-soon');wardMemo=null;fixupRedraw()}}
   catch(e){console.warn('sock toe move',e)}finally{sockMigrating=false}
   return n}
 whenPulled(()=>sockToeMigrate());
@@ -200,7 +201,7 @@ whenPulled(()=>sockToeMigrate());
 const WARD_UNDO_MS=8000;
 const wardBusy=new Set();   // an item being deleted or duplicated: a second tap meanwhile does nothing (2026-11-15: a double tap made two toasts, two copies)
 async function wardOnce(key,f){if(wardBusy.has(key))return;wardBusy.add(key);try{return await f()}finally{setTimeout(()=>wardBusy.delete(key),400)}}
-const wardDuplicate=id=>wardOnce('dup',()=>kitDuplicate(id));   // (one key: the sheet moves to the copy, whose Duplicate the second tap would hit)
+const wardDuplicate=id=>wardOnce('dup',()=>askFor('kit-duplicate',id));   // (one key: the sheet moves to the copy, whose Duplicate the second tap would hit)
 const wardDelete=id=>wardOnce('del:'+id,()=>wardDeleteNow(id));
 async function wardDeleteNow(id){
   const k=items.findIndex(i=>i.id===id);if(k<0)return;const it=items[k],snap=JSON.parse(JSON.stringify(it));
@@ -212,7 +213,7 @@ async function wardUndelete(it,k,days,at){
   it.updated=nextStamp(at);await putRaw(it);   // newer than the tombstone: the item wins the merge (restamped whole: its field stamps no longer match, core.js fsOk)
   items.splice(Math.min(k,items.length),0,it);
   for(const r of days){const cur=dayRecs[r.date];if(!cur||JSON.stringify(cur)!==JSON.stringify(r))await saveDay(r,true)}   // a day re-planned without it meanwhile
-  planDirty();if(window.scheduleSync)scheduleSync();
+  planDirty();askFor('sync-soon');
   const v=['today','wardrobe','stats'].find(t=>$('#'+t)&&!$('#'+t).hidden);if(v)show(v);
   toast(`${nameIso(cap1(itemName(it)||nm(it)))} is back`)}
 /* the rest of the bridge: the consts declared above (dress.js: sockLegacy; itemsheet.js: wardDuplicate, wardDelete; tests/wardrobe.test.js: WARD_UNDO_MS) */
@@ -234,3 +235,5 @@ function itemFieldType(el){itemFieldSoon(el.dataset.id,el.dataset.f,el.value)}
 function itemFieldDone(el){itemFieldNow(el.dataset.id,el.dataset.f,el.value)}
 function matItemPick(el){setItemField(el.dataset.id,'material',matPicked(el))}
 acts({wardSearchType,wardSearchKey,wardClearTap,wardSortPick,wardOpenTap,wardAllTap,itemFieldType,itemFieldDone,matItemPick});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('item-field',setItemField);serve('ward-view',wardView);serve('ward-pending-restore',wardPendingRestore);serve('ward-synced',m=>{if(m&&(m.items||[]).some(matRenameTo))matMigrate();if(m&&(m.items||[]).some(sockLegacy))sockToeMigrate()});

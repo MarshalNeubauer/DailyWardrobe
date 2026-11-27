@@ -5,10 +5,15 @@
 
 /* ---- storage failures ---- */
 // is this error (or IndexedDB error event) a failure of the device's storage: marked by txs/atomic in app.js, a full disk, or a failed request
+import {askFor,served,serve} from './bus.js';
 import {ask,cardAt,db,fill,metaPut,queue,storeErr,storeFailText,storeFailure} from './app.js';
 import {esc} from './photo-keys.js';
-import {$,applyCustom,askPersist,items,setWardrobe,settings,takeSettings} from './core.js';
+import {$,TAGIMG_CACHE,applyCustom,askPersist,inviteOver,isConnected,items,oneStop,setWardrobe,settings,settingsOpen,takeSettings} from './core.js';
 import {planDirty} from './today-plan.js';
+import {toast} from './toast.js';
+import {whenPulled} from './history.js';
+import {plainErr} from './ui.js';
+import {acts} from './act.js';
 let storeToldAt=0;
 // tell the person a save failed (one failed save can reject more than one promise: said once)
 function saveFailed(e){console.warn('storage failure',e);if(dbDown)return;const now=Date.now();if(now-storeToldAt<1500)return;storeToldAt=now;toast(storeFailText(e),7000)}
@@ -17,6 +22,10 @@ function saveFailed(e){console.warn('storage failure',e);if(dbDown)return;const 
 let dbDown=null,dbErr=null;
 /* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
 function setStoreToldAt(v){storeToldAt=v}
+/* (moved from sync.js with its text unchanged, the restructure S6c) */
+/* this phone's storage failed during a sync: said in a toast every time (safety.js storeFailText), unless the full-page message already says it */
+function syncStoreTell(e){console.warn('storage failure during sync',e);if(dbDown)return;
+  try{setStoreToldAt(Date.now())}catch{}toast(storeFailText(e),9000)}
 /* An ES module since 2026-11-23. The bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals:
    start.js calls safetyStart and storageDown, add-save.js and kit.js storeFailure, saveFailed and askPersist, sync.js storeFailure,
    storeFailText and adoptBackupSettings, add.js, add-card.js and app.js the tagging failure's (tagFailText, tagFailed, retryTag),
@@ -25,7 +34,7 @@ function setStoreToldAt(v){storeToldAt=v}
    each (the three declared further down can't be read before their own line has run, as in the classic script); a module imports them.
    Above the file's first call that can throw (db, when app.js did not load; then acts): the names are then still the page's, as a
    classic script's were; the five consts declared further down are handed over above the handler */
-Object.assign(globalThis,{saveFailed,errNote,storageDown,safetyStart,tagFailText,tagFailed,retryTag,guardUnsaved,adoptBackupSettings,setStoreToldAt});
+Object.assign(globalThis,{saveFailed,errNote,storageDown,safetyStart,tagFailText,tagFailed,guardUnsaved,setStoreToldAt});
 Object.defineProperties(globalThis,{dbDown:{get:()=>dbDown},tagWhy:{get:()=>tagWhy,set:v=>{tagWhy=v}},tagNetLast:{get:()=>tagNetLast,set:v=>{tagNetLast=v}}});
 db.then(()=>{dbDown=false},e=>{dbDown=true;dbErr=e});
 /* a storage failure nobody caught is shown; every other rejection is left alone */
@@ -47,7 +56,7 @@ const errNoise=e=>{const m=errMsg(e),n=e&&e.name;return !m||n==='AbortError'||/^
 const errList=()=>{try{const L=JSON.parse(localStorage.getItem(ERR_KEY)||'[]');return Array.isArray(L)?L:[]}catch{return []}};
 /* ctx: what was going on, for a failure the app caught and handled ("Close-up reading": the card still works, but the owner should hear) */
 function errNote(e,ctx){try{if(errNoise(e))return;const x=e&&e.error||e,at=String(x&&x.stack||'').split('\n').find(l=>/\.js/.test(l))||'';
-  const L=errList();L.push({t:Date.now(),m:(ctx?ctx+': ':'')+errMsg(e),at:at.trim().slice(0,160),v:typeof appVersion==='function'?String(appVersion()):'',w:errWhere()});
+  const L=errList();L.push({t:Date.now(),m:(ctx?ctx+': ':'')+errMsg(e),at:at.trim().slice(0,160),v:served('app-version')?String(askFor('app-version')):'',w:errWhere()});
   localStorage.setItem(ERR_KEY,JSON.stringify(L.slice(-ERR_MAX)));errSoon()}catch{}}
 /* the page it happened on (Add, Today, …; Settings over it) */
 function errWhere(){try{const set=settingsOpen()?'settings ':'';
@@ -59,7 +68,7 @@ function errWhere(){try{const set=settingsOpen()?'settings ':'';
    Testers only: the owner's own phone keeps its log. Settings → About says so. ---- */
 const ERR_SEND_MS=60000,ERR_SEND_N=10;let errSendAt=0,errSendT=null;
 function errSoon(ms=5000){if(errSendT)return;errSendT=setTimeout(()=>{errSendT=null;errSend()},ms)}
-const errReporting=()=>(typeof isTester==='function'&&isTester())&&isConnected();
+const errReporting=()=>askFor('acct-role')==='tester'&&isConnected();
 async function errSend(){try{if(!errReporting()||navigator.onLine===false)return;
   const wait=ERR_SEND_MS-(Date.now()-errSendAt);if(wait>0){errSoon(wait+500);return}
   const un=errList().filter(x=>x&&!x.s&&x.t>Date.now()-7*86400000).slice(-ERR_SEND_N);if(!un.length)return;errSendAt=Date.now();
@@ -99,12 +108,10 @@ async function pruneTagImgs(){
     return n}
   catch(e){console.warn('kept tagging copies not checked',e);return 0}}
 /* once the wardrobe is loaded (from the start-up chain in app.js) */
-function safetyStart(){pruneTagImgs();errSoon(8000);if(items.length)askPersist();if(items.length)setTimeout(safariRemind,5000);whenPulled(wardPendingRestore);addRestore()}   // a name typed just before a kill (wardrobe.js); Add cards not saved before the app was closed (add-keep.js)
+function safetyStart(){pruneTagImgs();errSoon(8000);if(items.length)askPersist();if(items.length)setTimeout(()=>askFor('safari-remind'),5000);whenPulled(()=>askFor('ward-pending-restore'));askFor('add-restore')}   // a name typed just before a kill (wardrobe.js); Add cards not saved before the app was closed (add-keep.js)
 
 /* ---- tagging that failed: why, on the card, with Try again ---- */
 let tagWhy='',tagNetLast=false;
-/* one sentence, one full stop: the server's own sentences end with one ("…by hand.." was shown) */
-const oneStop=t=>String(t??'').trim().replace(/[\s.]+$/,'');
 /* the server's reason in words a tester can read: its own sentence (`message`, then `detail`), a set-up error in plain words (ui.js
    plainErr), and never a bare code ("mock", "busy") or a status number */
 function tagReason(status,j,e){const m=j&&typeof j.message==='string'&&j.message.trim()?j.message:(j&&j.detail)||e||'';
@@ -120,45 +127,25 @@ function tagFailText(status,j,e){tagNetLast=false;
   if(j&&j.error==='limit'&&j.message){tagWhy=String(j.message);return tagWhy}
   const why=tagReason(status,j,e);tagWhy=why+'.';
   return `Photo tagging failed: ${why}. Fill in the details below.`}
-/* the Add note was about the connection (cleared once back online) */
-const tagNetText=t=>/offline|couldn’t be reached/.test(t||'');
 // (an ended invitation: no "Try again" that can't work; re-audit 2026-11-15)
 /* err: the card's own reading's failure (ask's out.err, CR-2-07: three cards read at once, and the shared tagWhy / tagNetLast could be
    another card's by now); without it, the last one */
 function tagFailed(q,err){if(localStorage.getItem('worker_url')&&!inviteOver()){const why=err?err.why:tagWhy,net=err?err.net:tagNetLast;q.tagErr=why||'No answer came back.';if(net)q.tagNet=1;else delete q.tagNet;
   if(!net)errNote(new Error(q.tagErr),'Photo not tagged')}}   // reported (a phone offline is not a failure to fix)
-/* the card says what to do once: not when the reason already does ("Try again later, or add the item by hand.") */
-const tagFailNote=q=>q.tagErr&&!inviteOver()?`<div class="tagfail" role="alert"><p><b>This photo wasn’t tagged.</b> ${esc(q.tagErr)}${/try again|by hand|yourself/i.test(q.tagErr)?'':' <span class="tagfail-do">Fill in the details yourself, or try again.</span>'}</p><button type="button" class="tagfail-btn" data-act="cardRetryTag" ${cardAt(q)}>Try again</button></div>`:'';
-async function retryTag(i){const q=queue[i];if(!q||q.busy||!q.tagImg)return;
-  const ac=typeof AbortController==='function'?new AbortController():null;q.abort=ac;   // Stop on the card (add.js stopRead)
-  q.busy=1;renderAdd();let ai=null;const out={};try{ai=await ask(q.tagImg,{wb:!!(q.wb&&!q.wbOff),out,...(ac?{signal:ac.signal}:{})})}catch(e){console.warn(e)}
-  q.busy=0;q.abort=null;if(q.stopped){delete q.stopped;delete q.tagNet;q.tagErr=STOPPED}
-  else if(ai){try{delete q.tagErr;delete q.tagNet;await fill(q,ai);takeExtras(q,ai);measureAndApply(q)}catch(e){console.warn('answer not applied',e);errNote(e,'Try again: answer not applied')}}else tagFailed(q,out.err);
-  // drawn again however it went (a step that threw left the card as it was, Confirm off: tagging.js refineFromCloseup, 2026-11-16)
-  addKeep();
-  if(queue.includes(q))renderAdd()}
 
 /* ---- unsaved Add cards: closing or reloading the page asks first. Installed with the first card. ---- */
 let guardOn=false;
 function guardUnsaved(){if(guardOn)return;guardOn=true;
   addEventListener('beforeunload',e=>{if(queue.some(q=>!q.err)){e.preventDefault();e.returnValue=''}})}
 
-/* ---- a device's first contact with a backup (it has never finished a sync): the backup's settings win, key by key, whatever
-   the stamps say. A new device has only defaults, or what first-run setup saved, and those must not replace the holidays,
-   days off and own colours in the backup. What only this device has (a key the backup lacks) stays.
-   Called by syncOnce (sync.js) with the local snapshot and the downloaded one, before they are merged. ---- */
-async function adoptBackupSettings(local,data){
-  if(localStorage.getItem('last_sync')||!data||!data.settings||!local||!local.settings)return false;
-  if((local.settings.updated||0)<=(data.settings.updated||0))return false;   // the merge takes the backup's by itself
-  const kept={...local.settings,...data.settings};await metaPut('settings',kept);local.settings=kept;
-  setWardrobe({settings:takeSettings(settings,data.settings)});applyCustom(settings.custom);planDirty();loadWeather();
-  if(!$('#today').hidden)refreshToday();return true}
 /* the rest of the bridge: the consts declared above (about.js: errReport; tagging.js: oneStop; add.js: tagNetText; add-card.js:
    tagFailNote; tests/errreport.test.js: errList) */
-Object.assign(globalThis,{errReport,oneStop,tagNetText,tagFailNote});
+Object.assign(globalThis,{errReport});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,errList,get errTapAt(){return errTapAt},set errTapAt(v){errTapAt=v},pruneTagImgs,get storeToldAt(){return storeToldAt},set storeToldAt(v){storeToldAt=v},get tagWhy(){return tagWhy},set tagWhy(v){tagWhy=v},get tagNetLast(){return tagNetLast},set tagNetLast(v){tagNetLast=v},errNote,storageDown,tagFailNote,tagFailText,tagFailed};
-export {storeToldAt,saveFailed,dbDown,errTapAt,errList,errNote,errReport,storageDown,pruneTagImgs,safetyStart,tagWhy,tagNetLast,oneStop,tagFailText,tagNetText,tagFailed,tagFailNote,retryTag,guardUnsaved,adoptBackupSettings,setStoreToldAt};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,errList,get errTapAt(){return errTapAt},set errTapAt(v){errTapAt=v},pruneTagImgs,get storeToldAt(){return storeToldAt},set storeToldAt(v){storeToldAt=v},get tagWhy(){return tagWhy},set tagWhy(v){tagWhy=v},get tagNetLast(){return tagNetLast},set tagNetLast(v){tagNetLast=v},errNote,storageDown,tagFailText,tagFailed};
+export {storeToldAt,saveFailed,dbDown,errTapAt,errList,errNote,errReport,storageDown,pruneTagImgs,safetyStart,tagWhy,tagNetLast,tagFailText,tagFailed,guardUnsaved,setStoreToldAt,syncStoreTell};
 /* "Try again" on the page shown when the wardrobe can't be opened (act.js) */
 function nostoreAgainTap(){location.reload()}
 acts({nostoreAgainTap});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('err-note',errNote);serve('save-failed',saveFailed);serve('tag-failed',tagFailed);serve('guard-unsaved',guardUnsaved);serve('err-report',errReport);serve('sync-store-tell',syncStoreTell);

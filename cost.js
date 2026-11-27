@@ -126,11 +126,11 @@ function cpwRedraw(id,field){if(editing!==id)return;const o=$('#ivcpw .cpwout'),
 function cpwQRow(q){const T=isoKey(todayDate());
   return `<div class="cpwf cpwq"><label class="cpwprice">Price <span class="cpwin"><span class="cpwsym" aria-hidden="true">${esc(cpwSym())}</span><input type="text" inputmode="decimal" class="wf-price" autocomplete="off" maxlength="14" aria-label="Price (${esc(cpwCur())})" value="${esc(q.price||'')}" placeholder="Optional" data-act-input="cpwCardField" ${cardAt(q)} data-f="price"></span></label>`+
     `<label class="cpwbought">Bought <input type="date" class="wf-bought" value="${esc(q.bought||'')}" max="${T}" data-act-change="cpwCardField" ${cardAt(q)} data-f="bought"></label></div>`}
-function cpwQSet(i,k,v){const q=cardOf(i);if(!q||(k!=='price'&&k!=='bought'))return;v=String(v??'').slice(0,20);if(v.trim())q[k]=v;else delete q[k];addKeepSoon()}
+function cpwQSet(i,k,v){const q=cardOf(i);if(!q||(k!=='price'&&k!=='bought'))return;v=String(v??'').slice(0,20);if(v.trim())q[k]=v;else delete q[k];askFor('add-keep-soon')}
 function cpwSaveFields(q,it){const n=q.price!=null&&String(q.price).trim()?cpwParse(q.price):null;if(n!=null)it.price=n;
   if(/^\d{4}-\d{2}-\d{2}$/.test(q.bought||'')&&q.bought<=isoKey(todayDate()))it.bought=q.bought}
 /* ---- Insights: the Cost per wear card, once at least CPW_MIN pieces have a price ---- */
-function cpwOpenItem(id){if(!items.some(i=>i.id===id))return;show('wardrobe');openItem(id)}   // (the Wardrobe's type filter is left as it is: app.js owns it)
+function cpwOpenItem(id){if(!items.some(i=>i.id===id))return;show('wardrobe');askFor('item-show',id)}   // (the Wardrobe's type filter is left as it is: app.js owns it)
 function cpwStats(){const all=items.map(cpwOf).filter(Boolean);if(all.length<CPW_MIN)return null;
   const worn=all.filter(c=>c.wears).sort((a,b)=>a.per-b.per||(a.i.id<b.i.id?-1:1));
   const spent=all.reduce((a,c)=>a+c.price,0),year=items.filter(cpwPriced).reduce((a,i)=>a+cpwCleanYear(i),0);
@@ -178,10 +178,13 @@ function cpwCurPick(el){cpwSetCurrency(el.value)}
    tests/costwear.test.js. */
 Object.assign(globalThis,{cpwSum,cpwBlock,cpwQRow,cpwSaveFields,cpwStatsCard,cpwSettingsUI});
 /* the socket Insights asks for its cost-per-wear card (bus.js; stats.js no longer names this file) */
-import {serve} from './bus.js';
+import {serve,askFor} from './bus.js';
 import {itemGoneTell} from './ui.js';
+import {APP_LOC} from './locale.js';
 serve('cpw-stats-card',cpwStatsCard);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,cpwCleanYear,cpwCur,cpwHint,cpwMoney,cpwOf,cpwParse,cpwQSet,cpwSetPrice,cpwText};
 export {cpwCur,cpwMoney,cpwParse,cpwOf,cpwCleanYear,cpwText,cpwHint,cpwSum,cpwBlock,cpwSetPrice,cpwQRow,cpwQSet,cpwSaveFields,cpwStatsCard,cpwSettingsUI};
 acts({cpwPriceType,cpwPriceDone,cpwBoughtPick,cpwCardField,cpwCareTap,cpwRowTap,cpwCostDone,cpwCurPick});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('cpw-save-fields',cpwSaveFields);serve('cpw-q-row',cpwQRow);serve('cpw-settings-ui',cpwSettingsUI);serve('cpw-block',cpwBlock);serve('cpw-sum',cpwSum);

@@ -3,14 +3,14 @@
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14, and by
    job on 2026-11-17: item-photo.js the photo tools, item-view.js the sheet itself. Since the restructure S3d, 2026-11-26, it loads after
    wardrobe.js, care.js and cost.js, whose parts it draws.) */
-import {on,serve,ask,served} from './bus.js';
+import {on,serve,ask,served,askFor} from './bus.js';
 import {esc,srcOk} from './photo-keys.js';
 import {cap1,editing,flt,keepFocus,put,refreshSwatch,setFlt} from './app.js';
 import {cropEditor,paperHint,paperLine,paperRetake,phEdit,photoTools,setPhEdit} from './item-photo.js';
 import {wardPic} from './photos.js';
 import {itemThumb} from './draw.js';
-import {$,BANDS,BEZELS,BLOUSE_TAPE_MAX,CARE_ABLE,COLORS,CUFFS,DIAL_OPTS,FABRIC,HANDPICK_TYPES,MATERIALS_BY,METAL_TYPES,OCP_RANKS,SEASONS,SEASON_TYPES,SHOE_STYLES,TROUSER_KINDS,TYPES,VESTS,WATCH_STYLES,careTimes,careWashed,careWord,dayRecs,hasPat,hasVest,isoKey,items,keyDate,leatherLabel,leatherWord,leathersFor,metalOptsFor,normPat,paperCloth,patBase,patName,phSm,primaryCol,shadeName,shoeStyle,tapeText,todayDate,trouserKindShown,watchOpts} from './core.js';
-import {closeupBtn,isConnected,itemGoneTell,tell} from './ui.js';
+import {$,BANDS,BEZELS,BLOUSE_TAPE_MAX,CARE_ABLE,COLORS,CUFFS,DIAL_OPTS,FABRIC,HANDPICK_TYPES,MATERIALS_BY,METAL_TYPES,OCP_RANKS,SEASONS,SEASON_TYPES,SHOE_STYLES,TROUSER_KINDS,TYPES,VESTS,WATCH_STYLES,careTimes,careWashed,careWord,dayRecs,hasPat,hasVest,isConnected,isoKey,items,keyDate,leatherLabel,leatherWord,leathersFor,metalOptsFor,normPat,paperCloth,patBase,patName,phSm,primaryCol,shadeName,shoeStyle,tapeText,todayDate,trouserKindShown,watchOpts} from './core.js';
+import {closeupBtn,itemGoneTell,tell} from './ui.js';
 import {DETECT_PATS,detectPattern,usableSett} from './detect.js';
 import {WATCH_DETAILS_MAX,ivOn,matOnItem,wardBack,wardBar,wardCount,wardDelete,wardDuplicate,wardFieldsTop,wardFlt,wardFresh,wardGrid,wardKeep} from './wardrobe.js';
 import {isFavItem} from './planner.js';
@@ -20,6 +20,14 @@ import {toast} from './toast.js';
 import {saveDay} from './days.js';
 import {closeSettings} from './settings.js';
 import {acts} from './act.js';
+import {photoPair,shadeRow,shirtColFix} from './add-card.js';
+import {lookCu,lookOn} from './look-base.js';
+import {accRow,ckColSum,ckSec,cmpDiff,cmpDrawn,cmpHtml,cmpLab,cmpMatchHtml,cmpPaper,cmpPaperLine,cmpSteps} from './checklist.js';
+import {EP,colRows,colShows,colTidy,rdEditorBtn} from './colpick.js';
+import {lookSection} from './look.js';
+import {TEX_WORDS,claudeOnly,rereadSett,settSummary,settable} from './pattern-read.js';
+import {matLabel,matRow,matTidy,notesRow,optLab} from './fields.js';
+import {ARRIVE_PAST,arriveVal,checkArrivals,orderHint} from './add-more.js';
 const E=(id,k,list,v,lab)=>`<label>${lab?lab:k==='primaryColor'?'Color':k==='secondaryColor'?'Second color':k==='tertiaryColor'?'Third color':k==='watchStyle'||k==='shoeStyle'?'Style':k==='trouserKind'?'Kind':k[0].toUpperCase()+k.slice(1)} <select data-act-change="itemPick" data-id="${esc(id)}" data-f="${k}">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${cap1(x[1])}</option>`).join('')}</select></label>`;
 /* the item page's body (see "Wardrobe item page" below): the photo beside the drawn swatch with the row of photo tools under it, the
    "Color & texture" card (fabrics), then a card for the tags, one for rotation, and Delete on its own at the very end */
@@ -58,20 +66,20 @@ scope,'pattern',{mark:'good',title:'Pattern',sum:esc(cap1(patName(normPat(i.type
     (i.type==='pants'?E(id,'trouserKind',TROUSER_KINDS,trouserKindShown(i)):'')+(i.type==='shoes'?E(id,'shoeStyle',SHOE_STYLES,shoeStyle(i)):'')+(i.type==='blouse'?blouseFields(id,i):'')+(!L&&(i.type==='shoes'||i.type==='belt')?E(id,'leather',leathersFor(i).map(c=>[c,cap1(leatherWord(i,c))]),i.leather||'calf',leatherLabel(i)):'')+
     (i.type==='watch'?`<label class="wdetails">Details <input type="text" maxlength="${WATCH_DETAILS_MAX}" dir="auto" value="${esc(String(i.details||'').slice(0,WATCH_DETAILS_MAX))}" placeholder="e.g. three subdials, 12 and 6 numerals" data-act-change="itemDetails" data-id="${esc(id)}"></label>`+(L?'':E(id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial))+E(id,'band',BANDS,watchOpts(i).band)+E(id,'bezel',BEZELS,watchOpts(i).bezel)+E(id,'watchStyle',WATCH_STYLES,watchOpts(i).style):'');
   const details=ckSec(scope,'details',{mark:'good',title:'Details',sum:esc(ivDetailSum(i)),body:det+(fab||L?'':gap),cls:'ivtags'});
-  const cs=CARE_ABLE.includes(i.type)&&!i.order&&typeof careState==='function'?careState(i):null;
+  const cs=CARE_ABLE.includes(i.type)&&!i.order&&served('care-state')?askFor('care-state',i):null;
   const rotIn=`${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" min="${isoKey(todayDate())}" data-act-change="itemArrives" data-id="${esc(id)}"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
-  ${typeof favItemRow==='function'?favItemRow(i):''}${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" data-act="itemPause" data-id="${esc(id)}" data-want="${i.paused?0:1}" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}${typeof careCard==='function'?careCard(i):''}${typeof cpwBlock==='function'?cpwBlock(i):''}`;   // (cost.js: price, day bought, cost per wear)
-  const care=ckSec(scope,'care',{mark:cs&&cs.due?'warn':'good',title:'Planning &amp; care',sum:esc(ivCareSum(i,cs)+(typeof cpwSum==='function'?cpwSum(i):'')),body:rotIn,open:!!(cs&&cs.due),cls:'ivrot'});
+  ${askFor('fav-item-row',i)??''}${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" data-act="itemPause" data-id="${esc(id)}" data-want="${i.paused?0:1}" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}${askFor('care-card',i)??''}${askFor('cpw-block',i)??''}`;   // (cost.js: price, day bought, cost per wear)
+  const care=ckSec(scope,'care',{mark:cs&&cs.due?'warn':'good',title:'Planning &amp; care',sum:esc(ivCareSum(i,cs)+(askFor('cpw-sum',i)??'')),body:rotIn,open:!!(cs&&cs.due),cls:'ivrot'});
   const filled=['name','brand','notes'].filter(k=>String(i[k]||'').trim());
   const names=ckSec(scope,'names',{mark:filled.length?'good':'opt',title:'Name &amp; notes',sum:filled.length?esc(cap1(filled.join(', ')))+' filled in'+(filled.length<3?` · no ${['name','brand','notes'].filter(k=>!filled.includes(k)).join(' or ')}`:''):'Name, brand, notes · optional',body:wardFieldsTop(i)+notesRow(i.notes,ivOn(id))});
   const pics=ckSec(scope,'pics',{mark:'opt',title:'Pictures',sum:esc(cap1([i.photo?'photo':'no photo',tex&&i.texture?'close-up':''].filter(Boolean).join(', ')))+' · replace, rotate, crop',body:`<div class="ivhero">${pair}</div>${photoTools(i)}`,cls:'ivpics'});
   const ends=`<div class="ivdup"><button type="button" id="iv-dup" data-act="itemDup" data-id="${esc(id)}">Duplicate this item</button></div><div class="ivdel"><button class="danger" data-act="itemDelete" data-id="${esc(id)}">Delete item</button></div>`;
-  const sample=typeof kitSampleNote==='function'?kitSampleNote(i):'';
+  const sample=askFor('kit-sample-note',i)??'';
   return `<div class="ivin ivck"><div class="ivcols"><div class="ivcl">${top}${sample}${look||pics}</div><div class="ivcr">${lkSec}${color}${pattern}${mat}${details}${care}${names}${look?pics:''}</div></div>${ends}</div>`;
 }
 /* the summary line at the top of the item sheet: the photo (or the drawing), "In rotation" / "Out of rotation" / "On the way", how many
    wears are left before cleaning (or "Due for cleaning"), the material and the season (a choice's label: fields.js optLab) */
-function ivSummary(i,pic){const s=CARE_ABLE.includes(i.type)&&!i.order&&typeof careState==='function'?careState(i):null,left=s?s.limit-s.wears:0;
+function ivSummary(i,pic){const s=CARE_ABLE.includes(i.type)&&!i.order&&served('care-state')?askFor('care-state',i):null,left=s?s.limit-s.wears:0;
   const rot=i.paused?`<span class="ivpill${i.order?'':' warn'}">${i.order?'On the way':i.away?(i.away.why==='laundry'?'In the laundry':'At the cleaner’s'):'Out of rotation'}</span>`:'<span class="ivpill good">In rotation</span>';
   const care=s&&!i.away&&s.limit>1?(s.due?`<span class="ivpill warn">Due for ${careWord(i.type)}</span>`:`<span class="ivpill">${careWashed(i.type)?'Wash':'Clean'} in ${left} wear${left===1?'':'s'}</span>`):'';
   const meta=[i.material?matLabel(i.material):'',SEASON_TYPES.includes(i.type)&&i.season&&i.season!=='all'?optLab(SEASONS,i.season):''].filter(Boolean).join(' · ');
@@ -151,7 +159,7 @@ async function togglePause(id,want){const it=items.find(x=>x.id===id);if(!it){it
       for(const [s,v] of Object.entries(f))if(v===id){delete f[s];hit=true}
       if(hit){const nr={...r,force:f};if(!Object.keys(f).length)delete nr.force;delete nr.ids;await saveDay(nr,true);n++}}}
   // out of rotation doesn't make a sample piece his (kit.js kitNoMine; put reads it at once)
-  const kn=typeof kitNoMine!=='undefined';if(kn)setKitNoMine(true);const pw=put(it);if(kn)setKitNoMine(false);await pw;planDirty();renderWardrobe();
+  askFor('kit-no-mine',true);const pw=put(it);askFor('kit-no-mine',false);await pw;planDirty();renderWardrobe();
   toast(it.paused?`Out of rotation: the planner won't pick it${n?`, and ${n} upcoming day${n===1?' was':'s were'} planned again without it`:''}.`:'Back in rotation.')}
 async function clearStripes(id){const it=items.find(x=>x.id===id);if(!it)return;delete it.stripes;delete it.sett;await put(it);planDirty();renderWardrobe()}
 async function rm(id){return wardDelete(id)}   // at once, with Undo in a toast (wardrobe.js)
@@ -203,7 +211,7 @@ function renderWardrobe(){
   const wf=wardKeep();
   const cnt=t=>t==='all'?items.length:items.filter(i=>i.type===t).length;
   // (2026-11-16) a casual type's chip shows once one is owned (or its chip is the one chosen)
-  const ft=wardFlt(),chips=['all',...Object.keys(TYPES).filter(t=>!HANDPICK_TYPES.includes(t)||ft===t||items.some(i=>i.type===t))].map(t=>`<button class="chip ${ft===t?'on':''}" aria-pressed="${ft===t}" data-act="wardChip" data-t="${t}">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`+(t==='all'&&typeof favChip==='function'?favChip():'')).join('');   // (the ♥ Favorites chip after All, once a piece is a favorite: fav.js)
+  const ft=wardFlt(),chips=['all',...Object.keys(TYPES).filter(t=>!HANDPICK_TYPES.includes(t)||ft===t||items.some(i=>i.type===t))].map(t=>`<button class="chip ${ft===t?'on':''}" aria-pressed="${ft===t}" data-act="wardChip" data-t="${t}">${t==='all'?'All':TYPES[t]} ${cnt(t)}</button>`+(t==='all'?askFor('fav-chip')??'':'')).join('');   // (the ♥ Favorites chip after All, once a piece is a favorite: fav.js)
   const list=wardFresh();
   keepFocus($('#wardrobe'),()=>{$('#wardrobe').innerHTML=`<h2 class="vh">Wardrobe</h2><span class="vh" id="wcount" role="status">${wardCount(list)}</span>${items.length?wardBar()+`<div class="chips">${chips}</div>`:''}<div class="wslide" id="wslide">`+wardGrid(list)+'</div>'});   // (the chip or field pressed keeps the focus: W2-19-01)
   const on=document.querySelector('#wardrobe .chip.on');if(on){const c=on.parentElement;c.scrollLeft=Math.max(0,on.offsetLeft-c.offsetLeft-(c.clientWidth-on.offsetWidth)/2)}
@@ -221,5 +229,7 @@ function itemArrives(el){setItemArrives(el.dataset.id,el.value)}
 function itemPause(el){togglePause(el.dataset.id,el.dataset.want==='1')}
 function itemDup(el){wardDuplicate(el.dataset.id)}
 function itemDelete(el){rm(el.dataset.id)}
-function wardChip(el){setFlt(el.dataset.t);favOff();renderWardrobe()}
+function wardChip(el){setFlt(el.dataset.t);askFor('fav-off');renderWardrobe()}
 acts({itemPick,itemDetails,itemReadPat,itemGeneric,itemArrives,itemPause,itemDup,itemDelete,wardChip,tapeSet});   // (tapeSet: the uniform blouse's tapes)
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('item-body',itemBody);

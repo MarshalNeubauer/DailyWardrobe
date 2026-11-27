@@ -5,14 +5,16 @@
    accepts the code. Settings → Connection then says who is connected: a tester sees today's use against each daily limit, the
    owner gets "Invite testers" (make a link, see each tester's use today, revoke one).
    Server API used here: GET /me, GET/POST/DELETE /invites. An older server answers these 404 or 405: the box then stays empty. */
-import {on} from './bus.js';
+import {on,askFor,served,serve,emit} from './bus.js';
 import {backWanted} from './back.js';
-import {addGate,askConfirm,inviteOver,renderConnUI} from './ui.js';
-import {settingsOpen,settingsPart,settingsSummaries} from './settings.js';
+import {addGate,askConfirm,renderConnUI} from './ui.js';
+import {settingsPart,settingsSummaries} from './settings.js';
 import {connKeep,connRestored,endedAnswer,inviteEnded,tx,txs} from './app.js';
-import {acctBase,acctCall,acctEsc,dayRecs,hasInviteHash,iosInSafari,items,mergeState,myInviteLink,syncMark} from './core.js';
+import {acctBase,acctCall,acctEsc,dayRecs,hasInviteHash,homeBrowser,inviteOver,iosInSafari,items,mergeState,myInviteLink,settingsOpen,syncMark} from './core.js';
 import {toast} from './toast.js';
 import {acts} from './act.js';
+import {acct,acctRole,applyRole,isTester,rememberRole,setAcct} from './who.js';
+import {localState,syncNow} from './sync.js';
 const ACCT_CAPS=[['item','Item pictures'],['tag','Photo readings'],['pattern','Pattern readings'],['describe','Color & pattern lookups']];
 /* the parts of an invitation link, or null: the text may be the whole link or only what follows the #. A full stop, comma or bracket
    a mail or chat app put right after the link is not part of it */
@@ -50,8 +52,8 @@ const INVITE_OFFLINE='Couldn’t reach the server: you may be offline. Try again
 function acctFailText(){return acctWhy==='bad'?INVITE_BAD:acctWhy==='refused'?(acctWhyMsg||'That invitation link didn’t work. Ask for a new one.'):acctWhy==='offline'?INVITE_OFFLINE:''}
 /* what shows the connection's state is drawn again: Settings' Connection, the setup's Connection and All set steps, Add's note */
 function acctLinkDrawn(){try{renderConnUI();settingsSummaries();
-  if(typeof setupShown==='function'&&setupShown()&&typeof setupDraw==='function'&&/^(connect|done)$/.test(SETUP_STEPS[setup.at]))setupDraw();
-  if(document.querySelector('#add')&&!document.querySelector('#add').hidden)renderAdd()}catch(e){console.warn(e)}}
+  askFor('setup-conn-draw');
+  if(document.querySelector('#add')&&!document.querySelector('#add').hidden)emit('card-changed')}catch(e){console.warn(e)}}
 /* connect from an invitation link -> true when the server accepted the code. Only then are the address and the code stored (a
    link that doesn't work leaves an existing connection alone); the #invite part is dropped from the address bar either way,
    except when the server couldn't be reached, so the link is tried again when the phone is back online or the app is opened again.
@@ -114,10 +116,10 @@ async function acctJoin(p,opt){const say=t=>{if((opt.address||opt.typed)&&t)acct
         if(pend){acctToast('Backing up this phone’s changes first…',4000);pend=await acctBackUpFirst()}
         if(!await askConfirm(acctSwitchText(r.j,pend,oldRole==='owner'),{ok:pend?'Clear, losing those changes':'Clear and switch',danger:true}))return kept('Kept the current connection.');
         // (a clear that didn't happen switches nothing: the old wardrobe would go into the new account, CR-7-01)
-        if(typeof wipeDevice==='function'&&!await wipeDevice())return kept('This phone couldn’t be cleared, so it stays connected as before. Close the app fully (swipe it away), open it again and use the link again.');
+        if(served('wipe-device')&&!await askFor('wipe-device'))return kept('This phone couldn’t be cleared, so it stays connected as before. Close the app fully (swipe it away), open it again and use the link again.');
         localStorage.setItem('worker_url',p.url);localStorage.setItem('app_token',p.code);rememberRole(r.j);
         acctOwnerPhone(oldRole,r.j);
-        try{sessionStorage.setItem(typeof ABOUT_NOTE==='string'?ABOUT_NOTE:'about_note',r.j.role==='owner'?'Connected as the owner':'Connected as '+name)}catch{}
+        try{sessionStorage.setItem(askFor('about-note')??'about_note',r.j.role==='owner'?'Connected as the owner':'Connected as '+name)}catch{}
         location.reload();return true}
       // (audit 2026-11-15, W2-13-04) an empty phone switched with no word: the connection it had is said, and how to come back to it
       else if(!await askConfirm(acctSwitchEmptyText(r.j,oldOk?old.j:null,oldRole==='owner'),{ok:'Switch'}))return kept('Kept the current connection.');
@@ -136,7 +138,7 @@ async function acctJoin(p,opt){const say=t=>{if((opt.address||opt.typed)&&t)acct
   if(document.querySelector('#cfg-token'))document.querySelector('#cfg-token').value=p.code;
   acctToast(r.j.role==='owner'?'Connected as the owner':'Connected as '+name+(toldSame?': the same wardrobe as before':''));
   renderAccountUI();acctLinkDrawn();
-  if(window.syncNow)syncNow();
+  syncNow();
   // once per phone, not when it was already connected with this code (fix round 2: it covered the app every time a tester tapped his link)
   if(r.j.role==='tester'&&iosInSafari()&&!(cur&&cur.tok===p.code)&&!toldSame&&!homeTold())setTimeout(homeScreenGuide,1200);
   return true}
@@ -191,8 +193,8 @@ async function copyInviteLink(){const l=myInviteLink();if(!l)return false;
   try{await navigator.clipboard.writeText(l);acctToast('Your invitation link is copied.');return true}
   catch{const f=document.querySelector('#acct-mylink');if(f){f.hidden=false;f.value=l;f.select()}acctToast('Copy the link shown under the button.',5000);return false}}
 /* (audit 2026-11-15, H12) one explanation, kit.js's (with Copy my invitation link): never over the setup, which has its own Home Screen step */
-function homeScreenGuide(){if(typeof setupShown==='function'&&setupShown())return;if(typeof kit!=='undefined'&&kit)return;
-  if(typeof homeOpen==='function'){homeTold(true);homeOpen()}}
+function homeScreenGuide(){if(askFor('setup-shown'))return;if(askFor('kit-shown'))return;
+  if(served('home-open')){homeTold(true);askFor('home-open')}}
 /* the Home Screen sheet was shown after a link on this phone (localStorage.home_told); About's button still opens it any time */
 function homeTold(set){try{if(set)localStorage.setItem('home_told','1');return localStorage.getItem('home_told')==='1'}catch{return false}}
 function acctToast(t,ms){toast(t,ms)}
@@ -306,3 +308,5 @@ function acctPurgeTap(el){purgeInvite(el.dataset.id)}
 function acctReissueTap(el){reissueInvite(el.dataset.id)}
 function acctRevokeTap(el){revokeInvite(el.dataset.id)}
 acts({acctMyLinkTap,acctCreateTap,acctLinkFocus,acctCopyTap,acctPurgeTap,acctReissueTap,acctRevokeTap});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('invite-checking',()=>inviteChecking);serve('acct-why',()=>acctWhy);serve('connect-link',connectFromLink);serve('acct-fail-text',acctFailText);serve('limit-note',limitNote);

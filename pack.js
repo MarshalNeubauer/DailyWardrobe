@@ -150,12 +150,12 @@ async function packLockDays(days,light){
   for(const x of packLive(days)){const r={...(dayRecs[x.k]||{date:x.k}),lock:lockIds(x.o),trip:1};   // trip: a Settings change doesn't release it (history.js clearLocks)
     if(light&&x.o.top&&(r.kind||light[x.k]&&light[x.k].kind))r.kind=x.o.suitDay?'suit':'blazer';   // a day that took the other kind of jacket keeps it
     await saveDay(r,true)}
-  if(window.scheduleSync)scheduleSync()}
+  askFor('sync-soon')}
 async function packLock(){if(!packNow)return;await packLockDays(packNow.days,packNow.light&&packNow.light.recs);const kept=!!packNow.light;renderPack();
   toast(kept?'Lighter plan kept: these outfits now stay as shown.':'These outfits now stay as shown.')}
 async function packRelease(){if(!packNow)return;let n=0;
   for(const x of packLive(packNow.days)){const r=dayRecs[x.k];if(!r||!r.lock)continue;const c={...r};delete c.lock;delete c.trip;await saveDay(c,true);n++}
-  if(n&&window.scheduleSync)scheduleSync();renderPack();toast('Released: the plan can change these days again.')}
+  if(n)askFor('sync-soon');renderPack();toast('Released: the plan can change these days again.')}
 
 /* ---- the trip's settings, ticks and travel wear ---- */
 function packSetDate(which,v){if(!/^\d{4}-\d\d-\d\d$/.test(v||''))return renderPack();const t={...packTrip(),[which]:v};
@@ -241,7 +241,7 @@ function renderPack(){
    Before acts(), the file's one call that can throw (act.js not loaded): the names are then still the page's, as a classic script's were */
 Object.assign(globalThis,{packSetTrip,packShow,openPack});
 /* the socket nav.js asks as a page is shown (bus.js): the packing list page is shown or hidden */
-import {serve} from './bus.js';
+import {serve,askFor} from './bus.js';
 serve('pack-show',packShow);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,PACK_TITLE,packComplete,packDefault,packLock,packLockState,packMark,get packNow(){return packNow},set packNow(v){packNow=v},packRelease,packSetCap,packSetDate,get packT(){return packT},set packT(v){packT=v},packTrip,packUses,packWear,renderPack,openPack};
@@ -263,3 +263,5 @@ function packCopyTap(){packCopy()}
 function packShareTap(){packShare()}
 function packReleaseTap(){packRelease()}
 acts({packOpenTap,packBackTap,packDatePick,packCapPick,packKeepTap,packNoCapTap,packTickPick,packWearTap,packWearDayTap,packCopyTap,packShareTap,packReleaseTap});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('pack-set-trip',packSetTrip);serve('pack-open',openPack);

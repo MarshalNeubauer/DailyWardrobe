@@ -1,10 +1,10 @@
 /* Daily Wardrobe: Add, saving (split from add.js, Round C 2026-11-17): Save all, the Saved toast's title and Confirm (save, saveCard).
    (A card found by its id, and whether Claude is still reading it, are add-ids.js's since the restructure S3c.) */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {emit} from './bus.js';
-import {cardReading,needType} from './add-ids.js';
-import {cardOf,generateSwatch,queue,txs} from './app.js';
-import {$,COLORS,FABRIC,METAL_TYPES,SEASON_TYPES,TEXTURE_TYPES,TYPES,accentsOf,askPersist,blouseTapes,hasPat,itemName,items,nameIso,nowMs,patBase,sentence,shortDesc,styleWord,watchOpts} from './core.js';
+import {emit,askFor} from './bus.js';
+import {cardReading,closeTagImg,needType} from './add-ids.js';
+import {cardOf,generateSwatch,queue,storeFailure,txs} from './app.js';
+import {$,COLORS,CUSTOM_COL,CUSTOM_PAT,FABRIC,METAL_TYPES,SEASON_TYPES,TEXTURE_TYPES,TYPES,accentsOf,askPersist,blouseTapes,hasPat,itemName,items,nameIso,nowMs,patBase,sentence,settings,shortDesc,styleWord,watchOpts} from './core.js';
 import {toast} from './toast.js';
 import {addKeep} from './add-keep.js';
 import {matTidy,wardSaveFields} from './fields.js';
@@ -13,8 +13,9 @@ import {detectQueued} from './detect.js';
 import {colTidy} from './colpick.js';
 import {qtyOf} from './add-more.js';
 import {planDirty} from './today-plan.js';
-import {keepCloseImg,keepTagImg,recordTagResult} from './tag-request.js';
-import {closeTagImg} from './tagging.js';
+import {keepCloseImg,keepTagImg} from './tag-request.js';
+import {makeSmall} from './measure.js';
+import {saveUserSettings} from './settings.js';
 /* save every finished card in the queue (Skip the ones you don't want first) */
 /* a card that can be saved now (Save all and its count) */
 const cardReady=q=>!!q&&!q.busy&&!q.err&&!q.multiErr&&!q.saving&&!needType(q);
@@ -25,7 +26,7 @@ async function saveAll(){if(saveAllOn||queue.some(cardReading))return;saveAllOn=
   try{const cards=queue.filter(cardReady);for(let k=cards.length-1;k>=0;k--){const q=cards[k];if(queue.includes(q)&&await save(q.id)===true)n++}}
   finally{saveAllOn=false}
   const left=queue.filter(needType).length;
-  if(n||left)multiMsg(`${n?`Saved ${n} item${n===1?'':'s'} to your wardrobe.`:''}${left?`${n?' ':''}${left===1?'One card needs its type':`${left} cards need their type`} first.`:''}`);emit('card-changed')}
+  if(n||left)askFor('multi-msg',`${n?`Saved ${n} item${n===1?'':'s'} to your wardrobe.`:''}${left?`${n?' ':''}${left===1?'One card needs its type':`${left} cards need their type`} first.`:''}`);emit('card-changed')}
 /* Confirm (and the sample, the import, Save all): a failure is said and the card stays (a tester's Confirm did nothing at all, 2026-11-14) */
 /* (2026-11-17, the title audit) the short title, shortDesc: "Saved: Navy argyle socks." */
 /* what the Saved toast calls the item: its own name, else its colours with what it is ("Grey suit", "Navy tie", "Gold watch · white dial
@@ -39,8 +40,8 @@ async function save(k){const q=cardOf(k);if(!q||q.saving||cardReading(q))return 
   if(needType(q)){toast('Choose what it is first: pick its Type.',4000);return false}
   q.saving=1;const b=$('#qconf-'+queue.indexOf(q));if(b)b.disabled=true;
   if(!saveAllOn)await addKeep();   // the card as it is now (a kill right after Confirm brought back How many one lower: the last + waited for the timer)
-  try{return await saveCard(q)}catch(e){console.warn('save failed',e);if(typeof errNote==='function')errNote(e,'Confirm on Add ('+q.type+')');
-    if(typeof storeFailure==='function'&&storeFailure(e))saveFailed(e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000);return false}
+  try{return await saveCard(q)}catch(e){console.warn('save failed',e);askFor('err-note',e,'Confirm on Add ('+q.type+')');
+    if(typeof storeFailure==='function'&&storeFailure(e))askFor('save-failed',e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000);return false}
   finally{delete q.saving;if(queue.includes(q)&&$('#add')&&!$('#add').hidden)emit('card-changed')}}
 async function saveCard(q){
   if(!q||cardReading(q))return false;
@@ -56,7 +57,7 @@ async function saveCard(q){
   if(q.order){it.paused=true;it.order=true;if(q.arrives)it.arrives=q.arrives}   // bought, on the way
   if(METAL_TYPES.includes(q.type))it.metal=q.metal||'silver';
   if(q.type==='shirt')it.cuff=q.cuff||'button';
-  if(q.type==='suit')it.vest=(q.vest||(typeof newSuitVest==='function'?newSuitVest():'no'))==='yes'?'yes':'no';if(typeof dressNewItem==='function')dressNewItem();
+  if(q.type==='suit')it.vest=(q.vest||(askFor('new-suit-vest')??'no'))==='yes'?'yes':'no';askFor('dress-new-item');
   if(SEASON_TYPES.includes(q.type)&&q.season&&q.season!=='all')it.season=q.season;
   if(q.type==='shoes'||q.type==='belt')it.leather=q.leather||'calf';
   if(q.type==='pants'&&(q.trouserKind==='chinos'||q.trouserKind==='jeans'||q.trouserKind==='cargo'))it.trouserKind=q.trouserKind;   // dress trousers: no field (as before kinds)
@@ -67,32 +68,43 @@ async function saveCard(q){
   if(q.texture&&TEXTURE_TYPES.includes(q.type))it.texture=q.texture;
   if(q.meas)it.meas={lab:q.meas.lab,ref:!!q.meas.ref,src:q.meas.src,...(q.meas.parts?{parts:q.meas.parts.map(p=>({role:p.role,lab:p.lab,hex:p.hex,share:p.share}))}:{})};   // a patterned cloth's ground and stripe too (colpick.js)
   if(q.tagAI&&!q.manual)it.tagAI=q.tagAI;   // Claude's colour it gave, how sure it was, its runner-ups (measure.js aiSignals): to calibrate the verdict later
-  wardSaveFields(q,it);matTidy(it);if(typeof cpwSaveFields==='function')cpwSaveFields(q,it);   // (cost.js: the price and the day bought)   // name, brand, material, notes (wardrobe.js); no material the type can't have (CR-1-06)
+  wardSaveFields(q,it);matTidy(it);askFor('cpw-save-fields',q,it);   // (cost.js: the price and the day bought)   // name, brand, material, notes (wardrobe.js); no material the type can't have (CR-1-06)
   if(q.shade)it.shade=q.shade;   // drawn darker or lighter than the swatch, to match the close-up   // the owner's own colour samples (calibLab)
   if(q.sett&&!q.settOff&&readable(it.type,it.pattern,q.weave)){it.sett=q.sett;if(q.patternBox)it.pbox=q.patternBox}   // the full pattern (pattern-read.js)
   if(q.weave&&FABRIC.includes(it.type)&&it.pattern!=='solid'){it.weave=q.weave;if(q.weave.description)it.patternText=q.weave.description}
   if(q.spec&&it.sett&&it.sett.src==='claude+pixels')it.patternSpec=q.spec;   // Claude's reading of the pattern (pattern-read.js)
   // the old brightness-only stripe reader: only where the full reader had nothing to go on (no close-up), and never after it turned down a reading as contradicting the tag
   if(!it.sett&&!q.texture&&!q.settReject)try{const st=detectQueued(q,it);if(st)it.stripes=st}catch(e){console.warn('pattern detection failed',e)}
-  lookSave(q,it);   // the Look beta's fields (look.js: a coat's pattern, a knit's close-up, Looks right, Claude's runner-ups, own leather or metal); nothing with it off
+  askFor('look-save',q,it);   // the Look beta's fields (look.js: a coat's pattern, a knit's close-up, Looks right, Claude's runner-ups, own leather or metal); nothing with it off
   colTidy(it);   // no second or third colour its type can't show (colpick.js)
   if(q.sample)it.sample=true;   // the sample wardrobe (kit.js kitSampleLoad)
   // the item and its copies (the same shirt or pair again, qtyRow) in one transaction: all of them or none (a kill right after
   // "Confirm 12" saved 3, and the card was gone)
   const copies=[];for(let k=1;k<qtyOf(q);k++){const c=JSON.parse(JSON.stringify(it));c.id=crypto.randomUUID();copies.push(c)}
   const all=[it,...copies],at=nowMs();for(const x of all)x.updated=at;
-  await txs('items','readwrite',s=>{for(const x of all)s.put(x)});if(window.scheduleSync)scheduleSync();
+  await txs('items','readwrite',s=>{for(const x of all)s.put(x)});askFor('sync-soon');
   items.push(...all);
-  const i=queue.indexOf(q);planDirty();if(i>=0)queue.splice(i,1);if(addCalm)addCalm.ok=1;emit('card-changed');   // (only a card that really went closes up the list: a failed save's Confirm can be tapped again at once)
-  if(typeof kitSaved==='function')kitSaved(it,q,Math.max(0,i),copies);   // Saved, with Undo for all of them (kit.js)
+  const i=queue.indexOf(q);planDirty();if(i>=0)queue.splice(i,1);{const c=askFor('add-calm');if(c)c.ok=1}emit('card-changed');   // (only a card that really went closes up the list: a failed save's Confirm can be tapped again at once)
+  askFor('kit-saved',it,q,Math.max(0,i),copies);   // Saved, with Undo for all of them (kit.js)
   if(q.tagImg)for(const x of all)keepTagImg(x.id,q.tagImg,it.photo);recordTagResult(q,it);askPersist();   // tag-request.js: the sharp copy (signed with the photo), for every copy too (CR-1-04); what the tagger got wrong
   if(it.texture&&q.raw&&q.raw.tex)closeTagImg(q).then(u=>{for(const x of all)keepCloseImg(x.id,u,it.texture)}).catch(()=>{});   // the sharp close-up for later readings (tag-request.js)
   q.raw=null;q.big=null;q.texCanvas=null;   // the card's canvases (a 2048 px photo, its 800 px copy, the close-up) go now, not when the last reply about the card comes back
   return true;
 }
+/* (moved from tag-request.js with its text unchanged, the restructure S6c) */
+/* ---- what the tagger learns from: when an AI-tagged card is saved with a field changed, the change is kept (the latest 60)
+   and the latest 20 go with every tagging request; the counts give the accuracy on the stats page ---- */
+async function recordTagResult(q,it){if(!q.ai||!q.aiTag)return;const st={n:0,wrong:{},...(settings.tagStats||{})};st.wrong={...st.wrong};st.n++;
+  const fixes=[...(settings.tagFixes||[])];
+  // taking Claude's own suggestion of a new color or pattern (newColor / newPattern, added as the owner's) is not a correction (W2-17-16)
+  const claudes=(f,to)=>{const s=f==='primaryColor'?q.newColor:f==='pattern'?q.newPattern:null,nm=s&&String(s.name||'').trim().toLowerCase(),own=f==='pattern'?CUSTOM_PAT[to]:CUSTOM_COL[to];
+    return !!(nm&&own&&String(own.name||'').trim().toLowerCase()===nm)};
+  for(const f of ['type','primaryColor','secondaryColor','pattern']){const from=q.aiTag[f]||'none',to=it[f]||'none';if(f==='pattern'&&!hasPat(it.type))continue;
+    if(from!==to&&!claudes(f,to)){st.wrong[f]=(st.wrong[f]||0)+1;if(from!=='none'||to!=='none')fixes.push({field:f,type:it.type,from,to,id:it.id,t:Date.now()})}}
+  settings.tagStats=st;settings.tagFixes=fixes.slice(-60);await saveUserSettings()}
 /* An ES module since 2026-11-23: saveCard is its own. The bridge (tests/bridge.test.js lists it): add.js, add-card.js, add-sheet.js,
    kit.js and the tests read these as globals (save, saveAll). saveAllOn is written here only: a getter */
-Object.assign(globalThis,{cardReady,saveAll,savedTitle,save});
+Object.assign(globalThis,{cardReady,saveAll,savedTitle,save,recordTagResult});
 Object.defineProperties(globalThis,{saveAllOn:{get:()=>saveAllOn}});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,save,saveAll,get saveAllOn(){return saveAllOn},savedTitle};
-export {cardReady,saveAllOn,saveAll,savedTitle,save};
+export {cardReady,saveAllOn,saveAll,savedTitle,save,recordTagResult};

@@ -6,10 +6,12 @@
    follows the forecast). The planner keeps a locked day's pieces (planner.js, outfit()), so swapping today's tie, marking a day not
    worn or adding an item re-plans only the days after the lock, not tomorrow's outfit. A change made by hand on a day (a swap, a pick,
    an occasion, Reset, a move) drops that day's lock: the day is planned again around the change and locked as it then shows. */
+import {askFor,serve} from './bus.js';
 import {clearLocks,lockIds,releaseLocks} from './days.js';
 import {SLOTS,dayFields,dayRecs,di,inRotation,isHandPick,isWorkday,items,key,keyDate,nextStamp,nowMs,todayDate,trueToday} from './core.js';
 import {planFor,planMonth} from './today-plan.js';
 import {txs} from './app.js';
+import {lockStale} from './planner.js';
 /* the lock runs through Friday, not seven days (the owner, 2026-11-15: "only lock today through Friday ... a current week lock"): on a
    Saturday that is next week's Friday (the next Sunday to Friday), on a Friday today alone. Only workdays among them are locked, so a
    Sunday-Thursday week and a Monday-Friday week both get the rest of their work week; the days after are planned afresh each time */
@@ -29,7 +31,7 @@ async function lockUpcoming(){
     const rec={...(r||{date:k}),lock:l,lockAt:nowMs(),updated:nextStamp(r&&r.updated),lockOnly:1,base:(r&&(r.lockOnly?r.base:r.updated))||0};dayRecs[k]=rec;n++;   // the cached plan stays valid: the lock is what it shows
     dayFields(rec,r);await txs('days','readwrite',s=>s.put(rec))}   // (only the lock's fields get its stamp: core.js dayFields)
   n+=await lockPast(di(T)+span-1,mine);
-  if(n&&window.scheduleSync)scheduleSync()}
+  if(n)askFor('sync-soon')}
 /* the week's locks on days after the window (end: its last day number) let go: those made when the lock ran seven days, or by a phone
    still on that version. Only rec.lock goes: the owner's own picks (force, skip, the vest, kind, off), a kept trip's lock (pack.js
    rec.trip) and a day marked worn stay. Done after the window is locked, so its days keep what was shown; day numbers, not dates */
@@ -51,10 +53,12 @@ async function unlockClash(k,past){const o=planFor()[k];if(!o||(o.frozen&&!past)
     if(l&&r.worn!==true&&((o.tie&&l.tie===o.tie.id)||(!w&&o.shirt&&l.shirt===o.shirt.id)||(!w&&o.top&&l.top===o.top.id)))clash=true;
     w++}
   if(!clash)return 0;const from=keyDate(k),n=await releaseLocks(r=>keyDate(r.date)>from&&keyDate(r.date)>=T);   // (a kept trip stays locked: CR-3-05)
-  if(n&&window.scheduleSync)scheduleSync();return n}
+  if(n)askFor('sync-soon');return n}
 /* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals (clearLocks and
    lockIds are days.js's since the restructure S6a): lockUpcoming (today), careUnlock (add-more, care), unlockClash
    (history). The file has no top-level call, so the bridge is its last lines */
 Object.assign(globalThis,{lockUpcoming,careUnlock,unlockClash});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,lockUpcoming};
 export {lockUpcoming,careUnlock,unlockClash};
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('care-unlock',careUnlock);

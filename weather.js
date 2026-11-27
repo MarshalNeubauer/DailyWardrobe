@@ -1,18 +1,19 @@
 /* Daily Wardrobe: the weather: units, the location and its search, the 16-day forecast and the usual weather by month
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
-import {on} from './bus.js';
-import {$,climate,key,setClimate,setWeather,settings,weather} from './core.js';
-import {refreshToday,renderSettingsExtras,saveUserSettings,settingsOpen,settingsSummaries,todayDirty} from './settings.js';
+import {on,askFor,serve} from './bus.js';
+import {$,climate,key,setClimate,setWeather,settings,settingsOpen,weather} from './core.js';
+import {refreshToday,renderSettingsExtras,saveUserSettings,settingsSummaries,todayDirty} from './settings.js';
 import {announce} from './app.js';
 import {esc} from './photo-keys.js';
 import {planDirty} from './today-plan.js';
 import {acts} from './act.js';
+import {tell} from './ui.js';
 /* ---- settings: schedule, weather location, units ---- */
 /* °F where the country uses it (audit 2026-11-15: a Kuwait user on an English (US) iPhone got °F): the chosen location's country, else the
    time zone's (setup.js tzCountry, which falls back on the phone's region), else the phone's language as before */
 const F_CC=['US','LR','MM','PR','GU','VI','AS','MP','BS','KY','PW','FM','MH'];
 const locCC=l=>l&&(l.cc||(/,\s*([A-Z]{2})$/.exec(l.name||'')||[])[1])||'';
-const unitCC=()=>locCC(settings.location)||(typeof tzCountry==='function'&&tzCountry())||'';
+const unitCC=()=>locCC(settings.location)||askFor('tz-country')||'';
 const unit=()=>{if(settings.units)return settings.units;const cc=unitCC();return cc?(F_CC.includes(cc)?'F':'C'):/^en-(US|LR|MM)/.test(navigator.language||'')?'F':'C'};
 const temp=c=>Math.round(unit()==='F'?c*9/5+32:c);
 const wxIcon=c=>c===0?'☀️':c<=2?'🌤️':c===3?'☁️':c<=48?'🌫️':c<=67?'🌧️':c<=77?'❄️':c<=82?'🌦️':c<=86?'🌨️':'⛈️';
@@ -93,3 +94,5 @@ function citySearchTap(){findCity()}
 function myLocTap(){useMyLocation()}
 function unitsPick(el){setUnits(el.value)}
 acts({cityPick,cityKey,citySearchTap,myLocTap,unitsPick});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('weather-load',loadWeather);

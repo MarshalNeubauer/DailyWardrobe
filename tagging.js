@@ -4,22 +4,21 @@
    measure.js (white balance, paper, measuring, colour verdicts); just after it: own-lists.js (own colours, patterns and materials) and
    pattern-read.js (pattern readings, camouflage). */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {emit} from './bus.js';
-import {COLORS,COLS_BY,FABRIC,PATS_BY,TAG_Q,TEXTURE_TYPES,TYPES,accentsFor,accentsOf,colName,colsFor,dE00,matsFor,normColFor,normPat,ownMatName,patBase,patName} from './core.js';
-import {BLUR_SHARP,FAR_DE,MEAS_GAP,aiSignals,applyWb,closeRead,colRef,colourVerdicts,measHint,measKL,measureAndApply,measureCard,undoMeasured} from './measure.js';
+import {emit,askFor} from './bus.js';
+import {COLORS,COLS_BY,FABRIC,PATS_BY,TAG_Q,TEXTURE_TYPES,TYPES,accentsFor,accentsOf,colName,colsFor,dE00,isConnected,matsFor,normColFor,normPat,oneStop,ownMatName,patBase,patName} from './core.js';
+import {BLUR_SHARP,FAR_DE,MEAS_GAP,aiSignals,applyWb,closeRead,colRef,colourVerdicts,measHint,measKL,measureCard,undoMeasured} from './measure.js';
 import {ask,cardAt,cardIx,cardOf,generateSwatch,queue} from './app.js';
 import {esc} from './photo-keys.js';
+import {aiFields,fieldLabel,valName} from './tag-request.js';
+import {closeTagImg,readAbort,readBegin,readEnd} from './add-ids.js';
+import {measureAndApply,readPatternWithClaude,readSett,settNote} from './pattern-read.js';
+import {toast} from './toast.js';
+import {lookOn} from './look-base.js';
+import {acts} from './act.js';
 
 /* ---- tagging again once the close-up is in: both photos and the measurement go to the tagger; fields the owner has set by
    hand stay, the rest take the new answer, and the card says what changed ---- */
 const TAG_FIELDS=['type','primaryColor','secondaryColor','tertiaryColor','pattern'];
-const fieldLabel={type:'item',primaryColor:'color',secondaryColor:'second color',tertiaryColor:'third color',pattern:'pattern'};
-const valName=(k,v)=>!v?'none':k==='type'?(TYPES[v]||v).toLowerCase():k==='pattern'?patName(v):colName(v);
-/* what the tagger answered, as the card's values (the same normalising as a first tag); the pattern as normTag fitted it (to the card's
-   type when tagging again, forType): fitted again to Claude's type, a shirt's oxford Claude called a suit came back Solid (the 2026-11-24
-   review's R2 N1: 42 of 60 shirt patterns) */
-function aiFields(ai){return {type:ai.type,primaryColor:COLORS[ai.primaryColor]?ai.primaryColor:'grey',secondaryColor:ai.secondaryColor&&ai.secondaryColor!=='none'?ai.secondaryColor:null,
-  tertiaryColor:ai.tertiaryColor&&ai.tertiaryColor!=='none'?ai.tertiaryColor:null,pattern:ai.pattern||'solid'}}
 function takeExtras(q,ai,seen){q.tagAI=aiSignals(ai,seen);Object.assign(q,{conf:ai.conf||null,altColor:ai.altColor||null,altPattern:ai.altPattern||null,newColor:ai.newColor||null,newPattern:ai.newPattern||null,clothBox:ai.clothBox||q.clothBox||null,
     patternBox:ai.patternBox||q.patternBox||null,weave:ai.weave||q.weave||null});
   q.aiTag={...aiFields(ai)};takeMaterial(q,ai);readSett(q)}
@@ -35,34 +34,22 @@ function takeMaterial(q,ai){const m=ai&&ai.material,l=matsFor(q.type);delete q.m
   if(q.matSet)return;
   if(q.material&&!(q.matAI&&q.material===q.matAI.key))return;
   q.material=m.key;q.matAI={key:m.key,conf:m.conf,why:m.why||''}}
-async function closeTagImg(q){if(q.texDone)return q.raw.tex.toDataURL('image/jpeg',TAG_Q);   // a card brought back after a kill: its close-up is already corrected (add-keep.js addRevive)
-  const r=closeRead(q.raw.tex),g=r.ref?r.gains:(q.wbOff?null:q.wb);return applyWb(q.raw.tex,g).toDataURL('image/jpeg',TAG_Q)}
-/* one reading of each kind per Add card (CR-2-03, CR-2-10): a newer close-up, Skip or Remove calls the earlier one off (its request is
-   aborted: the worker gives a tester's count back), and only the latest may apply its answer or clear q.refining / q.patternReading.
-   Kept beside the card, not on it (an AbortController is not saved with the card: add-keep.js addKeep) */
-const READS=new WeakMap();
-function readBegin(q,kind){const r=READS.get(q)||{};if(kind==='refine')readAbort(q);else if(r[kind])try{r[kind].ac&&r[kind].ac.abort()}catch{}
-  const me={ac:typeof AbortController==='function'?new AbortController():null};r[kind]=me;READS.set(q,r);return me}
-/* the reading is still the card's own (true), and is now over; false: it was called off or replaced, so its answer is dropped */
-function readEnd(q,kind,me){const r=READS.get(q);if(!r||r[kind]!==me)return false;delete r[kind];return true}
-/* Skip (add.js skipCard), Remove close-up and a newer close-up: the readings in flight are called off, their flags cleared */
-function readAbort(q){const r=READS.get(q);if(!r)return;for(const k of ['refine','pattern'])if(r[k]){try{r[k].ac&&r[k].ac.abort()}catch{}delete r[k];q[k==='refine'?'refining':'patternReading']=0}}
 const REFINE_FAIL='Tagging again from the close-up didn’t work; the first tags stay.';
 async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)return;
-  try{measureCard(q)}catch(e){console.warn('close-up not measured',e);errNote(e,'Close-up measuring')}   // (a phone out of picture memory: read anyway, unmeasured)
-  if(!q.tagImg||!localStorage.getItem('worker_url')){readAbort(q);emit('card-changed');addKeep();return}
-  const me=readBegin(q,'refine');q.refining=1;emit('card-changed');addKeep();   // the close-up kept at once, as a reading under way (add-keep.js keeps it as cut off: refineCut)
+  try{measureCard(q)}catch(e){console.warn('close-up not measured',e);askFor('err-note',e,'Close-up measuring')}   // (a phone out of picture memory: read anyway, unmeasured)
+  if(!q.tagImg||!localStorage.getItem('worker_url')){readAbort(q);emit('card-changed');askFor('add-keep');return}
+  const me=readBegin(q,'refine');q.refining=1;emit('card-changed');askFor('add-keep');   // the close-up kept at once, as a reading under way (add-keep.js keeps it as cut off: refineCut)
   /* whatever happens from here, the card is drawn again when the reading ends (2026-11-16, a tester: a step that threw after the flag was
      cleared left Confirm switched off until something else redrew the card, so it took "Bought, on the way" to save) */
   // forType: Claude's colours are fitted to the card's own type, not to the type Claude guessed from the close-up (CR-2-04: a burgundy
   // blazer Claude called a suit came back brown); out: this reading's own reason when it fails (CR-2-07: not another card's)
-  let ai=null,hint=null;const out={};try{hint=measHint(q.meas);ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:hint,wb:!!(q.wb&&!q.wbOff),forType:q.type,out,...(me.ac?{signal:me.ac.signal}:{})})}catch(e){console.warn('close-up reading failed',e);errNote(e,'Close-up reading')}
+  let ai=null,hint=null;const out={};try{hint=measHint(q.meas);ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:hint,wb:!!(q.wb&&!q.wbOff),forType:q.type,out,...(me.ac?{signal:me.ac.signal}:{})})}catch(e){console.warn('close-up reading failed',e);askFor('err-note',e,'Close-up reading')}
   if(!readEnd(q,'refine',me))return;   // a newer close-up, Skip or Remove took over: this answer is not used, and the flag is theirs
   const k=queue.indexOf(q);q.refining=0;
-  try{refineApply(q,ai,hint,k,out.err)}catch(e){console.warn('close-up answer not applied',e);errNote(e,'Close-up answer not applied ('+q.type+')');q.refineNote=REFINE_FAIL;if(queue.includes(q)){emit('card-changed');addKeep()}}}
+  try{refineApply(q,ai,hint,k,out.err)}catch(e){console.warn('close-up answer not applied',e);askFor('err-note',e,'Close-up answer not applied ('+q.type+')');q.refineNote=REFINE_FAIL;if(queue.includes(q)){emit('card-changed');askFor('add-keep')}}}
 function refineApply(q,ai,hint,k,err){
   // the card is already filled in: its own wording, not the first tag's "Photo tagging failed: … Fill in the details below." (CR-2-07)
-  if(!ai||!ai.type){q.refineNote=err&&err.why?`Tagging again from the close-up didn’t work: ${oneStop(err.why)}. The first tags stay.`:REFINE_FAIL;if(k>=0){emit('card-changed');addKeep()}return}
+  if(!ai||!ai.type){q.refineNote=err&&err.why?`Tagging again from the close-up didn’t work: ${oneStop(err.why)}. The first tags stay.`:REFINE_FAIL;if(k>=0){emit('card-changed');askFor('add-keep')}return}
   const f=aiFields(ai),changes=[],prev={};delete q.refineType;delete q.refineKept;
   // a close-up shows cloth, not what the item is: a new type is offered, never taken (a shirt became a suit); the colours and pattern
   // are read for the card's own type
@@ -77,7 +64,7 @@ function refineApply(q,ai,hint,k,err){
   takeExtras(q,ai,!!hint);measureAndApply(q);q.model=ai.model||q.model;
   q.refineUndo=changes.length?prev:null;   // Undo puts the first tags back
   q.refineNote=changes.length?'Updated from the close-up: '+changes.join(', ')+'.':'The close-up confirmed the tags.';if(k>=0)emit('card-changed');
-  addKeep();   // kept at once (add-keep.js): a kill in the next moment lost the paid reading
+  askFor('add-keep');   // kept at once (add-keep.js): a kill in the next moment lost the paid reading
   readPatternWithClaude(q)}
 /* Claude's new colour against the close-up's measurement: the measured colour is clearly nearer the colour the card has (a white shirt
    whose close-up measured cream was turned navy) */
@@ -125,18 +112,15 @@ function tagNotes(q){if(q.manual)return '';const out=[];if(q.meas)q.measV=colour
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it), above acts({…}), the file's one top-level
    call: add.js, add-card.js, measure.js, pattern-read.js, colpick.js and safety.js, classic scripts, and the modules add-save.js and
    tag-request.js (fieldLabel, valName), which read them as globals (they come before this file in the list), use these; confTxt is read by tests/records.test.js only */
-Object.assign(globalThis,{fieldLabel,valName,aiFields,takeExtras,closeTagImg,readBegin,readEnd,readAbort,refineFromCloseup,tagNotes});
+Object.assign(globalThis,{takeExtras,refineFromCloseup,tagNotes});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,confTxt,takeExtras};
-export {fieldLabel,valName,aiFields,takeExtras,closeTagImg,readBegin,readEnd,readAbort,refineFromCloseup,confTxt,tagNotes};
+export {takeExtras,refineFromCloseup,confTxt,tagNotes};
 /* what the Add card's notes do (act.js; the card by its id in data-card: add-save.js cardAt, cardIx): read the close-up or the pattern
    again, Undo of the close-up's tags and of a measured change (the field in data-f), an offered type, color or pattern (data-f, data-v),
    "Add as a new color" and "Add this pattern" */
 function tagRefineAgain(el){refineAgain(cardIx(el))}
 function tagRefineUndo(el){undoRefine(cardIx(el))}
 function tagPatternAgain(el){patternAgain(cardIx(el))}
-function tagSet(el){setq(cardIx(el),el.dataset.f,el.dataset.v)}
 function tagMeasUndo(el){undoMeasured(cardIx(el),el.dataset.f)}
-function tagNewCol(el){openColForm(cardIx(el))}
-function tagNewPat(el){openPatForm(cardIx(el))}
-acts({tagRefineAgain,tagRefineUndo,tagPatternAgain,tagSet,tagMeasUndo,tagNewCol,tagNewPat});
+acts({tagRefineAgain,tagRefineUndo,tagPatternAgain,tagMeasUndo});

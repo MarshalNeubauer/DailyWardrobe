@@ -41,9 +41,22 @@ module.exports=async({ok,engines,url,settle})=>{
   const pv=violations(C,plant);
   ok(pv.length===3&&/^core\.js .*about\.js/.test(pv[0])&&/^app\.js .*colpick\.js/.test(pv[1])&&/^about\.js .*colpick\.js/.test(pv[2]),
     `planted imports are caught: required core.js → optional about.js, today-no-picture app.js → colpick.js, about.js → colpick.js of another group; add.js → its own group, core.js and app.js, and start.js → toast.js pass (${pv.join('; ')})`);
+  // the groups' needs (rule 3): each names known groups other than its own, and each is used (some file of the group imports one of
+  // the needed group's); a need is not handed on: kit needs add, so kit.js may import add-save.js, but add-save.js not kit.js, and
+  // what add needs is not kit's
+  const N=C.needs||{},groupsOf=new Set(Object.values({...C.files,...C.lazy}).map(e=>e.group));
+  const badNeed=Object.entries(N).flatMap(([g,l])=>!groupsOf.has(g)?[g+' is no group']:l.filter(h=>!groupsOf.has(h)||h===g).map(h=>`${g} needs ${h}`));
+  const used=Object.entries(N).flatMap(([g,l])=>l.map(h=>[g,h])).filter(([g,h])=>!Object.entries(imports).some(([f,ts])=>C.files[f]&&C.files[f].group===g&&ts.some(t=>C.files[t]&&C.files[t].group===h)));
+  ok(Object.keys(N).length>0&&!badNeed.length&&!used.length,`the needs (${Object.entries(N).map(([g,l])=>g+' → '+l.join(', ')).join('; ')}) name other groups, and each is used by an import${badNeed.length?'; wrong: '+badNeed.join(', '):''}${used.length?'; not used: '+used.map(x=>x.join(' → ')).join(', '):''}`);
+  const nGroup=Object.keys(N)[0],nNeed=nGroup&&N[nGroup][0],fileOf=g=>Object.keys(C.files).find(f=>C.files[f].group===g&&C.files[f].class==='optional');
+  const other=Object.keys(C.files).find(f=>C.files[f].class==='optional'&&C.files[f].group!==nGroup&&C.files[f].group!==nNeed&&!(N[C.files[f].group]||[]).includes(nNeed));
+  const np={[fileOf(nGroup)]:[fileOf(nNeed)],[fileOf(nNeed)]:[fileOf(nGroup)],[other]:[fileOf(nNeed)]};
+  const nv=violations(C,np);
+  ok(nv.length===2&&nv.some(l=>l.startsWith(fileOf(nNeed)+' '))&&nv.some(l=>l.startsWith(other+' ')),
+    `planted imports and the needs: ${fileOf(nGroup)} (${nGroup}) → ${fileOf(nNeed)} (${nNeed}, needed) passes; the other way round, and ${other} → ${fileOf(nNeed)}, are caught (${nv.join('; ')})`);
   for(const [eng,launch] of engines){let browser;
     try{browser=await launch()}catch(e){ok(false,`${eng}: the browser starts (${e.message.split('\n')[0]})`);continue}
-    try{await run(eng,browser,{ok,url,settle});await survey(eng,browser,{ok,url,C,page})}finally{await browser.close()}}
+    try{await run(eng,browser,{ok,url,settle});await survey(eng,browser,{ok,url,C,page,imports})}finally{await browser.close()}}
 };
 // the planner and the painter run as on a phone: the contract's 404 outcomes were measured with them (every other part of this file
 // is the same with them on)
@@ -64,10 +77,12 @@ function importsOf(root,page){const acorn=require('acorn'),out={};
     walk(ast);out[f]=[...new Set(got)]}
   return out}
 // the import rules of the contract's classes → one line per import that breaks them
-function violations(C,imports){const out=[],at=f=>C.files[f]||C.lazy[f];
+// (an optional file may also import a group its own group needs: the contract's `needs`, the owner's rule 3 of 2026-11-27; those
+// groups then fail together)
+function violations(C,imports){const out=[],at=f=>C.files[f]||C.lazy[f],needs=g=>(C.needs&&C.needs[g])||[];
   for(const [f,list] of Object.entries(imports)){const a=at(f);if(!a)continue;
     for(const t of list){const b=at(t);if(!b)continue;
-      const fine=a.class==='required'?b.class==='required':a.class==='today-no-picture'?b.class!=='optional':b.class!=='optional'||b.group===a.group;
+      const fine=a.class==='required'?b.class==='required':a.class==='today-no-picture'?b.class!=='optional':b.class!=='optional'||b.group===a.group||needs(a.group).includes(b.group);
       if(!fine)out.push(`${f} (${a.class}, ${a.group}) imports ${t} (${b.class}, ${b.group})`)}}
   return out}
 /* ---- the survey: each page script that can't be loaded (404), with a seeded 50-piece wardrobe and a stand-in server holding the 512
@@ -76,7 +91,7 @@ function violations(C,imports){const out=[],at=f=>C.files[f]||C.lazy[f];
    figure is there, else 8 s after Today was drawn (20 s after the page has loaded at most). A few at a time. The day is held (a Monday, a workday): which mannequin pose
    Today needs is the day's outfit's, and on WebKit that pose's file missing leaves Today with no figure ---- */
 const DAY=new Date(2026,10,16,12);
-async function survey(eng,browser,{ok,url,C,page}){
+async function survey(eng,browser,{ok,url,C,page,imports}){
   const E=eng.toLowerCase(),T=eng+': ',origin=new URL(url).origin,HOST='https://w.test/',wait=ms=>new Promise(r=>setTimeout(r,ms));
   const FIX=path.join(ROOT,'tests','fixtures','cm'),data=f=>`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(f).toString('base64');
   const recs={};for(const kind of ['suit','vest','suit-open','shirt-tie','shirt-open']){const d=path.join(FIX,kind);for(const f of fs.readdirSync(d)){const n=f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/');recs[kind+'|'+n]=data(path.join(d,f))}}
@@ -88,6 +103,9 @@ async function survey(eng,browser,{ok,url,C,page}){
       if(u.pathname==='/render'&&u.searchParams.get('list'))return j({keys:Object.keys(served)});
       if(u.pathname==='/render'&&k)return served[k]?j(served[k]):j({error:'not found'},404);
       if(u.pathname==='/me')return j({id:'owner',role:'owner',name:'Owner',caps:null,used:{}});if(u.pathname==='/sync')return j({rev:0,saved:0,data:null});return j({ok:true})});
+    // each page script that runs to its end notes it (`__ran`, its last line, added here): which files a 404 took down with it
+    if(fail!==null)await ctx.route(u=>u.href.startsWith(origin)&&page.includes(u.pathname.slice(1)),async route=>{const f=new URL(route.request().url()).pathname.slice(1);
+      try{const r=await route.fetch();const body=await r.text();await route.fulfill({response:r,body:body+`\n;(globalThis.__ran||(globalThis.__ran=[])).push(${JSON.stringify(f)});\n`})}catch(e){await route.continue().catch(()=>{})}});
     if(fail)await ctx.route(u=>u.href.startsWith(origin)&&u.pathname==='/'+fail,route=>route.fulfill({status:404,contentType:'text/plain',body:''}));
     await ctx.addInitScript(()=>{self.ASM_CM_SIZE=512});await ctx.clock.setFixedTime(DAY);return ctx};
   // the seeded wardrobe, the masters' keys and the server address, once: every case starts from this stored state
@@ -111,10 +129,11 @@ async function survey(eng,browser,{ok,url,C,page}){
     document.head.appendChild(s);for(let i=0;i<50&&!window.__sock;i++)await new Promise(r=>setTimeout(r,20));return window.__sock});
   ok(sock==='true,5',T+`bus.js's sockets in the page: ask for a name nobody serves gives undefined, a served one its answer (${sock})`);
   const state=await s.storageState({indexedDB:true});await s.close();
-  const look=async p=>p.evaluate(()=>{const q=s=>document.querySelector(s),t=q('#today');return {card:!!q('#start-fail'),today:!!(t&&t.children.length),fig:!!q('#today .fig svg,#today .fig img'),ready:!!window.appReady}});
-  const one=async f=>{const ctx=await ctxFor(state,f);try{const p=await ctx.newPage();await p.goto(url,{waitUntil:'load'});const t0=Date.now();let r;
+  const look=async p=>p.evaluate(()=>{const q=s=>document.querySelector(s),t=q('#today');return {card:!!q('#start-fail'),today:!!(t&&t.children.length),fig:!!q('#today .fig svg,#today .fig img'),ready:!!window.appReady,ran:(globalThis.__ran||[]).slice()}});
+  const ranBy={};
+  const one=async f=>{const ctx=await ctxFor(state,f||'');try{const p=await ctx.newPage();await p.goto(url,{waitUntil:'load'});const t0=Date.now();let r;
       let drawn=0;for(;;){r=await look(p);if(r.today&&!drawn)drawn=Date.now();if(r.card||(r.today&&r.fig)||(drawn&&Date.now()-drawn>8000)||Date.now()-t0>20000)break;await wait(250)}
-      return r.card?'card':!r.today?'no-today':r.fig?'picture':'no-picture'}
+      ranBy[f||'(none)']=r.ran;return r.card?'card':!r.today?'no-today':r.fig?'picture':'no-picture'}
     catch(e){return 'error: '+e.message.split('\n')[0].slice(0,80)}finally{await ctx.close().catch(()=>{})}};
   const got={},ms={},queue=['(none)',...page];
   await Promise.all([0,1,2,3].map(async()=>{for(let f;(f=queue.shift())!==undefined;){const t=Date.now();got[f]=await one(f==='(none)'?null:f);ms[f]=Date.now()-t}}));
@@ -125,6 +144,18 @@ async function survey(eng,browser,{ok,url,C,page}){
   const fits=(f,g)=>{const x=expected(C,f,E);return x==='painted'?g==='picture'||g==='no-picture':g===x};
   const off=page.filter(f=>!fits(f,got[f]));
   const tally={};for(const f of page)tally[got[f]]=(tally[got[f]]||0)+1;
+  // what else each optional file's 404 takes down: exactly the files that import it, directly or through others (its own group, or a
+  // group that needs its group: they fail together), and every other page script still runs to its end
+  const importers=f=>{const out=new Set([f]);for(let grew=true;grew;){grew=false;for(const [a,l] of Object.entries(imports))if(!out.has(a)&&l.some(t=>out.has(t))){out.add(a);grew=true}}return out};
+  const base=ranBy['(none)']||[],baseMiss=page.filter(f=>!base.includes(f));
+  ok(!baseMiss.length,T+`with every file there, every page script runs to its end (${base.length} of ${page.length}${baseMiss.length?'; not: '+baseMiss.join(', '):''})`);
+  const downBad=[],needDown={};
+  for(const f of page){const e=C.files[f];if(e.class!=='optional'||!ranBy[f])continue;const D=importers(f),R=new Set(ranBy[f]);
+    const extra=page.filter(g=>!D.has(g)&&!R.has(g)),still=[...D].filter(g=>R.has(g));
+    if(extra.length||still.length)downBad.push(`${f}: ${extra.length?'also stops '+extra.join(', '):''}${still.length?' still runs '+still.join(', '):''}`);
+    for(const g of D){const ge=C.files[g];if(ge&&ge.group!==e.group&&((C.needs||{})[ge.group]||[]).includes(e.group))(needDown[ge.group+' ← '+f]=needDown[ge.group+' ← '+f]||[]).push(g)}}
+  const needPairs=Object.entries(C.needs||{}).flatMap(([g,l])=>l.map(h=>[g,h])),shown=needPairs.filter(([g,h])=>Object.keys(needDown).some(k=>k.startsWith(g+' ← ')&&C.files[k.split(' ← ')[1]].group===h));
+  ok(!downBad.length&&shown.length===needPairs.length,T+`an optional file's 404 stops just the files that import it, and a needed group's file takes the needing group's importers down with it (${Object.entries(needDown).map(([k,l])=>k+': '+l.join(', ')).join('; ')})${downBad.length?': '+downBad.join('; '):''}${shown.length<needPairs.length?'; no 404 shown taking down: '+needPairs.filter(x=>!shown.includes(x)).map(x=>x.join(' ← ')).join(', '):''}`);
   ok(!off.length,T+`each of the ${page.length} page scripts, when it can't be loaded (404), shows what the contract says (${Object.entries(tally).map(([k,v])=>k+' '+v).join(', ')}; painted only: ${page.filter(f=>expected(C,f,E)==='painted').map(f=>f+' '+got[f]).join(', ')})${off.length?': '+off.map(f=>`${f} shows ${got[f]}, the contract says ${expected(C,f,E)}`).join('; '):''}`);
 }
 async function run(eng,browser,{ok,url,settle}){

@@ -53,7 +53,7 @@ async function favToggleItem(id){const it=items.find(i=>i.id===id);if(!it)return
   toast(had?`${name} is no longer a favorite.`:`${name} is a favorite now.`,FAV_UNDO_MS,{label:'Undo',fn:()=>set(had)})}
 const favMark=i=>isFavItem(i.id)?`<span class="favmark" role="img" aria-label="Favorite">${FAV_HEART}</span>`:'';
 /* (the chip shows only while a piece is a favorite; with none left the Wardrobe shows everything: wardFlt) */
-const favChip=()=>{const s=favItemSet();if(!s)return '';const n=items.filter(i=>s.has(i.id)).length,on=wardFlt()==='fav';
+const favChip=()=>{const s=favItemSet();if(!s)return '';const n=items.filter(i=>s.has(i.id)).length,on=!!(favWard&&favItemSet());
   return `<button class="chip favchip ${on?'on':''}" aria-pressed="${on}" data-act="favChipTap"><span aria-hidden="true">♥</span> Favorites ${n}</button>`};
 /* ---- the score card's Why: "One of your favorites, last worn 23 days ago (Oct 22). Everything in it has rested." (the last sentence
    when the jacket, shirt and tie have each rested FAV_RESTED days: the planner's rest written on the pieces) ---- */
@@ -87,9 +87,18 @@ function favChipTap(){favWard=true;emit('wardrobe-changed')}
 Object.assign(globalThis,{FAV_UNDO_MS,favPieces,favPillSeg,favLastIcon,favStrip,favItemRow,favMark,favChip,favWhy,favStatsCard,favOff});
 /* the socket Insights asks for its favorites card (bus.js; stats.js no longer names this file) */
 import {serve,emit,ask} from './bus.js';
+import {saveUserSettings} from './settings.js';
+import {renderToday} from './today.js';
+import {toast} from './toast.js';
+import {dayOnly,dayWord} from './month.js';
+import {statDate,statName,statPic} from './stats.js';
+import {wearFav} from './history.js';
+import {acts} from './act.js';
 serve('fav-stats-card',favStatsCard);
 Object.defineProperties(globalThis,{favWard:{get:()=>favWard}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,favData,favSave,favToggleItem,favWhy};
 export {FAV_UNDO_MS,favData,favSave,favPieces,favPillSeg,favLastIcon,favStrip,favItemRow,favToggleItem,favMark,favChip,favWhy,favStatsCard,favWard,favOff};
 acts({favLookTap,favWearTap,favItemTap,favChipTap});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('fav-ward',()=>!!(favWard&&favItemSet()));serve('fav-mark',favMark);serve('fav-item-row',favItemRow);serve('fav-chip',favChip);serve('fav-off',favOff);

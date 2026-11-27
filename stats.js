@@ -8,7 +8,7 @@
 import {emit,heard,ask} from './bus.js';   // (this file reads nothing of app.js's own ask(), the server request)
 import {$,COLORS,CUSTOM_COL,SHOP_WEEKS,SLOTS,TYPES,avgText,colName,dayRecs,di,dressOut,fmtDay,isHandPick,isWorkday,itemName,itemSeason,items,keyDate,listAnd,nameHtml,nm,phSm,prettyCols,primaryCol,sentence,settings,shortDesc,titleCls,todayDate,wearsJacket,wearsTie} from './core.js';
 import {cache,hasOutfit,planMonth,planStartDay} from './today-plan.js';
-import {HARD_CAP,QWIN,beltFit,beltWait,clothesScore,darkShirt,finish,jacketGroup,pairScore,patternScore,planSim,planStart,rateOutfit,shirtGroup,shirtScore,shoeSuits,tieGroup} from './planner.js';
+import {HARD_CAP,QWIN,beltFit,beltWait,clothesScore,darkShirt,finish,jacketGroup,pairScore,patternScore,planSim,planStart,rateOutfit,shirtGroup,shirtScore,shoeSuits,shoesWhyUnused,tieGroup} from './planner.js';
 import {comboKey,esc,srcOk} from './photo-keys.js';
 import {itemPic} from './photos.js';
 import {itemThumb,swatchSVG} from './draw.js';
@@ -74,10 +74,6 @@ function whyUnused(i){
     case 'overcoat':case 'raincoat':return i.type==='raincoat'?'No rain in the forecast, and days beyond it are planned without rain.':'No day in the next six months is cold enough for a coat.';
     case 'watch':return 'Another watch matches the shoes and buckle better every day.'}
   return 'The planner never needs it.'}
-/* never-worn shoes, in a sentence: whyUnused, and dress.js dressWhyUnused for a wardrobe without jackets (ok: they suit some of the
-   suits or pants named by `what`; suedeKept: suede waits for blazer days and there are none) */
-const shoesWhyUnused=(i,ok,what,suedeKept)=>!ok?`${colName(primaryCol(i))} shoes don't suit any of your ${what}.`:finish(i.leather)==='patent'?'Patent shoes are for black tie only.'
-  :beltWait(i)?`None of your belts match them, so the planner keeps them back: add a ${beltWait(i)} and they come into your outfits.`:suedeKept?'Suede is kept for blazer days, and you have none.':'Another pair always suits the outfit better.';
 const FIT_PANTS=3,FIT_SHIRTS=8;
 let fitMemo=null;
 const fitMemoFor=()=>fitMemo&&fitMemo.c===cache&&fitMemo.n===items.length&&fitMemo.s===fitSettingsSig()?fitMemo:(fitMemo={c:cache,n:items.length,s:fitSettingsSig(),legs:{},all:{},w:{}});
@@ -220,10 +216,10 @@ function statsShow(){const el=$('#stats');if(!el)return;
    as globals: start.js (renderStats, statsShow), wardrobe, care and cost (wornDays), dress (shoesWhyUnused), fav (statName, statDate,
    statPic), cost (statName1, statPic), care (statPic), pack (emptyAdd); the rest are read by tests; statsOpen and fitMemo are lets only
    this file writes: getters. Above the file's first call that can throw (afterScripts, then acts): the names are then still the page's */
-Object.assign(globalThis,{wornDays,shoesWhyUnused,statName,statName1,emptyAdd,statDate,statPic,renderStats,statsShow});
+Object.assign(globalThis,{wornDays,statName,statName1,emptyAdd,statDate,statPic,renderStats,statsShow});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,buildStats,get fitMemo(){return fitMemo},groupName,openStats,plannedDays,get statsOpen(){return statsOpen},statsToggle,whyUnused,renderStats,statDate,statName,wornDays};
-export {statsOpen,wornDays,plannedDays,whyUnused,shoesWhyUnused,fitMemo,buildStats,statName,statName1,emptyAdd,statDate,statPic,groupName,renderStats,statsToggle,openStats,statsShow};
+export {statsOpen,wornDays,plannedDays,whyUnused,fitMemo,buildStats,statName,statName1,emptyAdd,statDate,statPic,groupName,renderStats,statsToggle,openStats,statsShow};
 // a few seconds after start-up, while nothing else is going on
 afterScripts(()=>setTimeout(()=>{if(items.length&&!document.hidden)statsPlan()},4000));
 /* what the controls do (act.js): an empty page's two buttons and "Add an item" (emptyAdd: Insights, the Packing list), a Wear counts section folded

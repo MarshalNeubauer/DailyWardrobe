@@ -5,13 +5,13 @@
    (Photo tagging → Beta features) turns it on for this phone only (localStorage beta_look, not synced); off, the app is exactly as before.
    Both UIs read and write the same item fields; the beta's own fields (lookOk, lookHint, leatherOwn, metalOwn) are ignored by the old UI.
    Loaded after checklist.js (an ES module since 2026-11-23); nothing runs at load but Settings' registration. */
-import {emit,serve,ask,served} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
-import {RD_LOOKUPS,SOCK_THIRD,SW_GRAB,closeColPick,cnHex,cnLeft,colHas,colNear,colPick,colPickSel,colTarget,lookShadeOk,openColNew,openColPick,openPatNew,patChoices,patVar,rdCost,rdOff,renderColPick,useColPick} from './colpick.js';
+import {served,serve,emit,ask,askFor} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
+import {RD_LOOKUPS,SOCK_THIRD,SW_GRAB,closeColPick,cnHex,cnLeft,colHas,colNear,colPick,colPickSel,colTarget,lookShadeOk,openColForm,openColNew,openColPick,openPatForm,openPatNew,patChoices,patVar,rdCost,rdOff,renderColPick,useColPick} from './colpick.js';
 import {addTexture,renderAdd} from './add.js';
-import {addOwnMaterial,groupOf,matOffer,newColHex,openColForm,openPatForm,removeOwnMaterial,renderOwnMatUI} from './own-lists.js';
+import {addOwnMaterial,groupOf,matOffer,newColHex,removeOwnMaterial,renderOwnMatUI} from './own-lists.js';
 import {announce,cap1,cardAt,cardIx,editing,generateSwatch,put,qAt,queue,refreshSwatch} from './app.js';
 import {saveUserSettings,settingsPart,showCost} from './settings.js';
-import {$,COLORS,CUSTOM_COL,DIAL_COLS,FABRIC,MATERIALS_BY,METAL,METAL_TONES,OWN_MAT_MAX,PATS_BY,SHADE_MAX,TYPES,clipMetal,colName,colsFor,items,leatherWord,leathersFor,matTypeWord,matsFor,metalWord,normPat,ownMatName,paperCloth,patBase,patName,primaryCol,settings,shadeHex,shadeName,sockPatterned,sockToeKey,soleStyle,strapBand,watchOpts} from './core.js';
+import {$,COLORS,CUSTOM_COL,DIAL_COLS,FABRIC,MATERIALS_BY,METAL,METAL_TONES,OWN_MAT_MAX,PATS_BY,SHADE_MAX,TYPES,clipMetal,colName,colsFor,isConnected,items,leatherWord,leathersFor,matTypeWord,matsFor,metalWord,normPat,ownMatName,paperCloth,patBase,patName,primaryCol,settings,shadeHex,shadeName,sockPatterned,sockToeKey,soleStyle,strapBand,watchOpts} from './core.js';
 import {colourVerdicts,paperCopy,paperOf,undoMeasured} from './measure.js';
 import {ckLr,matGuessOf,matNewOf,setq} from './add-card.js';
 import {esc,jsq} from './photo-keys.js';
@@ -21,7 +21,7 @@ import {addKeep} from './add-keep.js';
 import {planDirty} from './today-plan.js';
 import {cardReading} from './add-ids.js';
 import {toast} from './toast.js';
-import {closeupBtn,cuGot,isConnected,itemGoneTell,tell} from './ui.js';
+import {closeupBtn,cuGot,itemGoneTell,tell} from './ui.js';
 import {CK_OPEN,accRow,ckChip} from './checklist.js';
 import {DETECT_PATS} from './detect.js';
 import {tagImgOf} from './tag-request.js';
@@ -390,7 +390,7 @@ async function lookRead(src,id){const it=lookItem(src,id);if(!it)return;const ke
   try{r=await fetch(new URL('describe',w.replace(/\/*$/,'/')).href,{method:'POST',headers:{'content-type':'application/json','x-app-token':localStorage.getItem('app_token')||''},body:JSON.stringify(body),...(me.ac?{signal:me.ac.signal}:{})});j=await r.json().catch(()=>({}))}catch(e){r=null}
   if(LOOK_RD[key]!==me)return;   // stopped meanwhile: nothing changes
   me.busy=false;delete me.ac;
-  if(r&&r.ok&&acct&&acct.me&&acct.me.caps&&acct.me.used)acct.me.used.describe=(+acct.me.used.describe||0)+(j.lookups!=null?+j.lookups||0:RD_LOOKUPS);
+  {const me=askFor('acct-me');if(r&&r.ok&&me&&me.caps&&me.used)me.used.describe=(+me.used.describe||0)+(j.lookups!=null?+j.lookups||0:RD_LOOKUPS)}
   if(r&&r.status===429){me.err=j.message||'Today’s readings are used up. They start again at midnight UTC.';lookRedraw(src,id);return}
   if(!r||!r.ok||!j.colour){me.err=r&&!r.ok&&showCost()&&(j.detail||j.message)?`Claude couldn’t read it this time (${j.detail||j.message}).`:'Claude couldn’t read it this time. Try again.';lookRedraw(src,id);return}
   me.err='';await lookApplyRead(src,id,j,me)}
@@ -460,3 +460,5 @@ function lkCuFileQ(el,ev,f){cuGot(el,f,x=>addTexture(cardIx(el),x,true))}   // (
 globalThis.HOOK={__proto__:globalThis.HOOK||null,LOOK_OTHER,lookCheck,lookOwnMats,lookSet,lookSetMat,lookShadeStep,lookSetEnamel};
 export {lookSet,lookOwnMats,LOOK_OTHER,lookWrite,lookOwnMatUI,lookSetMat,lookSetEnamel,renderLookPick,lookUsePick,lookShadeHtml,lookShadeStep,lookSugCols,lookSugPats,lookSection,lookCheck,lookOpenFresh,lookSave};
 acts({lkSwitch,lkAddChip,lkUse,lkOwnRm,lkOwnAdd,lkOwnCancel,lkOwnOpen,lkSel,lkClose,lkOther,lkSaveOther,lkNewName,lkNewAdd,lkNewOpen,lkUsePick,lkShade,lkRow,lkUndoMeas,lkStop,lkRead,lkCheck,lkReread,lkClearStripes,lkNewCol,lkNewPat,lkCuFileQ});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('look-section',lookSection);serve('look-save',lookSave);serve('look-own-mat-ui',lookOwnMatUI);

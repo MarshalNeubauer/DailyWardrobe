@@ -1,6 +1,6 @@
 /* Daily Wardrobe: the item sheet itself: open, close, swipe down, ‹ › and the sideways swipe, the phone's Back, the focus back, and a
    sync's change to the piece open. (An ES module since 2026-11-23; split out of itemsheet.js on 2026-11-17, no behavior change.) */
-import {emit,serve} from './bus.js';   // emit: the Wardrobe's redraw (itemsheet.js, later); serve: the piece open, its redraw and its drop
+import {askFor,served,serve,emit} from './bus.js';   // emit: the Wardrobe's redraw (itemsheet.js, later); serve: the piece open, its redraw and its drop
 import {$,TYPES,itemName,itemTitle,items,nm,titleCls} from './core.js';
 import {backLand,backOn,histDrop,histPush} from './back.js';
 import {cropKeep,phEdit} from './item-photo.js';
@@ -8,6 +8,9 @@ import {layerFrom,layerInert,layerOpen,noMotion,sheetSwipe,tell} from './ui.js';
 import {esc} from './photo-keys.js';
 import {editing,keepFocus,setEditing} from './app.js';
 import {acts} from './act.js';
+import {cmpMount} from './checklist.js';
+import {lookOn} from './look-base.js';
+import {lookOpenFresh} from './look.js';
 /* ---- Wardrobe item sheet ----
    Tapping an item opens it in a sheet that slides up over the Wardrobe: the full width of a phone, to just under the top of the
    screen (a centred panel from 600px). The grid behind never moves, so closing puts you back exactly where you were. Ways out:
@@ -18,7 +21,7 @@ const WARD_EASE='cubic-bezier(.2,.8,.2,1)',WARD_MS=320;
 /* the filtered, sorted list on screen (wardrobe.js), with the open item kept in it at the place it had (ivAt) when an edit took it out of the
    filter (CR-1-05: a suit made a blazer under the Suit chip lost "n of m", ‹ ›, the sideways swipe and its focus on closing) */
 let ivAt=0;
-const wardList=()=>{const l=wardView();if(!editing||l.some(x=>x.id===editing))return l;const it=items.find(x=>x.id===editing);if(!it)return l;
+const wardList=()=>{const l=askFor('ward-view');if(!editing||l.some(x=>x.id===editing))return l;const it=items.find(x=>x.id===editing);if(!it)return l;
   const c=l.slice();c.splice(Math.min(ivAt,c.length),0,it);return c};
 let itemFrom=null;   // the item the sheet was opened on: closing on another one brings that one's box into view first
 /* the bridge (tests/bridge.test.js): what the classic scripts and the tests still use as globals. editing is read by twelve page scripts
@@ -41,7 +44,7 @@ backOn('item',()=>{if(editing&&phEdit.crop){cropKeep();emit('wardrobe-changed');
 function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)return;const was=v.classList.contains('on');
   v.classList.toggle('on',on);if(bd)bd.classList.toggle('on',on);document.body.classList.toggle('iv-on',on);
   if(typeof layerInert==='function')layerInert();else for(const el of document.querySelectorAll('body>header,main,body>nav'))el.inert=on;   // (ui.js: counts Settings and the sheets too)
-  if(was&&!on&&typeof syncLaterRun==='function')setTimeout(()=>syncLaterRun('wardrobe'),0)}   // a sync's redraw that waited for the sheet (sync.js)
+  if(was&&!on&&served('sync-later-run'))setTimeout(()=>askFor('sync-later-run','wardrobe'),0)}   // a sync's redraw that waited for the sheet (sync.js)
 /* ---- a sync changed the piece open in the sheet (fix round 3, 2026-11-16) ----
    The sync's redraw of the Wardrobe waits while the sheet is up (sync.js syncLater), so the sheet kept the old state and its buttons acted
    on the new one: "Take out of rotation" put a piece taken out on the other phone back in (W1-5-04). Now the sheet is drawn again from the
@@ -63,7 +66,7 @@ function renderItem(){
   if(!i){setEditing(null);itemShown(false);return}
   const l=wardList(),k=l.findIndex(x=>x.id===i.id);if(k>=0)ivAt=k;
   $('#ivhead').innerHTML=`<div class="ivt"><small class="gtype">${TYPES[i.type]||'Item'}</small><h2 id="iv-title" class="${titleCls(i)}">${esc(itemTitle(i)||TYPES[i.type]||'Item')}</h2></div>${k>=0?`<span class="pcount">${k+1} of ${l.length}</span>`:''}`;
-  keepFocus($('#ivbody'),()=>{$('#ivbody').innerHTML=itemBody(i)});   // every edit redraws it: the field or button used keeps the focus (W2-19-01)
+  keepFocus($('#ivbody'),()=>{$('#ivbody').innerHTML=askFor('item-body',i)});   // every edit redraws it: the field or button used keeps the focus (W2-19-01)
   if(typeof cmpMount==='function')cmpMount($('#ivbody'));
   $('#iv-prev').disabled=k<=0;$('#iv-next').disabled=k<0||k>=l.length-1;
   itemShown(true)}
@@ -146,3 +149,5 @@ function itemStepTap(el){stepItem(+el.dataset.n)}
    nav.js has the sheet drawn again or dropped when another page shows (the restructure S3d) */
 serve('item-open',()=>editing);serve('item-draw',renderItem);serve('item-drop',dropItem);
 acts({itemCloseTap,itemStepTap});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('item-show',openItem);serve('item-synced',itemSynced);

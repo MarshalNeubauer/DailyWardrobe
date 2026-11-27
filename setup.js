@@ -3,9 +3,9 @@
 /* (2026-11-14, the owner) on an iPhone or iPad in a browser tab, a "Home Screen" step right after Welcome: the Home Screen app keeps its
    own storage, apart from Safari's, so what is set up in Safari stays there; it is shown before anything is set up. Not in the app opened
    from the Home Screen, not on other devices (the steps are then as before). SETUP_STEPS is worked out when the setup opens. */
-import {$,DAY_NAMES,dayRecs,hasInviteHash,inRotation,isHandPick,items,settings} from './core.js';
-import {inviteOver,isConnected,layerInert,tell} from './ui.js';
-import {closeSettings,saveUserSettings,setVestMode,settingsOpen,todayDirty,toggleDay} from './settings.js';
+import {$,DAY_NAMES,dayRecs,hasInviteHash,homeAndroid,homeIOS,homeNeeded,inRotation,inviteOver,isConnected,isHandPick,items,settings,settingsOpen,tourSeen} from './core.js';
+import {layerInert,tell} from './ui.js';
+import {closeSettings,saveUserSettings,setVestMode,todayDirty,toggleDay} from './settings.js';
 import {backDrop,backOn,backPush} from './back.js';
 import {renderToday} from './today.js';
 import {openAdd,show} from './nav.js';
@@ -24,8 +24,8 @@ let setupNo=false;   // the app was already driven somewhere before start-up loo
 const setupDress=()=>({jacket:!(settings.dress&&settings.dress.jacket===false),tie:!(settings.dress&&settings.dress.tie===false)});
 const setupConnected=()=>isConnected();
 /* an invitation link from the address being checked (account.js), or one the server couldn't be reached for (it stays in the address) */
-const setupLinkChecking=()=>inviteChecking;
-const setupLinkWaiting=()=>acctWhy==='offline'&&hasInviteHash();
+const setupLinkChecking=()=>askFor('invite-checking');
+const setupLinkWaiting=()=>askFor('acct-why')==='offline'&&hasInviteHash();
 const setupShown=()=>setup.at>=0;
 
 /* start-up, once the wardrobe, history and settings are read: a new install (nothing in the wardrobe, no day ever recorded,
@@ -64,7 +64,7 @@ function setupInert(on){if(!on)return layerInert();   // closing: the page stays
   for(const s of['header','main','nav']){const el=$(s);if(el)el.inert=on}}
 function setupOpen(again,resume){
   closeSettings();
-  if(typeof kit!=='undefined'&&kit&&typeof HOME_CARD!=='undefined'&&kit.cards[0]===HOME_CARD)kitClose();   // the setup has its own Home Screen step (one explanation)
+  askFor('kit-home-close');   // the setup has its own Home Screen step (one explanation)
   setup={at:0,first:!again,vestSet:!!(resume&&resume.vestSet),q:'',cities:null,cityMsg:'',msg:'',busy:false,watch:null,before:again?(resume&&resume.before)||setupBefore():null};SETUP_STEPS=setupStepsNow();
   if(resume){const i=SETUP_STEPS.indexOf(resume.k);if(i>0)setup.at=i}
   setupInert(true);setupEl().classList.add('on');setupDraw();setupSave();setupEl().focus({preventScroll:true});
@@ -85,8 +85,10 @@ Object.assign(globalThis,{setupShown,setupStart,setupFinish,tzCountry,setupYield
 /* the socket nav.js asks as a page is shown (bus.js): a setup that opened by itself steps aside; and the backup's words for the
    Connection step, which sync.js serves (without sync.js the step says the wardrobe is backed up, as ui.js's Connection line does;
    this file reads nothing of app.js's own ask(), the server request) */
-import {serve,ask} from './bus.js';
+import {serve,ask,askFor,served} from './bus.js';
 import {clearLocks} from './days.js';
+import {findCity,setLocation,setUnits,unit,useMyLocation} from './weather.js';
+import {COUNTRY_CODES,setHolidayCountry} from './daysoff.js';
 serve('setup-yield',setupYield);serve('setup-needs',setupNeeds);   // (and what the wardrobe still needs, for Insights: stats.js)
 Object.defineProperties(globalThis,{SETUP_STEPS:{get:()=>SETUP_STEPS},setup:{get:()=>setup,set:v=>{setup=v}}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
@@ -118,7 +120,7 @@ function setupFinish(toAdd,e){setupTapGuard(e);
   // (fix round 2) the time zone's country is stored with setupDone, its list to come (fetched 0): swiped away right after, the setup was
   // done with no holidays and nothing tried again; now the next start's refreshHolidays fetches it
   const first=setup.first;if(first)setupHolCountry();settings.setupDone=Date.now();setupClose();saveUserSettings().then(()=>{if(first)setupHolidays()});
-  if(toAdd&&!items.length){const go=()=>{show('wardrobe');openAdd()};if(first&&typeof tourOpen==='function'&&!tourSeen())tourOpen(go,'Add my first item');else go()}else show('today');   // Add is a page of the Wardrobe: its ‹ goes there
+  if(toAdd&&!items.length){const go=()=>{show('wardrobe');openAdd()};if(first&&served('tour-open')&&!tourSeen())askFor('tour-open',go,'Add my first item');else go()}else show('today');   // Add is a page of the Wardrobe: its ‹ goes there
 }
 /* the public holidays of the country the phone's time zone is in, chosen for a new person (audit 2026-11-13: the work week was set,
    the holidays were not); Settings → Days off changes it. Without a list yet (Nager.Date lacks the Gulf states, whose list comes from
@@ -169,7 +171,7 @@ const setupSwitch=(k,on,title,sub)=>`<button type="button" class="su-sw" id="su-
 const setupDays=(kind,list,shown)=>`<div class="su-days" id="su-${kind}" role="group" aria-label="${kind==='workdays'?'Workdays':'Blazer days'}">${DAY_NAMES.map((n,i)=>shown.includes(i)?`<button type="button" class="su-day${list.includes(i)?' on':''}" aria-pressed="${list.includes(i)}" data-act="setupDayTap" data-k="${kind}" data-s="${i}">${n.slice(0,3)}</button>`:'').join('')}</div>`;
 function setupStep(k){const d=setupDress();
   if(k==='welcome')return `<p class="su-lead">Daily Wardrobe picks what you wear each workday from the clothes you own.</p><p class="su-lead">It rotates your pieces so nothing is worn out or forgotten, and keeps the colors and patterns working together.</p><p class="su-help">A few short questions first. You can change every answer later in Settings.</p>${setupConnected()?'':'<p class="su-help" id="su-before">Used the app before with an invitation link? Open that link again: your wardrobe, day history and settings come back from your backup. Do that before adding anything here.</p>'}`;   // (audit 2026-11-15, W1-11-01: after Safari cleared the site, nothing said the wardrobe was safe)
-  if(k==='home')return typeof homeSteps==='function'?homeSteps(true):'';
+  if(k==='home')return askFor('home-steps',true)??'';
   if(k==='week')return `<div class="su-group"><div class="su-label">Workdays</div><p class="su-help">You get an outfit on these days.</p>${setupDays('workdays',settings.workdays,[0,1,2,3,4,5,6])}</div>`+
     (d.jacket?`<div class="su-group"><div class="su-label">Blazer days</div><p class="su-help">Business-casual days get a blazer and pants; other workdays get a suit. Leave them all off for a suit every day.</p>${setupDays('blazer',settings.blazerDays,settings.workdays)}</div>`:'');
   if(k==='wear'){const v=setup.first&&!setupVestChosen()?'never':(settings.vestMode||'auto');
@@ -198,13 +200,13 @@ ${setup.msg?`<p class="su-help su-err" role="alert">${esc(setup.msg)}</p>`:''}
   const bl=settings.blazerDays.filter(x=>settings.workdays.includes(x));
   return `<p class="su-lead">${items.length?'That’s everything.':'That’s everything. Now add your clothes.'}</p>
 <ul class="su-sum"><li><span>Workdays</span><b>${days(settings.workdays)}</b></li>${d.jacket?`<li><span>Blazer days</span><b>${bl.length?days(bl):'none: a suit every day'}</b></li>`:''}<li><span>You wear</span><b>${wear}</b></li><li><span>Weather</span><b>${settings.location?esc(settings.location.name):'by the calendar'} · °${unit()}</b></li><li><span>Connection</span><b>${setupConnected()?'connected':setupLinkChecking()?'checking your invitation…':inviteOver()?'invitation ended':'not connected'}</b></li></ul>
-${items.length?'':`<p class="su-help">Today shows your first outfit once you have ${must}${opt?', plus pants if you wear a blazer rather than a suit':''}.</p>${typeof kitStartRow==='function'?kitStartRow(true):''}`}`;
+${items.length?'':`<p class="su-help">Today shows your first outfit once you have ${must}${opt?', plus pants if you wear a blazer rather than a suit':''}.</p>${askFor('kit-start-row',true)??''}`}`;
 }
 /* connected at the Connection step in Safari on an iPhone: the Home Screen app needs the link too (kit.js homeCopy) */
-const setupHomeLink=()=>setup.joined&&typeof homeIOS==='function'&&homeIOS()&&homeNeeded()&&homeTester()?`<p class="su-help">For the app on your Home Screen: copy your invitation link here and paste it at its Connection step.</p>${homeCopyBtn()}`:'';
+const setupHomeLink=()=>setup.joined&&typeof homeIOS==='function'&&homeIOS()&&homeNeeded()&&askFor('home-tester')?`<p class="su-help">For the app on your Home Screen: copy your invitation link here and paste it at its Connection step.</p>${askFor('home-copy-btn')??''}`:'';
 /* "Try a sample wardrobe" on the last step loads it, and the setup finishes (holidays, the vest) once it is stored (kit.js kitSampleDone;
    audit 2026-11-15); finished first, a kill before the sample was stored left the setup done and no sample (re-audit 2026-11-15) */
-function setupSample(e){setupTapGuard(e);kitSampleLoad()}
+function setupSample(e){setupTapGuard(e);askFor('kit-sample-load')}
 function setupDraw(){if(!setupShown())return;const k=SETUP_STEPS[setup.at],n=SETUP_STEPS.length,last=setup.at===n-1;
   keepFocus(setupEl(),()=>setupHtml(k,n,last))}
 function setupHtml(k,n,last){
@@ -233,10 +235,10 @@ function setupLocate(){const was=JSON.stringify(settings.location);useMyLocation
     if(JSON.stringify(settings.location)!==was){clearInterval(setup.watch);setup.watch=null;setup.cities=null;setup.cityMsg='';setupDraw()}},150)}
 async function setupConnect(){const el=$('#su-link'),t=(el&&el.value||'').trim();if(!t||setup.busy)return;
   setup.busy=true;setup.msg='';setupDraw();if($('#su-link'))$('#su-link').value=t;let ok=false;
-  try{ok=!!(await connectFromLink(t))}catch(e){ok=false}
+  try{ok=!!(await askFor('connect-link',t))}catch(e){ok=false}
   // why, in the setup's words: offline is not a wrong link (it said "check that you copied all of it" while offline)
-  const why=acctWhy;
-  setup.busy=false;if(ok)setup.joined=true;setup.msg=ok||why==='kept'?'':why==='offline'?'Couldn’t reach the server: you may be offline. Connect when you’re back online, or tap Next and connect later in Settings.':why==='refused'?acctFailText()+' Or carry on without it.':'That link didn’t work. Check that you copied all of it, or carry on without it.';
+  const why=askFor('acct-why');
+  setup.busy=false;if(ok)setup.joined=true;setup.msg=ok||why==='kept'?'':why==='offline'?'Couldn’t reach the server: you may be offline. Connect when you’re back online, or tap Next and connect later in Settings.':why==='refused'?askFor('acct-fail-text')+' Or carry on without it.':'That link didn’t work. Check that you copied all of it, or carry on without it.';
   if(!setupShown())return;setupDraw();if(!ok&&$('#su-link'))$('#su-link').value=t}
 
 /* ---- Today with an empty or too-small wardrobe: what is still needed for a first outfit ---- */
@@ -253,7 +255,7 @@ function setupToday(){
   const rows=setupNeeds(),left=rows.filter(r=>!r.ok).length;if(!left)return '';
   return `<div class="firstrun" id="firstrun"><h3>Get your first outfit</h3><p class="fr-sub">${left===rows.length?'Add these and Today picks an outfit for every workday.':`${rows.length-left} of ${rows.length} added. Add the rest and Today picks an outfit for every workday.`}</p>
 <ul class="fr-list">${rows.map(r=>`<li class="fr-it${r.ok?' done':''}" data-need="${r.k}"><span class="fr-tick" aria-hidden="true">${r.ok?'✓':''}</span><span class="fr-t">${r.t}${r.sub&&!r.ok?` <small>(${r.sub})</small>`:''}</span><small class="fr-st">${r.ok?'Added':r.sub?'If no suit':'Needed'}</small></li>`).join('')}</ul>
-<button type="button" class="fr-add pri" id="fr-add" data-act="setupAddTap">Add an item</button>${typeof kitStartRow==='function'?kitStartRow():''}</div>`;
+<button type="button" class="fr-add pri" id="fr-add" data-act="setupAddTap">Add an item</button>${askFor('kit-start-row')??''}</div>`;
 }
 /* the Wardrobe tab with nothing in it */
 function setupWardEmpty(){
@@ -286,10 +288,12 @@ function setupLinkKey(el,ev){if(ev.key==='Enter'){ev.preventDefault();setupConne
 function setupConnectTap(){setupConnect()}
 /* Today's checklist and the empty Wardrobe: Add, Import from a spreadsheet, Try a sample wardrobe (kit.js) */
 function setupAddTap(){openAdd()}
-function wemptyImportTap(){kitImportOpen()}
-function wemptySampleTap(){kitSampleLoad()}
+function wemptyImportTap(){askFor('kit-import-open')}
+function wemptySampleTap(){askFor('kit-sample-load')}
 /* index.html's (act.js): Settings' "Run setup again" */
 function setupAgainTap(){setupOpen(true)}
 acts({setupCancelTap,setupSkipTap,setupBackTap,setupNextTap,setupDayTap,setupSwTap,setupVestPick,setupGeoTap,setupCityType,setupCityKey,setupFindTap,
   setupCityTap,setupUnitTap,setupLinkKey,setupConnectTap,setupAddTap,wemptyImportTap,wemptySampleTap,
   setupAgainTap});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('setup-shown',setupShown);serve('setup-finish',setupFinish);serve('setup-sample',setupSample);serve('setup-conn-draw',()=>{if(setupShown()&&/^(connect|done)$/.test(SETUP_STEPS[setup.at]))setupDraw()});serve('setup-ward-empty',setupWardEmpty);serve('tz-country',tzCountry);

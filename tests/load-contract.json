@@ -2,7 +2,8 @@
  "about": [
   "The load-failure contract (the restructure, step 2, 2026-11-26; RESTRUCTURE-PLAN.md section 6): what one page file that cannot be loaded may take down.",
   "Every page script in index.html is listed with its class and its feature group; tests/modload.test.js checks it (404 of each file on Chromium and WebKit, and the imports read from the files).",
-  "on404: what its 404 shows where that is not its class's usual: \"card\" (the start-up card), \"no-picture\" (Today drawn without its outfit figure), \"picture\" (Today drawn with it: the mannequin or the painted picture) or \"painted\" (Today drawn, its only figure the painted picture: \"picture\" once painted, \"no-picture\" where the painter is late or does not paint); a string for both engines, or {chromium, webkit}."
+  "on404: what its 404 shows where that is not its class's usual: \"card\" (the start-up card), \"no-picture\" (Today drawn without its outfit figure), \"picture\" (Today drawn with it: the mannequin or the painted picture) or \"painted\" (Today drawn, its only figure the painted picture: \"picture\" once painted, \"no-picture\" where the painter is late or does not paint); a string for both engines, or {chromium, webkit}.",
+  "needs (the owner's rule 3, 2026-11-27; the restructure S6c): a group -> the groups it may import from, which it then fails with: a 404 of a needed group's file takes the needing group's files that import it down too. Not handed on: a group may import only the groups it names itself."
  ],
  "classes": {
   "required": {
@@ -15,7 +16,7 @@
   },
   "optional": {
    "on404": "picture",
-   "what": "only its feature is lost (its group may fail together); Today is drawn with its picture. It may import required and today-no-picture files and the files of its own group. No required or today-no-picture file imports it: they reach it through bus.js (an announcement, or a socket: serve/ask)."
+   "what": "only its feature is lost (its group may fail together, and so may a group that needs its group); Today is drawn with its picture. It may import required and today-no-picture files, the files of its own group and those of a group its group needs (needs). No required or today-no-picture file imports it: they reach it through bus.js (an announcement, or a socket: serve/ask)."
   }
  },
  "groups": {
@@ -26,6 +27,14 @@
   "item-sheet": "the item sheet and the Wardrobe grid",
   "backup": "sync, its photos and status, snapshots, backup files",
   "(a file's own name)": "a feature that is one file"
+ },
+ "needs": {
+  "item-sheet": ["add"],
+  "kit": ["add"],
+  "account": ["backup", "who"],
+  "shop": ["analysis"],
+  "setup": ["weather", "daysoff"],
+  "cost": ["locale"]
  },
  "files": {
   "merge.js": {

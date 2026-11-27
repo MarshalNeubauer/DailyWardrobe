@@ -2,7 +2,7 @@
    photo, the fabric close-up, the owner's own colours, patterns and materials, the corrections the owner made before), the sharp copies
    kept on this device, what the tagger learns from the corrections, and what one tagging call costs. */
 
-import {CLOSE_MAX,CUSTOM_COL,CUSTOM_PAT,MATERIALS_BY,TAG_MAX,TAG_TYPES,TYPES,hasPat,ownMats,settings,tagTypesNow,texSig} from './core.js';
+import {CLOSE_MAX,COLORS,CUSTOM_COL,CUSTOM_PAT,MATERIALS_BY,TAGIMG_CACHE,TAG_MAX,TAG_TYPES,TYPES,colName,hasPat,inviteOver,ownMats,patName,settings,tagTypesNow,texSig} from './core.js';
 import {esc} from './photo-keys.js';
 /* the colours and patterns the owner added, when there are any (the worker adds them to what the tagger may answer) */
 const customForTag=()=>{const c=settings.custom||{};return (c.colors||[]).length||(c.patterns||[]).length?{colors:c.colors||[],patterns:c.patterns||[]}:undefined};
@@ -12,9 +12,6 @@ const tagFixes=skipId=>(settings.tagFixes||[]).filter(f=>f.id!==skipId).slice(-2
 const ownMatsForTag=()=>{const o={};for(const t of Object.keys(MATERIALS_BY)){const l=ownMats(t);if(l.length)o[t]=l}return Object.keys(o).length?o:undefined};
 const tagExtras=(x={})=>({types:x.freeColors||x.freePattern?TAG_TYPES.filter(t=>t==='pocketsquare'):tagTypesNow(),custom:customForTag(),ownMaterials:ownMatsForTag(),corrections:tagFixes(x.skipId),...(x.closeup?{closeup:x.closeup}:{}),...(x.measured?{measured:x.measured}:{}),...(x.freeColors?{freeColors:true}:{}),...(x.freePattern?{freePattern:true}:{}),...(x.wb!=null?{wb:!!x.wb}:{})});
 
-/* ---- tagging copies: the sharp photo sent to the tagger is kept on this device only (Cache Storage, not synced, not loaded
-   at start-up), so the benchmark can re-tag an item from the same picture later ---- */
-const TAGIMG_CACHE='dw-keep-tagimg';
 /* (2026-11-14) signed with the item photo it belongs to (x-ph: phSigOf of the photo, like a close-up's texSig): after Replace photo, or an
    Undo back to another picture, the old copy is no longer handed out to "Read pattern from photo", Ask Claude or the recolouring, which
    sent the old picture. Replace and Rotate keep a new copy (keepPhotoCopy in app.js); a crop or an upgrade of the same picture signs the
@@ -33,16 +30,6 @@ async function sharpCloseOf(it){if(!it||!it.texture)return null;
     if(r&&r.headers.get('x-tex')===texSig(it.texture)){const b=await r.blob();const u=await new Promise(ok=>{const f=new FileReader();f.onload=()=>ok(f.result);f.onerror=()=>ok(null);f.readAsDataURL(b)});if(u)return u}}}catch{}
   return it.texture}
 
-/* ---- what the tagger learns from: when an AI-tagged card is saved with a field changed, the change is kept (the latest 60)
-   and the latest 20 go with every tagging request; the counts give the accuracy on the stats page ---- */
-async function recordTagResult(q,it){if(!q.ai||!q.aiTag)return;const st={n:0,wrong:{},...(settings.tagStats||{})};st.wrong={...st.wrong};st.n++;
-  const fixes=[...(settings.tagFixes||[])];
-  // taking Claude's own suggestion of a new color or pattern (newColor / newPattern, added as the owner's) is not a correction (W2-17-16)
-  const claudes=(f,to)=>{const s=f==='primaryColor'?q.newColor:f==='pattern'?q.newPattern:null,nm=s&&String(s.name||'').trim().toLowerCase(),own=f==='pattern'?CUSTOM_PAT[to]:CUSTOM_COL[to];
-    return !!(nm&&own&&String(own.name||'').trim().toLowerCase()===nm)};
-  for(const f of ['type','primaryColor','secondaryColor','pattern']){const from=q.aiTag[f]||'none',to=it[f]||'none';if(f==='pattern'&&!hasPat(it.type))continue;
-    if(from!==to&&!claudes(f,to)){st.wrong[f]=(st.wrong[f]||0)+1;if(from!=='none'||to!=='none')fixes.push({field:f,type:it.type,from,to,id:it.id,t:Date.now()})}}
-  settings.tagStats=st;settings.tagFixes=fixes.slice(-60);await saveUserSettings()}
 function tagStatsCard(){const st=settings.tagStats||{n:0,wrong:{}},fx=(settings.tagFixes||[]).slice(-8).reverse();
   const pct=f=>st.n?Math.round(100*(1-(st.wrong[f]||0)/st.n)):null;
   return `<section class="card st-card" id="st-tagging"><h3>Photo tagging</h3>
@@ -67,9 +54,17 @@ const DESC_PRICE_IN=2,DESC_PRICE_OUT=10;   // Claude Sonnet 5.5, $ per million t
 function describeEstimate(what,withClose){return (2600+(withClose?visTok(CLOSE_MAX,CLOSE_MAX*.75):0))*DESC_PRICE_IN/1e6+(what==='pattern'?1500:700)*DESC_PRICE_OUT/1e6}
 /* "Read color and texture from close-up" (colpick.js rdRun): the color and the pattern lookup, both with the close-up (about 4¢) */
 const readEstimate=()=>describeEstimate('colour',true)+describeEstimate('pattern',true);
+/* (moved from tagging.js with its text unchanged, the restructure S6c) */
+const fieldLabel={type:'item',primaryColor:'color',secondaryColor:'second color',tertiaryColor:'third color',pattern:'pattern'};
+const valName=(k,v)=>!v?'none':k==='type'?(TYPES[v]||v).toLowerCase():k==='pattern'?patName(v):colName(v);
+/* what the tagger answered, as the card's values (the same normalising as a first tag); the pattern as normTag fitted it (to the card's
+   type when tagging again, forType): fitted again to Claude's type, a shirt's oxford Claude called a suit came back Solid (the 2026-11-24
+   review's R2 N1: 42 of 60 shirt patterns) */
+function aiFields(ai){return {type:ai.type,primaryColor:COLORS[ai.primaryColor]?ai.primaryColor:'grey',secondaryColor:ai.secondaryColor&&ai.secondaryColor!=='none'?ai.secondaryColor:null,
+  tertiaryColor:ai.tertiaryColor&&ai.tertiaryColor!=='none'?ai.tertiaryColor:null,pattern:ai.pattern||'solid'}}
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it; the file has no top-level call): app.js,
    add.js, item-photo.js, migrate.js, measure.js, pattern-read.js, colpick.js, look.js, safety.js and stats.js, classic scripts, and
    add-keep.js, add-save.js, tagging.js (TAG_Q) and checklist.js (texSig), modules that read them as globals, use these */
-Object.assign(globalThis,{customForTag,tagFixes,tagExtras,TAGIMG_CACHE,keepTagImg,tagImgOf,resignTagImg,keepCloseImg,sharpCloseOf,recordTagResult,tagStatsCard,benchEstimate,describeEstimate,readEstimate});
-globalThis.HOOK={__proto__:globalThis.HOOK||null,TAGIMG_CACHE,keepCloseImg,keepTagImg,resignTagImg,sharpCloseOf,tagExtras,tagImgOf};
-export {customForTag,tagFixes,tagExtras,TAGIMG_CACHE,keepTagImg,tagImgOf,resignTagImg,keepCloseImg,sharpCloseOf,recordTagResult,tagStatsCard,benchEstimate,describeEstimate,readEstimate};
+Object.assign(globalThis,{customForTag,tagFixes,tagExtras,keepTagImg,tagImgOf,resignTagImg,keepCloseImg,sharpCloseOf,tagStatsCard,benchEstimate,describeEstimate,readEstimate,fieldLabel,valName,aiFields});
+globalThis.HOOK={__proto__:globalThis.HOOK||null,keepCloseImg,keepTagImg,resignTagImg,sharpCloseOf,tagExtras,tagImgOf};
+export {customForTag,tagFixes,tagExtras,keepTagImg,tagImgOf,resignTagImg,keepCloseImg,sharpCloseOf,tagStatsCard,benchEstimate,describeEstimate,readEstimate,fieldLabel,valName,aiFields};

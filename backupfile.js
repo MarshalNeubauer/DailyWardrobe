@@ -1,7 +1,11 @@
 /* Daily Wardrobe: download and restore a backup file (split from sync.js, 2026-11-17); works without a connection (saves to Files on
    iPhone) */
+import {serve} from './bus.js';
 import {cleanState,itemName,items,nm,nowMs,stampAllSettings} from './core.js';
 import {applyMerged,localState,scheduleSync} from './sync.js';
+import {tell} from './ui.js';
+import {showSyncStatus} from './sync-status.js';
+import {acts} from './act.js';
 async function downloadBackup(){
   const data={app:'daily-wardrobe',version:1,exported:new Date().toISOString(),...await localState()};
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));
@@ -37,3 +41,5 @@ Object.assign(globalThis,{downloadBackup});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,restoreBackup};
 export {downloadBackup,restoreBackup};
 acts({backupSaveTap,backupFilePick});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('backup-download',downloadBackup);

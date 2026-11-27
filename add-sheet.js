@@ -1,10 +1,10 @@
 /* Daily Wardrobe: Add without a photo (split from add.js, Round C 2026-11-17): addManual, the type Today's "Add one" asked for
    (addFor), and the bottom sheet the card opens in (#nps-sheet: open, draw, close, Back, swipe). */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {emit,serve} from './bus.js';   // serve: nav.js (required) sets and drops what Today's "Add one" asked for, and leaves the sheet, through sockets
+import {askFor,serve,emit} from './bus.js';   // serve: nav.js (required) sets and drops what Today's "Add one" asked for, and leaves the sheet, through sockets
 import {addCardRec,addWatch} from './add-keep.js';
 import {keepFocus,queue} from './app.js';
-import {$,TYPES,normPat,watchOpts} from './core.js';
+import {$,PAIR_TYPES,TYPES,normPat,watchOpts} from './core.js';
 import {cardSafe,ckLeftLine,confBtn,formCard,shirtColFix} from './add-card.js';
 import {esc} from './photo-keys.js';
 import {backBorrow,backOn,backPush,backReturn} from './back.js';
@@ -66,8 +66,8 @@ async function npsCancel(fromBack){const q=npsCard();if(!npsId||npsAsking)return
   if(q&&(q.saving||cardReading(q))){if(fromBack)backPush('nps');return false}   // (being saved or read: it stays, and Back's entry is made again)
   if(q&&npsSig(q)!==npsSnap){if(fromBack)backPush('nps');   // the sheet stays while it asks: its entry again, for the question to borrow
     npsAsking=true;const go=await askConfirm('Discard this item?\n\nWhat you picked on it is not saved.',{ok:'Discard',cancel:'Keep editing',danger:true});npsAsking=false;
-    if(!go||npsCard()!==q)return false;npsClose();skipCard(q.id);return true}
-  const id=npsId;npsClose(fromBack);if(q)skipCard(id);return true}
+    if(!go||npsCard()!==q)return false;npsClose();askFor('skip-card',q.id);return true}
+  const id=npsId;npsClose(fromBack);if(q)askFor('skip-card',id);return true}
 function npsBack(){if(npsId)npsCancel(true)}
 /* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
 function setAddFor(v){addFor=v}
@@ -88,7 +88,7 @@ backOn('nps',()=>npsBack());
 /* Add left while the sheet is up (start.js show): the sheet closes; a card with changes stays on Add as a card of the list, an
    untouched one goes */
 function npsLeave(){if(!npsId)return;const q=npsCard(),changed=!!q&&npsSig(q)!==npsSnap;if(npsAsking&&typeof asking!=='undefined'&&asking)askAnswer(false);
-  npsClose();if(q&&!changed)skipCard(q.id)}
+  npsClose();if(q&&!changed)askFor('skip-card',q.id)}
 /* swiping the sheet down closes it, as What to buy and the item sheet: its header is a handle at any time, the card only while it is
    scrolled to the top; past a quarter of its height or a flick it closes (asking first when changed), else it springs back */
 function npsSwipe(){if(npsSwipeOn)return;const s=$('#nps-sheet');if(!s)return;npsSwipeOn=true;

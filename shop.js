@@ -37,10 +37,12 @@ const shopFind=key=>{const r=shopPart||(shop&&shop.res);if(!r)return null;for(co
    handed over above acts({…}), where the one export is */
 Object.assign(globalThis,{shopButton,closeShop});
 /* the socket nav.js asks as another page is shown (bus.js): What to buy closes */
-import {serve} from './bus.js';
+import {serve,askFor,emit} from './bus.js';
+import {layerClose,layerOpen} from './ui.js';
+import {CLASS_NAMES,TYPE_WORD,groupLabel,runAnalysis} from './analysis.js';
 serve('shop-close',closeShop);serve('shop-button',shopButton);   // (and its button on Insights: stats.js)
 Object.defineProperties(globalThis,{shopOpen:{get:()=>shopOpen}});
-db.then(()=>metaGet('shop')).then(v=>{if(v&&v.res&&v.res.v===2&&!shop){shop=v;if(!$('#wardrobe').hidden&&!editing)renderWardrobe()}}).catch(()=>{});
+db.then(()=>metaGet('shop')).then(v=>{if(v&&v.res&&v.res.v===2&&!shop){shop=v;if(!$('#wardrobe').hidden&&!editing)emit('wardrobe-changed')}}).catch(()=>{});
 
 /* the button on the Wardrobe tab */
 /* What to buy needs a wardrobe big enough to judge: on a few pieces it advised buying nearly everything. Until it has 3 jackets
@@ -115,7 +117,7 @@ function analyzeWardrobe(){
   shopBusy={i:-1,n:1,label:'',t0:Date.now()};shopPart=null;redraw();
   let w=null;try{w=new Worker('analysis-worker.js',{type:'module'})}catch(e){}
   if(w){shopWorker=w;w.onmessage=e=>{const d=e.data;if(w!==shopWorker)return;if(d.progress)progress(...d.progress);else if(d.cat)part(d.cat);else{w.terminate();if(d.error)fail(d.error);else finish(d.done)}};
-    w.onerror=e=>{if(!(e instanceof ErrorEvent)&&typeof errNote==='function')errNote(new Error('The background check (analysis-worker.js) didn\u2019t start: it or a file it imports didn\u2019t load'));   // (as scorecard.js rankWorker: a load failure the page doesn't hear)
+    w.onerror=e=>{if(!(e instanceof ErrorEvent))askFor('err-note',new Error('The background check (analysis-worker.js) didn\u2019t start: it or a file it imports didn\u2019t load'));   // (as scorecard.js rankWorker: a load failure the page doesn't hear)
       w.terminate();if(w===shopWorker){shopWorker=null;onMain()}};w.postMessage(JSON.parse(JSON.stringify(payload)))}
   else onMain();
   function onMain(){setTimeout(()=>{try{finish(runAnalysis(items,todayDate(),SHOP_WEEKS,progress))}catch(e){fail(String(e&&e.message||e))}},30)}   // where workers aren't available
@@ -187,14 +189,14 @@ function shopGo(key){shopShown[key]=true;renderShop();const el=[...document.quer
 /* bought: into the wardrobe as on its way, then check again */
 async function shopBought(key){
   const rec=shopFind(key);if(!rec)return;const v=($('#shop-arr')||{}).value||'',arrives=/^\d{4}-\d{2}-\d{2}$/.test(v)?v:null,now=nowMs();
-  dressNewItem();
+  askFor('dress-new-item');
   for(const x of rec.items){const it={...x,...(x.type==='suit'?{vest:'no'}:{}),id:crypto.randomUUID(),added:now,paused:true,order:true,...(arrives?{arrives}:{})};await put(it);items.push(it)}
   planDirty();shopForm=null;shopMsg=`Added to your wardrobe as on the way: ${rec.name}${arrives?`, arriving ${fmtDay(arrives)}`:''}.`;
-  if(!$('#wardrobe').hidden&&!editing)renderWardrobe();
+  if(!$('#wardrobe').hidden&&!editing)emit('wardrobe-changed');
   analyzeWardrobe();
 }
 /* not for me: hidden at once, and left out of every later check (the next check puts another idea in its place) */
-async function shopHide(key){settings.shopSkip=[...new Set([...(settings.shopSkip||[]),key])];await saveUserSettings();shopMsg='Hidden. You can bring it back under "Hidden ideas" at the bottom.';renderShop();if(!$('#wardrobe').hidden&&!editing)renderWardrobe()}
+async function shopHide(key){settings.shopSkip=[...new Set([...(settings.shopSkip||[]),key])];await saveUserSettings();shopMsg='Hidden. You can bring it back under "Hidden ideas" at the bottom.';renderShop();if(!$('#wardrobe').hidden&&!editing)emit('wardrobe-changed')}
 async function shopUnhide(key){settings.shopSkip=(settings.shopSkip||[]).filter(k=>k!==key);await saveUserSettings();shopMsg='';if(shopFind(key))renderShop();else analyzeWardrobe()}
 /* what the controls do (act.js). index.html's: What to buy's backdrop */
 function shopBackdropTap(){closeShop()}
@@ -213,3 +215,5 @@ function shopHideTap(el){shopHide(el.dataset.rec)}
 globalThis.HOOK={__proto__:globalThis.HOOK||null,analyzeWardrobe,closeShop,openShop,renderShop,get shop(){return shop},set shop(v){shop=v},shopBought,get shopBusy(){return shopBusy},set shopBusy(v){shopBusy=v},shopBusyText,get shopDrag(){return shopDrag},get shopForm(){return shopForm},shopFresh,shopGo,get shopPart(){return shopPart},get shopShown(){return shopShown},set shopShown(v){shopShown=v},shopSig,get shopStale(){return shopStale},get shopSwipeOn(){return shopSwipeOn},get shopWorker(){return shopWorker},set shopWorker(v){shopWorker=v},get shopOpen(){return shopOpen}};
 export {shop,shopBusy,shopPart,shopWorker,shopOpen,shopShown,shopForm,shopSig,shopFresh,shopButton,openShop,closeShop,shopDrag,shopStale,shopSwipeOn,analyzeWardrobe,shopBusyText,renderShop,shopGo,shopBought};
 acts({shopBackdropTap,shopOpenTap,shopCloseTap,shopAgainTap,shopGoTap,shopRecTap,shopFormTap,shopCancelTap,shopBoughtTap,shopHideTap});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('shop-open',()=>shopOpen);

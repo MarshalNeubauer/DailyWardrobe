@@ -2,7 +2,7 @@
    the white-paper steps. (An ES module since 2026-11-23; split out of itemsheet.js on 2026-11-17, no behavior change.) */
 /* ---- Wardrobe editor: replace, rotate, zoom-crop the item's photo. Only the picture changes: the tags (colour, pattern...)
    and the item itself stay, so the plan and the outfit history are untouched. Each change's toast has Undo (picUndo; phEdit.undo holds the editor's steps). ---- */
-import {emit,ask} from './bus.js';   // emit: the Wardrobe's redraw (itemsheet.js, later); ask: the piece open (item-view.js). (No app.js ask() here)
+import {serve,emit,ask,askFor} from './bus.js';   // emit: the Wardrobe's redraw (itemsheet.js, later); ask: the piece open (item-view.js). (No app.js ask() here)
 import {DEAD_MSG,deadCanvas,deadPic,fixupRedraw,imgOf,loadImg,put,refreshSwatch,shrink,stillCur} from './app.js';
 import {$,CLOSE_MAX,PH_MAX,TAG_MAX,TAG_Q,TEX_MAX,TEX_MIN_PX,items,paperCloth,phSigOf,texSig} from './core.js';
 import {esc,srcOk} from './photo-keys.js';
@@ -10,17 +10,14 @@ import {closeupBtn,cuGot,cuTouch} from './ui.js';
 import {toast} from './toast.js';
 import {planDirty} from './today-plan.js';
 import {acts} from './act.js';
+import {cropSource,makeSmall,paperNow,paperOf,paperSteps} from './measure.js';
+import {remakeLeft,remakeSpend} from './migrate.js';
+import {lookCu} from './look-base.js';
+import {keepCloseImg,keepTagImg,resignTagImg,tagImgOf} from './tag-request.js';
 /* the photo editor's state for the piece open: its Undo steps and the crop frame (moved here from itemsheet.js, the restructure S3d; only
    itemsheet.js starts it again, with setPhEdit) */
 let phEdit={id:null,undo:[],crop:null};
 const setPhEdit=v=>{phEdit=v};
-/* the photo's small copy for grids and lists (the wardrobe, stats, the piece picker): PH_SM px, kept on the item with the photo's signature
-   (photoSm, phSig) and made again whenever the photo changes (makeSmall); every redraw of the wardrobe would otherwise carry the full photos */
-const PH_SM=480;
-async function makeSmall(it){if(!it)return false;if(!it.photo){const had=!!it.photoSm;delete it.photoSm;delete it.phSig;return had}
-  const sig=phSigOf(it.photo);if(it.photoSm&&it.phSig===sig)return false;
-  try{const im=await imgOf(it.photo);let sm=it.photo;if(Math.max(im.naturalWidth,im.naturalHeight)>PH_SM){const c=shrink(im,PH_SM);if(deadCanvas(c))return false;sm=c.toDataURL('image/jpeg',.82)}   // drawn black: keep the old copy
-    it.photoSm=sm;it.phSig=sig;return true}catch{return false}}
 /* at start-up: items whose small copy is missing or old (added before it, or changed on a device with an older app) */
 /* (a connected phone makes at most the day's remakes, migrate.js remakeLeft: each small copy can be a new server value; the rest the next days) */
 async function smallPhotos(){let n=0;for(const it of items){if(!it.photo||(it.photoSm&&it.phSig===phSigOf(it.photo)))continue;if(remakeLeft()<1)break;
@@ -40,22 +37,8 @@ function photoTools(i){if(phEdit.crop)return '';const tex=lookCu(i.type),id=i.id
     (i.photo?`<button type="button" class="ptbtn pt-rotate" data-act="photoRotate" data-id="${esc(id)}" aria-label="Rotate the photo a quarter turn clockwise">${ptIcon('rotate')}<span>Rotate</span></button><button type="button" class="ptbtn pt-crop" data-act="photoCrop" data-id="${esc(id)}" aria-label="Zoom and crop the photo">${ptIcon('crop')}<span>Crop</span></button>`:'')+
     (tex?closeupBtn({label:`${ptIcon('closeup')}<span>Close-up</span>`,cls:'btn ptbtn pt-closeup',mode:i.texture?'replace':'add',aria:i.texture?'Replace close-up':'Add fabric close-up',act:` data-act-change="photoCuFile" data-id="${esc(id)}"`,remove:rm?'photoCuRemove':'',cloth:paperCloth(i)}):'')+`</div>`+
     (rm&&!cuTouch()?`<div class="ptmore"><button type="button" class="ptrm" data-act="photoCuRemove" data-id="${esc(id)}">Remove close-up</button></div>`:'')}   // on a touch screen Remove is in the close-up chooser (ui.js)
-/* ---- white paper in the close-up (2026-11-15, the owner's choice: option A "juiced up" + screens 04-06, photo-wb-mockups): one line of help
-   under the close-up buttons with a small drawing beside it (the item's cloth with a strip of white paper along one edge and the
-   tap on it, drawn in CSS: no picture to download, both themes); the drawing opens the short tip (PAPER_CARD in kit.js). After a close-up
-   is added or replaced here, a line under the photos says whether paper was found (paperOf in measure.js), with Retake close-up. ---- */
-/* the hint as "3 tiny steps" (2026-11-15, paper-hint-proposals A, the owner's choice; it was a sentence and a "Tips for a good close-up"
-   link): "True color in 3 steps", Paper on an edge › Tap the paper › Take the photo, each with a small drawing (the owner's, at 40 px).
-   The whole card is one button that opens the short tip (paperTip; its last line opens the full guide). Also in the Add card's Step 2. */
-const PAPER_CAM='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.6"/></svg>';
-const paperSteps=cloth=>{const pic=cls=>`<span class="wbpic ${cls}" style="--cloth:${cloth}"><i></i></span>`;
-  return `<div class="wbsteps"><button type="button" class="wbstcard" data-act="paperTipTap" aria-label="True color in 3 steps: lay white paper along one edge, tap the paper on screen, take the photo. Open tips.">
-<span class="hd" aria-hidden="true"><span class="eb">True color in 3 steps</span><span class="more">Tips ›</span></span>
-<span class="ol" aria-hidden="true"><span class="li"><span class="n"><b>1</b>${pic('nobox noring')}</span>Paper on an edge</span><span class="arr">›</span>
-<span class="li"><span class="n"><b>2</b>${pic('')}<span class="tap"></span></span>Tap the paper</span><span class="arr">›</span>
-<span class="li"><span class="n"><b>3</b><span class="cam">${PAPER_CAM}</span></span>Take the photo</span></span></button></div>`};
 const paperHint=i=>paperSteps(paperCloth(i));
-function paperTip(){if(typeof kitOpen==='function')kitOpen([PAPER_CARD])}
+function paperTip(){askFor('paper-tip')}
 const paperRetake=id=>closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',act:` data-act-change="photoCuFile" data-id="${esc(id)}"`,cloth:paperCloth(items.find(x=>x.id===id)||{})});
 function paperLine(i){if(!i.texture||!lookCu(i.type)||phEdit.paper!==texSig(i.texture))return '';const r=paperNow(i);if(!r)return '';
   return r.ref?`<div class="wbst ok" id="ivwb" role="status"><span class="ic" aria-hidden="true">✓</span><span class="tx">White paper found<small>Colors set from it.</small></span></div>`
@@ -103,21 +86,6 @@ async function undoPhoto(id){const it=items.find(x=>x.id===id);if(!it||!phEdit.u
 /* zoom & crop: a square frame; the slider zooms (about the centre), dragging moves the picture */
 async function startCrop(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo);
   phEdit.crop={w:im.naturalWidth,h:im.naturalHeight,z:1,cx:.5,cy:.5};emit('wardrobe-changed');const b=$('#ivbody');if(b)b.scrollTop=0;requestAnimationFrame(layoutCrop)}
-/* the best copy to crop from: the sharp copy kept on this device when the photo was read (tag-request.js, up to 2048px), turned as the
-   photo is now, when it shows the same picture (same shape, and alike at 24x24); else the photo itself. A crop from the kept photo
-   alone came out at the size of its piece of a 360px picture (a suit at 270px). A photo replaced, or already cropped, no longer
-   matches the sharp copy, so it is cropped from itself */
-const CROP_MATCH=12;   // the largest mean grey difference (0-255) at 24x24 that still counts as the same picture
-async function cropSource(it){const ph=await imgOf(it.photo);
-  let sharp=null;try{const u=typeof tagImgOf==='function'?await tagImgOf(it.id):null;sharp=u?await imgOf(u):null}catch{sharp=null}
-  if(!sharp||sharp.naturalWidth<=ph.naturalWidth)return ph;
-  const grey=src=>{const N=24,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');x.drawImage(src,0,0,N,N);
-    const d=x.getImageData(0,0,N,N).data,g=[];for(let k=0;k<d.length;k+=4)g.push(.3*d[k]+.59*d[k+1]+.11*d[k+2]);return g};
-  const want=grey(ph),ar=ph.naturalWidth/ph.naturalHeight;
-  for(let q=0;q<4;q++){const W=q%2?sharp.naturalHeight:sharp.naturalWidth,H=q%2?sharp.naturalWidth:sharp.naturalHeight;if(Math.abs(W/H-ar)>.02*ar)continue;
-    const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.translate(W/2,H/2);x.rotate(q*Math.PI/2);x.drawImage(sharp,-sharp.naturalWidth/2,-sharp.naturalHeight/2);
-    const g=grey(c);let s=0;for(let k=0;k<g.length;k++)s+=Math.abs(g[k]-want[k]);if(s/g.length<=CROP_MATCH)return c}
-  return ph}
 function cropEditor(i){const c=phEdit.crop;return `<div class="cropwrap"><div class="cropbox" id="cropbox" data-act-pointerdown="cropDrag"><img id="cropimg" src="${srcOk(i.photo)}" alt="Photo being cropped" draggable="false"></div>
   <label class="cropzoom">Zoom <input type="range" min="1" max="4" step="0.05" value="${c.z}" data-act-input="cropZoom" aria-label="Zoom"></label>
   <p class="mut" style="margin:2px 0 6px;font-size:13px">Drag the picture to position it.</p>
@@ -160,9 +128,11 @@ function cropApply(el){applyCrop(el.dataset.id)}
 function cropDiscardTap(){cropDiscard()}
 /* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above the file's
    one top-level call (acts, when act.js did not load): the names are then still the page's */
-Object.assign(globalThis,{makeSmall,smallPhotos,photoTools,paperSteps,paperHint,paperRetake,paperLine,replaceTexture,cropSource,cropEditor,cropKeep,setPhEdit});
+Object.assign(globalThis,{smallPhotos,photoTools,paperHint,paperRetake,paperLine,replaceTexture,cropEditor,cropKeep,setPhEdit});
 Object.defineProperties(globalThis,{phEdit:{get:()=>phEdit}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,applyCrop,layoutCrop,paperTip,setPhoto,setTexture,startCrop,undoPhoto,makeSmall,get phEdit(){return phEdit},replaceTexture,smallPhotos};
-export {phEdit,setPhEdit,makeSmall,smallPhotos,photoTools,paperSteps,paperHint,paperTip,paperRetake,paperLine,setPhoto,setTexture,replaceTexture,undoPhoto,startCrop,cropSource,cropEditor,cropKeep,layoutCrop,applyCrop};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,applyCrop,layoutCrop,paperTip,setPhoto,setTexture,startCrop,undoPhoto,get phEdit(){return phEdit},replaceTexture,smallPhotos};
+export {phEdit,setPhEdit,smallPhotos,photoTools,paperHint,paperTip,paperRetake,paperLine,setPhoto,setTexture,replaceTexture,undoPhoto,startCrop,cropEditor,cropKeep,layoutCrop,applyCrop};
 acts({photoFile,photoRotate,photoCrop,photoCuRemove,photoCuFile,paperTipTap,cropDrag,cropZoom,cropApply,cropDiscardTap});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('replace-texture',replaceTexture);

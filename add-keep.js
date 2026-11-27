@@ -1,9 +1,11 @@
 /* Daily Wardrobe: Add, the cards kept when the app is closed (split from add.js, Round C 2026-11-17): every card's form and
    pictures in the database's meta store, brought back at the next start (addRestore, addRevive), and the listeners that keep them. */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {emit} from './bus.js';
+import {emit,askFor,serve} from './bus.js';
 import {fill,generateSwatch,imgOf,metaGet,queue,shrink,txs} from './app.js';
 import {$,TAG_MAX,items} from './core.js';
+import {toast} from './toast.js';
+import {openAdd} from './nav.js';
 
 /* ---- waiting cards survive iOS closing Safari (audit 2026-11-15, H1: they lived only in memory, beforeunload never fires on an iPhone,
    and reading them again was paid again). Every card on Add is kept in the database's meta store, never synced: the form as `addq`, each
@@ -24,7 +26,7 @@ function addCardRec(q){const o={};for(const [k,v] of Object.entries(q))if(!ADDQ_
   if(q.refining)o.refineCut=1;if(q.patternReading)o.patternCut=1;if(q.wb&&!q.wbOff)o.wbWas=1;
   return JSON.parse(JSON.stringify(o,(k,v)=>typeof HTMLCanvasElement!=='undefined'&&v instanceof HTMLCanvasElement?undefined:v))}
 async function addKeep(){clearTimeout(addKeepT);if(addRestoreState!=='done')return;
-  if(typeof kitQuiet!=='undefined'&&kitQuiet){addKeepSoon();return}   // the sample or an import passes its cards through Add one by one: not kept
+  if(askFor('kit-quiet')){addKeepSoon();return}   // the sample or an import passes its cards through Add one by one: not kept
   try{const cards=queue.filter(addKeepable),recs=cards.map(addCardRec),pics=[],ids=new Set(cards.map(q=>q.id)),gone=[...addKeptPics.keys()].filter(id=>!ids.has(id));
     for(const q of cards){const was=addKeptPics.get(q.id)||{},p={};let ch=false;for(const k of ADDQ_PICS){p[k]=q[k]||null;if(p[k]!==(was[k]||null))ch=true}if(ch)pics.push([q.id,p])}
     await txs('meta','readwrite',s=>{for(const [id,p] of pics)s.put({k:ADDPIC+id,v:p});for(const id of gone)s.delete(ADDPIC+id);return s.put({k:ADDQ_KEY,v:recs})});
@@ -61,10 +63,10 @@ async function addRestore(){if(addRestoreState)return;addRestoreState='busy';let
 /* installed with the first card: keep the cards when the app goes to the background (iOS may close it there), ask before a desktop
    tab closes (safety.js guardUnsaved), and read again, once back online, the photos that failed for want of a connection */
 let addWatchOn=false;
-function addWatch(){if(addWatchOn)return;addWatchOn=true;if(typeof guardUnsaved==='function')guardUnsaved();
+function addWatch(){if(addWatchOn)return;addWatchOn=true;askFor('guard-unsaved');
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')addKeep()});
   addEventListener('pagehide',()=>addKeep());
-  addEventListener('online',addBackOnline)}
+  addEventListener('online',()=>askFor('add-back-online'))}
 /* An ES module since 2026-11-23: its other names are its own. The bridge (tests/bridge.test.js lists it): every file that changes a card
    calls addKeep or addKeepSoon; add.js and add-sheet.js addWatch, add-sheet.js addCardRec, kit.js addRevive, safety.js addRestore.
    addKeepT is read by tests/addcards.test.js (a getter); the same test assigns addRestoreState (add.js reads it): a setter too */
@@ -73,3 +75,5 @@ Object.defineProperties(globalThis,{addRestoreState:{get:()=>addRestoreState,set
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get addKeepT(){return addKeepT},get addRestoreState(){return addRestoreState},set addRestoreState(v){addRestoreState=v}};
 export {addKeepT,addRestoreState,addKeepSoon,addCardRec,addKeep,addRevive,addRestore,addWatch};
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('add-keep',addKeep);serve('add-restore',addRestore);serve('add-keep-soon',addKeepSoon);

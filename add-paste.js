@@ -2,9 +2,8 @@
    a photo link (directly, or through the worker), and photos dragged onto the app. */
 
 /* ---- pasted photos, photo links and drag & drop ---- */
-import {$} from './core.js';
+import {$,inviteOver} from './core.js';
 import {addFiles} from './add.js';
-import {inviteOver} from './ui.js';
 import {openAdd,pagesOn} from './nav.js';
 import {acts} from './act.js';
 const pasteMsg=t=>{const e=$('#paste-status');if(e)e.textContent=t||''};

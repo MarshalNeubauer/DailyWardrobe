@@ -7,7 +7,7 @@
    OVL_LINE of a repeat, and a tie's pattern at half size (more repeats). Pictures only; it takes no touches and fades while zoomed. */
 import {CHECK_PATS,MOTIF_PATS,STRIPE_PATS,usableSett} from './detect.js';
 import {$,TEXTURE_TYPES,colOf,hexRgb,key,patBase} from './core.js';
-import {ask,served} from './bus.js';
+import {ask,served,askFor,serve} from './bus.js';
 import {swatchSVG,texTileSmooth,texTileUrl,texTones} from './draw.js';
 import {srcOk} from './photo-keys.js';
 import {sel} from './app.js';
@@ -140,7 +140,7 @@ let swOpen=null;
 const swKind=o=>{let k=null;try{k=typeof asmCmUse==='function'&&typeof ASM_ON!=='undefined'&&ASM_ON?asmCmUse(o):null}catch(e){}return SW_SPOT[k]?k:o.top?(o.vest?'vest':'suit'):o.tie?'shirt-tie':'shirt-open'};
 const swSpot=(o,s)=>(SW_SPOT[swKind(o)]||{})[s]||SW_SPOT.suit[s]||SW_SPOT['shirt-tie'][s];
 function swApply(anim){const c=$('#mannequin-container'),t=zoomTarget(),o=planFor()[key(sel)];if(!c)return;
-  if(typeof careBandSoon==='function')careBandSoon();   // the cleaning banner's cut follows the swatches as they move (care.js)
+  askFor('care-band-soon');   // the cleaning banner's cut follows the swatches as they move (care.js)
   const on=!!(swOpen&&swOpen.k===key(sel)&&t&&o&&o[swOpen.s]&&c.classList.contains('photo')&&c.querySelector('.swstack'));if(!on)swOpen=null;
   c.scrollTop=0;c.scrollLeft=0;   // (a zoomed photo made the frame scrollable, and the tapped swatch's focus scrolled it: styles.css clips it too)
   c.classList.toggle('swopen',on);c.querySelectorAll('.swstack .ovsw').forEach(b=>{const me=on&&b.dataset.s===swOpen.s;b.classList.toggle('on',me);b.setAttribute('aria-pressed',me)});
@@ -178,3 +178,5 @@ $('#today').addEventListener('click',e=>{if(!swOpen)return;const c=e.target.clos
     else lastTap={t:now,x:t.clientX,y:t.clientY}},{passive:false});
   el.addEventListener('dblclick',e=>{if(!inPic(e)||Date.now()-zoomTouchAt<700)return;e.preventDefault();toggleZoom(e.clientX,e.clientY)});
 })();
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('zoomed',()=>zoom);

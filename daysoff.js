@@ -1,9 +1,9 @@
 /* Daily Wardrobe: Settings → Days off: public holidays, your own days off and the occasions (formal days)
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
-import {on} from './bus.js';
-import {$,OCCASIONS,dayRecs,isoKey,isoToDate,key,keyDate,nameHtml,nowMs,occLabel,occOf,setStr,setWardrobe,settings,shortDate,syncUrl,takeSettings,todayDate,trueToday,yearDate} from './core.js';
+import {on,askFor,serve} from './bus.js';
+import {$,OCCASIONS,dayRecs,isoKey,isoToDate,key,keyDate,nameHtml,nowMs,occLabel,occOf,setStr,setWardrobe,settings,settingsOpen,shortDate,syncUrl,takeSettings,todayDate,trueToday,yearDate} from './core.js';
 import {esc,workerBase} from './photo-keys.js';
-import {saveUserSettings,settingsOpen,settingsSummaries,todayDirty} from './settings.js';
+import {saveUserSettings,settingsSummaries,todayDirty} from './settings.js';
 import {metaGet} from './app.js';
 import {monthPlan,nextWorkday} from './month.js';
 import {aAn} from './photos.js';
@@ -88,7 +88,7 @@ async function setHolidayCountry(cc,quiet){
 async function refreshHolidays(){const due=()=>{const h=settings.holidays,f=h&&+h.fetched||0;return !!(h&&h.country&&(nowMs()-f>30*864e5||f>nowMs()+864e5))};
   if(!due())return;
   if(syncUrl()&&localStorage.getItem('app_token')){
-    if(!await syncNow())return;
+    if(!await askFor('sync-now'))return;
     const st=await metaGet('settings');if(st)setWardrobe({settings:takeSettings(settings,st)});if(!due())return}
   return setHolidayCountry(settings.holidays.country,true)}
 async function toggleHoliday(d,on){const h=settings.holidays;if(!h)return;const skip=new Set(h.skip||[]);on?skip.delete(d):skip.add(d);
@@ -164,3 +164,5 @@ on('settings-summaries',S=>{S.country=countryName});
 globalThis.HOOK={__proto__:globalThis.HOOK||null,addDayOff,builtinHolidays,holYears,get holidayMsg(){return holidayMsg},nagerKeep,toggleHoliday,refreshHolidays,setHolidayCountry};
 export {COUNTRY_CODES,countryName,holidayMsg,nagerKeep,builtinHolidays,holYears,setHolidayCountry,refreshHolidays,toggleHoliday,addDayOff,dayOffAdd,renderDaysOffUI,renderFormalUI};
 acts({occClear,countryPick,dayOffAddTap,occAddTap});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('day-off-add',dayOffAdd);

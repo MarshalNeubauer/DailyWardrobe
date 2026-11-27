@@ -3,10 +3,18 @@
    Its other parts (split 2026-11-17, the code review's sync plan): sync-status.js (what Backup & sync says; loaded right after this
    file since the restructure S3b, which moved the pause and the status here and an ended invitation to who.js), sync-photos.js (photos as references, batches), snapshots.js (daily backups, Roll back),
    backupfile.js (download and restore a file); what of the sample wardrobe goes up is kit.js kitShareFilter. */
-import {on,emit,serve} from './bus.js';
-import {$,CLOCK_AHEAD,CLOCK_MIN,cleanState,clockSkew,isoKey,itemName,items,mergeSettings,mergeState,nm,nowMs,setClockSkew,setWardrobe,syncMark,syncUrl} from './core.js';
+import {on,emit,serve,askFor} from './bus.js';
+import {$,CLOCK_AHEAD,CLOCK_MIN,applyCustom,cleanState,clockSkew,homeBrowser,homeIOS,homeStandalone,isoKey,itemName,items,mergeSettings,mergeState,nm,nowMs,setClockSkew,setWardrobe,settings,settingsOpen,syncMark,syncUrl,takeSettings} from './core.js';
 import {ENDED,addTombstones,atomic,connRestored,editing,endedAnswer,inviteEnded,metaGet,metaPut,storeFailText,storeFailure,tx,txs} from './app.js';
 import {planDirty} from './today-plan.js';
+import {askConfirm,netErr,plainErr,tell} from './ui.js';
+import {onSyncedData} from './start.js';
+import {refreshToday,renderSettingsExtras,setViewStale,todayDirty} from './settings.js';
+import {picker} from './history.js';
+import {show} from './nav.js';
+import {toast} from './toast.js';
+import {acts} from './act.js';
+import {SYNC_BATCH_MAX,SYNC_SEND_MAX,phBatch,phIn,phOut} from './sync-photos.js';
 let restoring=false,syncing=false,syncTimer=null,syncAgain=null,syncRun=null,syncDue=0;
 /* a roll-back waiting for its upload (2026-11-15, the audit: Safari killed 200 ms after "Roll back" left the rolled-back wardrobe on the
    phone, and the next start's sync uploaded it as an ordinary save, so the server never kept "Before the last roll-back" and 24 pieces
@@ -18,7 +26,7 @@ function restoreDone(){restoring=false;try{localStorage.removeItem('sync_restore
    right after this file): the status kept in localStorage sync_status, the pause until the next UTC day, the words for an offline or
    unreachable server, and what Connection and the setup say about backups. A change of the status announces 'backup-changed' (bus.js) */
 // a tester reads a server set-up error in plain words (plainErr, ui.js); the owner, or a connection whose role isn't known yet, the server's sentence
-function setSyncStatus(t){if(typeof isTester==='function'&&isTester()){const p=plainErr(t);if(p!==t)t='Backup failed: '+p}localStorage.setItem('sync_status',t);emit('backup-changed')}   // (the Backup line: sync-status.js, through bus.js)
+function setSyncStatus(t){if(askFor('acct-role')==='tester'){const p=plainErr(t);if(p!==t)t='Backup failed: '+p}localStorage.setItem('sync_status',t);emit('backup-changed')}   // (the Backup line: sync-status.js, through bus.js)
 const tabBrowser=()=>typeof homeBrowser==='function'?homeBrowser():'Safari';
 /* a backup that couldn't reach the server (Safari's "Load failed", Chrome's "Failed to fetch"): plain words, not the browser's -> text or null.
    (2026-11-15, the audit: "Backup failed: Load failed") */
@@ -83,8 +91,8 @@ async function applyMerged(local,incoming){const m=mergeState(local,incoming);
   if(m.settings)await atomic('meta','settings',r=>{const cur=r&&r.v,w=cur?mergeSettings(cur,m.settings):m.settings;return w===cur?null:{put:{k:'settings',v:w}}});
   const now=await localState();
   if(stateSig(now)!==stateSig(local)){const open=editing&&items.find(i=>i.id===editing);
-    setWardrobe({items:now.items});planDirty();if(window.onSyncedData)onSyncedData(now);syncRedraw(['today','wardrobe','add','stats'].find(t=>!$('#'+t).hidden));syncSettingsRedraw();
-    if(open)itemSynced(open)}   // the item sheet follows the new copy (item-view.js)
+    setWardrobe({items:now.items});planDirty();onSyncedData(now);syncRedraw(['today','wardrobe','add','stats'].find(t=>!$('#'+t).hidden));syncSettingsRedraw();
+    if(open)askFor('item-synced',open)}   // the item sheet follows the new copy (item-view.js)
   return now;
 }
 /* Settings open while a sync brought changes: its controls are drawn again from the merged settings (2026-11-15, the audit: the Suit vest
@@ -103,10 +111,10 @@ function syncSettingsRedraw(){if(!settingsOpen())return;
 let syncLater=null;
 function syncRedraw(v){if(!v||v==='add')return;
   if(settingsOpen()){if(v==='today')todayDirty();else setViewStale(v);return}
-  if((v==='wardrobe'&&editing)||(v==='today'&&(picker||todayBusy()))){syncLater=v;return}   // (a finger on Today: today.js todayFree runs it when the gesture ends)
+  if((v==='wardrobe'&&editing)||(v==='today'&&(picker||askFor('today-busy')))){syncLater=v;return}   // (a finger on Today: today.js todayFree runs it when the gesture ends)
   return show(v)}
 function syncLaterRun(v){if(syncLater!==v)return;syncLater=null;if($('#'+v).hidden)return;
-  if(v==='today')refreshToday();else if(v==='wardrobe'&&!editing)renderWardrobe()}
+  if(v==='today')refreshToday();else if(v==='wardrobe'&&!editing)emit('wardrobe-changed')}
 /* ---- the first pull (2026-11-14): a connected device saves nothing at start-up until it has merged the backup once. On the owner's
    phone, two days behind, the week's locks (stamped 07:00) and the one-time photo upgrade (82 items re-saved at 07:45) were written on
    its old copy before it synced; stamped newest, they replaced a pick made on another device and 11 newer tags, and brought back 4
@@ -175,15 +183,13 @@ async function clockFix(){const t=nowMs(),lim=t+CLOCK_AHEAD,st=await localState(
     if(c.holidays&&(+c.holidays.fetched||0)>lim){c.holidays.fetched=0;if(c.kh)c.kh.holidays=setHash(c.holidays);if(c.ks)c.ks.holidays=t;ch=true}
     if((+c.updated||0)>lim||ch){c.updated=t;await metaPut('settings',c);n++}}
   if(!n)return false;
-  const now=await localState();setWardrobe({items:now.items});planDirty();if(window.onSyncedData)onSyncedData(now);return true}
+  const now=await localState();setWardrobe({items:now.items});planDirty();onSyncedData(now);return true}
 /* ---- the small sync (worker.js syncLiteGet / syncLitePost). A newer worker answers GET /sync?lite=1&since=<the version last agreed
    on> with only the records changed since, with photos as references (dwph:<hash>), every tombstone, and what it holds of each record
    (idx: its stamp); this device fetches only the photos it lacks (?ph=), merges, and POSTs only the records newer than the backup's,
    with the photos the backup lacks. A day marked worn is a few hundred bytes each way, where the whole backup (photos and all) was
    16 MB. An older worker ignores lite and since and answers as before (the whole backup, or same), and then the old way runs. ---- */
 const SYNC_LITE=!self.SYNC_OLD;   // (window.SYNC_OLD: sync the whole backup every time, as before; a test plays an older app with it)
-/* the most one upload carries (sync-photos.js phBatch) */
-const SYNC_SEND_MAX=self.SYNC_SEND_TEST||16*1024*1024,SYNC_BATCH_MAX=40;   // (window.SYNC_SEND_TEST before load: a test's smaller budget)
 let syncSendMax=SYNC_SEND_MAX;   // (per sync: the budget, halved after each 413)
 const TOO_BIG_SYNC='Not backed up: an item’s photos are too large for the server. Your changes are kept on this phone; backups try again tomorrow.';
 /* when this phone first synced with this account (sync_join: the code's last 6 characters and the time; set by syncOnce before its first
@@ -212,8 +218,8 @@ async function syncLite(remote,local,url,token,inline){
   if(lacks&&!remote.all)return {again:{all:true}};
   pullDone();   // this device now holds everything the backup does: start-up writers may run (before the upload: they save on a current copy)
   // what the backup lacks: records newer than its own, tombstones it doesn't have
-  const share=kitShareFilter(now,null,syncJoinAt());   // (not the sample wardrobe: kit.js)
-  const up={items:share.items.filter(i=>!(i.id in ix.i)||stamp(i)>ix.i[i.id]),days:share.days.filter(d=>!(d.date in ix.d)||kitSentStamp(d)>ix.d[d.date]||keptD(d)),
+  const share=askFor('kit-share-filter',now,null,syncJoinAt());   // (not the sample wardrobe: kit.js)
+  const up={items:share.items.filter(i=>!(i.id in ix.i)||stamp(i)>ix.i[i.id]),days:share.days.filter(d=>!(d.date in ix.d)||askFor('kit-sent-stamp',d)>ix.d[d.date]||keptD(d)),
     tombstones:Object.fromEntries(Object.entries(now.tombstones).filter(([id,t])=>!(id in tomb)||tomb[id]<t))};
   Object.assign(up,cleanState({items:up.items,days:up.days,tombstones:up.tombstones}));   // records as the server takes them (core.js cleanState)
   if(now.settings&&(now.settings.updated||0)>(ix.s??-1))up.settings=now.settings;
@@ -242,12 +248,9 @@ async function syncSaved(p,pr,token,now){
   if(p.status===429&&pr.what==='backup')return pauseTillTomorrow(backupFullMsg(pr));
   if(endedAnswer(p.status,pr)){inviteEnded(token,pr);setSyncStatus(ENDED);return false}
   if(!p.ok)throw new Error(pr.message||pr.error||'HTTP '+p.status);
-  setSyncMark(pr.rev,pr.saved,stateSig(now));kitShareDone();synced();restoreDone();
+  setSyncMark(pr.rev,pr.saved,stateSig(now));askFor('kit-share-done');synced();restoreDone();
   if(stateSig(await localState())!==stateSig(mergeState(now,{})))scheduleSync();   // something changed while uploading
   return true}
-/* this phone's storage failed during a sync: said in a toast every time (safety.js storeFailText), unless the full-page message already says it */
-function syncStoreTell(e){console.warn('storage failure during sync',e);if(dbDown)return;
-  try{setStoreToldAt(Date.now())}catch{}toast(storeFailText(e),9000)}
 async function syncOnce(){
   const url=syncUrl(),token=localStorage.getItem('app_token')||'';
   if(!url){setSyncStatus('Not connected.');return false}
@@ -276,7 +279,7 @@ async function syncOnce(){
       if(remote.data)remote.data=cleanState(remote.data);   // records from outside (core.js)
       await adoptBackupSettings(local,remote.data);   // a device's first contact with a backup: the backup's settings win (safety.js)
       // upload what is actually stored now (it may include edits made during this sync)
-      const now=mergeState(await applyMerged(local,remote.data||{}),remote.data||{}),out=cleanState(kitShareFilter(now,remote.data,syncJoinAt()));pullDone();   // (out: what is sent, without the sample wardrobe)
+      const now=mergeState(await applyMerged(local,remote.data||{}),remote.data||{}),out=cleanState(askFor('kit-share-filter',now,remote.data,syncJoinAt()));pullDone();   // (out: what is sent, without the sample wardrobe)
       if(remote.data&&stateSig(out)===stateSig(remote.data)){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
       if(syncPaused()){setSyncStatus(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.');return false}
       const p=await fetch(url,{method:'PUT',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,day:isoKey(new Date(nowMs())),...(restoreWanted()?{reason:'restore'}:{}),data:out})});   // data last: the server reads a large backup's few leading fields without parsing the whole
@@ -291,7 +294,7 @@ async function syncOnce(){
     // showed an empty Welcome, and only Settings said "Backup failed: IDBTransaction will abort…")
     // (always toasted, not through saveFailed's 1.5 s once-only: on joining, a start-up write had failed a moment before and its toast was
     // already replaced by "Connected as …", so this one was skipped and the phone showed an empty Welcome with no word: the lead's re-run)
-    if(storeFailure(e)){syncStoreTell(e);setSyncStatus('Backup failed: '+storeFailText(e).replace(/^Couldn’t save: /,''));return false}
+    if(storeFailure(e)){askFor('sync-store-tell',e);setSyncStatus('Backup failed: '+storeFailText(e).replace(/^Couldn’t save: /,''));return false}
     const n=syncNetText(e);setSyncStatus(n||'Backup failed: '+(e.message||e));return false}
   finally{syncing=false}
 }
@@ -301,13 +304,24 @@ const TESTER_SYNC_MS=15*60000;
 /* sync_wait: a change made here that no backup has taken yet (cleared by synced); the Backup summary says so (settings.js backupSummary) */
 /* sync_wait and syncDue by the corrected clock (core.js nowMs), as last_sync and the pause (CR-5-15) */
 function scheduleSync(){clearTimeout(syncTimer);try{if(!localStorage.getItem('sync_wait'))localStorage.setItem('sync_wait',String(nowMs()))}catch{}
-  if(typeof isTester==='function'&&isTester()){if(!syncDue)syncDue=nowMs();syncTimer=setTimeout(syncNow,Math.max(1000,syncDue+TESTER_SYNC_MS-nowMs()));return}
+  if(askFor('acct-role')==='tester'){if(!syncDue)syncDue=nowMs();syncTimer=setTimeout(syncNow,Math.max(1000,syncDue+TESTER_SYNC_MS-nowMs()));return}
   syncTimer=setTimeout(syncNow,2500)}
 /* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
 function setRestoring(v){restoring=v}
+/* (moved from safety.js with its text unchanged, the restructure S6c) */
+/* ---- a device's first contact with a backup (it has never finished a sync): the backup's settings win, key by key, whatever
+   the stamps say. A new device has only defaults, or what first-run setup saved, and those must not replace the holidays,
+   days off and own colours in the backup. What only this device has (a key the backup lacks) stays.
+   Called by syncOnce (sync.js) with the local snapshot and the downloaded one, before they are merged. ---- */
+async function adoptBackupSettings(local,data){
+  if(localStorage.getItem('last_sync')||!data||!data.settings||!local||!local.settings)return false;
+  if((local.settings.updated||0)<=(data.settings.updated||0))return false;   // the merge takes the backup's by itself
+  const kept={...local.settings,...data.settings};await metaPut('settings',kept);local.settings=kept;
+  setWardrobe({settings:takeSettings(settings,data.settings)});applyCustom(settings.custom);planDirty();askFor('weather-load');
+  if(!$('#today').hidden)refreshToday();return true}
 /* An ES module since 2026-11-24. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals. Above the file's top-level set-up, whose connRestored.then and acts({…}) throw when app.js or act.js didn't load */
-Object.assign(globalThis,{syncPaused,syncWaiting,backedUpWords,tabBrowser,safariTab,localState,applyMerged,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,WIPED_SYNC,syncNow,SYNC_SEND_MAX,scheduleSync,setRestoring});
+Object.assign(globalThis,{syncPaused,syncWaiting,backedUpWords,tabBrowser,safariTab,localState,applyMerged,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,WIPED_SYNC,syncNow,scheduleSync,setRestoring,adoptBackupSettings});
 /* the socket the setup's Connection step asks for its words (bus.js; setup.js no longer names this file: the restructure S3f) */
 serve('backed-up-words',backedUpWords);
 Object.defineProperties(globalThis,{syncTimer:{get:()=>syncTimer},syncRun:{get:()=>syncRun},restoring:{get:()=>restoring,set:v=>{restoring=v}},syncing:{get:()=>syncing,set:v=>{syncing=v}}});
@@ -316,7 +330,7 @@ on('settings-saved',()=>scheduleSync());   // a backup soon after the settings w
 on('connection-saved',()=>{syncNow().catch(e=>console.warn('sync not started',e))});   // Settings' Done: a backup now
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,TESTER_SYNC_MS,backupFullMsg,get syncDue(){return syncDue},set syncDue(v){syncDue=v},syncJoinAt,syncJoinMark,get syncLater(){return syncLater},syncTap,get syncing(){return syncing},set syncing(v){syncing=v},applyMerged,backedUpWords,localState,pulledYet,scheduleSync,syncNow,syncPaused,syncRedraw,get syncRun(){return syncRun},get syncTimer(){return syncTimer}};
-export {setSyncStatus,syncNetText,syncWaiting,pauseTillTomorrow,syncPaused,backupFullMsg,backedUpWords,tabBrowser,safariTab,restoring,syncing,syncTimer,syncRun,syncDue,localState,applyMerged,syncLater,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,syncTap,WIPED_SYNC,syncNow,SYNC_SEND_MAX,syncJoinAt,syncJoinMark,TESTER_SYNC_MS,scheduleSync,setRestoring};
+export {setSyncStatus,syncNetText,syncWaiting,pauseTillTomorrow,syncPaused,backupFullMsg,backedUpWords,tabBrowser,safariTab,restoring,syncing,syncTimer,syncRun,syncDue,localState,applyMerged,syncLater,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,syncTap,WIPED_SYNC,syncNow,syncJoinAt,syncJoinMark,TESTER_SYNC_MS,scheduleSync,setRestoring,adoptBackupSettings};
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'&&syncDue)syncNow();   // a tester's waiting changes, as the app closes
   else if(document.visibilityState==='visible'&&nowMs()-(+localStorage.getItem('last_sync')||0)>60000)syncNow()});
@@ -327,3 +341,5 @@ connRestored.then(()=>setTimeout(syncNow,300));   // (after the connection is pu
 /* the markup's handler (act.js): Settings' "Sync now" */
 function syncNowTap(){syncTap()}
 acts({syncNowTap});
+/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
+serve('sync-soon',scheduleSync);serve('sync-now',syncNow);serve('sync-redraw',syncRedraw);serve('sync-needs-pull',syncNeedsPull);serve('sync-later-run',syncLaterRun);serve('sync-stop',()=>clearTimeout(syncTimer));serve('sync-running',()=>syncRun);

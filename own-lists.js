@@ -1,7 +1,7 @@
 /* Daily Wardrobe: photo tagging, the person's own lists (split from tagging.js, Round B CR-2-17): adding a colour or a pattern the lists
    lack, own materials from Claude's offers, and their Settings lists. */
-import {on,emit} from './bus.js';   // emit: a card changed (add.js redraws Add on 'card-changed'; this file loads before add.js since the restructure S3c)
-import {$,CASUAL_JACKETS,CASUAL_TOPS,COLORS,COLS_BY,CUSTOM_COL,CUSTOM_PAT,MATERIALS_BY,OWN_COL_RE,OWN_MAT_MAX,OWN_PAT_RE,PATS_BY,TYPES,applyCustom,colName,colsFor,items,matTypeWord,matsFor,normCol,ownColFind,ownColKey,ownDescClean,ownFreeKey,ownMatName,ownMats,ownNameBad,ownNameClean,ownNameShort,ownPatKey,patLabel,patNameTaken,settings} from './core.js';
+import {askFor,emit,on} from './bus.js';   // emit: a card changed (add.js redraws Add on 'card-changed'; this file loads before add.js since the restructure S3c)
+import {$,CASUAL_JACKETS,CASUAL_TOPS,COLORS,COLS_BY,CUSTOM_COL,CUSTOM_PAT,MATERIALS_BY,OWN_COL_RE,OWN_MAT_MAX,OWN_PAT_RE,PATS_BY,TYPES,applyCustom,colName,colNameTaken,colsFor,items,matTypeWord,matsFor,normCol,ownColFind,ownColKey,ownDescClean,ownFreeKey,ownMatName,ownMats,ownNameBad,ownNameClean,ownNameShort,ownPatKey,patLabel,patNameTaken,settings} from './core.js';
 import {planDirty} from './today-plan.js';
 import {saveUserSettings} from './settings.js';
 import {cap1,queue} from './app.js';
@@ -39,7 +39,6 @@ async function ownColOffer(key,type,accent){const cu=settings.custom||{},l=cu.co
    photo's measurement, else the tagged colour */
 const nameHex=n=>{const w=String(n||'').toLowerCase().split(/[^a-z]+/).filter(Boolean);for(const x of [w.join(''),...w.slice().reverse()]){const k=normCol(x);if(k&&!CUSTOM_COL[k])return COLORS[k]}return null};
 function newColHex(q){const m=q.meas&&q.meas.hex;return q.meas&&q.meas.src==='closeup'&&m||q.newColor&&nameHex(q.newColor.name)||m||COLORS[q.primaryColor]}
-function openColForm(i){const q=queue[i];if(!q)return;openColPick('q',i,'primaryColor');openColNew({from:'add',name:q.newColor?q.newColor.name:'',hex:newColHex(q)})}
 const OWN_NAME_MSG='Use only letters, numbers, spaces and - ’ . , ( ) / + in the name.';
 async function addCustomColor({name,hex,base,types,accent}){if(ownNameBad(name))throw new Error(OWN_NAME_MSG);name=ownNameClean(name,24);
   if(ownNameShort(name))throw new Error('Give it a name of at least two letters.');if(ownColFind(name)||colNameTaken(name))throw new Error('There is already a color with that name.');
@@ -57,10 +56,6 @@ function guessPatBase(name,desc,type,fallback){const t=`${name||''} ${desc||''}`
   for(const p of list)if(new RegExp('\\b'+p.replace(/-/g,'[- ]?')+'\\b','i').test(t))return p;
   for(const [re,p] of PAT_WORDS)if(re.test(t)&&ok(p))return p;
   return fallback}
-/* the Add card's offer of a new pattern (Claude's newPattern) opens the "+ New pattern or texture" sheet with Claude's name and words, its
-   "drawn like" guessed from them (guessPatBase) */
-function openPatForm(i){const q=queue[i];if(!q)return;const name=q.newPattern?q.newPattern.name:'',why=q.newPattern?q.newPattern.why:'';
-  openColPick('q',i,'pattern');openPatNew({from:'add',name,desc:[name,why].filter(Boolean).join(': ').slice(0,120),base:guessPatBase(name,why,q.type,null)})}
 /* look: the drawing recipe from "+ New pattern" (worker /describe: {layout, tr, tex | across (+ along) | motif}, roles not colours),
    kept with the pattern (synced) and drawn by detect.js lookSett in each item's colours, the painter too */
 const cleanLookApp=l=>l&&typeof l==='object'&&['texture','stripes','check','windowpane','plaid','motif'].includes(l.layout)&&(Array.isArray(l.tex&&l.tex.grid)||Array.isArray(l.across)||l.motif&&Array.isArray(l.motif.figs))?JSON.parse(JSON.stringify(l)):null;
@@ -104,7 +99,7 @@ async function matOffer(i){const q=queue[i];if(!q||!q.matNew)return;const nm=q.m
   toast(`${cap1(n)} added to your ${matTypeWord(q.type)} materials.`,6000,{label:'Undo',fn:async()=>{const c=queue.find(x=>x.id===q.id);
     if(c&&c.material===n){if(was)c.material=was;else delete c.material;delete c.matAdded;c.matNew=nm}if(!had)await removeOwnMaterial(q.type,n);emit('card-changed')}})}
 /* the Add card's "Use wool" on Claude's low-confidence guess: chosen by hand (matSet, Fabric & fit checked) */
-function matGuessUse(i){const q=queue[i];if(!q||!q.matGuess)return;const k=q.matGuess.key;delete q.matGuess;setQField(i,'material',k)}
+function matGuessUse(i){const q=queue[i];if(!q||!q.matGuess)return;const k=q.matGuess.key;delete q.matGuess;askFor('card-field',i,'material',k)}
 /* Settings → Your materials: the materials added from Claude's offers, per type; each can be removed (items already using it keep it: it
    shows as Other with its name there; it is only no longer offered) */
 function renderOwnMatUI(){const el=$('#ownmat-list');if(!el)return;const rows=[];
@@ -112,18 +107,15 @@ function renderOwnMatUI(){const el=$('#ownmat-list');if(!el)return;const rows=[]
     rows.push(`<div class="custrow ownmatrow" data-t="${esc(t)}" data-m="${esc(m)}"><span><b>${esc(cap1(m))}</b><br><small class="mut">${esc(TYPES[t]||t)}${n?` · ${n} item${n>1?'s':''}`:''}</small></span><button type="button" aria-label="Remove ${esc(m)} from your ${esc(matTypeWord(t))} materials" data-act="ownMatRmTap" data-t="${esc(t)}" data-m="${esc(m)}">Remove</button></div>`)}
   el.innerHTML=rows.length?rows.join('')+'<p class="mut"><small>Removing one leaves the items that use it as they are; it just stops being offered.</small></p>'
     :'<p class="mut"><small>None yet. When Claude reads a material that is on no list (cupro, say), the Add card offers to add it here.</small></p>';
-  if(lookOn())el.insertAdjacentHTML('beforeend',lookOwnMatUI())}   // (the Look beta: leathers and metals too, and "+ New material": look.js)
+  if(lookOn())el.insertAdjacentHTML('beforeend',askFor('look-own-mat-ui')??'')}   // (the Look beta: leathers and metals too, and "+ New material": look.js)
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it), above acts({…}), the file's one top-level
    call: colpick.js, look.js, settings.js and add-card.js, classic scripts, and tagging.js (openColForm, openPatForm, read as globals: it
    comes before this file in the list) use these; guessPatBase is called by tests/asmroute.test.js only */
-Object.assign(globalThis,{groupOf,typePl,ownColOffer,newColHex,openColForm,addCustomColor,openPatForm,addCustomPattern,renderCustomUI,removeCustom,addOwnMaterial,removeOwnMaterial,matOffer,matGuessUse,renderOwnMatUI});
+Object.assign(globalThis,{groupOf,typePl,ownColOffer,newColHex,addCustomColor,addCustomPattern,renderCustomUI,removeCustom,addOwnMaterial,removeOwnMaterial,matOffer,matGuessUse,renderOwnMatUI});
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-draw',()=>{renderCustomUI();renderOwnMatUI()});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,guessPatBase,addCustomColor,addCustomPattern,addOwnMaterial,groupOf,newColHex,removeOwnMaterial,renderCustomUI};
-export {groupOf,typePl,ownColOffer,newColHex,openColForm,addCustomColor,guessPatBase,openPatForm,addCustomPattern,renderCustomUI,removeCustom,addOwnMaterial,removeOwnMaterial,matOffer,matGuessUse,renderOwnMatUI};
-/* what Settings' own lists do (act.js): "+ New color" / "+ New pattern" (data-kind), and a material's Remove (its type and name in
-   data-t and data-m) */
-function custNewTap(el){openCustomNew(el.dataset.kind)}
+export {groupOf,typePl,ownColOffer,newColHex,addCustomColor,guessPatBase,addCustomPattern,renderCustomUI,removeCustom,addOwnMaterial,removeOwnMaterial,matOffer,matGuessUse,renderOwnMatUI};
 function ownMatRmTap(el){removeOwnMaterial(el.dataset.t,el.dataset.m)}
-acts({custNewTap,ownMatRmTap});
+acts({ownMatRmTap});

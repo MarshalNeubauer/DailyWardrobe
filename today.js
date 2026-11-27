@@ -5,7 +5,7 @@
    2026-11-17 (Round C) into today-plan.js, today.js, today-photofold.js, today-picture.js and today-gestures.js, in that order.) */
 import {on,emit} from './bus.js';
 import {cache,hasOutfit,outSig,planDirty,planFor,planMonth,planSnapSoon,planStartDay,planTrim} from './today-plan.js';
-import {$,COOL,DAY_NAMES,SLOTS,TYPES,dayRecs,desc,di,hasVest,inRotation,isHandPick,isWorkday,isoKey,itemTitle,items,key,nameHtml,needsJacket,needsTie,nm,offName,sentence,setClimate,setWardrobe,setWeather,settings,shortDesc,titleCls,todayDate} from './core.js';
+import {$,COOL,DAY_NAMES,SLOTS,TYPES,dayRecs,desc,di,hasVest,inRotation,isHandPick,isWorkday,isoKey,itemTitle,items,key,nameHtml,needsJacket,needsTie,nm,offName,sentence,setClimate,setWardrobe,setWeather,settings,settingsOpen,shortDesc,titleCls,todayDate} from './core.js';
 import {canPick,closePicker,dayActions,openPicker,pastEdit,picker,recordDays,resetCard,setPastEdit,setSwapMsg,setTodayPullWait,setVest,setWorn,slotLabel,todayPullWait,whenPulled} from './history.js';
 import {figureSvg,itemThumb,swatchSVG} from './draw.js';
 import {esc,srcOk} from './photo-keys.js';
