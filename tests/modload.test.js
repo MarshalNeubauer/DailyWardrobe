@@ -210,7 +210,7 @@ async function survey(eng,browser,{ok,url,C,page,imports}){
     const pl=named(await partsCase('',{f:'start.js',body:fs.readFileSync(path.join(ROOT,'start.js'),'utf8').replace('function startChecks(){',"function startChecks(){need('plan-rules-check');")}));
     const bad=ab.filter(f=>res[f].length);
     ok(!bad.length&&pl.length>0,T+`D1: without ${ab.join(', ')} (each alone), Today, Settings and Insights show no error naming one of their absent parts${bad.length?': '+bad.map(f=>f+' '+res[f].join(' | ')).join('; '):''}; planted need('plan-rules-check') ${pl.length?'caught ('+pl[0]+')':'not caught'}`)}
-  /* N5 (2026-11-28, D1): each optional file of the contract's `asked.files` can't be loaded, and with Today drawn, Settings opened and
+  /* N5 (2026-11-28, D1): each optional file of the contract's `asked.files` whose 404 threw on main (its `main` notes) can't be loaded, and with Today drawn, Settings opened and
      closed, Insights shown, Today shown again and the next day stepped to, no warning or page error says one of its sockets "is not
      served" (main threw there: start-up's arrivals check, Today's week locks, every sheet closed without add-sheet.js). Planted: ui.js
      needing nps-id again, without add-sheet.js, is caught */
@@ -225,9 +225,10 @@ async function survey(eng,browser,{ok,url,C,page,imports}){
         await p.evaluate(()=>{const n=document.querySelector('#today .nav.day button[data-n="1"]');if(n)n.click()});await wait(1500);
         return [...new Set(said.filter(t=>names.some(s=>t.includes(s+' is not served'))||/^\(the case failed/.test(t)).map(t=>t.split('\n')[0].slice(0,90)))]}
       catch(e){return ['(the case failed: '+e.message.split('\n')[0]+')']}finally{await ctx.close().catch(()=>{})}};
-    const fl=Object.keys(A),res={},q=[...fl];await Promise.all([0,1,2].map(async()=>{for(let f;(f=q.shift())!==undefined;)res[f]=await askCase(f,null,sockOf(f))}));
+    // (the files whose 404 threw on main, a `main` note in the contract, all at once with the plant: WebKit's run is near its time limit)
+    const fl=Object.keys(A).filter(f=>A[f].some(x=>x.main)),res={};
     const uiSrc=fs.readFileSync(path.join(ROOT,'ui.js'),'utf8'),uiPlant=uiSrc.replace("&&ask('nps-id'))","&&need('nps-id'))");
-    const pl=uiPlant!==uiSrc&&fl.includes('add-sheet.js')?await askCase('add-sheet.js',{f:'ui.js',body:uiPlant},sockOf('add-sheet.js')):[];
+    const [pl]=await Promise.all([uiPlant!==uiSrc&&fl.includes('add-sheet.js')?askCase('add-sheet.js',{f:'ui.js',body:uiPlant},sockOf('add-sheet.js')):Promise.resolve([]),...fl.map(async f=>{res[f]=await askCase(f,null,sockOf(f))})]);
     const bad=fl.filter(f=>res[f].length);
     ok(fl.length>0&&!bad.length&&pl.length>0,T+`N5: without ${fl.join(', ')} (each alone), Today, Settings, Insights and the next day show no error naming one of the sockets now asked of it${bad.length?': '+bad.map(f=>f+' '+res[f].join(' | ')).join('; '):''}; planted need('nps-id') in ui.js ${pl.length?'caught ('+pl[0]+')':'not caught'}`)}
   ok(!off.length,T+`each of the ${page.length} page scripts, when it can't be loaded (404), shows what the contract says (${Object.entries(tally).map(([k,v])=>k+' '+v).join(', ')}; painted only: ${page.filter(f=>expected(C,f,E)==='painted').map(f=>f+' '+got[f]).join(', ')})${off.length?': '+off.map(f=>`${f} shows ${got[f]}, the contract says ${expected(C,f,E)}`).join('; '):''}`);

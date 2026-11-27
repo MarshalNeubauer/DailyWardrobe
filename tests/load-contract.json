@@ -477,14 +477,14 @@
   }
  },
  "asked": {
-  "what": "N5 (the notice board made clean, 2026-11-28; the owner's decision D1): the sockets a required or today-no-picture file asked of an optional file with bus.js `need`, now `ask` (or `served`): without the file the asking code goes on without its part, where main threw. files: the optional file -> each socket and the files that ask it. kept: the `need` calls toward an optional file that stay, and why. tests/modload.test.js checks both lists against the files, and that each listed file's 404 shows no error naming one of its sockets (both engines).",
+  "what": "N5 (the notice board made clean, 2026-11-28; the owner's decision D1): the sockets a required or today-no-picture file asked of an optional file with bus.js `need`, now `ask` (or `served`): without the file the asking code goes on without its part, where main threw. files: the optional file -> each socket and the files that ask it. kept: the `need` calls toward an optional file that stay, and why. main: what the file's 404 showed on main where it threw (the other sockets were already caught, guarded or out of reach). tests/modload.test.js checks both lists against the files, and that the 404 of each file with a `main` note shows no error naming one of its sockets (both engines).",
   "files": {
    "tag-request.js": [{"socket": "tag-extras", "by": ["app.js"]}],
-   "locks.js": [{"socket": "lock-upcoming", "by": ["today.js"]}, {"socket": "unlock-clash", "by": ["history.js"]}],
-   "add-sheet.js": [{"socket": "nps-id", "by": ["ui.js"]}, {"socket": "nps-inert", "by": ["ui.js"]}, {"socket": "nps-asking", "by": ["ui.js"]}, {"socket": "nps-cancel", "by": ["ui.js"]}],
+   "locks.js": [{"socket": "lock-upcoming", "by": ["today.js"], "main": "Today drawn from a plan (not the kept snapshot) threw: start-up failed, \"Today couldn't be shown\""}, {"socket": "unlock-clash", "by": ["history.js"]}],
+   "add-sheet.js": [{"socket": "nps-id", "by": ["ui.js"], "main": "closing any sheet threw: \"Something went wrong: nps-id is not served\""}, {"socket": "nps-inert", "by": ["ui.js"]}, {"socket": "nps-asking", "by": ["ui.js"]}, {"socket": "nps-cancel", "by": ["ui.js"]}],
    "today-picture.js": [{"socket": "ovl-piece", "by": ["today.js"]}],
-   "safety.js": [{"socket": "err-note", "by": ["start.js"]}, {"socket": "storage-down", "by": ["start.js"]}, {"socket": "safety-start", "by": ["start.js"]}],
-   "add-more.js": [{"socket": "check-arrivals", "by": ["today.js", "start.js"]}],
+   "safety.js": [{"socket": "err-note", "by": ["start.js"]}, {"socket": "storage-down", "by": ["start.js"]}, {"socket": "safety-start", "by": ["start.js"], "main": "a page error after start-up"}],
+   "add-more.js": [{"socket": "check-arrivals", "by": ["today.js", "start.js"], "main": "a page error after start-up; a new day was not stepped to"}],
    "add.js": [{"socket": "add-draw", "by": ["settings.js"]}],
    "fav.js": [{"socket": "fav-pieces", "by": ["history.js"]}, {"socket": "fav-undo-ms", "by": ["history.js"]}],
    "item-photo.js": [{"socket": "ph-edit", "by": ["photos.js"]}],
