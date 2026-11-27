@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	470163a96e59bb2a5c85
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -9764,7 +9765,6 @@ labbench.test.js	tests/fixtures/cm/suit/part-lapelL.png	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/part-lapelR.png	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<loaded>
-labbench.test.js	tests/webkit.js	<any>
 lookbeta.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 lookbeta.test.js	account.js	<loaded>	@onsettingssummaries	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI
 lookbeta.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -12030,7 +12030,7 @@ ocpcloth.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPul
 ocpcloth.test.js	care.js	<loaded>
 ocpcloth.test.js	checklist.js	<loaded>
 ocpcloth.test.js	colpick.js	<loaded>
-ocpcloth.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	acctBase	applyCustom	camoField	camoImage	camoPat	casualTop	cleanState	colOf	dayClimate	di	esc	get dayRecs	get items	get settings	hasInviteHash	hexRgb	homeAndroid	homeIOS	homeNeeded	inviteOver	isConnected	isOcp	isWorkday	isoKey	key	keySettings	keySplit	mergeState	metalWord	now	nowMs	occOf	ocpImage	offDays	offName	patBase	patLabel	patName	primaryCol	setWardrobe	settingsOpen	subHashes	syncMark	syncUrl	takeSettings	todayDate	trouserKind	watchOpts
+ocpcloth.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	acctBase	acctCall	acctEsc	applyCustom	camoField	camoImage	camoPat	casualTop	cleanState	colOf	dayClimate	di	esc	get dayRecs	get items	get settings	hasInviteHash	hexRgb	homeAndroid	homeIOS	homeNeeded	inviteOver	isConnected	isOcp	isWorkday	isoKey	key	keySettings	keySplit	mergeState	metalWord	now	nowMs	occOf	ocpImage	offDays	offName	patBase	patLabel	patName	primaryCol	setWardrobe	settingsOpen	subHashes	syncMark	syncUrl	takeSettings	todayDate	trouserKind	watchOpts
 ocpcloth.test.js	cost.js	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	cpwFlush
 ocpcloth.test.js	days.js	<loaded>
 ocpcloth.test.js	daysoff.js	<loaded>	refreshHolidays
@@ -14367,7 +14367,7 @@ rollback.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
 rollback.test.js	photo-keys.js	<loaded>	@serverenders	comboKey	comboSig	fnv64	listPaused	loadRenders	lookSig	picsDrawn	shirtPatterned	shirtTextured	workerBase	workerList
 rollback.test.js	photos.js	<loaded>	asmLive	fetchRemoteRender	fixItemBackdrops	missingItemPics	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shareLocalPics
 rollback.test.js	pickscore.js	<loaded>
-rollback.test.js	planner.js	<loaded>	idsAhead	pairSeen	shirtGroup
+rollback.test.js	planner.js	<loaded>	idsAhead	lockStale	pairSeen	shirtGroup
 rollback.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 rollback.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errList	errReport	errReporting	errSend	errSoon	pruneTagImgs	safetyStart
 rollback.test.js	scorecard.js	<loaded>
@@ -14386,7 +14386,6 @@ rollback.test.js	tag-request.js	<loaded>
 rollback.test.js	tagging.js	<loaded>
 rollback.test.js	tests/appsrc.js	<any>
 rollback.test.js	tests/fixedplan.js	<any>
-rollback.test.js	tests/webkit.js	<any>
 rollback.test.js	theme.js	<loaded>	applyTheme
 rollback.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 rollback.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	todayBusy
@@ -20048,7 +20047,6 @@ takeoff.test.js	sync-status.js	<loaded>	@onbackupchanged	showSyncStatus
 takeoff.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	@onsettingssaved	afterPull	pulledYet	scheduleSync	setSyncStatus	syncLaterRun	syncNeedsPull	syncNow	syncOnce	syncPaused	syncWaiting
 takeoff.test.js	tag-request.js	<loaded>
 takeoff.test.js	tagging.js	<loaded>
-takeoff.test.js	tests/webkit.js	<any>
 takeoff.test.js	theme.js	<loaded>	applyTheme
 takeoff.test.js	toast.js	<loaded>
 takeoff.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold	moveRecs
@@ -22055,7 +22053,6 @@ weather.test.js	sync-status.js	<loaded>	@onbackupchanged	@onsettingsopen	safariW
 weather.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	@onsettingssaved	afterPull	localState	pulledYet	safariTab	scheduleSync	setSyncStatus	syncNeedsPull	syncNow	syncOnce	syncPaused	syncWaiting
 weather.test.js	tag-request.js	<loaded>
 weather.test.js	tagging.js	<loaded>
-weather.test.js	tests/webkit.js	<any>
 weather.test.js	theme.js	<loaded>	applyTheme
 weather.test.js	toast.js	<loaded>
 weather.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold
