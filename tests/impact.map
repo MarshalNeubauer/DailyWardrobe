@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	4d9f1b3c5a3dd5223a70
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -9,7 +10,7 @@ a11y.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 a11y.test.js	add-paste.js	<loaded>
 a11y.test.js	add-save.js	<loaded>	cardReady
 a11y.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	get addFor	get npsId	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-a11y.test.js	add.js	<loaded>	addNoteText	renderAdd	wbNote
+a11y.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	wbNote
 a11y.test.js	analysis.js	<loaded>
 a11y.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get editing	get queue	get sel	keepFocus	metaGet	metaPut	put	set flt	set sel	set view	setEditing	setFlt	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 a11y.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmWtWants
@@ -43,9 +44,9 @@ a11y.test.js	fields.js	<loaded>	fldRow	matRow	notesRow	optLab
 a11y.test.js	history.js	<loaded>	canPick	checkPlanRules	closePicker	combatAway	dayActions	dayChanged	dropLearn	get picker	handGroup	openPicker	pickPic	pluralWord	recordDays	renderReplanUI	replanCount	resetCard	setWorn	slotLabel	whenPulled
 a11y.test.js	index.html	<loaded>
 a11y.test.js	item-photo.js	<loaded>	paperHint	photoTools	ptIcon	setPhEdit	smallPhotos
-a11y.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
-a11y.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	sete	wardChip
-a11y.test.js	kit.js	<loaded>	@servekitquiet	get body	get kit	homeAbout	homeLabel	kitBs	kitClose	kitClothPic	kitDraw	kitEl	kitFixOldImports	kitGo	kitHasSample	kitHist	kitInert	kitNextTap	kitOpen	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitScorePic	kitShadePic	kitStartRow	kitUserEdit	kitWears	pic	tourOpen
+a11y.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
+a11y.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	sete	wardChip
+a11y.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	get body	get kit	homeAbout	homeLabel	kitBs	kitClose	kitClothPic	kitDraw	kitEl	kitFixOldImports	kitGo	kitHasSample	kitHist	kitInert	kitNextTap	kitOpen	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitScorePic	kitShadePic	kitStartRow	kitUserEdit	kitWears	pic	tourOpen
 a11y.test.js	locale.js	<loaded>	appLocale
 a11y.test.js	locks.js	<loaded>	lockPast	lockSpan	lockUpcoming
 a11y.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -107,7 +108,7 @@ about.test.js	add-more.js	<loaded>	checkArrivals
 about.test.js	add-paste.js	<loaded>
 about.test.js	add-save.js	<loaded>
 about.test.js	add-sheet.js	<loaded>	@servenpsid
-about.test.js	add.js	<loaded>
+about.test.js	add.js	<loaded>	@document.addEventListenerclick
 about.test.js	analysis.js	<loaded>
 about.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbDrop	dbGone	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	put	putRaw	setEditing	setSel	setView	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 about.test.js	asm-cm-job.js	<loaded>
@@ -205,7 +206,7 @@ accents.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRo
 accents.test.js	add-paste.js	<loaded>
 accents.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 accents.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-accents.test.js	add.js	<loaded>	@serveaddcalm	addNoteText	renderAdd	wbNote
+accents.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	renderAdd	wbNote
 accents.test.js	analysis.js	<loaded>
 accents.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get queue	keepFocus	matTag	metaGet	metaPut	normTag	ownColorsOf	put	setEditing	setSel	setView	sockTag	texSwatches	tx	txFail	txs	window.fetch
 accents.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -303,7 +304,7 @@ accounts.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyR
 accounts.test.js	add-paste.js	<loaded>
 accounts.test.js	add-save.js	<loaded>	cardReady	savedTitle
 accounts.test.js	add-sheet.js	<loaded>	@servenpsid	renderAddFor
-accounts.test.js	add.js	<loaded>	addFiles	addNoteText	addShowCard	cardPics	renderAdd	wbNote
+accounts.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	cardPics	renderAdd	wbNote
 accounts.test.js	analysis.js	<loaded>
 accounts.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	aiLabel	announce	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	focusWatch	generateSwatch	keepFocus	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	renderBusy	set sel	set view	setEditing	setSel	setView	shrink	sockTag	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 accounts.test.js	asm-cm-job.js	<loaded>	asmCmRoute
@@ -412,7 +413,7 @@ acts.test.js	add-more.js	<any>	<loaded>	checkArrivals
 acts.test.js	add-paste.js	<any>	<loaded>
 acts.test.js	add-save.js	<any>	<loaded>
 acts.test.js	add-sheet.js	<any>	<loaded>	@servenpsid
-acts.test.js	add.js	<any>	<loaded>
+acts.test.js	add.js	<any>	<loaded>	@document.addEventListenerclick
 acts.test.js	analysis-worker.js	<any>
 acts.test.js	analysis.js	<any>	<loaded>
 acts.test.js	app.js	<any>	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
@@ -450,9 +451,9 @@ acts.test.js	fields.js	<any>	<loaded>
 acts.test.js	history.js	<any>	<loaded>	canPick	checkPlanRules	dayActions	dayChanged	dropLearn	recordDays	renderReplanUI	replanCount	resetCard	setOccasion	slotLabel	whenPulled
 acts.test.js	index.html	<any>	<loaded>
 acts.test.js	item-photo.js	<any>	<loaded>	smallPhotos
-acts.test.js	item-view.js	<any>	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	itemShown	renderItem
-acts.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}
-acts.test.js	kit.js	<any>	<loaded>	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
+acts.test.js	item-view.js	<any>	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	itemShown	renderItem
+acts.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown
+acts.test.js	kit.js	<any>	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 acts.test.js	locale.js	<any>	<loaded>	appLocale
 acts.test.js	locks.js	<any>	<loaded>	lockPast	lockSpan	lockUpcoming
 acts.test.js	look-base.js	<any>	<loaded>	lookOn
@@ -516,7 +517,7 @@ actsindex.test.js	add-more.js	<any>	<loaded>	checkArrivals	orderRow	qtyLabel	qty
 actsindex.test.js	add-paste.js	<any>	<loaded>	linkAddTap	linkKey	pasteTap
 actsindex.test.js	add-save.js	<any>	<loaded>	cardReady
 actsindex.test.js	add-sheet.js	<any>	<loaded>	@servenpsid	addManual	addManualTap	npsCancel	npsCard	npsClose	npsCloseTap	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-actsindex.test.js	add.js	<any>	<loaded>	addNoteText	addPhotosPick	renderAdd	skipCard	wbNote
+actsindex.test.js	add.js	<any>	<loaded>	@document.addEventListenerclick	addNoteText	addPhotosPick	renderAdd	skipCard	wbNote
 actsindex.test.js	analysis-worker.js	<any>
 actsindex.test.js	analysis.js	<any>	<loaded>	horizonKeys
 actsindex.test.js	app.js	<any>	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusKey	focusWatch	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
@@ -554,9 +555,9 @@ actsindex.test.js	fields.js	<any>	<loaded>	fldRow	matRow	notesRow	optLab
 actsindex.test.js	history.js	<any>	<loaded>	canPick	checkPlanRules	closePicker	combatAway	dayActions	dayChanged	dropLearn	handGroup	openPicker	pickBackdropTap	pickPic	pluralWord	recordDays	renderReplanUI	replanButton	replanCount	replanTap	resetCard	setOccasion	slotLabel	whenPulled
 actsindex.test.js	index.html	<any>	<loaded>
 actsindex.test.js	item-photo.js	<any>	<loaded>	paperHint	photoTools	ptIcon	setPhEdit	smallPhotos
-actsindex.test.js	item-view.js	<any>	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	itemCloseTap	itemFocusBack	itemShown	itemStepTap	ivSwipe	openItem	renderItem	sheetSlides	stepItem	wardList
-actsindex.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe
-actsindex.test.js	kit.js	<any>	<loaded>	@servekitquiet	homeAbout	homeAgainTap	homeLabel	importOpenTap	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	tourAgainTap
+actsindex.test.js	item-view.js	<any>	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	itemCloseTap	itemFocusBack	itemShown	itemStepTap	ivSwipe	openItem	renderItem	sheetSlides	stepItem	wardList
+actsindex.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe
+actsindex.test.js	kit.js	<any>	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeAgainTap	homeLabel	importOpenTap	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	tourAgainTap
 actsindex.test.js	locale.js	<any>	<loaded>	appLocale
 actsindex.test.js	locks.js	<any>	<loaded>	lockPast	lockSpan	lockUpcoming
 actsindex.test.js	look-base.js	<any>	<loaded>	lookCu	lookHasPat	lookOn
@@ -620,7 +621,7 @@ addcards.test.js	add-more.js	<loaded>	arriveVal	cardQty	checkArrivals	orderHint	
 addcards.test.js	add-paste.js	<loaded>
 addcards.test.js	add-save.js	<loaded>	cardReady	get saveAllOn	recordTagResult	save	saveAll	saveCard	savedTitle
 addcards.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-addcards.test.js	add.js	<loaded>	@serveaddcalm	addBackOnline	addFiles	addMulti	addNoteText	addShowCard	addTexture	cardByHand	cardPics	cardSkip	cardStop	countWord	cropBox	errToHand	measureGuess	multiAgain	multiFail	multiMsg	multiNote	oddWord	renderAdd	retryTag	saveAllTap	skipCard	stopRead	texGains	wbNote
+addcards.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addBackOnline	addFiles	addMulti	addNoteText	addShowCard	addTexture	cardByHand	cardPics	cardSkip	cardStop	countWord	cropBox	errToHand	measureGuess	multiAgain	multiFail	multiMsg	multiNote	oddWord	renderAdd	retryTag	saveAllTap	skipCard	stopRead	texGains	wbNote
 addcards.test.js	analysis.js	<loaded>
 addcards.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	del	endedAnswer	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	qAt	renderBusy	set queue	setAiError	setAiModel	setEditing	setSel	setView	shrink	sockTag	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 addcards.test.js	asm-cm-job.js	<loaded>
@@ -721,7 +722,7 @@ additemacts.test.js	add-more.js	<loaded>	arriveVal	cardArrives	cardOrder	cardQty
 additemacts.test.js	add-paste.js	<loaded>
 additemacts.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveAll	saveCard	savedTitle
 additemacts.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	addManualTap	npsCancel	npsCancelTap	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-additemacts.test.js	add.js	<loaded>	@serveaddcalm	addNoteText	cardByHand	cardSkip	cardStop	dropTexture	errToHand	measureGuess	multiMsg	multiNote	renderAdd	saveAllTap	skipCard	stopRead	wbNote
+additemacts.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	cardByHand	cardSkip	cardStop	dropTexture	errToHand	measureGuess	multiMsg	multiNote	renderAdd	saveAllTap	skipCard	stopRead	wbNote
 additemacts.test.js	analysis.js	<loaded>
 additemacts.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	aiLabel	announce	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	del	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get flt	get queue	imgOf	keepFocus	loadImg	metaGet	metaPut	put	qAt	refreshSwatch	setEditing	setFlt	setSel	setView	shrink	texSwatches	tx	txFail	txs	window.fetch
 additemacts.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote
@@ -755,9 +756,9 @@ additemacts.test.js	fields.js	<loaded>	fldRow	matLabel	matRow	matTidy	notesRow	o
 additemacts.test.js	history.js	<loaded>	canPick	checkPlanRules	dayActions	dropLearn	recordDays	resetCard	slotLabel	whenPulled
 additemacts.test.js	index.html	<loaded>
 additemacts.test.js	item-photo.js	<loaded>	applyCrop	cropApply	cropDiscard	cropDiscardTap	cropDrag	cropEditor	cropGeom	cropZoom	get phEdit	layoutCrop	paperHint	paperLine	paperRetake	paperTip	paperTipTap	photoCrop	photoCuRemove	photoFile	photoRotate	photoTools	photoUndoAct	ptIcon	replacePhoto	rotatePhoto	setPhEdit	setPhoto	setPic	setTexture	smallPhotos	startCrop
-additemacts.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	dropItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
-additemacts.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	E	clearStripes	itemArrives	itemBody	itemDelete	itemDetails	itemDup	itemGeneric	itemPause	itemPick	itemReadPat	ivCareSum	ivDetailSum	ivSummary	patSummary	redetect	renderWardrobe	rm	setItemArrives	sete	togglePause	wardChip
-additemacts.test.js	kit.js	<loaded>	@servekitquiet	@servepapertip	get kit	homeAbout	homeLabel	kitBs	kitClose	kitClothPic	kitDraw	kitDuplicate	kitEl	kitFixOldImports	kitHasSample	kitHist	kitInert	kitOpen	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitStartRow	kitUserEdit	pic	setKitNoMine
+additemacts.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	dropItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
+additemacts.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	E	clearStripes	itemArrives	itemBody	itemDelete	itemDetails	itemDup	itemGeneric	itemPause	itemPick	itemReadPat	ivCareSum	ivDetailSum	ivSummary	patSummary	redetect	renderWardrobe	rm	setItemArrives	sete	togglePause	wardChip
+additemacts.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	@servepapertip	get kit	homeAbout	homeLabel	kitBs	kitClose	kitClothPic	kitDraw	kitDuplicate	kitEl	kitFixOldImports	kitHasSample	kitHist	kitInert	kitOpen	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitStartRow	kitUserEdit	pic	setKitNoMine
 additemacts.test.js	locale.js	<loaded>	appLocale
 additemacts.test.js	locks.js	<loaded>	lockPast	lockSpan	lockUpcoming
 additemacts.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -819,7 +820,7 @@ addsheet.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 addsheet.test.js	add-paste.js	<loaded>
 addsheet.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 addsheet.test.js	add-sheet.js	<loaded>	@backOnnps	@servenpsid	addManual	addManualTap	get npsId	npsBack	npsCancel	npsCancelTap	npsCard	npsClose	npsCloseTap	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-addsheet.test.js	add.js	<loaded>	@serveaddcalm	addNoteText	multiMsg	renderAdd	skipCard	wbNote
+addsheet.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	multiMsg	renderAdd	skipCard	wbNote
 addsheet.test.js	analysis.js	<loaded>
 addsheet.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusWatch	generateSwatch	get queue	keepFocus	metaGet	metaPut	qAt	setEditing	setSel	setView	storeFailure	tx	txFail	txs	window.fetch
 addsheet.test.js	asm-cm-job.js	<loaded>	asmCmRoute
@@ -917,7 +918,7 @@ advicefresh.test.js	add-more.js	<loaded>	checkArrivals
 advicefresh.test.js	add-paste.js	<loaded>
 advicefresh.test.js	add-save.js	<loaded>
 advicefresh.test.js	add-sheet.js	<loaded>	@servenpsid
-advicefresh.test.js	add.js	<loaded>
+advicefresh.test.js	add.js	<loaded>	@document.addEventListenerclick
 advicefresh.test.js	analysis-worker.js	<any>
 advicefresh.test.js	analysis.js	<any>	<loaded>
 advicefresh.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get sel	keepFocus	metaGet	metaPut	put	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
@@ -1015,7 +1016,7 @@ aiverdict.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qty
 aiverdict.test.js	add-paste.js	<loaded>
 aiverdict.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 aiverdict.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
-aiverdict.test.js	add.js	<loaded>	@serveaddcalm	addFiles	addNoteText	addShowCard	cardPics	renderAdd	wbNote
+aiverdict.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addNoteText	addShowCard	cardPics	renderAdd	wbNote
 aiverdict.test.js	analysis.js	<loaded>
 aiverdict.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	qAt	setEditing	setSel	setView	shrink	sockTag	texSwatches	tx	txFail	txs	window.fetch
 aiverdict.test.js	asm-cm-job.js	<loaded>
@@ -1113,7 +1114,7 @@ asmahead.test.js	add-more.js	<loaded>	checkArrivals
 asmahead.test.js	add-paste.js	<loaded>
 asmahead.test.js	add-save.js	<loaded>
 asmahead.test.js	add-sheet.js	<loaded>	@servenpsid
-asmahead.test.js	add.js	<loaded>
+asmahead.test.js	add.js	<loaded>	@document.addEventListenerclick
 asmahead.test.js	analysis.js	<loaded>
 asmahead.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get sel	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 asmahead.test.js	asm-cm-job.js	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmGeoKeys	asmCmJob	asmCmKindOf	asmCmLightKeys	asmCmMat	asmCmMfNow	asmCmOutKey	asmCmRev	asmCmRoute	asmCmSig	asmCmStamp	asmCmTieTag	asmCmTrSc	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmHbShirt	asmJfWants	asmJob	asmKindOf	asmLookTag	asmNkJob	asmOcpJob	asmOcpSig	asmPocketJob	asmWatchJob	asmWatchPaints	asmWtTag	asmWtWants
@@ -2824,7 +2825,7 @@ back.test.js	add-more.js	<loaded>	checkArrivals
 back.test.js	add-paste.js	<loaded>
 back.test.js	add-save.js	<loaded>
 back.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	renderAddFor	setAddFor
-back.test.js	add.js	<loaded>	addNoteText	renderAdd
+back.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd
 back.test.js	analysis.js	<loaded>	horizonKeys
 back.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get editing	keepFocus	metaGet	metaPut	set flt	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 back.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmWtWants
@@ -2923,7 +2924,7 @@ backgesture-item.test.js	add-more.js	<loaded>
 backgesture-item.test.js	add-paste.js	<loaded>
 backgesture-item.test.js	add-save.js	<loaded>
 backgesture-item.test.js	add-sheet.js	<loaded>	@servenpsid
-backgesture-item.test.js	add.js	<loaded>
+backgesture-item.test.js	add.js	<loaded>	@document.addEventListenerclick
 backgesture-item.test.js	analysis.js	<loaded>
 backgesture-item.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get editing	imgOf	keepFocus	metaGet	metaPut	put	renderBusy	set editing	set flt	set sel	set view	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
 backgesture-item.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote
@@ -2957,9 +2958,9 @@ backgesture-item.test.js	fields.js	<loaded>	fldRow	matRow	notesRow	optLab
 backgesture-item.test.js	history.js	<loaded>	canPick	checkPlanRules	dayActions	get picker	resetCard	setTodayPullWait	slotLabel	whenPulled
 backgesture-item.test.js	index.html	<loaded>
 backgesture-item.test.js	item-photo.js	<loaded>	applyCrop	cropDirty	cropDiscard	cropDiscardTap	cropEditor	cropGeom	cropKeep	cropUndo	cropZoom	get phEdit	layoutCrop	paperHint	paperLine	paperRetake	paperTip	photoTools	picUndo	ptIcon	setPhEdit	setPhoto	setPic	startCrop	undoPhoto
-backgesture-item.test.js	item-view.js	<loaded>	@backLand	@backOnitem	@serveitemopen	@{constb$ivbody}	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
-backgesture-item.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe
-backgesture-item.test.js	kit.js	<loaded>	@backOnkit	@servekitquiet	@servepapertip	get kit	homeAbout	homeLabel	kitBs	kitClose	kitClothPic	kitDraw	kitEl	kitHasSample	kitHist	kitInert	kitOpen	kitSampleBanner	kitSampleNote	kitShut	kitStartRow	kitUserEdit	pic
+backgesture-item.test.js	item-view.js	<loaded>	@backLand	@backOnitem	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
+backgesture-item.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe
+backgesture-item.test.js	kit.js	<loaded>	@addEventListenerkeydown	@backOnkit	@servekitquiet	@servepapertip	get kit	homeAbout	homeLabel	kitBs	kitClose	kitClothPic	kitDraw	kitEl	kitHasSample	kitHist	kitInert	kitOpen	kitSampleBanner	kitSampleNote	kitShut	kitStartRow	kitUserEdit	pic
 backgesture-item.test.js	locale.js	<loaded>	appLocale
 backgesture-item.test.js	locks.js	<loaded>
 backgesture-item.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -3025,7 +3026,7 @@ backgesture-over.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 backgesture-over.test.js	add-paste.js	<loaded>
 backgesture-over.test.js	add-save.js	<loaded>	cardReady	savedTitle
 backgesture-over.test.js	add-sheet.js	<loaded>	@backOnnps	@servenpsid	addManual	addManualTap	get npsId	npsBack	npsCancel	npsCard	npsClose	npsCloseTap	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-backgesture-over.test.js	add.js	<loaded>	addNoteText	errToHand	renderAdd	skipCard	wbNote
+backgesture-over.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	errToHand	renderAdd	skipCard	wbNote
 backgesture-over.test.js	analysis.js	<loaded>
 backgesture-over.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusWatch	get editing	get queue	imgOf	keepFocus	metaGet	metaPut	renderBusy	set editing	set flt	set sel	set view	setEditing	setSel	setView	storeFailure	tx	txFail	txs	window.fetch
 backgesture-over.test.js	asm-cm-job.js	<loaded>	asmCmRoute
@@ -3128,7 +3129,7 @@ backgesture.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 backgesture.test.js	add-paste.js	<loaded>
 backgesture.test.js	add-save.js	<loaded>	cardReady	savedTitle
 backgesture.test.js	add-sheet.js	<loaded>	@backOnnps	@servenpsid	addManual	npsBack	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-backgesture.test.js	add.js	<loaded>	addNoteText	addShowCard	errToHand	renderAdd	skipCard	wbNote
+backgesture.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	errToHand	renderAdd	skipCard	wbNote
 backgesture.test.js	analysis.js	<loaded>	horizonKeys
 backgesture.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get editing	imgOf	keepFocus	metaGet	metaPut	put	putRaw	renderBusy	set editing	set flt	set sel	set view	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
 backgesture.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote
@@ -3229,7 +3230,7 @@ backup-storage.test.js	add-more.js	<loaded>	checkArrivals
 backup-storage.test.js	add-paste.js	<loaded>
 backup-storage.test.js	add-save.js	<loaded>
 backup-storage.test.js	add-sheet.js	<loaded>	@servenpsid
-backup-storage.test.js	add.js	<loaded>
+backup-storage.test.js	add.js	<loaded>	@document.addEventListenerclick
 backup-storage.test.js	analysis.js	<loaded>
 backup-storage.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbGone	dbLive	dbMark	dbOpen	dbRetry	deadCanvas	del	endedAnswer	fitNav	fitNavSoon	fixupRedraw	focusWatch	imgOf	keepFocus	matchLight	metaGet	metaPut	put	refreshSwatch	setEditing	setSel	setView	stillCur	storeErr	storeFailText	storeFailure	storeFull	texSwatches	tx	txFail	txs	window.fetch
 backup-storage.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmWtWants
@@ -3898,7 +3899,7 @@ calendar.test.js	add-more.js	<loaded>
 calendar.test.js	add-paste.js	<loaded>
 calendar.test.js	add-save.js	<loaded>
 calendar.test.js	add-sheet.js	<loaded>	@servenpsid
-calendar.test.js	add.js	<loaded>
+calendar.test.js	add.js	<loaded>	@document.addEventListenerclick
 calendar.test.js	analysis.js	<loaded>
 calendar.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	keepFocus	metaGet	metaPut	set sel	setEditing	setSel	setView	storeFailure	tx	txFail	txs	window.fetch
 calendar.test.js	asm-cm-job.js	<loaded>
@@ -4004,7 +4005,7 @@ calfeed.test.js	add-more.js	<loaded>	checkArrivals
 calfeed.test.js	add-paste.js	<loaded>
 calfeed.test.js	add-save.js	<loaded>
 calfeed.test.js	add-sheet.js	<loaded>	@servenpsid
-calfeed.test.js	add.js	<loaded>
+calfeed.test.js	add.js	<loaded>	@document.addEventListenerclick
 calfeed.test.js	analysis.js	<loaded>
 calfeed.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	setEditing	setSel	setView	storeFailure	tx	txFail	txs	window.fetch
 calfeed.test.js	asm-cm-job.js	<loaded>
@@ -4215,7 +4216,7 @@ canvasrefuse.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	
 canvasrefuse.test.js	add-paste.js	<loaded>
 canvasrefuse.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 canvasrefuse.test.js	add-sheet.js	<loaded>	@servenpsid	renderAddFor	setAddFor
-canvasrefuse.test.js	add.js	<loaded>	@serveaddcalm	addFiles	addNoteText	addShowCard	addTexture	cardPics	renderAdd	texGains	wbNote
+canvasrefuse.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addNoteText	addShowCard	addTexture	cardPics	renderAdd	texGains	wbNote
 canvasrefuse.test.js	analysis.js	<loaded>
 canvasrefuse.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	refreshSwatch	renderBusy	set editing	set flt	setEditing	setSel	setView	shrink	sockTag	texSwatches	tx	txFail	txs	window.fetch
 canvasrefuse.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -4315,7 +4316,7 @@ cardid.test.js	add-more.js	<loaded>	cardQty	checkArrivals	orderRow	qtyLabel	qtyO
 cardid.test.js	add-paste.js	<loaded>
 cardid.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 cardid.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	renderAddFor	setAddFor
-cardid.test.js	add.js	<loaded>	@serveaddcalm	addFiles	addNoteText	addShowCard	cardPics	errToHand	measureGuess	multiMsg	renderAdd	skipCard	wbNote
+cardid.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addNoteText	addShowCard	cardPics	errToHand	measureGuess	multiMsg	renderAdd	skipCard	wbNote
 cardid.test.js	analysis.js	<loaded>
 cardid.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get editing	get queue	imgOf	keepFocus	loadImg	metaGet	metaPut	put	qAt	set flt	setEditing	setSel	setView	shrink	texSwatches	tx	txFail	txs	window.fetch
 cardid.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote
@@ -4413,7 +4414,7 @@ care.test.js	add-more.js	<loaded>	checkArrivals
 care.test.js	add-paste.js	<loaded>
 care.test.js	add-save.js	<loaded>
 care.test.js	add-sheet.js	<loaded>	@servenpsid
-care.test.js	add.js	<loaded>
+care.test.js	add.js	<loaded>	@document.addEventListenerclick
 care.test.js	analysis.js	<loaded>	shopList
 care.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get sel	keepFocus	metaGet	metaPut	put	putRaw	set editing	set flt	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 care.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmHbShirt	asmWtWants
@@ -4831,7 +4832,7 @@ closeupread.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 closeupread.test.js	add-paste.js	<loaded>
 closeupread.test.js	add-save.js	<loaded>	cardReady
 closeupread.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-closeupread.test.js	add.js	<loaded>	addNoteText	addShowCard	addTexture	renderAdd	texGains	wbNote
+closeupread.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	addTexture	renderAdd	texGains	wbNote
 closeupread.test.js	analysis.js	<loaded>
 closeupread.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get editing	get queue	imgOf	keepFocus	loadImg	matchLight	metaGet	metaPut	put	putRaw	qAt	refreshSwatch	renderBusy	set editing	set flt	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
 closeupread.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -4931,7 +4932,7 @@ closeupsheet.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 closeupsheet.test.js	add-paste.js	<loaded>
 closeupsheet.test.js	add-save.js	<loaded>	cardReady
 closeupsheet.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-closeupsheet.test.js	add.js	<loaded>	addNoteText	addShowCard	addTexture	dropTexture	renderAdd	texGains	wbNote
+closeupsheet.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	addTexture	dropTexture	renderAdd	texGains	wbNote
 closeupsheet.test.js	analysis.js	<loaded>
 closeupsheet.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get editing	get queue	imgOf	keepFocus	loadImg	matchLight	metaGet	metaPut	put	putRaw	qAt	refreshSwatch	set editing	set flt	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
 closeupsheet.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -5239,7 +5240,7 @@ colnew.test.js	add-more.js	<loaded>
 colnew.test.js	add-paste.js	<loaded>
 colnew.test.js	add-save.js	<loaded>
 colnew.test.js	add-sheet.js	<loaded>	@servenpsid
-colnew.test.js	add.js	<loaded>
+colnew.test.js	add.js	<loaded>	@document.addEventListenerclick
 colnew.test.js	analysis.js	<loaded>
 colnew.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	imgOf	keepFocus	loadImg	matchLight	metaGet	metaPut	put	putRaw	refreshSwatch	renderBusy	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
 colnew.test.js	asm-cm-job.js	<loaded>
@@ -5353,7 +5354,7 @@ colors.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 colors.test.js	add-paste.js	<loaded>
 colors.test.js	add-save.js	<loaded>	cardReady
 colors.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-colors.test.js	add.js	<loaded>	addNoteText	renderAdd	skipCard	wbNote
+colors.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	skipCard	wbNote
 colors.test.js	analysis.js	<loaded>	clothesCandidates	compat	compatBase	evalPlan	fixWhy	groupHex	groupKind	groupLabel	horizonKeys	jClass	keyDate2	noteKind	occasionCheck	ownMix	plural	rankClothes	runAnalysis	runAnalysis0	sClass	shoeNotes	shopClass	shopDetail	shopGroup	shopKey	shopList	shopName	shopShelved	simFacts	smallCandidates	tClass
 colors.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get queue	get sel	keepFocus	metaGet	metaPut	put	set editing	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 colors.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmWtWants
@@ -5469,7 +5470,7 @@ colpick.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRo
 colpick.test.js	add-paste.js	<loaded>
 colpick.test.js	add-save.js	<loaded>	cardReady	savedTitle
 colpick.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	renderAddFor	setAddFor
-colpick.test.js	add.js	<loaded>	addNoteText	renderAdd	wbNote
+colpick.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	wbNote
 colpick.test.js	analysis.js	<loaded>
 colpick.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get queue	imgOf	keepFocus	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	set editing	set flt	setEditing	setSel	setView	sockTag	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 colpick.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -5567,7 +5568,7 @@ colpickacts.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 colpickacts.test.js	add-paste.js	<loaded>
 colpickacts.test.js	add-save.js	<loaded>	cardReady
 colpickacts.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-colpickacts.test.js	add.js	<loaded>	addNoteText	renderAdd	wbNote
+colpickacts.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	wbNote
 colpickacts.test.js	analysis.js	<loaded>
 colpickacts.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	announce	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get queue	imgOf	keepFocus	matTag	metaGet	metaPut	normTag	ownColorsOf	put	renderBusy	set editing	set flt	setEditing	setSel	setView	sockTag	storeFailure	tx	txFail	txs	window.fetch
 colpickacts.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -5601,9 +5602,9 @@ colpickacts.test.js	fields.js	<loaded>	fldRow	matLabel	matRow	notesRow	optLab
 colpickacts.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 colpickacts.test.js	index.html	<loaded>
 colpickacts.test.js	item-photo.js	<loaded>	paperHint	paperLine	paperRetake	photoTools	ptIcon	setPhEdit
-colpickacts.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
-colpickacts.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	sete
-colpickacts.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
+colpickacts.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
+colpickacts.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	sete
+colpickacts.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeLabel	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 colpickacts.test.js	locale.js	<loaded>	appLocale
 colpickacts.test.js	locks.js	<loaded>
 colpickacts.test.js	look-base.js	<loaded>	lookBuiltins	lookCu	lookHasPat	lookOn	lookVal	setLookMemo
@@ -5667,7 +5668,7 @@ colpickfocus.test.js	add-more.js	<loaded>	checkArrivals
 colpickfocus.test.js	add-paste.js	<loaded>
 colpickfocus.test.js	add-save.js	<loaded>
 colpickfocus.test.js	add-sheet.js	<loaded>	@servenpsid	renderAddFor
-colpickfocus.test.js	add.js	<loaded>	addNoteText	renderAdd
+colpickfocus.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd
 colpickfocus.test.js	analysis.js	<loaded>
 colpickfocus.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	keepFocus	metaGet	metaPut	set editing	set flt	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 colpickfocus.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -5701,9 +5702,9 @@ colpickfocus.test.js	fields.js	<loaded>	fldRow	matRow	notesRow	optLab
 colpickfocus.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 colpickfocus.test.js	index.html	<loaded>
 colpickfocus.test.js	item-photo.js	<loaded>	paperHint	photoTools	ptIcon	setPhEdit	smallPhotos
-colpickfocus.test.js	item-view.js	<loaded>	@serveitemopen	@{constb$ivbody}	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
-colpickfocus.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe
-colpickfocus.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
+colpickfocus.test.js	item-view.js	<loaded>	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
+colpickfocus.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe
+colpickfocus.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
 colpickfocus.test.js	locale.js	<loaded>	appLocale
 colpickfocus.test.js	locks.js	<loaded>
 colpickfocus.test.js	look-base.js	<loaded>	lookBuiltins	lookCu	lookHasPat	lookOn	lookVal	setLookMemo
@@ -6061,7 +6062,7 @@ costwear.test.js	add-more.js	<loaded>	checkArrivals	orderHint	orderRow	qtyLabel	
 costwear.test.js	add-paste.js	<loaded>
 costwear.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 costwear.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-costwear.test.js	add.js	<loaded>	@serveaddcalm	addNoteText	renderAdd	wbNote
+costwear.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	renderAdd	wbNote
 costwear.test.js	analysis.js	<loaded>	horizonKeys
 costwear.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get editing	get queue	keepFocus	metaGet	metaPut	put	qAt	set flt	set queue	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 costwear.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmWtWants
@@ -6095,9 +6096,9 @@ costwear.test.js	fields.js	<loaded>	fldRow	matRow	matTidy	notesRow	optLab	wardSa
 costwear.test.js	history.js	<loaded>	canPick	checkPlanRules	dayActions	dayChanged	dropLearn	recordDays	renderReplanUI	replanCount	resetCard	setTodayPullWait	slotLabel	whenPulled
 costwear.test.js	index.html	<loaded>
 costwear.test.js	item-photo.js	<loaded>	paperHint	photoTools	ptIcon	setPhEdit	smallPhotos
-costwear.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
-costwear.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe
-costwear.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit
+costwear.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
+costwear.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe
+costwear.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit
 costwear.test.js	locale.js	<loaded>	appLocale
 costwear.test.js	locks.js	<loaded>	lockPast	lockSpan	lockUpcoming
 costwear.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -6166,7 +6167,7 @@ daysoff.test.js	add-more.js	<loaded>	checkArrivals
 daysoff.test.js	add-paste.js	<loaded>
 daysoff.test.js	add-save.js	<loaded>
 daysoff.test.js	add-sheet.js	<loaded>	@servenpsid
-daysoff.test.js	add.js	<loaded>
+daysoff.test.js	add.js	<loaded>	@document.addEventListenerclick
 daysoff.test.js	analysis.js	<loaded>
 daysoff.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusWatch	get sel	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 daysoff.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmWtWants
@@ -6519,7 +6520,7 @@ dress.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 dress.test.js	add-paste.js	<loaded>
 dress.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 dress.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	renderAddFor	setAddFor
-dress.test.js	add.js	<loaded>	@serveaddcalm	addNoteText	renderAdd	wbNote
+dress.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	renderAdd	wbNote
 dress.test.js	analysis-worker.js	<any>
 dress.test.js	analysis.js	<any>	<loaded>	clothesCandidates	compat	compatBase	evalPlan	fixWhy	groupHex	groupKind	groupLabel	horizonKeys	jClass	keyDate2	noteKind	occasionCheck	ownMix	plural	rankClothes	runAnalysis	runAnalysis0	sClass	several	shoeNotes	shopClass	shopDetail	shopGroup	shopKey	shopList	shopName	shopShelved	simFacts	smallCandidates	tClass
 dress.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get sel	keepFocus	metaGet	metaPut	put	putRaw	set queue	set sel	set view	setEditing	setSel	setView	storeFailure	texSwatches	tx	txFail	txs	window.fetch
@@ -6623,7 +6624,7 @@ editorrework.test.js	add-more.js	<loaded>
 editorrework.test.js	add-paste.js	<loaded>
 editorrework.test.js	add-save.js	<loaded>
 editorrework.test.js	add-sheet.js	<loaded>	@servenpsid
-editorrework.test.js	add.js	<loaded>
+editorrework.test.js	add.js	<loaded>	@document.addEventListenerclick
 editorrework.test.js	analysis.js	<loaded>
 editorrework.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get editing	imgOf	keepFocus	metaGet	metaPut	put	putRaw	set editing	set flt	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
 editorrework.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -6657,9 +6658,9 @@ editorrework.test.js	fields.js	<loaded>	fldRow	matRow	notesRow	optLab
 editorrework.test.js	history.js	<loaded>	checkPlanRules	whenPulled
 editorrework.test.js	index.html	<loaded>
 editorrework.test.js	item-photo.js	<loaded>	applyCrop	cropApply	cropDirty	cropDiscard	cropDiscardTap	cropDrag	cropEditor	cropGeom	cropKeep	cropUndo	cropZoom	get phEdit	layoutCrop	paperHint	paperLine	paperRetake	photoTools	picUndo	ptIcon	setPhEdit	setPhoto	setPic	startCrop	undoPhoto
-editorrework.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchmove	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>end	closeItem	itemCloseTap	itemFocusBack	itemShown	itemStepTap	ivSwipe	openItem	renderItem	sheetSlides	stepItem	wardList
-editorrework.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe
-editorrework.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
+editorrework.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchmove	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	closeItem	itemCloseTap	itemFocusBack	itemShown	itemStepTap	ivSwipe	openItem	renderItem	sheetSlides	stepItem	wardList
+editorrework.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe
+editorrework.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeLabel	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 editorrework.test.js	locale.js	<loaded>	appLocale
 editorrework.test.js	locks.js	<loaded>
 editorrework.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -6724,7 +6725,7 @@ editphotosb.test.js	add-more.js	<loaded>
 editphotosb.test.js	add-paste.js	<loaded>
 editphotosb.test.js	add-save.js	<loaded>
 editphotosb.test.js	add-sheet.js	<loaded>	@servenpsid
-editphotosb.test.js	add.js	<loaded>
+editphotosb.test.js	add.js	<loaded>	@document.addEventListenerclick
 editphotosb.test.js	analysis.js	<loaded>
 editphotosb.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	imgOf	keepFocus	loadImg	matchLight	metaGet	metaPut	put	putRaw	refreshSwatch	set editing	set flt	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
 editphotosb.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -6824,7 +6825,7 @@ errnet.test.js	add-more.js	<loaded>	checkArrivals
 errnet.test.js	add-paste.js	<loaded>
 errnet.test.js	add-save.js	<loaded>
 errnet.test.js	add-sheet.js	<loaded>	@servenpsid
-errnet.test.js	add.js	<loaded>
+errnet.test.js	add.js	<loaded>	@document.addEventListenerclick
 errnet.test.js	analysis.js	<loaded>
 errnet.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	setEditing	setSel	setView	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 errnet.test.js	asm-cm-job.js	<loaded>
@@ -7024,7 +7025,7 @@ favorites.test.js	add-more.js	<loaded>	checkArrivals
 favorites.test.js	add-paste.js	<loaded>
 favorites.test.js	add-save.js	<loaded>
 favorites.test.js	add-sheet.js	<loaded>	@servenpsid
-favorites.test.js	add.js	<loaded>
+favorites.test.js	add.js	<loaded>	@document.addEventListenerclick
 favorites.test.js	analysis.js	<loaded>	horizonKeys
 favorites.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 favorites.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmWtWants
@@ -7331,7 +7332,7 @@ figure.test.js	add-more.js	<loaded>	checkArrivals
 figure.test.js	add-paste.js	<loaded>
 figure.test.js	add-save.js	<loaded>
 figure.test.js	add-sheet.js	<loaded>	@servenpsid
-figure.test.js	add.js	<loaded>
+figure.test.js	add.js	<loaded>	@document.addEventListenerclick
 figure.test.js	analysis.js	<loaded>
 figure.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get sel	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 figure.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmWtWants
@@ -7431,7 +7432,7 @@ folds.test.js	add-more.js	<loaded>	checkArrivals
 folds.test.js	add-paste.js	<loaded>
 folds.test.js	add-save.js	<loaded>
 folds.test.js	add-sheet.js	<loaded>	@servenpsid
-folds.test.js	add.js	<loaded>
+folds.test.js	add.js	<loaded>	@document.addEventListenerclick
 folds.test.js	analysis.js	<loaded>
 folds.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get sel	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 folds.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmHbShirt	asmWtWants
@@ -8553,7 +8554,7 @@ history.test.js	add-more.js	<loaded>	checkArrivals
 history.test.js	add-paste.js	<loaded>
 history.test.js	add-save.js	<loaded>
 history.test.js	add-sheet.js	<loaded>	@servenpsid
-history.test.js	add.js	<loaded>
+history.test.js	add.js	<loaded>	@document.addEventListenerclick
 history.test.js	analysis.js	<loaded>
 history.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 history.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmWtWants
@@ -8651,7 +8652,7 @@ homescreen.test.js	add-more.js	<loaded>	checkArrivals
 homescreen.test.js	add-paste.js	<loaded>
 homescreen.test.js	add-save.js	<loaded>
 homescreen.test.js	add-sheet.js	<loaded>	@servenpsid
-homescreen.test.js	add.js	<loaded>
+homescreen.test.js	add.js	<loaded>	@document.addEventListenerclick
 homescreen.test.js	analysis.js	<loaded>
 homescreen.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	keepFocus	metaGet	metaPut	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 homescreen.test.js	asm-cm-job.js	<loaded>
@@ -8952,7 +8953,7 @@ invite.test.js	add-more.js	<loaded>	checkArrivals
 invite.test.js	add-paste.js	<loaded>
 invite.test.js	add-save.js	<loaded>
 invite.test.js	add-sheet.js	<loaded>	@servenpsid	renderAddFor
-invite.test.js	add.js	<loaded>	addNoteText	renderAdd
+invite.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd
 invite.test.js	analysis.js	<loaded>
 invite.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	ask	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	endedTold	fitNav	fitNavSoon	focusWatch	imgOf	inviteEnded	keepFocus	metaGet	metaPut	put	renderBusy	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 invite.test.js	asm-cm-job.js	<loaded>
@@ -9030,6 +9031,7 @@ invite.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehid
 invite.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 invite.test.js	tagging.js	<loaded>
 invite.test.js	tests/fixedplan.js	<any>
+invite.test.js	tests/webkit.js	<any>
 invite.test.js	theme.js	<loaded>	applyTheme
 invite.test.js	toast.js	<loaded>	toast	toastOff
 invite.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -9058,7 +9060,7 @@ itempics.test.js	add-more.js	<loaded>	checkArrivals
 itempics.test.js	add-paste.js	<loaded>
 itempics.test.js	add-save.js	<loaded>
 itempics.test.js	add-sheet.js	<loaded>	@servenpsid
-itempics.test.js	add.js	<loaded>
+itempics.test.js	add.js	<loaded>	@document.addEventListenerclick
 itempics.test.js	analysis.js	<loaded>
 itempics.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get editing	get sel	keepFocus	metaGet	metaPut	renderBusy	set editing	set flt	set sel	set view	setEditing	setSel	setView	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 itempics.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmWtWants
@@ -9163,7 +9165,7 @@ itemredesign.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 itemredesign.test.js	add-paste.js	<loaded>
 itemredesign.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 itemredesign.test.js	add-sheet.js	<loaded>	@backOnnps	@servenpsid	addManual	get npsId	npsBack	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-itemredesign.test.js	add.js	<loaded>	@serveaddcalm	addNoteText	renderAdd	skipCard	wbNote
+itemredesign.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	renderAdd	skipCard	wbNote
 itemredesign.test.js	analysis.js	<loaded>
 itemredesign.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get editing	get queue	imgOf	keepFocus	metaGet	metaPut	qAt	set editing	set flt	setEditing	setSel	setView	storeFailure	tx	txFail	txs	window.fetch
 itemredesign.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -9263,7 +9265,7 @@ itemsheet.test.js	add-more.js	<loaded>	checkArrivals
 itemsheet.test.js	add-paste.js	<loaded>
 itemsheet.test.js	add-save.js	<loaded>
 itemsheet.test.js	add-sheet.js	<loaded>	@servenpsid
-itemsheet.test.js	add.js	<loaded>
+itemsheet.test.js	add.js	<loaded>	@document.addEventListenerclick
 itemsheet.test.js	analysis.js	<loaded>
 itemsheet.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	del	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get editing	imgOf	keepFocus	metaGet	metaPut	put	set editing	set flt	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 itemsheet.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote
@@ -9565,7 +9567,7 @@ kit.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 kit.test.js	add-paste.js	<loaded>
 kit.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 kit.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-kit.test.js	add.js	<loaded>	@serveaddcalm	addNoteText	addShowCard	errToHand	multiMsg	renderAdd	wbNote
+kit.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	addShowCard	errToHand	multiMsg	renderAdd	wbNote
 kit.test.js	analysis.js	<loaded>
 kit.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbGone	dbLive	dbMark	dbOpen	dbRetry	del	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get editing	get queue	keepFocus	metaGet	metaPut	put	putRaw	setEditing	setSel	setView	storeErr	storeFailText	storeFailure	storeFull	texSwatches	tx	txFail	txs	window.fetch
 kit.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmWtWants
@@ -9599,9 +9601,9 @@ kit.test.js	fields.js	<loaded>	fldRow	matRow	matTidy	notesRow	optLab	wardSaveFie
 kit.test.js	history.js	<loaded>	canPick	checkPlanRules	dayActions	dropLearn	recordDays	resetCard	slotLabel	whenPulled
 kit.test.js	index.html	<loaded>
 kit.test.js	item-photo.js	<loaded>	paperHint	paperTip	paperTipTap	photoTools	ptIcon	setPhEdit	smallPhotos
-kit.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
-kit.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	itemDup	ivCareSum	ivDetailSum	ivSummary	patSummary	renderWardrobe
-kit.test.js	kit.js	<loaded>	@servekithomeclose	@servekitquiet	@servepapertip	get body	get kitImp	get kitImpBusy	get kitSampling	homeAbout	homeLabel	importOpenTap	kitAdds	kitAdopt	kitApply	kitAsNew	kitAsNewTap	kitBackTap	kitBd	kitBs	kitBsAway	kitClose	kitCloseupGuide	kitClothPic	kitColList	kitColour	kitCols	kitDayOwn	kitDecode	kitDelMany	kitDiff	kitDiffText	kitDraw	kitDupKey	kitDupMark	kitDuplicate	kitEdited	kitEl	kitFail	kitFixOldImports	kitFree	kitGo	kitGuideTap	kitHasSample	kitHead	kitHist	kitImpBtn	kitImpTap	kitImpTick	kitImportFile	kitImportGo	kitImportOpen	kitImportSwipe	kitImportText	kitInert	kitItem	kitKeepSample	kitKeepTap	kitLastImp	kitLastRow	kitLeather	kitLeft	kitMaterial	kitMetal	kitNear	kitNextTap	kitNorm	kitOpen	kitPasteFocus	kitPasteShow	kitPasteType	kitPatWords	kitPattern	kitPatternPic	kitPrevDraw	kitQtyIn	kitQtyOut	kitRead	kitReadList	kitRow	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleNote	kitSampleRemove	kitSampleRemoveTap	kitSampleSig	kitSampleTag	kitSampleTap	kitSaved	kitScorePic	kitSetupSampleTap	kitShadePic	kitSplit	kitStartRow	kitStore	kitTemplate	kitTickPick	kitTombs	kitTx	kitType	kitTypeNear	kitTypeOne	kitUnimport	kitUnimportTap	kitUnsave	kitUpds	kitUserEdit	kitWears	kitWords	pic	tourOpen
+kit.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
+kit.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	itemDup	ivCareSum	ivDetailSum	ivSummary	patSummary	renderWardrobe
+kit.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekithomeclose	@servekitquiet	@servepapertip	get body	get kitImp	get kitImpBusy	get kitSampling	homeAbout	homeLabel	importOpenTap	kitAdds	kitAdopt	kitApply	kitAsNew	kitAsNewTap	kitBackTap	kitBd	kitBs	kitBsAway	kitClose	kitCloseupGuide	kitClothPic	kitColList	kitColour	kitCols	kitDayOwn	kitDecode	kitDelMany	kitDiff	kitDiffText	kitDraw	kitDupKey	kitDupMark	kitDuplicate	kitEdited	kitEl	kitFail	kitFixOldImports	kitFree	kitGo	kitGuideTap	kitHasSample	kitHead	kitHist	kitImpBtn	kitImpTap	kitImpTick	kitImportFile	kitImportGo	kitImportOpen	kitImportSwipe	kitImportText	kitInert	kitItem	kitKeepSample	kitKeepTap	kitLastImp	kitLastRow	kitLeather	kitLeft	kitMaterial	kitMetal	kitNear	kitNextTap	kitNorm	kitOpen	kitPasteFocus	kitPasteShow	kitPasteType	kitPatWords	kitPattern	kitPatternPic	kitPrevDraw	kitQtyIn	kitQtyOut	kitRead	kitReadList	kitRow	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleNote	kitSampleRemove	kitSampleRemoveTap	kitSampleSig	kitSampleTag	kitSampleTap	kitSaved	kitScorePic	kitSetupSampleTap	kitShadePic	kitSplit	kitStartRow	kitStore	kitTemplate	kitTickPick	kitTombs	kitTx	kitType	kitTypeNear	kitTypeOne	kitUnimport	kitUnimportTap	kitUnsave	kitUpds	kitUserEdit	kitWears	kitWords	pic	tourOpen
 kit.test.js	locale.js	<loaded>	appLocale
 kit.test.js	locks.js	<loaded>	lockPast	lockSpan	lockUpcoming
 kit.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -9663,7 +9665,7 @@ kitsetup-taps.test.js	add-more.js	<loaded>	checkArrivals
 kitsetup-taps.test.js	add-paste.js	<loaded>
 kitsetup-taps.test.js	add-save.js	<loaded>
 kitsetup-taps.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	renderAddFor	setAddFor
-kitsetup-taps.test.js	add.js	<loaded>	addNoteText	renderAdd
+kitsetup-taps.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd
 kitsetup-taps.test.js	analysis.js	<loaded>
 kitsetup-taps.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	keepFocus	metaGet	metaPut	put	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 kitsetup-taps.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmWtWants
@@ -9697,9 +9699,9 @@ kitsetup-taps.test.js	fields.js	<loaded>	fldRow	matRow	notesRow	optLab	wardSaveF
 kitsetup-taps.test.js	history.js	<loaded>	canPick	checkPlanRules	dayActions	dayChanged	dropLearn	recordDays	renderReplanUI	replanCount	resetCard	slotLabel	whenPulled
 kitsetup-taps.test.js	index.html	<loaded>
 kitsetup-taps.test.js	item-photo.js	<loaded>	paperHint	paperLine	paperRetake	photoTools	ptIcon	setPhEdit	smallPhotos
-kitsetup-taps.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
-kitsetup-taps.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	@{constel$wardrobe}>slide	E	itemBody	ivCareSum	ivDetailSum	ivSummary	patSummary	renderWardrobe
-kitsetup-taps.test.js	kit.js	<loaded>	@servekithomeclose	@servekitquiet	get body	get kit	homeAbout	homeLabel	kitAddOwnTap	kitAdds	kitAdopt	kitAsNew	kitAsNewTap	kitBackTap	kitBd	kitBs	kitBsAway	kitClose	kitCloseupGuide	kitClothPic	kitColList	kitColour	kitCols	kitDayOwn	kitDecode	kitDelMany	kitDiff	kitDiffText	kitDraw	kitDupKey	kitDupMark	kitEdited	kitEl	kitFilePick	kitFixOldImports	kitFree	kitGo	kitGuideTap	kitHasSample	kitHead	kitHist	kitImpBtn	kitImpTap	kitImpTick	kitImportFile	kitImportGo	kitImportOpen	kitImportSwipe	kitImportText	kitInert	kitItem	kitKeepSample	kitKeepTap	kitLastImp	kitLastRow	kitLeft	kitNear	kitNextTap	kitNorm	kitOpen	kitPasteFocus	kitPasteShow	kitPasteType	kitPatWords	kitPattern	kitPrevDraw	kitQtyIn	kitQtyOut	kitRead	kitReadList	kitRow	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleNote	kitSampleRemove	kitSampleRemoveTap	kitSampleSig	kitSampleTap	kitScorePic	kitSetupSampleTap	kitShut	kitSplit	kitStartRow	kitStore	kitTemplate	kitTemplateTap	kitTickPick	kitTombs	kitTourTap	kitTx	kitType	kitTypeNear	kitTypeOne	kitUnimport	kitUnimportTap	kitUpds	kitUserEdit	kitWears	kitWords	pic	tourOpen
+kitsetup-taps.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
+kitsetup-taps.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	@{constel$wardrobe}>slide	E	itemBody	ivCareSum	ivDetailSum	ivSummary	patSummary	renderWardrobe
+kitsetup-taps.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekithomeclose	@servekitquiet	get body	get kit	homeAbout	homeLabel	kitAddOwnTap	kitAdds	kitAdopt	kitAsNew	kitAsNewTap	kitBackTap	kitBd	kitBs	kitBsAway	kitClose	kitCloseupGuide	kitClothPic	kitColList	kitColour	kitCols	kitDayOwn	kitDecode	kitDelMany	kitDiff	kitDiffText	kitDraw	kitDupKey	kitDupMark	kitEdited	kitEl	kitFilePick	kitFixOldImports	kitFree	kitGo	kitGuideTap	kitHasSample	kitHead	kitHist	kitImpBtn	kitImpTap	kitImpTick	kitImportFile	kitImportGo	kitImportOpen	kitImportSwipe	kitImportText	kitInert	kitItem	kitKeepSample	kitKeepTap	kitLastImp	kitLastRow	kitLeft	kitNear	kitNextTap	kitNorm	kitOpen	kitPasteFocus	kitPasteShow	kitPasteType	kitPatWords	kitPattern	kitPrevDraw	kitQtyIn	kitQtyOut	kitRead	kitReadList	kitRow	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleNote	kitSampleRemove	kitSampleRemoveTap	kitSampleSig	kitSampleTap	kitScorePic	kitSetupSampleTap	kitShut	kitSplit	kitStartRow	kitStore	kitTemplate	kitTemplateTap	kitTickPick	kitTombs	kitTourTap	kitTx	kitType	kitTypeNear	kitTypeOne	kitUnimport	kitUnimportTap	kitUpds	kitUserEdit	kitWears	kitWords	pic	tourOpen
 kitsetup-taps.test.js	locale.js	<loaded>	appLocale
 kitsetup-taps.test.js	locks.js	<loaded>	lockPast	lockSpan	lockUpcoming
 kitsetup-taps.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -9774,7 +9776,7 @@ lookbeta.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 lookbeta.test.js	add-paste.js	<loaded>
 lookbeta.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 lookbeta.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
-lookbeta.test.js	add.js	<loaded>	@serveaddcalm	addNoteText	renderAdd	skipCard	wbNote
+lookbeta.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	renderAdd	skipCard	wbNote
 lookbeta.test.js	analysis.js	<loaded>
 lookbeta.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	announce	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get queue	keepFocus	metaGet	metaPut	put	qAt	renderBusy	set editing	set flt	setEditing	setSel	setView	storeFailure	tx	txFail	txs	window.fetch
 lookbeta.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -9808,9 +9810,9 @@ lookbeta.test.js	fields.js	<loaded>	fldRow	matLabel	matRow	matTidy	notesRow	optL
 lookbeta.test.js	history.js	<loaded>	checkPlanRules	renderReplanUI	replanCount	whenPulled
 lookbeta.test.js	index.html	<loaded>
 lookbeta.test.js	item-photo.js	<loaded>	paperHint	photoTools	ptIcon	setPhEdit
-lookbeta.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
-lookbeta.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDetailSum	ivSummary	patSummary	renderWardrobe	sete
-lookbeta.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	kitHasSample	kitSampleBanner	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
+lookbeta.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
+lookbeta.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	patSummary	renderWardrobe	sete
+lookbeta.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeLabel	kitHasSample	kitSampleBanner	kitSampleNote	kitSaved	kitStartRow	kitUserEdit
 lookbeta.test.js	locale.js	<loaded>	appLocale
 lookbeta.test.js	locks.js	<loaded>
 lookbeta.test.js	look-base.js	<loaded>	lookBuiltins	lookClipMetal	lookCu	lookCur	lookHasPat	lookOn	lookPatGroupOf	lookVal	setLookMemo
@@ -10192,7 +10194,7 @@ materials.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qty
 materials.test.js	add-paste.js	<loaded>
 materials.test.js	add-save.js	<loaded>	cardReady
 materials.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
-materials.test.js	add.js	<loaded>	addNoteText	addShowCard	renderAdd	wbNote
+materials.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	renderAdd	wbNote
 materials.test.js	analysis.js	<loaded>
 materials.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	fixupRedraw	focusActs	focusAt	focusFind	focusKey	focusWatch	get queue	keepFocus	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	set editing	set flt	setEditing	setSel	setView	sockTag	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 materials.test.js	asm-cm-job.js	<loaded>	asmCmMat	asmCmRoute	asmCmWeaveTag	asmCuDark	asmCuWants	asmGapNote	asmPileTile	asmWatchPaints
@@ -10290,7 +10292,7 @@ measure.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRo
 measure.test.js	add-paste.js	<loaded>
 measure.test.js	add-save.js	<loaded>	cardReady
 measure.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
-measure.test.js	add.js	<loaded>	addFiles	addNoteText	addShowCard	cardPics	renderAdd	wbNote
+measure.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	cardPics	renderAdd	wbNote
 measure.test.js	analysis.js	<loaded>
 measure.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	generateSwatch	get queue	keepFocus	loadImg	metaGet	metaPut	qAt	setEditing	setSel	setView	shrink	texSwatches	tx	txFail	txs	window.fetch
 measure.test.js	asm-cm-job.js	<loaded>
@@ -11038,7 +11040,7 @@ month.test.js	add-more.js	<loaded>	checkArrivals
 month.test.js	add-paste.js	<loaded>
 month.test.js	add-save.js	<loaded>
 month.test.js	add-sheet.js	<loaded>	@servenpsid
-month.test.js	add.js	<loaded>
+month.test.js	add.js	<loaded>	@document.addEventListenerclick
 month.test.js	analysis.js	<loaded>
 month.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	get sel	keepFocus	metaGet	metaPut	renderBusy	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 month.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmHbShirt	asmWtWants
@@ -11115,6 +11117,7 @@ month.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@doc
 month.test.js	tag-request.js	<loaded>
 month.test.js	tagging.js	<loaded>
 month.test.js	tests/fixedplan.js	<any>
+month.test.js	tests/webkit.js	<any>
 month.test.js	theme.js	<loaded>	applyTheme
 month.test.js	toast.js	<loaded>
 month.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchmove	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchmove	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	@{constroot$today}>start	flyGo	todayBusy	todayFree
@@ -11261,7 +11264,7 @@ moveoutfit.test.js	add-more.js	<loaded>	checkArrivals
 moveoutfit.test.js	add-paste.js	<loaded>
 moveoutfit.test.js	add-save.js	<loaded>
 moveoutfit.test.js	add-sheet.js	<loaded>	@servenpsid
-moveoutfit.test.js	add.js	<loaded>
+moveoutfit.test.js	add.js	<loaded>	@document.addEventListenerclick
 moveoutfit.test.js	analysis.js	<loaded>
 moveoutfit.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get sel	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 moveoutfit.test.js	asm-cm-job.js	<loaded>	asmCmRoute
@@ -11459,7 +11462,7 @@ multi.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 multi.test.js	add-paste.js	<loaded>
 multi.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveAll	saveCard	savedTitle
 multi.test.js	add-sheet.js	<loaded>	@servenpsid	renderAddFor
-multi.test.js	add.js	<loaded>	@serveaddcalm	addFiles	addMulti	addNoteText	addShowCard	cardMultiAgain	cardPics	cardSkip	countWord	cropBox	multiAgain	multiFail	multiMsg	multiNote	renderAdd	saveAllTap	skipCard	wbNote
+multi.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addMulti	addNoteText	addShowCard	cardMultiAgain	cardPics	cardSkip	countWord	cropBox	multiAgain	multiFail	multiMsg	multiNote	renderAdd	saveAllTap	skipCard	wbNote
 multi.test.js	analysis.js	<loaded>
 multi.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	set queue	setAiError	setAiModel	setEditing	setSel	setView	shrink	sockTag	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 multi.test.js	asm-cm-job.js	<loaded>
@@ -11759,7 +11762,7 @@ occasions.test.js	add-more.js	<loaded>	checkArrivals
 occasions.test.js	add-paste.js	<loaded>
 occasions.test.js	add-save.js	<loaded>
 occasions.test.js	add-sheet.js	<loaded>	@servenpsid
-occasions.test.js	add.js	<loaded>
+occasions.test.js	add.js	<loaded>	@document.addEventListenerclick
 occasions.test.js	analysis-worker.js	<any>
 occasions.test.js	analysis.js	<any>	<loaded>
 occasions.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	renderBusy	set sel	set view	setEditing	setSel	setView	storeFailure	texSwatches	tx	txFail	txs	window.fetch
@@ -12128,7 +12131,7 @@ onorder.test.js	add-more.js	<loaded>	arriveVal	cardArrives	cardOrder	checkArriva
 onorder.test.js	add-paste.js	<loaded>
 onorder.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 onorder.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-onorder.test.js	add.js	<loaded>	@serveaddcalm	addNoteText	addShowCard	renderAdd	wbNote
+onorder.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	addShowCard	renderAdd	wbNote
 onorder.test.js	analysis.js	<loaded>
 onorder.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get queue	get sel	keepFocus	metaGet	metaPut	put	putRaw	qAt	set editing	set flt	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 onorder.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -12226,7 +12229,7 @@ owncolany.test.js	add-more.js	<loaded>
 owncolany.test.js	add-paste.js	<loaded>
 owncolany.test.js	add-save.js	<loaded>
 owncolany.test.js	add-sheet.js	<loaded>	@servenpsid
-owncolany.test.js	add.js	<loaded>
+owncolany.test.js	add.js	<loaded>	@document.addEventListenerclick
 owncolany.test.js	analysis.js	<loaded>
 owncolany.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	keepFocus	metaGet	metaPut	put	renderBusy	setEditing	setSel	setView	storeFailure	tx	txFail	txs	window.fetch
 owncolany.test.js	asm-cm-job.js	<loaded>
@@ -12324,7 +12327,7 @@ ownmaterials.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	
 ownmaterials.test.js	add-paste.js	<loaded>
 ownmaterials.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 ownmaterials.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	renderAddFor	setAddFor
-ownmaterials.test.js	add.js	<loaded>	@serveaddcalm	addNoteText	renderAdd	wbNote
+ownmaterials.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	renderAdd	wbNote
 ownmaterials.test.js	analysis.js	<loaded>
 ownmaterials.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	atomic	busyLabelFor	busyStart	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	generateSwatch	get queue	keepFocus	matTag	metaGet	metaPut	normTag	ownColorsOf	put	qAt	renderBusy	set editing	set flt	setEditing	setSel	setView	sockTag	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 ownmaterials.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -12422,7 +12425,7 @@ ownnames.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyR
 ownnames.test.js	add-paste.js	<loaded>
 ownnames.test.js	add-save.js	<loaded>	cardReady	savedTitle
 ownnames.test.js	add-sheet.js	<loaded>	@backOnnps	@servenpsid	addManual	npsBack	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-ownnames.test.js	add.js	<loaded>	addNoteText	addShowCard	renderAdd	skipCard	wbNote
+ownnames.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	renderAdd	skipCard	wbNote
 ownnames.test.js	analysis.js	<loaded>
 ownnames.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get editing	keepFocus	loadImg	metaGet	metaPut	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 ownnames.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmWtWants
@@ -12522,7 +12525,7 @@ pack.test.js	add-more.js	<loaded>	checkArrivals
 pack.test.js	add-paste.js	<loaded>
 pack.test.js	add-save.js	<loaded>
 pack.test.js	add-sheet.js	<loaded>	@servenpsid
-pack.test.js	add.js	<loaded>
+pack.test.js	add.js	<loaded>	@document.addEventListenerclick
 pack.test.js	analysis-worker.js	<any>
 pack.test.js	analysis.js	<any>	<loaded>
 pack.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
@@ -12620,7 +12623,7 @@ packcare-taps.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf
 packcare-taps.test.js	add-paste.js	<loaded>
 packcare-taps.test.js	add-save.js	<loaded>	cardReady
 packcare-taps.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	addManualTap	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-packcare-taps.test.js	add.js	<loaded>	addNoteText	renderAdd	wbNote
+packcare-taps.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	wbNote
 packcare-taps.test.js	analysis-worker.js	<any>
 packcare-taps.test.js	analysis.js	<any>	<loaded>	groupKind	groupLabel	horizonKeys
 packcare-taps.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get editing	get flt	get queue	get sel	keepFocus	metaGet	metaPut	put	qAt	set sel	set view	setEditing	setFlt	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
@@ -12655,9 +12658,9 @@ packcare-taps.test.js	fields.js	<loaded>	fldRow	matLabel	matPicked	matRow	matTid
 packcare-taps.test.js	history.js	<loaded>	canPick	checkPlanRules	dayActions	dayChanged	dropLearn	planRulesCheck	planRulesLs	planRulesNote	recordDays	renderReplanUI	replanCount	resetCard	slotLabel	whenPulled
 packcare-taps.test.js	index.html	<loaded>
 packcare-taps.test.js	item-photo.js	<loaded>	paperHint	photoTools	ptIcon	setPhEdit	smallPhotos
-packcare-taps.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
-packcare-taps.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	@{constel$wardrobe}>slide	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	wardChip
-packcare-taps.test.js	kit.js	<loaded>	@servekitquiet	get kitSampling	homeAbout	homeLabel	kitAdopt	kitDayOwn	kitDelMany	kitEdited	kitFixOldImports	kitHasSample	kitItem	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleNote	kitSampleRemove	kitSampleSig	kitStartRow	kitStore	kitTombs	kitTx	kitUserEdit
+packcare-taps.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
+packcare-taps.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	@{constel$wardrobe}>slide	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	wardChip
+packcare-taps.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	get kitSampling	homeAbout	homeLabel	kitAdopt	kitDayOwn	kitDelMany	kitEdited	kitFixOldImports	kitHasSample	kitItem	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleNote	kitSampleRemove	kitSampleSig	kitStartRow	kitStore	kitTombs	kitTx	kitUserEdit
 packcare-taps.test.js	locale.js	<loaded>	appLocale
 packcare-taps.test.js	locks.js	<loaded>	careUnlock	lockPast	lockSpan	lockUpcoming
 packcare-taps.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -12815,7 +12818,7 @@ paperstatus.test.js	add-more.js	<loaded>
 paperstatus.test.js	add-paste.js	<loaded>
 paperstatus.test.js	add-save.js	<loaded>
 paperstatus.test.js	add-sheet.js	<loaded>	@servenpsid
-paperstatus.test.js	add.js	<loaded>
+paperstatus.test.js	add.js	<loaded>	@document.addEventListenerclick
 paperstatus.test.js	analysis.js	<loaded>
 paperstatus.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	imgOf	keepFocus	loadImg	matchLight	metaGet	metaPut	put	putRaw	refreshSwatch	set editing	set flt	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
 paperstatus.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -12915,7 +12918,7 @@ paste.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 paste.test.js	add-paste.js	<loaded>	@document.addEventListenerdrop	@document.addEventListenerpaste	addBlobs	addFromUrl	addLink	clipImages	fetchPhoto	isLink	linkAddTap	linkKey	pasteFromClipboard	pasteMsg	pasteTap	pasteUp
 paste.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 paste.test.js	add-sheet.js	<loaded>	@servenpsid	renderAddFor	setAddFor
-paste.test.js	add.js	<loaded>	@serveaddcalm	addFiles	addNoteText	addShowCard	cardPics	measureGuess	renderAdd	wbNote
+paste.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addNoteText	addShowCard	cardPics	measureGuess	renderAdd	wbNote
 paste.test.js	analysis.js	<loaded>
 paste.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	metaGet	metaPut	put	putRaw	renderBusy	setEditing	setSel	setView	shrink	texSwatches	tx	txFail	txs	window.fetch
 paste.test.js	asm-cm-job.js	<loaded>
@@ -12949,9 +12952,9 @@ paste.test.js	fields.js	<loaded>	fldRow	matRow	matTidy	notesRow	wardSaveFields
 paste.test.js	history.js	<loaded>	checkPlanRules	dropLearn	renderReplanUI	replanCount	whenPulled
 paste.test.js	index.html	<loaded>
 paste.test.js	item-photo.js	<loaded>	smallPhotos
-paste.test.js	item-view.js	<loaded>	@serveitemopen	@{constb$ivbody}	itemShown	renderItem
-paste.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
-paste.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSaved	kitStartRow
+paste.test.js	item-view.js	<loaded>	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	itemShown	renderItem
+paste.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown
+paste.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSaved	kitStartRow
 paste.test.js	locale.js	<loaded>	appLocale
 paste.test.js	locks.js	<loaded>
 paste.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -13017,7 +13020,7 @@ photoedit.test.js	add-more.js	<loaded>	checkArrivals
 photoedit.test.js	add-paste.js	<loaded>
 photoedit.test.js	add-save.js	<loaded>
 photoedit.test.js	add-sheet.js	<loaded>	@servenpsid
-photoedit.test.js	add.js	<loaded>	cardPics
+photoedit.test.js	add.js	<loaded>	@document.addEventListenerclick	cardPics
 photoedit.test.js	analysis.js	<loaded>
 photoedit.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	fitNav	fitNavSoon	fixupRedraw	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	imgOf	keepFocus	loadImg	metaGet	metaPut	put	putRaw	refreshSwatch	set editing	set flt	set view	setEditing	setSel	setView	shrink	stillCur	texSwatches	tx	txFail	txs	window.fetch
 photoedit.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -13115,7 +13118,7 @@ pickbugs.test.js	add-more.js	<loaded>
 pickbugs.test.js	add-paste.js	<loaded>
 pickbugs.test.js	add-save.js	<loaded>
 pickbugs.test.js	add-sheet.js	<loaded>	@servenpsid
-pickbugs.test.js	add.js	<loaded>
+pickbugs.test.js	add.js	<loaded>	@document.addEventListenerclick
 pickbugs.test.js	analysis.js	<loaded>
 pickbugs.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	keepFocus	metaGet	metaPut	put	set editing	set flt	setEditing	setSel	setView	storeFailure	tx	txFail	txs	window.fetch
 pickbugs.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -13149,9 +13152,9 @@ pickbugs.test.js	fields.js	<loaded>	fldRow	matRow	notesRow	optLab
 pickbugs.test.js	history.js	<loaded>	checkPlanRules	renderReplanUI	replanCount	whenPulled
 pickbugs.test.js	index.html	<loaded>
 pickbugs.test.js	item-photo.js	<loaded>	paperHint	photoTools	ptIcon	setPhEdit
-pickbugs.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
-pickbugs.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	sete
-pickbugs.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
+pickbugs.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
+pickbugs.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	sete
+pickbugs.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeLabel	kitHasSample	kitSampleBanner	kitSampleNote	kitStartRow	kitUserEdit
 pickbugs.test.js	locale.js	<loaded>	appLocale
 pickbugs.test.js	locks.js	<loaded>
 pickbugs.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -13213,7 +13216,7 @@ picker.test.js	add-more.js	<loaded>	checkArrivals
 picker.test.js	add-paste.js	<loaded>
 picker.test.js	add-save.js	<loaded>
 picker.test.js	add-sheet.js	<loaded>	@servenpsid
-picker.test.js	add.js	<loaded>
+picker.test.js	add.js	<loaded>	@document.addEventListenerclick
 picker.test.js	analysis-worker.js	<any>
 picker.test.js	analysis.js	<any>	<loaded>
 picker.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get sel	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
@@ -13311,7 +13314,7 @@ pickerfocus.test.js	add-more.js	<loaded>	arriveVal	cardArrives	cardOrder	checkAr
 pickerfocus.test.js	add-paste.js	<loaded>
 pickerfocus.test.js	add-save.js	<loaded>	cardReady
 pickerfocus.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	addManualTap	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-pickerfocus.test.js	add.js	<loaded>	addNoteText	renderAdd	wbNote
+pickerfocus.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	wbNote
 pickerfocus.test.js	analysis.js	<loaded>
 pickerfocus.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get queue	keepFocus	metaGet	metaPut	put	qAt	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 pickerfocus.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -13345,9 +13348,9 @@ pickerfocus.test.js	fields.js	<loaded>	fldRow	matLabel	matPicked	matRow	matTidy	
 pickerfocus.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 pickerfocus.test.js	index.html	<loaded>
 pickerfocus.test.js	item-photo.js	<loaded>	paperHint	photoTools	ptIcon	setPhEdit	smallPhotos
-pickerfocus.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
-pickerfocus.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemArrives	itemBody	itemPick	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	setItemArrives	sete	typeTidy
-pickerfocus.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
+pickerfocus.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
+pickerfocus.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemArrives	itemBody	itemPick	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	setItemArrives	sete	typeTidy
+pickerfocus.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 pickerfocus.test.js	locale.js	<loaded>	appLocale
 pickerfocus.test.js	locks.js	<loaded>
 pickerfocus.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -13409,7 +13412,7 @@ pieces.test.js	add-more.js	<loaded>	checkArrivals
 pieces.test.js	add-paste.js	<loaded>
 pieces.test.js	add-save.js	<loaded>
 pieces.test.js	add-sheet.js	<loaded>	@servenpsid
-pieces.test.js	add.js	<loaded>
+pieces.test.js	add.js	<loaded>	@document.addEventListenerclick
 pieces.test.js	analysis.js	<loaded>
 pieces.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get sel	get view	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 pieces.test.js	asm-cm-job.js	<loaded>	asmCmRoute
@@ -13703,7 +13706,7 @@ planner-rules.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf
 planner-rules.test.js	add-paste.js	<loaded>
 planner-rules.test.js	add-save.js	<loaded>	cardReady
 planner-rules.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-planner-rules.test.js	add.js	<loaded>	addNoteText	renderAdd	wbNote
+planner-rules.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	wbNote
 planner-rules.test.js	analysis-worker.js	<any>
 planner-rules.test.js	analysis.js	<any>	<loaded>	horizonKeys	occasionCheck
 planner-rules.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get queue	get sel	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
@@ -13801,7 +13804,7 @@ planreview.test.js	add-more.js	<loaded>	checkArrivals
 planreview.test.js	add-paste.js	<loaded>
 planreview.test.js	add-save.js	<loaded>
 planreview.test.js	add-sheet.js	<loaded>	@servenpsid
-planreview.test.js	add.js	<loaded>
+planreview.test.js	add.js	<loaded>	@document.addEventListenerclick
 planreview.test.js	analysis-worker.js	<any>
 planreview.test.js	analysis.js	<any>	<loaded>
 planreview.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get sel	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
@@ -13899,7 +13902,7 @@ pocketsquare.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	
 pocketsquare.test.js	add-paste.js	<loaded>
 pocketsquare.test.js	add-save.js	<loaded>	cardReady	savedTitle
 pocketsquare.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	renderAddFor	setAddFor
-pocketsquare.test.js	add.js	<loaded>	addNoteText	renderAdd	wbNote
+pocketsquare.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	wbNote
 pocketsquare.test.js	analysis-worker.js	<any>
 pocketsquare.test.js	analysis.js	<any>	<loaded>
 pocketsquare.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get queue	get sel	keepFocus	matTag	metaGet	metaPut	normTag	ownColorsOf	set sel	set view	setEditing	setSel	setView	sockTag	texSwatches	tx	txFail	txs	window.fetch
@@ -13997,7 +14000,7 @@ records.test.js	add-more.js	<loaded>	checkArrivals
 records.test.js	add-paste.js	<loaded>
 records.test.js	add-save.js	<loaded>
 records.test.js	add-sheet.js	<loaded>	@servenpsid
-records.test.js	add.js	<loaded>
+records.test.js	add.js	<loaded>	@document.addEventListenerclick
 records.test.js	analysis.js	<loaded>
 records.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	fixupRedraw	focusActs	focusAt	focusFind	focusKey	focusWatch	imgOf	keepFocus	metaGet	metaPut	put	putRaw	recKeptTell	recSame	setEditing	setSel	setView	stillCur	texSwatches	tx	txFail	txs	window.fetch
 records.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote
@@ -14103,7 +14106,7 @@ remind.test.js	add-more.js	<loaded>	checkArrivals
 remind.test.js	add-paste.js	<loaded>
 remind.test.js	add-save.js	<loaded>
 remind.test.js	add-sheet.js	<loaded>	@servenpsid
-remind.test.js	add.js	<loaded>
+remind.test.js	add.js	<loaded>	@document.addEventListenerclick
 remind.test.js	analysis.js	<loaded>
 remind.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get sel	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 remind.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmWtWants
@@ -14207,7 +14210,7 @@ restacts.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyR
 restacts.test.js	add-paste.js	<loaded>
 restacts.test.js	add-save.js	<loaded>	cardReady	savedTitle
 restacts.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	renderAddFor	setAddFor
-restacts.test.js	add.js	<loaded>	addNoteText	addTexture	dropTexture	renderAdd	wbNote
+restacts.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addTexture	dropTexture	renderAdd	wbNote
 restacts.test.js	analysis.js	<loaded>
 restacts.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	announce	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matchLight	metaGet	metaPut	put	qAt	refreshSwatch	set sel	setEditing	setSel	setView	shrink	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 restacts.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmCuDark	asmCuTile	asmCuTile1	asmCuWants	asmGapNote	asmWtWants
@@ -14243,9 +14246,9 @@ restacts.test.js	fields.js	<loaded>	fldRow	matRow	matTidy	notesRow	optLab
 restacts.test.js	history.js	<loaded>	canPick	checkPlanRules	dayActions	dayChanged	dropLearn	recordDays	renderReplanUI	replanCount	resetCard	setOccasion	setTodayPullWait	slotLabel	whenPulled
 restacts.test.js	index.html	<loaded>
 restacts.test.js	item-photo.js	<loaded>	paperHint	paperLine	paperRetake	photoCuFile	photoCuRemove	photoTools	ptIcon	replaceTexture	setPhEdit	setPic	setTexture	smallPhotos
-restacts.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
-restacts.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe
-restacts.test.js	kit.js	<loaded>	@servekitquiet	get kit	homeAbout	homeLabel	kitBs	kitClose	kitDraw	kitEl	kitFixOldImports	kitHasSample	kitHist	kitInert	kitOpen	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
+restacts.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
+restacts.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe
+restacts.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	get kit	homeAbout	homeLabel	kitBs	kitClose	kitDraw	kitEl	kitFixOldImports	kitHasSample	kitHist	kitInert	kitOpen	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 restacts.test.js	locale.js	<loaded>	appLocale
 restacts.test.js	locks.js	<loaded>	lockPast	lockSpan	lockUpcoming
 restacts.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -14308,7 +14311,7 @@ rollback.test.js	add-more.js	<loaded>	checkArrivals
 rollback.test.js	add-paste.js	<loaded>
 rollback.test.js	add-save.js	<loaded>
 rollback.test.js	add-sheet.js	<loaded>	@servenpsid
-rollback.test.js	add.js	<loaded>
+rollback.test.js	add.js	<loaded>	@document.addEventListenerclick
 rollback.test.js	analysis.js	<loaded>
 rollback.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	del	endedAnswer	endedTold	fitNav	fitNavSoon	focusWatch	inviteEnded	keepFocus	metaGet	metaPut	put	putRaw	setEditing	setSel	setView	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 rollback.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmWtWants
@@ -14413,7 +14416,7 @@ rotation-pause.test.js	add-more.js	<loaded>	checkArrivals
 rotation-pause.test.js	add-paste.js	<loaded>
 rotation-pause.test.js	add-save.js	<loaded>
 rotation-pause.test.js	add-sheet.js	<loaded>	@servenpsid
-rotation-pause.test.js	add.js	<loaded>
+rotation-pause.test.js	add.js	<loaded>	@document.addEventListenerclick
 rotation-pause.test.js	analysis.js	<loaded>
 rotation-pause.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	get sel	keepFocus	metaGet	metaPut	put	putRaw	set editing	set flt	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 rotation-pause.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote
@@ -14515,7 +14518,7 @@ run.js: add an item without a photo; it persists	add-more.js	<loaded>	checkArriv
 run.js: add an item without a photo; it persists	add-paste.js	<loaded>
 run.js: add an item without a photo; it persists	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 run.js: add an item without a photo; it persists	add-sheet.js	<loaded>	@servenpsid	addManual	addManualTap	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-run.js: add an item without a photo; it persists	add.js	<loaded>	@serveaddcalm	addNoteText	addShowCard	renderAdd	wbNote
+run.js: add an item without a photo; it persists	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	addShowCard	renderAdd	wbNote
 run.js: add an item without a photo; it persists	analysis.js	<loaded>
 run.js: add an item without a photo; it persists	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	generateSwatch	keepFocus	metaGet	metaPut	put	putRaw	qAt	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 run.js: add an item without a photo; it persists	asm-cm-job.js	<loaded>
@@ -15842,7 +15845,7 @@ safety.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 safety.test.js	add-paste.js	<loaded>
 safety.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 safety.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	addManualTap	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor
-safety.test.js	add.js	<loaded>	@serveaddcalm	addFiles	addNoteText	addShowCard	cardPics	renderAdd	retryTag	wbNote
+safety.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addNoteText	addShowCard	cardPics	renderAdd	retryTag	wbNote
 safety.test.js	analysis.js	<loaded>
 safety.test.js	app.js	<loaded>	@.catch	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	announce	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbDrop	dbGone	dbLive	dbMark	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	generateSwatch	get dbConn	get queue	keepFocus	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	qAt	renderBusy	setEditing	setSel	setView	shrink	sockTag	storeErr	storeFailText	storeFailure	storeFull	texSwatches	tx	txFail	txs	window.fetch
 safety.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmWtWants
@@ -16043,7 +16046,7 @@ sample.test.js	add-more.js	<loaded>	checkArrivals
 sample.test.js	add-paste.js	<loaded>
 sample.test.js	add-save.js	<loaded>
 sample.test.js	add-sheet.js	<loaded>	@servenpsid
-sample.test.js	add.js	<loaded>
+sample.test.js	add.js	<loaded>	@document.addEventListenerclick
 sample.test.js	analysis-worker.js	<any>
 sample.test.js	analysis.js	<any>	<loaded>
 sample.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusKey	focusWatch	keepFocus	metaGet	metaPut	put	set sel	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
@@ -16078,9 +16081,9 @@ sample.test.js	fields.js	<loaded>	fldRow	matRow	notesRow	optLab	wardSaveFields
 sample.test.js	history.js	<loaded>	canPick	checkPlanRules	dayActions	dropLearn	planRulesCheck	planRulesLs	planRulesNote	recordDays	resetCard	setTodayPullWait	slotLabel	whenPulled
 sample.test.js	index.html	<loaded>
 sample.test.js	item-photo.js	<loaded>	photoTools	ptIcon	setPhEdit	smallPhotos
-sample.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
-sample.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	sete	togglePause
-sample.test.js	kit.js	<loaded>	@servekithomeclose	@servekitquiet	get kitImp	get kitSampling	homeAbout	homeLabel	kitAdds	kitAdopt	kitBd	kitBs	kitBsAway	kitClose	kitColour	kitCols	kitDayOwn	kitDelMany	kitDupKey	kitDupMark	kitEdited	kitEl	kitFixOldImports	kitHasSample	kitHead	kitHist	kitImpBtn	kitImportGo	kitImportOpen	kitImportSwipe	kitImportText	kitInert	kitItem	kitLastImp	kitLastRow	kitLeft	kitMetal	kitNorm	kitOldMine	kitPasteFocus	kitPasteShow	kitPatWords	kitPattern	kitPrevDraw	kitQtyIn	kitQtyOut	kitRead	kitRow	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleNote	kitSampleRemove	kitSampleSig	kitSampleTag	kitSampleUndo	kitSdGet	kitSdSig	kitSends	kitSentStamp	kitSetupSampleTap	kitShareDone	kitShareFilter	kitSplit	kitStartRow	kitStore	kitTombs	kitTx	kitType	kitTypeOne	kitUpds	kitUserEdit	kitWords	set kitSdNew	setKitNoMine
+sample.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
+sample.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	sete	togglePause
+sample.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekithomeclose	@servekitquiet	get kitImp	get kitSampling	homeAbout	homeLabel	kitAdds	kitAdopt	kitBd	kitBs	kitBsAway	kitClose	kitColour	kitCols	kitDayOwn	kitDelMany	kitDupKey	kitDupMark	kitEdited	kitEl	kitFixOldImports	kitHasSample	kitHead	kitHist	kitImpBtn	kitImportGo	kitImportOpen	kitImportSwipe	kitImportText	kitInert	kitItem	kitLastImp	kitLastRow	kitLeft	kitMetal	kitNorm	kitOldMine	kitPasteFocus	kitPasteShow	kitPatWords	kitPattern	kitPrevDraw	kitQtyIn	kitQtyOut	kitRead	kitRow	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDay	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleNote	kitSampleRemove	kitSampleSig	kitSampleTag	kitSampleUndo	kitSdGet	kitSdSig	kitSends	kitSentStamp	kitSetupSampleTap	kitShareDone	kitShareFilter	kitSplit	kitStartRow	kitStore	kitTombs	kitTx	kitType	kitTypeOne	kitUpds	kitUserEdit	kitWords	set kitSdNew	setKitNoMine
 sample.test.js	locale.js	<loaded>	appLocale
 sample.test.js	locks.js	<loaded>	lockPast	lockSpan	lockUpcoming
 sample.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -16163,7 +16166,7 @@ scoreanim.test.js	add-more.js	<loaded>	checkArrivals
 scoreanim.test.js	add-paste.js	<loaded>
 scoreanim.test.js	add-save.js	<loaded>
 scoreanim.test.js	add-sheet.js	<loaded>	@servenpsid
-scoreanim.test.js	add.js	<loaded>
+scoreanim.test.js	add.js	<loaded>	@document.addEventListenerclick
 scoreanim.test.js	analysis-worker.js	<any>
 scoreanim.test.js	analysis.js	<any>	<loaded>
 scoreanim.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
@@ -16198,9 +16201,9 @@ scoreanim.test.js	fields.js	<loaded>
 scoreanim.test.js	history.js	<loaded>	canPick	checkPlanRules	dayActions	dropLearn	planRulesCheck	planRulesLs	planRulesNote	recordDays	replanFuture	resetCard	slotLabel	whenPulled
 scoreanim.test.js	index.html	<loaded>
 scoreanim.test.js	item-photo.js	<loaded>	smallPhotos
-scoreanim.test.js	item-view.js	<loaded>	@serveitemopen	@{constb$ivbody}	itemShown	renderItem
-scoreanim.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}
-scoreanim.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
+scoreanim.test.js	item-view.js	<loaded>	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	itemShown	renderItem
+scoreanim.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown
+scoreanim.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 scoreanim.test.js	locale.js	<loaded>	appLocale
 scoreanim.test.js	locks.js	<loaded>	lockPast	lockSpan	lockUpcoming
 scoreanim.test.js	look-base.js	<loaded>
@@ -16360,7 +16363,7 @@ scorefix.test.js	add-more.js	<loaded>	checkArrivals
 scorefix.test.js	add-paste.js	<loaded>
 scorefix.test.js	add-save.js	<loaded>
 scorefix.test.js	add-sheet.js	<loaded>	@servenpsid
-scorefix.test.js	add.js	<loaded>
+scorefix.test.js	add.js	<loaded>	@document.addEventListenerclick
 scorefix.test.js	analysis-worker.js	<any>
 scorefix.test.js	analysis.js	<any>	<loaded>	horizonKeys
 scorefix.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get sel	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
@@ -16458,7 +16461,7 @@ server-limits.test.js	add-more.js	<loaded>	checkArrivals
 server-limits.test.js	add-paste.js	<loaded>
 server-limits.test.js	add-save.js	<loaded>
 server-limits.test.js	add-sheet.js	<loaded>	@servenpsid
-server-limits.test.js	add.js	<loaded>
+server-limits.test.js	add.js	<loaded>	@document.addEventListenerclick
 server-limits.test.js	analysis.js	<loaded>
 server-limits.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	endedTold	fitNav	fitNavSoon	focusWatch	inviteEnded	keepFocus	metaGet	metaPut	put	renderBusy	setEditing	setSel	setView	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 server-limits.test.js	asm-cm-job.js	<loaded>
@@ -16588,7 +16591,7 @@ sett.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 sett.test.js	add-paste.js	<loaded>
 sett.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 sett.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	renderAddFor	setAddFor
-sett.test.js	add.js	<loaded>	@serveaddcalm	addFiles	addNoteText	addShowCard	cardPics	renderAdd	wbNote
+sett.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addNoteText	addShowCard	cardPics	renderAdd	wbNote
 sett.test.js	analysis.js	<loaded>
 sett.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	qAt	renderBusy	setEditing	setSel	setView	shrink	sockTag	texSwatches	tx	txFail	txs	window.fetch
 sett.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -16791,7 +16794,7 @@ settingsin.test.js	add-more.js	<loaded>	checkArrivals
 settingsin.test.js	add-paste.js	<loaded>
 settingsin.test.js	add-save.js	<loaded>
 settingsin.test.js	add-sheet.js	<loaded>	@servenpsid
-settingsin.test.js	add.js	<loaded>
+settingsin.test.js	add.js	<loaded>	@document.addEventListenerclick
 settingsin.test.js	analysis.js	<loaded>	groupKind	groupLabel	horizonKeys
 settingsin.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	fixupRedraw	focusWatch	keepFocus	metaGet	metaPut	put	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 settingsin.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmWtWants
@@ -16994,7 +16997,7 @@ settingsui.test.js	add-more.js	<loaded>	checkArrivals
 settingsui.test.js	add-paste.js	<loaded>
 settingsui.test.js	add-save.js	<loaded>
 settingsui.test.js	add-sheet.js	<loaded>	@servenpsid	renderAddFor
-settingsui.test.js	add.js	<loaded>	addNoteText	renderAdd
+settingsui.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd
 settingsui.test.js	analysis.js	<loaded>
 settingsui.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 settingsui.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmWtWants
@@ -17092,7 +17095,7 @@ setup.test.js	add-more.js	<loaded>	checkArrivals
 setup.test.js	add-paste.js	<loaded>
 setup.test.js	add-save.js	<loaded>
 setup.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	renderAddFor	setAddFor
-setup.test.js	add.js	<loaded>	addNoteText	renderAdd
+setup.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd
 setup.test.js	analysis.js	<loaded>
 setup.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	keepFocus	metaGet	metaPut	put	putRaw	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 setup.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmWtWants
@@ -17127,9 +17130,9 @@ setup.test.js	history.js	<loaded>	canPick	checkPlanRules	dayActions	dayChanged	d
 setup.test.js	icon-192.png	<loaded>
 setup.test.js	index.html	<loaded>
 setup.test.js	item-photo.js	<loaded>	smallPhotos
-setup.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	itemShown	renderItem
-setup.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe
-setup.test.js	kit.js	<loaded>	@servekithomeclose	@servekitquiet	@servekitshown	get body	get title	homeAbout	homeCopyBtn	homeIPad	homeLabel	homeNote	homeOpen	homePic	homeRisk	homeShareStep	homeSteps	homeTester	kitAdopt	kitBs	kitClose	kitClothPic	kitDraw	kitEdited	kitEl	kitFixOldImports	kitGo	kitHasSample	kitHist	kitInert	kitItem	kitNextTap	kitOpen	kitPatternPic	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleSig	kitScorePic	kitSends	kitSetupSampleTap	kitShadePic	kitShareDone	kitShareFilter	kitStartRow	kitStore	kitTx	kitUserEdit	kitWears	pic	safariRemind	tourAgain	tourAgainTap	tourOpen
+setup.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	itemShown	renderItem
+setup.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	renderWardrobe
+setup.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekithomeclose	@servekitquiet	@servekitshown	get body	get title	homeAbout	homeCopyBtn	homeIPad	homeLabel	homeNote	homeOpen	homePic	homeRisk	homeShareStep	homeSteps	homeTester	kitAdopt	kitBs	kitClose	kitClothPic	kitDraw	kitEdited	kitEl	kitFixOldImports	kitGo	kitHasSample	kitHist	kitInert	kitItem	kitNextTap	kitOpen	kitPatternPic	kitSampleBanner	kitSampleBusy	kitSampleCards	kitSampleDone	kitSampleLoad	kitSampleMigrate	kitSampleSig	kitScorePic	kitSends	kitSetupSampleTap	kitShadePic	kitShareDone	kitShareFilter	kitStartRow	kitStore	kitTx	kitUserEdit	kitWears	pic	safariRemind	tourAgain	tourAgainTap	tourOpen
 setup.test.js	locale.js	<loaded>	appLocale
 setup.test.js	locks.js	<loaded>	lockPast	lockSpan	lockUpcoming
 setup.test.js	look-base.js	<loaded>	lookOn
@@ -17192,7 +17195,7 @@ shade.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 shade.test.js	add-paste.js	<loaded>
 shade.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 shade.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-shade.test.js	add.js	<loaded>	@serveaddcalm	addNoteText	addShowCard	renderAdd	wbNote
+shade.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	addShowCard	renderAdd	wbNote
 shade.test.js	analysis.js	<loaded>
 shade.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	deadCanvas	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get queue	imgOf	keepFocus	metaGet	metaPut	put	putRaw	qAt	set editing	set flt	setEditing	setSel	setView	shrink	texSwatches	tx	txFail	txs	window.fetch
 shade.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -17718,7 +17721,7 @@ shellfix.test.js	add-more.js	<loaded>	checkArrivals
 shellfix.test.js	add-paste.js	<loaded>
 shellfix.test.js	add-save.js	<loaded>
 shellfix.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	renderAddFor	setAddFor
-shellfix.test.js	add.js	<loaded>	addNoteText	renderAdd
+shellfix.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd
 shellfix.test.js	analysis.js	<loaded>
 shellfix.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbDrop	dbGone	dbLive	dbOpen	dbRetry	dbUnhold	endedAnswer	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	put	recSame	setConnReady	setDbConn	setDbCur	setDbWiping	setEditing	setSel	setView	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 shellfix.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmWtWants
@@ -17921,7 +17924,7 @@ shop.test.js	add-more.js	<loaded>	checkArrivals
 shop.test.js	add-paste.js	<loaded>
 shop.test.js	add-save.js	<loaded>
 shop.test.js	add-sheet.js	<loaded>	@servenpsid
-shop.test.js	add.js	<loaded>
+shop.test.js	add.js	<loaded>	@document.addEventListenerclick
 shop.test.js	analysis-worker.js	<any>
 shop.test.js	analysis.js	<any>	<loaded>	clothesCandidates	compat	compatBase	evalPlan	fixWhy	groupHex	groupKind	groupLabel	horizonKeys	jClass	keyDate2	noteKind	occasionCheck	ownMix	plural	rankClothes	runAnalysis	runAnalysis0	sClass	several	shoeNotes	shopClass	shopDetail	shopGroup	shopKey	shopList	shopName	shopShelved	simFacts	smallCandidates	tClass
 shop.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	keepFocus	metaGet	metaPut	put	putRaw	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
@@ -17956,9 +17959,9 @@ shop.test.js	fields.js	<loaded>
 shop.test.js	history.js	<loaded>	canPick	checkPlanRules	dayActions	dropLearn	recordDays	resetCard	slotLabel	whenPulled
 shop.test.js	index.html	<loaded>
 shop.test.js	item-photo.js	<loaded>	smallPhotos
-shop.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	itemShown	renderItem
-shop.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe
-shop.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit
+shop.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	itemShown	renderItem
+shop.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	renderWardrobe
+shop.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow	kitUserEdit
 shop.test.js	locale.js	<loaded>	appLocale
 shop.test.js	locks.js	<loaded>	lockPast	lockSpan	lockUpcoming
 shop.test.js	look-base.js	<loaded>
@@ -18020,7 +18023,7 @@ shopstay.test.js	add-more.js	<loaded>	checkArrivals
 shopstay.test.js	add-paste.js	<loaded>
 shopstay.test.js	add-save.js	<loaded>
 shopstay.test.js	add-sheet.js	<loaded>	@servenpsid
-shopstay.test.js	add.js	<loaded>
+shopstay.test.js	add.js	<loaded>	@document.addEventListenerclick
 shopstay.test.js	analysis.js	<loaded>	horizonKeys
 shopstay.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 shopstay.test.js	asm-cm-job.js	<loaded>
@@ -18118,7 +18121,7 @@ shopswipe.test.js	add-more.js	<loaded>	checkArrivals
 shopswipe.test.js	add-paste.js	<loaded>
 shopswipe.test.js	add-save.js	<loaded>
 shopswipe.test.js	add-sheet.js	<loaded>	@servenpsid
-shopswipe.test.js	add.js	<loaded>
+shopswipe.test.js	add.js	<loaded>	@document.addEventListenerclick
 shopswipe.test.js	analysis.js	<loaded>	horizonKeys
 shopswipe.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 shopswipe.test.js	asm-cm-job.js	<loaded>
@@ -18735,7 +18738,7 @@ stats.test.js	add-more.js	<loaded>	checkArrivals
 stats.test.js	add-paste.js	<loaded>
 stats.test.js	add-save.js	<loaded>
 stats.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	renderAddFor	setAddFor
-stats.test.js	add.js	<loaded>	addNoteText	renderAdd
+stats.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd
 stats.test.js	analysis-worker.js	<any>
 stats.test.js	analysis.js	<any>	<loaded>	evalPlan	horizonKeys	keyDate2	noteKind
 stats.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get sel	get view	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
@@ -18833,7 +18836,7 @@ stylea11y.test.js	add-more.js	<any>	<loaded>	checkArrivals	orderRow	qtyLabel	qty
 stylea11y.test.js	add-paste.js	<any>	<loaded>
 stylea11y.test.js	add-save.js	<any>	<loaded>	cardReady
 stylea11y.test.js	add-sheet.js	<any>	<loaded>	@servenpsasking	@servenpsid	addManual	addManualTap	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-stylea11y.test.js	add.js	<any>	<loaded>	addNoteText	renderAdd	skipCard	wbNote
+stylea11y.test.js	add.js	<any>	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	skipCard	wbNote
 stylea11y.test.js	analysis-worker.js	<any>
 stylea11y.test.js	analysis.js	<any>	<loaded>	horizonKeys
 stylea11y.test.js	app.js	<any>	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
@@ -18871,9 +18874,9 @@ stylea11y.test.js	fields.js	<any>	<loaded>	fldRow	matRow	notesRow	optLab
 stylea11y.test.js	history.js	<any>	<loaded>	canPick	checkPlanRules	dayActions	dayChanged	dropLearn	recordDays	renderReplanUI	replanCount	resetCard	slotLabel	whenPulled
 stylea11y.test.js	index.html	<any>	<loaded>
 stylea11y.test.js	item-photo.js	<any>	<loaded>	paperHint	photoTools	ptIcon	setPhEdit	smallPhotos
-stylea11y.test.js	item-view.js	<any>	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
-stylea11y.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe
-stylea11y.test.js	kit.js	<any>	<loaded>	@servekitquiet	get body	homeAbout	homeLabel	importOpenTap	kitBd	kitBs	kitBsAway	kitClose	kitDraw	kitEl	kitFixOldImports	kitHasSample	kitHist	kitImportOpen	kitImportSwipe	kitInert	kitLastImp	kitLastRow	kitOpen	kitPasteFocus	kitPasteShow	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitScorePic	kitStartRow	kitWears	tourAgain	tourAgainTap	tourOpen
+stylea11y.test.js	item-view.js	<any>	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
+stylea11y.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe
+stylea11y.test.js	kit.js	<any>	<loaded>	@addEventListenerkeydown	@servekitquiet	get body	homeAbout	homeLabel	importOpenTap	kitBd	kitBs	kitBsAway	kitClose	kitDraw	kitEl	kitFixOldImports	kitHasSample	kitHist	kitImportOpen	kitImportSwipe	kitInert	kitLastImp	kitLastRow	kitOpen	kitPasteFocus	kitPasteShow	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitScorePic	kitStartRow	kitWears	tourAgain	tourAgainTap	tourOpen
 stylea11y.test.js	locale.js	<any>	<loaded>	appLocale
 stylea11y.test.js	locks.js	<any>	<loaded>	lockPast	lockSpan	lockUpcoming
 stylea11y.test.js	look-base.js	<any>	<loaded>	lookCu	lookHasPat	lookOn
@@ -19053,7 +19056,7 @@ swatchzoom.test.js	add-more.js	<loaded>	checkArrivals
 swatchzoom.test.js	add-paste.js	<loaded>
 swatchzoom.test.js	add-save.js	<loaded>
 swatchzoom.test.js	add-sheet.js	<loaded>	@servenpsid
-swatchzoom.test.js	add.js	<loaded>
+swatchzoom.test.js	add.js	<loaded>	@document.addEventListenerclick
 swatchzoom.test.js	analysis.js	<loaded>
 swatchzoom.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 swatchzoom.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmHbShirt
@@ -19151,7 +19154,7 @@ sync.test.js	add-more.js	<loaded>	checkArrivals
 sync.test.js	add-paste.js	<loaded>
 sync.test.js	add-save.js	<loaded>
 sync.test.js	add-sheet.js	<loaded>	@servenpsid
-sync.test.js	add.js	<loaded>
+sync.test.js	add.js	<loaded>	@document.addEventListenerclick
 sync.test.js	analysis.js	<loaded>
 sync.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	del	endedAnswer	fitNav	fitNavSoon	fixupRedraw	focusWatch	keepFocus	metaGet	metaPut	put	putRaw	setEditing	setSel	setView	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 sync.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmWtWants
@@ -19255,7 +19258,7 @@ syncwrite.test.js	add-more.js	<loaded>	checkArrivals
 syncwrite.test.js	add-paste.js	<loaded>
 syncwrite.test.js	add-save.js	<loaded>
 syncwrite.test.js	add-sheet.js	<loaded>	@servenpsid
-syncwrite.test.js	add.js	<loaded>
+syncwrite.test.js	add.js	<loaded>	@document.addEventListenerclick
 syncwrite.test.js	analysis.js	<loaded>
 syncwrite.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	del	endedAnswer	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	put	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 syncwrite.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmWtWants
@@ -19359,7 +19362,7 @@ tabload.test.js	add-more.js	<loaded>	checkArrivals
 tabload.test.js	add-paste.js	<loaded>
 tabload.test.js	add-save.js	<loaded>
 tabload.test.js	add-sheet.js	<loaded>	@servenpsid
-tabload.test.js	add.js	<loaded>
+tabload.test.js	add.js	<loaded>	@document.addEventListenerclick
 tabload.test.js	analysis.js	<loaded>
 tabload.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	put	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 tabload.test.js	asm-cm-job.js	<loaded>
@@ -19457,7 +19460,7 @@ tabmove.test.js	add-more.js	<loaded>	checkArrivals
 tabmove.test.js	add-paste.js	<loaded>
 tabmove.test.js	add-save.js	<loaded>
 tabmove.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	renderAddFor	setAddFor
-tabmove.test.js	add.js	<loaded>	addNoteText	renderAdd
+tabmove.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd
 tabmove.test.js	analysis.js	<loaded>
 tabmove.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 tabmove.test.js	asm-cm-job.js	<loaded>
@@ -19662,7 +19665,7 @@ tagging.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRo
 tagging.test.js	add-paste.js	<loaded>
 tagging.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 tagging.test.js	add-sheet.js	<loaded>	@servenpsid	renderAddFor
-tagging.test.js	add.js	<loaded>	@serveaddcalm	addFiles	addNoteText	addShowCard	addTexture	cardPics	renderAdd	texGains	wbNote
+tagging.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addNoteText	addShowCard	addTexture	cardPics	renderAdd	texGains	wbNote
 tagging.test.js	analysis.js	<loaded>
 tagging.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	qAt	renderBusy	setEditing	setSel	setView	shrink	sockTag	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 tagging.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmCuDark	asmCuTile	asmCuTile1	asmCuWants
@@ -19877,7 +19880,7 @@ tagswatch.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qty
 tagswatch.test.js	add-paste.js	<loaded>
 tagswatch.test.js	add-save.js	<loaded>	cardReady	savedTitle
 tagswatch.test.js	add-sheet.js	<loaded>	@servenpsid	renderAddFor
-tagswatch.test.js	add.js	<loaded>	addNoteText	renderAdd	wbNote
+tagswatch.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	wbNote
 tagswatch.test.js	analysis.js	<loaded>
 tagswatch.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get queue	keepFocus	metaGet	metaPut	put	putRaw	set editing	set flt	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 tagswatch.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -19975,7 +19978,7 @@ takeoff.test.js	add-more.js	<loaded>	checkArrivals
 takeoff.test.js	add-paste.js	<loaded>
 takeoff.test.js	add-save.js	<loaded>
 takeoff.test.js	add-sheet.js	<loaded>	@servenpsid
-takeoff.test.js	add.js	<loaded>
+takeoff.test.js	add.js	<loaded>	@document.addEventListenerclick
 takeoff.test.js	analysis-worker.js	<any>
 takeoff.test.js	analysis.js	<any>	<loaded>
 takeoff.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	fixupRedraw	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get sel	keepFocus	metaGet	metaPut	put	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
@@ -20174,7 +20177,7 @@ texture.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRo
 texture.test.js	add-paste.js	<loaded>
 texture.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 texture.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	renderAddFor	setAddFor
-texture.test.js	add.js	<loaded>	@serveaddcalm	addFiles	addNoteText	addPhotosPick	addShowCard	addTexture	cardPics	cardWb	measureGuess	renderAdd	texGains	toggleWb	wbNote
+texture.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addNoteText	addPhotosPick	addShowCard	addTexture	cardPics	cardWb	measureGuess	renderAdd	texGains	toggleWb	wbNote
 texture.test.js	analysis.js	<loaded>
 texture.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matchLight	metaGet	metaPut	put	putRaw	qAt	refreshSwatch	setEditing	setSel	setView	shrink	texSwatches	tx	txFail	txs	window.fetch
 texture.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -20276,7 +20279,7 @@ theme.test.js	add-more.js	<loaded>	checkArrivals
 theme.test.js	add-paste.js	<loaded>
 theme.test.js	add-save.js	<loaded>
 theme.test.js	add-sheet.js	<loaded>	@servenpsid
-theme.test.js	add.js	<loaded>
+theme.test.js	add.js	<loaded>	@document.addEventListenerclick
 theme.test.js	analysis.js	<loaded>
 theme.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 theme.test.js	asm-cm-job.js	<loaded>
@@ -20588,7 +20591,7 @@ today.test.js	add-more.js	<loaded>	checkArrivals
 today.test.js	add-paste.js	<loaded>
 today.test.js	add-save.js	<loaded>
 today.test.js	add-sheet.js	<loaded>	@servenpsid
-today.test.js	add.js	<loaded>
+today.test.js	add.js	<loaded>	@document.addEventListenerclick
 today.test.js	analysis.js	<loaded>
 today.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get sel	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 today.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmHbShirt	asmWtWants
@@ -20784,7 +20787,7 @@ todayedges.test.js	add-more.js	<loaded>	checkArrivals
 todayedges.test.js	add-paste.js	<loaded>
 todayedges.test.js	add-save.js	<loaded>
 todayedges.test.js	add-sheet.js	<loaded>	@servenpsid
-todayedges.test.js	add.js	<loaded>
+todayedges.test.js	add.js	<loaded>	@document.addEventListenerclick
 todayedges.test.js	analysis.js	<loaded>
 todayedges.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get sel	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 todayedges.test.js	asm-cm-job.js	<loaded>	asmCmRoute
@@ -20818,9 +20821,9 @@ todayedges.test.js	fields.js	<loaded>
 todayedges.test.js	history.js	<loaded>	canPick	checkPlanRules	closePicker	combatAway	dayActions	dayChanged	dropLearn	get picker	handGroup	openPicker	pickNext	pickNextTap	pickPic	pluralWord	recordDays	renderReplanUI	replanCount	resetCard	resetDay	resetTap	setSwapMsg	slotLabel	swapSlot	whenPulled
 todayedges.test.js	index.html	<loaded>
 todayedges.test.js	item-photo.js	<loaded>	smallPhotos
-todayedges.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	itemShown	renderItem
-todayedges.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	renderWardrobe
-todayedges.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
+todayedges.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	itemShown	renderItem
+todayedges.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	renderWardrobe
+todayedges.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitStartRow
 todayedges.test.js	locale.js	<loaded>	appLocale
 todayedges.test.js	locks.js	<loaded>	lockPast	lockSpan	lockUpcoming	unlockClash
 todayedges.test.js	look-base.js	<loaded>	lookOn
@@ -20980,7 +20983,7 @@ todayzoom.test.js	add-more.js	<loaded>	checkArrivals
 todayzoom.test.js	add-paste.js	<loaded>
 todayzoom.test.js	add-save.js	<loaded>
 todayzoom.test.js	add-sheet.js	<loaded>	@servenpsid
-todayzoom.test.js	add.js	<loaded>
+todayzoom.test.js	add.js	<loaded>	@document.addEventListenerclick
 todayzoom.test.js	analysis.js	<loaded>
 todayzoom.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	ask	atomic	busyLabelFor	busyStart	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusWatch	get sel	keepFocus	metaGet	metaPut	renderBusy	set sel	set view	setEditing	setSel	setView	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 todayzoom.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmHbShirt	asmWtWants
@@ -21170,7 +21173,6 @@ twillswatch.test.js	who.js	<loaded>	acctRole	applyRole	isTester
 typecheck.test.js	tests/modscope.js	<any>
 typecheck.test.js	tests/scriptlist.js	<any>
 typecheck.test.js	tests/typecheck.js	<any>
-typecheck.test.js	tests/webkit.js	<any>
 ui.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutConn	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutSay	aboutShow	aboutStart	checkForUpdate	loadFeedback	renderAbout	swVersionOf
 ui.test.js	account.js	<loaded>	@onsettingssummaries	@serveacctwhy	@serveinvitechecking	acctConnect	acctFailText	acctSettingsPart	acctStart	connectFromLink	dropInviteHash	inviteParts	loadAccount	renderAccountUI
 ui.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -21181,7 +21183,7 @@ ui.test.js	add-more.js	<loaded>	checkArrivals
 ui.test.js	add-paste.js	<loaded>
 ui.test.js	add-save.js	<loaded>
 ui.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	renderAddFor	setAddFor
-ui.test.js	add.js	<loaded>	addNoteText	renderAdd
+ui.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd
 ui.test.js	analysis.js	<loaded>	horizonKeys
 ui.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusKey	focusWatch	imgOf	keepFocus	metaGet	metaPut	set flt	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 ui.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote
@@ -21279,7 +21281,7 @@ uipages.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRo
 uipages.test.js	add-paste.js	<loaded>
 uipages.test.js	add-save.js	<loaded>	cardReady	savedTitle
 uipages.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-uipages.test.js	add.js	<loaded>	addNoteText	addShowCard	renderAdd	wbNote
+uipages.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	renderAdd	wbNote
 uipages.test.js	analysis.js	<loaded>	horizonKeys
 uipages.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	put	set flt	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 uipages.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote
@@ -21378,7 +21380,7 @@ vest.test.js	add-more.js	<loaded>	checkArrivals
 vest.test.js	add-paste.js	<loaded>
 vest.test.js	add-save.js	<loaded>
 vest.test.js	add-sheet.js	<loaded>	@servenpsid
-vest.test.js	add.js	<loaded>
+vest.test.js	add.js	<loaded>	@document.addEventListenerclick
 vest.test.js	analysis-worker.js	<any>
 vest.test.js	analysis.js	<any>	<loaded>
 vest.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	get sel	keepFocus	metaGet	metaPut	set editing	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
@@ -21477,7 +21479,7 @@ wardfab.test.js	add-more.js	<loaded>	checkArrivals
 wardfab.test.js	add-paste.js	<loaded>
 wardfab.test.js	add-save.js	<loaded>
 wardfab.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	renderAddFor	setAddFor
-wardfab.test.js	add.js	<loaded>	addNoteText	renderAdd
+wardfab.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd
 wardfab.test.js	analysis.js	<loaded>	horizonKeys
 wardfab.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	keepFocus	metaGet	metaPut	set flt	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 wardfab.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote
@@ -21511,9 +21513,9 @@ wardfab.test.js	fields.js	<loaded>	fldRow	matRow	notesRow	optLab
 wardfab.test.js	history.js	<loaded>	canPick	checkPlanRules	closePicker	combatAway	dayActions	dayChanged	dropLearn	handGroup	openPicker	pickPic	pluralWord	recordDays	renderReplanUI	replanCount	resetCard	slotLabel	whenPulled
 wardfab.test.js	index.html	<loaded>
 wardfab.test.js	item-photo.js	<loaded>	paperHint	photoTools	ptIcon	setPhEdit	smallPhotos
-wardfab.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
-wardfab.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDetailSum	ivSummary	patSummary	renderWardrobe
-wardfab.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
+wardfab.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	closeItem	itemFocusBack	itemShown	ivSwipe	openItem	renderItem	sheetSlides	wardList
+wardfab.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	patSummary	renderWardrobe
+wardfab.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
 wardfab.test.js	locale.js	<loaded>	appLocale
 wardfab.test.js	locks.js	<loaded>	lockPast	lockSpan	lockUpcoming
 wardfab.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -21576,7 +21578,7 @@ wardrobe.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyR
 wardrobe.test.js	add-paste.js	<loaded>
 wardrobe.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 wardrobe.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
-wardrobe.test.js	add.js	<loaded>	@serveaddcalm	addNoteText	addShowCard	renderAdd	wbNote
+wardrobe.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	addShowCard	renderAdd	wbNote
 wardrobe.test.js	analysis.js	<loaded>
 wardrobe.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	del	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get editing	get flt	get queue	get sel	imgOf	keepFocus	metaGet	metaPut	put	putRaw	qAt	set editing	set flt	set sel	set view	setEditing	setFlt	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 wardrobe.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmWtWants
@@ -21610,9 +21612,9 @@ wardrobe.test.js	fields.js	<loaded>	fldRow	matLabel	matPicked	matRow	matTidy	not
 wardrobe.test.js	history.js	<loaded>	canPick	checkPlanRules	closePicker	combatAway	dayActions	dropLearn	handGroup	openPicker	pickPic	pluralWord	recordDays	resetCard	setTodayPullWait	slotLabel	whenPulled
 wardrobe.test.js	index.html	<loaded>
 wardrobe.test.js	item-photo.js	<loaded>	paperHint	paperLine	paperRetake	photoTools	ptIcon	setPhEdit	smallPhotos
-wardrobe.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	closeItem	dropItem	itemFocusBack	itemShown	itemStepTap	itemSynced	ivSwipe	openItem	renderItem	sheetSlides	stepItem	wardList
-wardrobe.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	itemDelete	ivCareSum	ivDetailSum	ivSummary	patSummary	renderWardrobe	rm	wardChip
-wardrobe.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	kitDuplicate	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit
+wardrobe.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	closeItem	dropItem	itemFocusBack	itemShown	itemStepTap	itemSynced	ivSwipe	openItem	renderItem	sheetSlides	stepItem	wardList
+wardrobe.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	itemDelete	ivCareSum	ivDetailSum	ivSummary	patSummary	renderWardrobe	rm	wardChip
+wardrobe.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeLabel	kitDuplicate	kitFixOldImports	kitHasSample	kitOldMine	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSaved	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit
 wardrobe.test.js	locale.js	<loaded>	appLocale
 wardrobe.test.js	locks.js	<loaded>	lockPast	lockSpan	lockUpcoming
 wardrobe.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -21680,7 +21682,7 @@ wardrobetap.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	q
 wardrobetap.test.js	add-paste.js	<loaded>
 wardrobetap.test.js	add-save.js	<loaded>	cardReady	savedTitle
 wardrobetap.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	renderAddFor	setAddFor
-wardrobetap.test.js	add.js	<loaded>	addNoteText	cardSkip	errToHand	renderAdd	skipCard	wbNote
+wardrobetap.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	cardSkip	errToHand	renderAdd	skipCard	wbNote
 wardrobetap.test.js	analysis.js	<loaded>
 wardrobetap.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	del	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get editing	get queue	imgOf	keepFocus	metaGet	metaPut	put	putRaw	set editing	set flt	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 wardrobetap.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -21714,9 +21716,9 @@ wardrobetap.test.js	fields.js	<loaded>	fldRow	matRow	notesRow	optLab
 wardrobetap.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 wardrobetap.test.js	index.html	<loaded>
 wardrobetap.test.js	item-photo.js	<loaded>	cropDirty	cropEditor	cropGeom	cropKeep	cropZoom	get phEdit	layoutCrop	paperHint	photoTools	ptIcon	setPhEdit	smallPhotos	startCrop
-wardrobetap.test.js	item-view.js	<loaded>	@backLand	@backOnitem	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchmove	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	dropItem	itemCloseTap	itemFocusBack	itemShown	itemStepTap	ivSwipe	openItem	renderItem	sheetSlides	stepItem	wardList
-wardrobetap.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	@{constel$wardrobe}>slide	E	itemBody	itemDelete	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	rm	sete
-wardrobetap.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	kitDuplicate	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
+wardrobetap.test.js	item-view.js	<loaded>	@backLand	@backOnitem	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchmove	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	@{constb$ivbody}>inn	closeItem	dropItem	itemCloseTap	itemFocusBack	itemShown	itemStepTap	ivSwipe	openItem	renderItem	sheetSlides	stepItem	wardList
+wardrobetap.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	@{constel$wardrobe}>slide	E	itemBody	itemDelete	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	rm	sete
+wardrobetap.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeLabel	kitDuplicate	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 wardrobetap.test.js	locale.js	<loaded>	appLocale
 wardrobetap.test.js	locks.js	<loaded>
 wardrobetap.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -21813,9 +21815,9 @@ wardswipe.test.js	fields.js	<loaded>	fldRow	matRow	notesRow	optLab
 wardswipe.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 wardswipe.test.js	index.html	<loaded>
 wardswipe.test.js	item-photo.js	<loaded>	paperHint	photoTools	ptIcon	setPhEdit	smallPhotos
-wardswipe.test.js	item-view.js	<loaded>	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchmove	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>end	@{constb$ivbody}>inn	itemShown	ivSwipe	openItem	renderItem	sheetSlides	stepItem	wardList
-wardswipe.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@el.addEventListenertouchmove	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	@{constel$wardrobe}>slide	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	stepType	wardTypes
-wardswipe.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
+wardswipe.test.js	item-view.js	<loaded>	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@b.addEventListenertouchmove	@{constb$ivbody}>@b.addEventListenertouchstart	@{constb$ivbody}>@document.addEventListenerkeydown	@{constb$ivbody}>end	@{constb$ivbody}>inn	itemShown	ivSwipe	openItem	renderItem	sheetSlides	stepItem	wardList
+wardswipe.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	@{constel$wardrobe}>@el.addEventListenertouchmove	@{constel$wardrobe}>@el.addEventListenertouchstart	@{constel$wardrobe}>end	@{constel$wardrobe}>slide	E	itemBody	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	stepType	wardTypes
+wardswipe.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow
 wardswipe.test.js	locale.js	<loaded>	appLocale
 wardswipe.test.js	locks.js	<loaded>
 wardswipe.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -21911,9 +21913,9 @@ watchmatch.test.js	fields.js	<loaded>	fldRow	notesRow	optLab
 watchmatch.test.js	history.js	<loaded>	checkPlanRules	dropLearn	whenPulled
 watchmatch.test.js	index.html	<loaded>
 watchmatch.test.js	item-photo.js	<loaded>	photoTools	ptIcon	setPhEdit	smallPhotos
-watchmatch.test.js	item-view.js	<loaded>	@serveitemopen	@{constb$ivbody}	itemShown	renderItem	wardList
-watchmatch.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	itemDetails	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	sete
-watchmatch.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
+watchmatch.test.js	item-view.js	<loaded>	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	itemShown	renderItem	wardList
+watchmatch.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	itemDetails	ivCareSum	ivDetailSum	ivSummary	renderWardrobe	sete
+watchmatch.test.js	kit.js	<loaded>	@addEventListenerkeydown	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitStartRow	kitUserEdit
 watchmatch.test.js	locale.js	<loaded>	appLocale
 watchmatch.test.js	locks.js	<loaded>
 watchmatch.test.js	look-base.js	<loaded>	lookCu	lookHasPat	lookOn
@@ -21982,7 +21984,7 @@ weather.test.js	add-more.js	<loaded>	checkArrivals
 weather.test.js	add-paste.js	<loaded>
 weather.test.js	add-save.js	<loaded>
 weather.test.js	add-sheet.js	<loaded>	@servenpsid
-weather.test.js	add.js	<loaded>
+weather.test.js	add.js	<loaded>	@document.addEventListenerclick
 weather.test.js	analysis-worker.js	<any>
 weather.test.js	analysis.js	<any>	<loaded>
 weather.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	get sel	keepFocus	metaGet	metaPut	set sel	set view	setEditing	setSel	setView	storeFailure	texSwatches	tx	txFail	txs	window.fetch
@@ -22080,7 +22082,7 @@ weeklock.test.js	add-more.js	<loaded>	checkArrivals
 weeklock.test.js	add-paste.js	<loaded>
 weeklock.test.js	add-save.js	<loaded>
 weeklock.test.js	add-sheet.js	<loaded>	@servenpsid	renderAddFor
-weeklock.test.js	add.js	<loaded>	addNoteText	renderAdd
+weeklock.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd
 weeklock.test.js	analysis-worker.js	<any>
 weeklock.test.js	analysis.js	<any>	<loaded>
 weeklock.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get sel	keepFocus	metaGet	metaPut	put	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
