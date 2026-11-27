@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	021284f3b59a817eefe9
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	acctSettingsPart	acctStart	get	iosDevice	iosInSafari	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -1993,6 +1994,7 @@ asmgl.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+asmgl.test.js	tests/webkit.js	<any>
 asmgl.test.js	theme.js	<loaded>	applyTheme
 asmgl.test.js	toast.js	<loaded>
 asmgl.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -2107,7 +2109,6 @@ asmrelease.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmrelease.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmrelease.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmrelease.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
-asmrelease.test.js	tests/webkit.js	<any>
 asmrelease.test.js	theme.js	<loaded>	applyTheme
 asmrelease.test.js	toast.js	<loaded>
 asmrelease.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -6529,7 +6530,7 @@ drawnonly.test.js	asm-kinds.js	<any>	<loaded>	@{constownokObject.prototype.hasOw
 drawnonly.test.js	asm-look.js	<loaded>	asmCmAny	asmCmHeld	asmCmKey	asmCmSeen	asmCmUse	asmDrawn	asmFresh	asmFullWins	asmGet	asmGetOnce	asmKey	asmListGet	asmLookId	asmMicroKind	asmOutKey	asmPhoto	asmStamp	asmSuitBands	asmSuitTwill	asmSuitWeave	asmWants	get asmPhoto	set asmPhoto	setAsmOut
 drawnonly.test.js	asm-ocp.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmOcpBase
 drawnonly.test.js	asm-pocket.js	<any>	<loaded>
-drawnonly.test.js	asm-today.js	<loaded>	@serveasmsync	asmAhead	asmAheadSoon	asmCmLook	asmEnsure	asmFor	asmKeepOut	asmLoad	asmShow	asmShown	asmSync	asmTouchWatch	asmTrim	get asmAhead	get asmSyncing	renderAsmUI	set asmAhead
+drawnonly.test.js	asm-today.js	<loaded>	@serveasmsync	asmAhead	asmAheadSoon	asmBlobUp	asmCmLook	asmEnsure	asmFor	asmKeepOut	asmLoad	asmShow	asmShown	asmSync	asmTouchWatch	asmTrim	get asmAhead	get asmSyncing	renderAsmUI	set asmAhead
 drawnonly.test.js	asm-watch.js	<any>	<loaded>
 drawnonly.test.js	asm-worker.js	<any>
 drawnonly.test.js	assemble.js	<any>	<loaded>	@	@defineddocument.addEventListenervisibilitychange	ASM_OUT_RANGE	asmIdleArm	asmImgOf	asmPost	asmPump	asmRun	asmWorker
@@ -8269,7 +8270,6 @@ globals.test.js	tag-request.js	<any>
 globals.test.js	tagging.js	<any>
 globals.test.js	tests/modscope.js	<any>
 globals.test.js	tests/scriptlist.js	<any>
-globals.test.js	tests/webkit.js	<any>
 globals.test.js	theme.js	<any>
 globals.test.js	toast.js	<any>
 globals.test.js	today-gestures.js	<any>
@@ -9196,6 +9196,7 @@ invite.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehid
 invite.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 invite.test.js	tagging.js	<loaded>
 invite.test.js	tests/fixedplan.js	<any>
+invite.test.js	tests/webkit.js	<any>
 invite.test.js	theme.js	<loaded>	applyTheme
 invite.test.js	toast.js	<loaded>	toast	toastOff
 invite.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -14627,7 +14628,7 @@ rollback.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
 rollback.test.js	photo-keys.js	<loaded>	comboKey	comboSig	esc	fnv64	get	listPaused	loadRenders	lookSig	picsDrawn	shirtPatterned	shirtTextured	workerBase	workerList
 rollback.test.js	photos.js	<loaded>	asmLive	fetchRemoteRender	fixItemBackdrops	missingItemPics	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	shareLocalPics
 rollback.test.js	pickscore.js	<loaded>
-rollback.test.js	planner.js	<loaded>	idsAhead	lockStale	pairSeen	shirtGroup
+rollback.test.js	planner.js	<loaded>	idsAhead	pairSeen	shirtGroup
 rollback.test.js	remind.js	<loaded>	@onsettingssummaries	remindAny	remindCan	remindCareOn	remindHidden	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>@document.addEventListenervisibilitychange	remindStart{}>go	renderRemindUI
 rollback.test.js	safety.js	<loaded>	@forconstkofpointerupclickaddEventListenerk	adoptBackupSettings	askPersist	db.then.dbDown	errList	errReport	errReporting	errSend	errSoon	pruneTagImgs	safetyStart	storeFailure
 rollback.test.js	scorecard.js	<loaded>
@@ -16127,7 +16128,7 @@ safety.test.js	add-sheet.js	<loaded>	addManual	addManualTap	get	npsCard	npsClose
 safety.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	cardPics	get	renderAdd	wbNote
 safety.test.js	analysis.js	<loaded>
 safety.test.js	app.js	<loaded>	@.catch	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addEventListener.once	afterDom	afterScripts	aiLabel	announce	ask	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbDrop	dbGone	dbLive	dbMark	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	generateSwatch	get	keepFocus	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	set	setSel	setView	shrink	sockTag	texSwatches	tx	txFail	txs	window.fetch
-safety.test.js	asm-cm-job.js	<loaded>	asmCmRoute
+safety.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmWtWants
 safety.test.js	asm-cm-page.js	<loaded>
 safety.test.js	asm-color.js	<loaded>	asmCmBtnCol	asmCmKind	asmCmPref	asmPileKind
 safety.test.js	asm-gl.js	<loaded>
@@ -18962,7 +18963,7 @@ staledevice.test.js	add-sheet.js	<loaded>	get
 staledevice.test.js	add.js	<loaded>
 staledevice.test.js	analysis.js	<loaded>
 staledevice.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	deadCanvas	del	fitNav	fitNavSoon	fixupRedraw	focusWatch	get	imgOf	keepFocus	metaGet	metaPut	put	putRaw	set	setSel	setView	shrink	stillCur	texSwatches	tx	txFail	txs	window.fetch
-staledevice.test.js	asm-cm-job.js	<loaded>	asmCmRoute
+staledevice.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmWtWants
 staledevice.test.js	asm-cm-page.js	<loaded>
 staledevice.test.js	asm-color.js	<loaded>	asmCmBtnCol	asmCmKind	asmCmPref	asmPileKind
 staledevice.test.js	asm-gl.js	<loaded>
@@ -21939,7 +21940,6 @@ wardfab.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	schedule
 wardfab.test.js	tag-request.js	<loaded>	tagStatsCard
 wardfab.test.js	tagging.js	<loaded>
 wardfab.test.js	tests/fixedplan.js	<any>
-wardfab.test.js	tests/webkit.js	<any>
 wardfab.test.js	theme.js	<loaded>	applyTheme
 wardfab.test.js	toast.js	<loaded>	toast	toastDrop	undoFab	undoHere	undoOff
 wardfab.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
