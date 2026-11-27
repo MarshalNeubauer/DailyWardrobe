@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	413cb7c77558a94d1049
+# tested	880499a54e08b38a6a18
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	settings-category	swVersionOf
 a11y.test.js	account.js	<loaded>	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI	settings-summary
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -3004,7 +3004,6 @@ backgesture-item.test.js	tests/backgesture-parts.js	<any>
 backgesture-item.test.js	tests/fixedplan.js	<any>
 backgesture-item.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-item.test.js	tests/fixtures/suit-mink.jpg	<loaded>
-backgesture-item.test.js	tests/webkit.js	<any>
 backgesture-item.test.js	theme.js	<loaded>	applyTheme
 backgesture-item.test.js	toast.js	<loaded>	toast	undoHere
 backgesture-item.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -3107,7 +3106,6 @@ backgesture-over.test.js	tests/backgesture-parts.js	<any>
 backgesture-over.test.js	tests/fixedplan.js	<any>
 backgesture-over.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-over.test.js	tests/fixtures/suit-mink.jpg	<loaded>
-backgesture-over.test.js	tests/webkit.js	<any>
 backgesture-over.test.js	theme.js	<loaded>	applyTheme
 backgesture-over.test.js	toast.js	<loaded>	toastDrop	undoOff
 backgesture-over.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -4640,7 +4638,7 @@ claudepattern.test.js	asm-watch.js	<loaded>
 claudepattern.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm
 claudepattern.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	histDrop	histPush	inviteInUrl
 claudepattern.test.js	backupfile.js	<loaded>
-claudepattern.test.js	bus.js	<loaded>	ask	emit	need	needFn	on	register	runHooks	serve	served	slotsOf
+claudepattern.test.js	bus.js	<loaded>	ask	emit	need	needFn	on	register	runHooks	runHooksSeq	serve	served	slotsOf
 claudepattern.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI	settings-summary	today-parts
 claudepattern.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careState	careWornLine	item-sheet-parts	laundryDays	renderCareUI	settings-draw	today-parts	wardrobe-tile
 claudepattern.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
@@ -4667,7 +4665,7 @@ claudepattern.test.js	look.js	<loaded>	add-card-sections	card-saved	lookSave	ren
 claudepattern.test.js	mannequin.js	<loaded>	@{}
 claudepattern.test.js	measure.js	<loaded>	MULTI_PATS	aiFor	aiSignals	applyMeasured	applyWb	calibLab	clamp01	closeRead	colRef	colourVerdicts	makeSmall	measConf	measEdgeCut	measHint	measKL	measSplit	measureCard	measureCloth	measureParts	multiCol	nearestCols	paperKey	paperNow	paperOf	paperSteps	plainCloth	sharpness	urlCanvas	verdictMode	wbGains	wbRead	wbSolidOk	wbSolidStats
 claudepattern.test.js	merge.js	<loaded>	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
-claudepattern.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
+claudepattern.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	remakeAfterPull	upgradeCloseups	upgradePhotos
 claudepattern.test.js	missed.js	<loaded>
 claudepattern.test.js	month.js	<loaded>	dayOnly	homeDay	nextWorkday
 claudepattern.test.js	mq/shirt-open.js	<loaded>
@@ -5485,7 +5483,7 @@ colpick.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{cons
 colpick.test.js	asm-look.js	<loaded>
 colpick.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
 colpick.test.js	asm-pocket.js	<loaded>
-colpick.test.js	asm-today.js	<loaded>	start-jobs
+colpick.test.js	asm-today.js	<loaded>	settings-rows	start-jobs
 colpick.test.js	asm-watch.js	<loaded>
 colpick.test.js	assemble.js	<loaded>	@
 colpick.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
@@ -5504,7 +5502,7 @@ colpick.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	camoTileUrl	drawShoePa
 colpick.test.js	dress.js	<loaded>	add-card-sections	migrateVests	start-checks
 colpick.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favMark	item-sheet-parts	today-parts
 colpick.test.js	fields.js	<loaded>	fldRow	matRow	notesRow	optLab
-colpick.test.js	history.js	<loaded>	checkPlanRules	dropLearn	start-checks	whenPulled
+colpick.test.js	history.js	<loaded>	checkPlanRules	dropLearn	settings-rows	start-checks	whenPulled
 colpick.test.js	index.html	<loaded>
 colpick.test.js	item-photo.js	<loaded>	paperHint	paperLine	paperRetake	photoTools	ptIcon	setPhEdit	smallPhotos
 colpick.test.js	item-view.js	<loaded>	@serveitemopen	@{constb$ivbody}	closeItem	itemShown	page-shown	renderItem	wardList
@@ -5530,7 +5528,7 @@ colpick.test.js	own-lists.js	<loaded>	addCustomColor	addCustomPattern	cleanLookA
 colpick.test.js	pack.js	<loaded>	packShow	page-shown
 colpick.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	settable
 colpick.test.js	photo-keys.js	<loaded>	@serverenders	fnv64	jsq	loadRenders	srcOk	workerBase
-colpick.test.js	photos.js	<loaded>	asmLive	fetchItemPic	fixItemBackdrops	itemDesc	itemKey	itemPic	picCol	wardPic
+colpick.test.js	photos.js	<loaded>	asmLive	fetchItemPic	fixItemBackdrops	itemDesc	itemKey	itemPic	picCol	settings-rows	wardPic
 colpick.test.js	pickscore.js	<loaded>
 colpick.test.js	planner.js	<loaded>	favItemSet	favRead	isFavItem
 colpick.test.js	remind.js	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindStart{}	remindStart{}>go
@@ -5546,7 +5544,7 @@ colpick.test.js	stats.js	<loaded>	@afterScripts	page-shown	statsPlan	statsPlanne
 colpick.test.js	styles.css	#add #queue .card	#add #queue .card>.btns:last-of-type	#add #queue .card>label select,#item-view .card>label select,#nps-q .card>label select	#add #queue .card>label select,#item-view .card>label select,#nps-q .card>label select,.colbtn,:is(#item-view,#add) .wfld,.morein>label select	#add #queue .card>label,#item-view .card>label,#nps-q .card>label	#add #queue .ckfoot .btns .pri	#add #queue .qcard	#add #queue .qcard.ckcard	#add #queue .qcard>.qx	#add .addfor	#add .addlong	#add .addlong .aic	#add .addmore	#add .addpick	#add .addpick .btn	#add .addpick .btn small	#add .addpick .btn span	#add .drop-hint	#add .nps-bar	#add .nps-x	#add .paste-box	#add .paste-box .btn	#add .paste-box input	#busy	#busy.on	#col-backdrop	#col-backdrop.on	#col-sheet	#col-sheet .cnown.cnslim	#col-sheet .cpask.cpaskhint	#col-sheet .cpaskhint .cpasktx b,#col-sheet .cpaskhint .cpasktx small	#col-sheet .cpcmp figure	#col-sheet .cpnewl	#col-sheet .cpownh	#col-sheet.on	#col-sheet.on,#rd-sheet.on	#item-backdrop	#item-backdrop.on,#item-backdrop.closing	#item-view	#item-view .card.ivsec	#item-view .cropwrap .btns .pri,#add #queue .card .btns .pri,#add .nps-bar .pri	#item-view .ivct .ivrd	#item-view .ivct .wbst	#item-view .ivct .wbstcard	#item-view .ivct .wbsteps	#item-view .phtools	#item-view .phtools .ptbtn	#item-view .ptbtn span	#item-view .ptbtn svg	#item-view .ptmore	#item-view .ptmore .ptrm	#item-view .ptmore+.card.ivct	#item-view.on,#item-view.closing	#modal-backdrop	#modal-backdrop,#settings-modal	#multi-status	#multi-status:empty	#nps-backdrop,#shop-backdrop	#nps-sheet	#nps-sheet .nps-head .aic	#nps-sheet .nps-ht h2	#nps-sheet .nps-ht small	#nps-sheet,#shop-sheet	#paste-status:empty	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#toast	#toast,body.iv-on #toast	#toast.on	#toast:not(.on)	#today	#undo-fab	#ward-add	#ward-add svg	#wardrobe	#wardrobe .chip	#wardrobe .chip.on	#wardrobe .chip::after	#wardrobe .chips	#wardrobe .gi	#wardrobe .gi img.ph,#wardrobe .gi .giopen .thumb	#wardrobe .grid	#wardrobe .wclear	#wardrobe .wsearch input	#wardrobe .wsort	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	#wardrobe:not([hidden])~#ward-add	*	.accchips	.acclab	.accrow	.addlong .chev	.addlong-t	.addlong-t b	.addlong-t small	.addpick	.addpick .btn	.addpick .btn small	.addrow	.addrow .chev	.addrow small	.addrow span:first-child	.aic	.btn	.btns	.cap	.card label	.chip	.chip.on	.chipbtn	.chips	.ck-good	.ck-opt,.ck-todo	.ck-warn	.ckadds	.ckb	.ckb .wbst,.ckb .wbstcard	.ckb .wbsteps	.ckb>label	.ckb>label select,.ckb>label>input[type=text]	.ckcheap	.ckchev	.ckchip	.ckcn	.ckfoot	.ckfoot .btns	.ckhd	.ckhd b	.ckhd small	.ckhelp	.ckintro .pair	.ckleft	.ckm	.ckm b	.ckm svg	.ckprog	.ckreadadd .rdcost	.cks	.cks.open>.ckb	.cks.open>.ckh .ckchev	.ckt	.ckt b	.ckt small	.cktrack	.cktrack i	.cmp-cu	.cmp-dw	.cmpbar	.cmpbar i	.cmpl	.cmpl.br	.cmpl.tl	.cmpl.tr	.cmplab	.cmplv canvas	.cmpmb	.cmpmt	.cmpop	.cmpsp	.cmptools	.cmpv	.cmpv.cmpnow .cmplv	.cmpw	.cmpwait	.cmpzm	.colbtn	.colchev	.colchip	.colchip.none,.cpsw.none,.cpbig.none	.colnm	.cpaid	.cpask	.cpask .cpai	.cpask.done	.cpaskbtn	.cpaskbtn.ghost	.cpaskbtn:disabled	.cpaskbtns	.cpaskbtns .cpaskbtn,.cnbtns .cpaskbtn	.cpasktx	.cpasktx b	.cpasktx small	.cpbar	.cpbar button	.cpbig	.cpcmp	.cpcmp figcaption	.cpcmp figure	.cpd	.cpdraw,.cpdraw svg	.cpfig .cpdraw	.cpfig .ph.thumb	.cpgrab	.cpgrid	.cph	.cphelp	.cpnewt .cpnm	.cpnewt .cpsw	.cpnewtx	.cpnm	.cpnow	.cpothx	.cppat .cpnow	.cppatbig .cpdraw	.cppatbig .cpdraw svg	.cpph	.cpph img	.cpseg	.cpseg button	.cpseg button.on	.cpsw	.cptile	.cptile.sel	.cptop	.cpwbought input	.cpwf	.cpwf label	.cpwin	.cpwin input[type="text"]	.cpwsym	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.drop-hint	.favhint	.favic	.favsw2	.favsw2::after	.favtog	.favtog-t	.favtog>.favic	.firstrun	.firstrun h3	.fit.best,.fit.good,.cpd	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gi	.gi img.ph	.gi,.card	.gimeta	.gimeta .gtype	.gimeta b	.giopen	.grid	.hbtns	.hgear	.ivbar	.ivbar .ivdone	.ivbar .ivnav	.ivbar,.nps-bar,.su-bar,.kit-bar	.ivbody	.ivcare .btns button	.ivcare .carecount	.ivchev	.ivck .cks .ivcare	.ivck .cks .ivcare h3	.ivck .cks .phtools	.ivcl,.ivcr	.ivcols	.ivdel	.ivdel button	.ivdup	.ivdup button	.ivdup+.ivdel	.ivhead	.ivhead .pcount	.ivhead::before	.ivhero .pair	.ivhero .pair img.ph,.ivhero .pair .tagsw .ph.thumb,.ivhero .swsplit .swtex	.ivhero figcaption br,.ivhero figcaption b	.ivin	.ivpill	.ivpill.good	.ivpills	.ivrd	.ivrd .ivrdbtn	.ivrdbtn[aria-disabled=true],.rdgo[aria-disabled=true]	.ivrot .rotbtn	.ivsec .btns	.ivsec .shelp	.ivsec h3	.ivsum	.ivsumph	.ivsumt	.ivt	.ivt .gtype	.ivt h2	.ivtags .shaderow	.kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.morein	.morein>label	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.nps-bar	.nps-body	.nps-grab	.nps-grab,.shop-grab,.kit-grab	.nps-head	.nps-ht	.ordrow	.ordrow .rotbtn	.pair	.pair .tagsw .ph.thumb	.pair .tagsw .ph.thumb svg	.pair figcaption	.pair figcaption b	.pair figure	.pair img.ph,.rv .pair img.ph	.paste-box	.paste-box .btn	.paste-box input	.patchip svg,.cppat svg	.patchip,.cppat	.phead	.phead .pback	.phead .pcount	.phead h2	.phtools	.phtools button,.phtools .btn	.pick-head	.pick-head b	.pick-x	.pri	.psub	.rdcost	.rv .thumb	.rv img.ph	.shaderow	.shaderow .chipbtn	.shctl	.shctl .shbtn	.shctl .shval	.shelp	.shlab	.slabel	.slide	.spin	.stage	.stage .empty	.stage .firstrun	.swsplit	.swsplit .swtex	.swsplit:has(.swtex)::after	.thumb	.thumb svg	.vfile	.vh	.wbpic i	.wbpic::after	.wbpic::before	.wbretake	.wbretake::after	.wbst	.wbst .ic	.wbst .tx	.wbst .tx small	.wbst .wbretake	.wbst.no .ic	.wbstcard .arr	.wbstcard .cam	.wbstcard .eb	.wbstcard .hd	.wbstcard .li	.wbstcard .more	.wbstcard .n	.wbstcard .n b	.wbstcard .ol	.wbstcard .tap	.wbstcard .wbpic.nobox::before,.wbstcard .wbpic.noring i	.wbsteps	.wfind	.wpgrp,.lwfav,.favpick,.favmark,.favtog,.favchip,.st-fav	.wsearch	.wsicon	.wslide	.wxc.wxlk	.wxl	::placeholder	:focus-visible	:is(#item-view,#add) .ckadds .btn	:is(#item-view,#add) .ckh	:is(#item-view,#add) .cklr	:is(#item-view,#add) .cklr[aria-pressed=true]	:is(#item-view,#add) .cmpgo	:is(#item-view,#add) .cmplv	:is(#item-view,#add) .cmpzm button	:is(#item-view,#add) .cmpzm button+button	:is(#item-view,#add) .wbst.cmpwb	:is(#item-view,#add) .wbstcard	:is(#item-view,#add) .wbstcard .wbpic	:is(#item-view,#add) .wfld	:is(#item-view,#add) .wnotes textarea	:is(#item-view,#add) label.wnotes	:is(#item-view,#add,body) .accrow .accadd	:is(#item-view,.wbsteps,#cu-sheet) .wbpic	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(input:not([type=range],[type=color],[type=checkbox],[type=radio],[type=file],[type=hidden],[type=button],[type=submit]),select,textarea)	:root	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text]):is(select)	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text],input[type=url],input[type=date],input[type=number])	<loaded>	[hidden]	body	body.busy-on #toast	body.iv-on #toast,body.iv-on #busy	body.iv-on.busy-on #toast	body.nocon .conn-only,.connhide	body:not(.iv-on):has(main:not([inert]) #wardrobe:not([hidden])) #toast	button	button,.btn,select,input	button:focus-visible,select:focus-visible,input:focus-visible	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	label:has(>.vfile)	main	main[inert] #wardrobe~#undo-fab,body.iv-on #wardrobe~#undo-fab	main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add	nav	nav button	nav button.on	nav.tab-none::before	nav::before	select,input[type="text"],input[type="range"]
 colpick.test.js	sync-photos.js	<loaded>
 colpick.test.js	sync-status.js	<loaded>	@onbackupchanged	showSyncStatus
-colpick.test.js	sync.js	<loaded>	@connRestored.then	afterPull	applyMerged	clockLearn	localState	pullDone	pulledYet	scheduleSync	setSyncMark	setSyncStatus	settings-saved	syncJoinAt	syncJoinMark	syncLaterRun	syncNeedsPull	syncNetText	syncNow	syncOnce	syncPaused	syncWaiting	synced
+colpick.test.js	sync.js	<loaded>	@connRestored.then	afterPull	applyMerged	clockLearn	localState	pullDone	pulledYet	scheduleSync	setSyncMark	setSyncStatus	settings-rows	settings-saved	syncJoinAt	syncJoinMark	syncLaterRun	syncNeedsPull	syncNetText	syncNow	syncOnce	syncPaused	syncWaiting	synced
 colpick.test.js	tag-request.js	<loaded>	benchEstimate	customForTag	describeEstimate	ownMatsForTag	readEstimate	sharpCloseOf	tagExtras	tagFixes	tagImgOf	visTok
 colpick.test.js	tagging.js	<loaded>	tagNotes
 colpick.test.js	tests/fixedplan.js	<any>
@@ -9769,7 +9767,6 @@ labbench.test.js	tests/fixtures/cm/suit/part-lapelL.png	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/part-lapelR.png	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<loaded>
 labbench.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<loaded>
-labbench.test.js	tests/webkit.js	<any>
 lookbeta.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	settings-category	swVersionOf
 lookbeta.test.js	account.js	<loaded>	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI	settings-summary
 lookbeta.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -17655,13 +17652,13 @@ sharpclose.test.js	days.js	<loaded>
 sharpclose.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
 sharpclose.test.js	detect.js	<loaded>	@	analyzeSett	binMedians	boxBlurWH	camoLook	corrAt	detrend	foldBins	labGrid	lookOf	normAng	ownSett	periodCh	projAvg	projIdx	settBands	settFromCanvas	settToTag	stripProfiles	stripShifts	texPat	tieWeave	usableSett	variance
 sharpclose.test.js	draw.js	<loaded>	blazerFabric	blazerMarks	fabricDef	figEyes	itemThumb	swatchSVG
-sharpclose.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests	start-checks
+sharpclose.test.js	dress.js	<loaded>	dressSynced	legacyVest	migrateVests	start-checks	synced
 sharpclose.test.js	fav.js	<loaded>	@servefavward	favChip	favItemRow	favMark	item-sheet-parts	today-parts
 sharpclose.test.js	fields.js	<loaded>	fldRow	matRow	notesRow	optLab
 sharpclose.test.js	history.js	<loaded>	checkPlanRules	dropLearn	settings-rows	start-checks	whenPulled
 sharpclose.test.js	index.html	<loaded>
 sharpclose.test.js	item-photo.js	<loaded>	paperHint	paperLine	paperRetake	photoTools	ptIcon	replaceTexture	setPhEdit	setPic	setTexture	smallPhotos	undoPhoto
-sharpclose.test.js	item-view.js	<loaded>	@serveitemopen	@{constb$ivbody}	itemShown	itemSynced	page-shown	renderItem	wardList
+sharpclose.test.js	item-view.js	<loaded>	@serveitemopen	@{constb$ivbody}	itemShown	itemSynced	page-shown	renderItem	synced	wardList
 sharpclose.test.js	itemsheet.js	<loaded>	@{constel$wardrobe}	E	itemBody	ivCareSum	ivDetailSum	ivSummary	page-shown	patSummary	renderWardrobe
 sharpclose.test.js	kit.js	<loaded>	@servekitquiet	homeAbout	homeLabel	item-sheet-parts	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitSends	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit	start-checks	start-safety	sync-send	today-parts	wardrobe-tile
 sharpclose.test.js	locale.js	<loaded>	appLocale
@@ -17712,7 +17709,7 @@ sharpclose.test.js	today-picture.js	<loaded>	@{constel$todayinPice}	applyZoom	sw
 sharpclose.test.js	today-plan.js	<loaded>	@serveplansnap	hasOutfit	planDirty	planFor	planMonth	planSnapUse
 sharpclose.test.js	today.js	<loaded>	renderToday	todaySay	wornPill	wxFit	wxPreload
 sharpclose.test.js	ui.js	<loaded>	closeupBtn	cuTouch	layerInert	layerUp	netErr	noMotion	uiEsc
-sharpclose.test.js	wardrobe.js	<loaded>	@whenPulled	giNote	giTag	ivOn	matMigrate	matOnItem	matRenameTo	sockLegacy	sockToeMigrate	start-safety	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardPendingSoon	wardSort	wardView
+sharpclose.test.js	wardrobe.js	<loaded>	@whenPulled	giNote	giTag	ivOn	matMigrate	matOnItem	matRenameTo	sockLegacy	sockToeMigrate	start-safety	synced	wardBack	wardBar	wardCount	wardFieldsEnd	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardPendingSoon	wardSort	wardSynced	wardView
 sharpclose.test.js	weather.js	<loaded>	loadWeather	today-parts
 sharpclose.test.js	who.js	<loaded>	acctRole	applyRole	isTester
 shellfix.test.js	about.js	<loaded>	aboutAdopt	aboutConn	aboutDbDelete	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutResetAt	aboutSay	aboutShow	aboutStart	appVersion	askDelete	checkForUpdate	delAskTap	delDeviceTap	deleteMyData	loadFeedback	renderAbout	settings-category	swVersionOf	wipeDevice
@@ -21004,7 +21001,7 @@ todayzoom.test.js	asm-watch.js	<loaded>
 todayzoom.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm
 todayzoom.test.js	back.js	<loaded>	backApp	backDrop	backLand	backOn	backOver
 todayzoom.test.js	backupfile.js	<loaded>
-todayzoom.test.js	bus.js	<loaded>	ask	emit	need	needFn	on	register	runHooks	serve	served	slotsOf
+todayzoom.test.js	bus.js	<loaded>	ask	emit	need	needFn	on	register	runHooks	runHooksSeq	serve	served	slotsOf
 todayzoom.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled	calAuto	calBanner	calLink	today-parts
 todayzoom.test.js	care.js	<loaded>	careBandSoon	careCounts	careDayState	careFrame	careNote	careNoun	careTop	today-parts
 todayzoom.test.js	checklist.js	<loaded>
@@ -21031,7 +21028,7 @@ todayzoom.test.js	look.js	<loaded>
 todayzoom.test.js	mannequin.js	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
 todayzoom.test.js	measure.js	<loaded>
 todayzoom.test.js	merge.js	<loaded>	setEntries	setHash	setKeys	setStampOf	subOk
-todayzoom.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	upgradeCloseups	upgradePhotos
+todayzoom.test.js	migrate.js	<loaded>	fixBlackBackdrops	recolourSpecSetts	remakeAfterPull	upgradeCloseups	upgradePhotos
 todayzoom.test.js	missed.js	<loaded>	firstReal	missedCard	missedOpen
 todayzoom.test.js	month.js	<loaded>	dayMarks	dayOnly	dayWord	get monthOpen	homeDay	monthDrop	monthFill	monthFillSoon	monthFold	monthGridHtml	monthLink	monthStop	monthUnfold	mvSig	nextWorkday	piecesLine	piecesParts	planOn	recentWork	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	toggleMonth	wardShort
 todayzoom.test.js	mq/shirt-open.js	<loaded>
@@ -21560,7 +21557,6 @@ wardfab.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	schedule
 wardfab.test.js	tag-request.js	<loaded>	insights-cards	tagStatsCard
 wardfab.test.js	tagging.js	<loaded>
 wardfab.test.js	tests/fixedplan.js	<any>
-wardfab.test.js	tests/webkit.js	<any>
 wardfab.test.js	theme.js	<loaded>	applyTheme
 wardfab.test.js	toast.js	<loaded>	toast	toastDrop	undoFab	undoHere	undoOff
 wardfab.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold

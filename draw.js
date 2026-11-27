@@ -5,6 +5,7 @@ import {CAMO_TR,CHECK_PATS,STRIPE_PATS,usableSett} from './detect.js';
 import {linSrgb,srgbLin8} from './srgb.js';
 import {ASM_CM_KINDS} from './asm-keys.js';
 import {ASM_PX_MM} from './assemble.js';
+import {asmSuitWeave} from './asm-look.js';
 
 /* a herringbone stripe's plain band, read from Claude's one-repeat bitmap: columns the same all the way down (all 1: a shiny satin
    line; all 0: plain ground) are not twill. Its share of the repeat, and whether it shines; null for plain herringbone. */
@@ -1238,7 +1239,7 @@ function figWay(i,z){if(!i||!served('asm-cm-route'))return {way:'drawn',k:1};
   const how=ask('asm-cm-route',i,z).how,s=usableSett(i),b=patBase(i.pattern)||'solid';
   if(how==='bands'||how==='tile'||(s&&(s.bands||s.motif||s.figure))||STRIPE_PATS.includes(b)||CHECK_PATS.includes(b))return {way:'drawn',k:1,how};
   const k=figLiftK(figLum(i)),own=/^(data|blob):/.test(String(i.texture||''));
-  if(own&&ask('asm-cu-wants',i,how))return {way:ask('asm-suit-weave',i)==='herringbone'?'hb':'block',k,how};
+  if(own&&ask('asm-cu-wants',i,how))return {way:asmSuitWeave(i)==='herringbone'?'hb':'block',k,how};
   if(k>1&&ask('asm-wt-wants',i,z)&&!ask('asm-cu-wants',i,'twill'))return {way:'wt',k,how};
   return {way:k>1?'lift':'drawn',k,how}}
 /* the drawn tile with every colour lifted k times in linear light (black and white stay) */
