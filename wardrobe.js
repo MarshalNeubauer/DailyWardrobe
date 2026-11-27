@@ -236,4 +236,4 @@ function itemFieldDone(el){itemFieldNow(el.dataset.id,el.dataset.f,el.value)}
 function matItemPick(el){setItemField(el.dataset.id,'material',matPicked(el))}
 acts({wardSearchType,wardSearchKey,wardClearTap,wardSortPick,wardOpenTap,wardAllTap,itemFieldType,itemFieldDone,matItemPick});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('item-field',setItemField);serve('ward-view',wardView);serve('ward-pending-restore',wardPendingRestore);serve('ward-synced',m=>{if(m&&(m.items||[]).some(matRenameTo))matMigrate();if(m&&(m.items||[]).some(sockLegacy))sockToeMigrate()});
+serve('item-field',setItemField);serve('ward-view',wardView);serve('ward-pending-restore',()=>whenPulled(wardPendingRestore));serve('ward-synced',m=>{if(m&&(m.items||[]).some(matRenameTo))matMigrate();if(m&&(m.items||[]).some(sockLegacy))sockToeMigrate()});

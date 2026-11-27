@@ -14,7 +14,6 @@ import {picker} from './history.js';
 import {show} from './nav.js';
 import {toast} from './toast.js';
 import {acts} from './act.js';
-import {SYNC_BATCH_MAX,SYNC_SEND_MAX,phBatch,phIn,phOut} from './sync-photos.js';
 let restoring=false,syncing=false,syncTimer=null,syncAgain=null,syncRun=null,syncDue=0;
 /* a roll-back waiting for its upload (2026-11-15, the audit: Safari killed 200 ms after "Roll back" left the rolled-back wardrobe on the
    phone, and the next start's sync uploaded it as an ordinary save, so the server never kept "Before the last roll-back" and 24 pieces
@@ -190,6 +189,8 @@ async function clockFix(){const t=nowMs(),lim=t+CLOCK_AHEAD,st=await localState(
    with the photos the backup lacks. A day marked worn is a few hundred bytes each way, where the whole backup (photos and all) was
    16 MB. An older worker ignores lite and since and answers as before (the whole backup, or same), and then the old way runs. ---- */
 const SYNC_LITE=!self.SYNC_OLD;   // (window.SYNC_OLD: sync the whole backup every time, as before; a test plays an older app with it)
+/* the most one upload carries (sync-photos.js phBatch) */
+const SYNC_SEND_MAX=self.SYNC_SEND_TEST||16*1024*1024,SYNC_BATCH_MAX=40;   // (window.SYNC_SEND_TEST before load: a test's smaller budget)
 let syncSendMax=SYNC_SEND_MAX;   // (per sync: the budget, halved after each 413)
 const TOO_BIG_SYNC='Not backed up: an item’s photos are too large for the server. Your changes are kept on this phone; backups try again tomorrow.';
 /* when this phone first synced with this account (sync_join: the code's last 6 characters and the time; set by syncOnce before its first
@@ -199,7 +200,7 @@ function syncJoinAt(){try{const j=JSON.parse(localStorage.getItem('sync_join')||
 function syncJoinMark(token){try{if(!syncJoinAt()&&token)localStorage.setItem('sync_join',JSON.stringify({k:token.slice(-6),at:syncMark()?1:nowMs()}))}catch{}}   // (a phone that synced with this server before this version: in the account all along)
 /* one round of the small sync, after GET ?lite=1 answered remote: true/false as syncOnce, or {again:{since, all, legacy}} */
 async function syncLite(remote,local,url,token,inline){
-  const raw=await phIn({items:remote.items||[],days:remote.days||[],tombstones:remote.tombstones||{},settings:remote.settings||null},local,url,token),got=cleanState(raw);   // (core.js cleanState: records from outside)
+  const raw=await askFor('ph-in',{items:remote.items||[],days:remote.days||[],tombstones:remote.tombstones||{},settings:remote.settings||null},local,url,token),got=cleanState(raw);   // (core.js cleanState: records from outside)
   // records the check left out are not "lacking" here (else every sync asked for everything again): kept per backup in sync_off
   const gi=new Set(got.items.map(i=>i.id)),gd=new Set(got.days.map(d=>d.date));let off={};try{off=JSON.parse(localStorage.getItem('sync_off')||'{}')||{}}catch{}
   if(off.url!==url)off={url,i:[],d:[]};
@@ -226,9 +227,9 @@ async function syncLite(remote,local,url,token,inline){
   if(!up.items.length&&!up.days.length&&!up.settings&&!Object.keys(up.tombstones).length){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
   if(syncPaused()){setSyncStatus(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.');return false}
   const have=new Set(remote.ph||[]);for(const h of inline)have.delete(h);
-  const batch=await phBatch(up,have,syncSendMax);   // (up is already cleaned: each batch is a part of it)
+  const batch=await askFor('ph-batch',up,have,syncSendMax);   // (up is already cleaned: each batch is a part of it)
   if(batch.left){const n=up.items.length;setSyncStatus(`Backing up: ${n} item${n===1?'':'s'} with photos still to send…`)}
-  const {recs,photos}=await phOut(batch.up,have),t0=Date.now();
+  const {recs,photos}=await askFor('ph-out',batch.up,have),t0=Date.now();
   const p=await fetch(url,{method:'POST',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,baseSaved:remote.saved||0,day:isoKey(new Date(nowMs())),...(restoreWanted()?{reason:'restore'}:{}),delta:recs,photos})});
   clockLearn(p,t0,Date.now());const pr=await p.json().catch(()=>({})),since=`${remote.rev||0}:${remote.saved||0}`;
   if(p.status===409)return {again:{since}};                                   // another device saved first: what it saved, then again
@@ -321,7 +322,7 @@ async function adoptBackupSettings(local,data){
   if(!$('#today').hidden)refreshToday();return true}
 /* An ES module since 2026-11-24. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals. Above the file's top-level set-up, whose connRestored.then and acts({…}) throw when app.js or act.js didn't load */
-Object.assign(globalThis,{syncPaused,syncWaiting,backedUpWords,tabBrowser,safariTab,localState,applyMerged,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,WIPED_SYNC,syncNow,scheduleSync,setRestoring,adoptBackupSettings});
+Object.assign(globalThis,{syncPaused,syncWaiting,backedUpWords,tabBrowser,safariTab,localState,applyMerged,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,WIPED_SYNC,syncNow,scheduleSync,setRestoring,adoptBackupSettings,SYNC_SEND_MAX});
 /* the socket the setup's Connection step asks for its words (bus.js; setup.js no longer names this file: the restructure S3f) */
 serve('backed-up-words',backedUpWords);
 Object.defineProperties(globalThis,{syncTimer:{get:()=>syncTimer},syncRun:{get:()=>syncRun},restoring:{get:()=>restoring,set:v=>{restoring=v}},syncing:{get:()=>syncing,set:v=>{syncing=v}}});
@@ -330,7 +331,7 @@ on('settings-saved',()=>scheduleSync());   // a backup soon after the settings w
 on('connection-saved',()=>{syncNow().catch(e=>console.warn('sync not started',e))});   // Settings' Done: a backup now
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,TESTER_SYNC_MS,backupFullMsg,get syncDue(){return syncDue},set syncDue(v){syncDue=v},syncJoinAt,syncJoinMark,get syncLater(){return syncLater},syncTap,get syncing(){return syncing},set syncing(v){syncing=v},applyMerged,backedUpWords,localState,pulledYet,scheduleSync,syncNow,syncPaused,syncRedraw,get syncRun(){return syncRun},get syncTimer(){return syncTimer}};
-export {setSyncStatus,syncNetText,syncWaiting,pauseTillTomorrow,syncPaused,backupFullMsg,backedUpWords,tabBrowser,safariTab,restoring,syncing,syncTimer,syncRun,syncDue,localState,applyMerged,syncLater,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,syncTap,WIPED_SYNC,syncNow,syncJoinAt,syncJoinMark,TESTER_SYNC_MS,scheduleSync,setRestoring,adoptBackupSettings};
+export {setSyncStatus,syncNetText,syncWaiting,pauseTillTomorrow,syncPaused,backupFullMsg,backedUpWords,tabBrowser,safariTab,restoring,syncing,syncTimer,syncRun,syncDue,localState,applyMerged,syncLater,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,syncTap,WIPED_SYNC,syncNow,syncJoinAt,syncJoinMark,TESTER_SYNC_MS,scheduleSync,setRestoring,adoptBackupSettings,SYNC_SEND_MAX};
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'&&syncDue)syncNow();   // a tester's waiting changes, as the app closes
   else if(document.visibilityState==='visible'&&nowMs()-(+localStorage.getItem('last_sync')||0)>60000)syncNow()});

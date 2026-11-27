@@ -17,7 +17,7 @@ import {toast} from './toast.js';
 import {addKeep,addKeepSoon,addRestoreState,addWatch} from './add-keep.js';
 import {refineFromCloseup,takeExtras} from './tagging.js';
 import {$,CLOSE_MAX,COLORS,PAIR_TYPES,PH_MAX,TAG_MAX,TAG_Q,TEX_MAX,TEX_MIN_PX,TYPES,hasInviteHash,inviteOver,isConnected,tagNetText,tagTypesNow,watchOpts} from './core.js';
-import {addGate,cuGot,noMotion,plainErr} from './ui.js';
+import {addGate,noMotion,plainErr} from './ui.js';
 import {npsDraw,npsId,renderAddFor} from './add-sheet.js';
 import {cardReady,saveAll,saveAllOn} from './add-save.js';
 import {busyCard,cardSafe,errCard,formCard,multiErrCard,typeCard} from './add-card.js';
@@ -225,17 +225,13 @@ async function retryTag(i){const q=queue[i];if(!q||q.busy||!q.tagImg)return;
   // drawn again however it went (a step that threw left the card as it was, Confirm off: tagging.js refineFromCloseup, 2026-11-16)
   addKeep();
   if(queue.includes(q))renderAdd()}
-/* (moved from add-card.js with its text unchanged, the restructure S6c) */
-function cardRetryTag(el){retryTag(cardIx(el))}
-function cardCuRemove(el){dropTexture(cardIx(el))}
-function cardCuFile(el,ev,f){cuGot(el,f,x=>addTexture(cardIx(el),x))}   // (a close-up chosen: ui.js closeupBtn, cuGot)
 /* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above the file's
    one top-level call that can throw (acts, when act.js did not load): the names are then still the page's */
 Object.assign(globalThis,{addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,measureGuess,errToHand,skipCard,multiMsg,multiAgain,renderAdd,addBackOnline,retryTag});
 Object.defineProperties(globalThis,{addCalm:{get:()=>addCalm}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,addNoteText,cardPics,countWord,errToHand,multiAgain,addFiles,addTexture,dropTexture,renderAdd,skipCard};
-export {cardPics,addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,addCalm,measureGuess,errToHand,skipCard,multiMsg,countWord,multiAgain,addNoteText,renderAdd,addBackOnline,retryTag,cardRetryTag,cardCuRemove,cardCuFile};
-acts({cardWb,cardSkip,cardStop,cardMultiAgain,cardByHand,saveAllTap,addPhotosPick,cardRetryTag,cardCuRemove,cardCuFile});
+export {cardPics,addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,addCalm,measureGuess,errToHand,skipCard,multiMsg,countWord,multiAgain,addNoteText,renderAdd,addBackOnline,retryTag};
+acts({cardWb,cardSkip,cardStop,cardMultiAgain,cardByHand,saveAllTap,addPhotosPick});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('add-texture',addTexture);serve('multi-msg',multiMsg);serve('add-calm',()=>addCalm);serve('measure-guess',measureGuess);serve('wb-note',wbNote);serve('skip-card',skipCard);serve('add-back-online',addBackOnline);
+serve('add-texture',addTexture);serve('retry-tag',retryTag);serve('drop-texture',dropTexture);serve('multi-msg',multiMsg);serve('add-calm',()=>addCalm);serve('measure-guess',measureGuess);serve('wb-note',wbNote);serve('skip-card',skipCard);serve('add-back-online',addBackOnline);

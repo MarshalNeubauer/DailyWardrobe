@@ -5,6 +5,8 @@
    Strings from PH_OLD (the rule before) may still be references in records saved by an older app or worker (a PNG swatch): they are
    still matched to this device's copy and taken when downloaded. worker/backup.js has the same two numbers */
 
+import {serve} from './bus.js';
+import {SYNC_SEND_MAX} from './sync.js';
 const PH_MIN=16384,PH_OLD=256,PH_RE=/^dwph:[0-9a-f]{20}$/,PH_BATCH=40;
 const isPh=s=>typeof s==='string'&&s.length>=PH_MIN&&s.startsWith('data:');
 const isPhOld=s=>typeof s==='string'&&s.length>=PH_OLD&&s.startsWith('data:');
@@ -41,12 +43,11 @@ async function phBatch(up,have,max=SYNC_SEND_MAX){
     if(pick.length&&size+add+own>max)return {up:{...up,items:pick},left:up.items.length-k};
     size+=add+own;pick.push(it);for(const h of hs)taken.add(h)}
   return {up,left:0}}
-/* (moved from sync.js with its text unchanged, the restructure S6c) */
-/* the most one upload carries (sync-photos.js phBatch) */
-const SYNC_SEND_MAX=self.SYNC_SEND_TEST||16*1024*1024,SYNC_BATCH_MAX=40;   // (window.SYNC_SEND_TEST before load: a test's smaller budget)
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it): sync.js, a classic script, calls phIn, phOut and phBatch while a sync runs; PH_MIN, isPh, phStrings and phMap are read
    by tests/backup-storage.test.js and the replay script lib-verify18.js. */
-Object.assign(globalThis,{phIn,phOut,phBatch,SYNC_SEND_MAX});
+Object.assign(globalThis,{phIn,phOut,phBatch});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,PH_MIN,isPh,phMap,phStrings};
-export {PH_MIN,isPh,phStrings,phMap,phIn,phOut,phBatch,SYNC_SEND_MAX,SYNC_BATCH_MAX};
+export {PH_MIN,isPh,phStrings,phMap,phIn,phOut,phBatch};
+/* the sockets sync.js asks (the restructure S6c: sync.js loads first and imports nothing of this file, so its 404 takes only the photos down) */
+serve('ph-in',phIn);serve('ph-batch',phBatch);serve('ph-out',phOut);

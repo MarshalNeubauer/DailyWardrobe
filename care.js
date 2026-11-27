@@ -19,7 +19,6 @@ import {cap1,put,sel} from './app.js';
 import {toast} from './toast.js';
 import {askConfirm} from './ui.js';
 import {actTaps,acts} from './act.js';
-import {statPic,wornDays} from './stats.js';
 const CARE_TYPES=['suit','blazer','pants','shirt','tie','overcoat','raincoat'];   // the types with a wear limit in Settings
 const CARE_PLURAL={suit:'Suits',blazer:'Blazers',pants:'Pants',shirt:'Shirts',tie:'Ties',overcoat:'Overcoats',raincoat:'Raincoats',socks:'Socks',
   tee:'T-shirts',polo:'Polos',henley:'Henleys',sweater:'Sweaters',sweatshirt:'Sweatshirts',hoodie:'Hoodies',qzip:'Quarter-zips',cardigan:'Cardigans',chore:'Chore jackets',blouse:'Uniform blouses'};
@@ -29,7 +28,7 @@ const careNoun=i=>i.type==='pants'?'pants':(TYPES[i.type]||'item').toLowerCase()
 const careName=i=>`${TYPES[i.type]||'Item'}: ${String(i.name||'').trim()?nameHtml(String(i.name).trim()):sentence(shortDesc(i)||careNoun(i))}`;
 /* wears since cleaning for every item: {id: count}. Kept on the plan cache, which is dropped whenever items, days or settings change */
 function careCounts(){if(cache.careW)return cache.careW;const w={},by=Object.fromEntries(items.map(i=>[i.id,i]));
-  for(const r of wornDays()){const k=isoKey(r.d);
+  for(const r of askFor('worn-days')){const k=isoKey(r.d);
     for(const id of new Set(Object.values(r.ids))){const i=id&&by[id];if(!i||(i.cleaned&&k<=i.cleaned))continue;w[id]=(w[id]||0)+1}}
   return cache.careW=w}
 /* where a piece stands: wears, its type's limit, and due (at the limit) / near (one wear short, for limits of 3 and more).
@@ -97,7 +96,7 @@ function careSum(){const s=$('#sum-laundry');if(!s)return;if(!items.length){s.te
   s.textContent=p.length?cap1(p.join(' · ')):'Nothing is due'}
 function renderCare(){const el=$('#care-in');if(!el)return;careSum();const head='';
   if(!items.length){el.innerHTML='<p class="mut empty">Your wardrobe is empty.</p>';return}
-  const L=careLists(),pic=i=>statPic(i);
+  const L=careLists(),pic=i=>askFor('stat-pic',i)??'';
   const row=(x,btns)=>`<div class="care-row" id="care-${x.id}">${pic(x)}<div class="care-main"><span class="cap care-nm">${careName(x)}</span><small class="mut">${x.away?careTag(x)+' · since '+fmtDay(x.away.since):careWornLine(x)}</small></div><div class="care-acts">${btns}</div></div>`;
   const sendBtns=x=>{const w=careWashed(x.type)?'laundry':'cleaner';return `<button type="button" class="caresend" data-act="careSendTap" data-id="${esc(x.id)}" data-why="${w}">${w==='laundry'?'In the laundry':'Send to the cleaner'}</button><button type="button" class="caredone" data-act="careDoneTap" data-id="${esc(x.id)}">${careWashed(x.type)?'Washed':'Cleaned'} today</button>`};
   const card=(id,title,sub,rows)=>`<section class="card care-card" id="${esc(id)}"><h3>${title}</h3>${sub?`<p class="shelp">${sub}</p>`:''}${rows}</section>`;

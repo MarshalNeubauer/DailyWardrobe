@@ -5,7 +5,7 @@
    between wears.
    The page's parts in other files (the setup's checklist, the sample wardrobe, What to buy's button, the favorites and cost-per-wear
    cards) are reached through bus.js (the restructure S3f): without the file nothing is asked, as the `typeof f==='function'` guards did. */
-import {emit,heard,ask} from './bus.js';   // (this file reads nothing of app.js's own ask(), the server request)
+import {emit,heard,ask,serve} from './bus.js';   // (this file reads nothing of app.js's own ask(), the server request)
 import {$,COLORS,CUSTOM_COL,SHOP_WEEKS,SLOTS,TYPES,avgText,colName,dayRecs,di,dressOut,fmtDay,isHandPick,isWorkday,itemName,itemSeason,items,keyDate,listAnd,nameHtml,nm,phSm,prettyCols,primaryCol,sentence,settings,shortDesc,titleCls,todayDate,wearsJacket,wearsTie} from './core.js';
 import {cache,hasOutfit,planMonth,planStartDay} from './today-plan.js';
 import {HARD_CAP,QWIN,beltFit,beltWait,clothesScore,darkShirt,finish,jacketGroup,pairScore,patternScore,planSim,planStart,rateOutfit,shirtGroup,shirtScore,shoeSuits,shoesWhyUnused,tieGroup} from './planner.js';
@@ -229,3 +229,4 @@ function emptySampleTap(){emit('sample-asked')}   // (kit.js loads it)
 function statsFold(el){statsToggle(el)}
 function statsDayTap(el,ev){openDay(+el.dataset.t);show('today');ev.preventDefault()}
 acts({emptyAddTap,emptySampleTap,statsFold,statsDayTap});
+serve('worn-days',wornDays);serve('stat-pic',statPic);   // (care.js, the restructure S6c: an import would leave care.js unrun without this file, where Today is then drawn with its picture)

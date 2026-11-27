@@ -2,7 +2,7 @@
    photo, the fabric close-up, the owner's own colours, patterns and materials, the corrections the owner made before), the sharp copies
    kept on this device, what the tagger learns from the corrections, and what one tagging call costs. */
 
-import {CLOSE_MAX,COLORS,CUSTOM_COL,CUSTOM_PAT,MATERIALS_BY,TAGIMG_CACHE,TAG_MAX,TAG_TYPES,TYPES,colName,hasPat,inviteOver,ownMats,patName,settings,tagTypesNow,texSig} from './core.js';
+import {CLOSE_MAX,COLORS,MATERIALS_BY,TAGIMG_CACHE,TAG_MAX,TAG_TYPES,TYPES,colName,ownMats,patName,settings,tagTypesNow,texSig} from './core.js';
 import {esc} from './photo-keys.js';
 /* the colours and patterns the owner added, when there are any (the worker adds them to what the tagger may answer) */
 const customForTag=()=>{const c=settings.custom||{};return (c.colors||[]).length||(c.patterns||[]).length?{colors:c.colors||[],patterns:c.patterns||[]}:undefined};

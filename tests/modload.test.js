@@ -49,7 +49,7 @@ module.exports=async({ok,engines,url,settle})=>{
   const used=Object.entries(N).flatMap(([g,l])=>l.map(h=>[g,h])).filter(([g,h])=>!Object.entries(imports).some(([f,ts])=>C.files[f]&&C.files[f].group===g&&ts.some(t=>C.files[t]&&C.files[t].group===h)));
   ok(Object.keys(N).length>0&&!badNeed.length&&!used.length,`the needs (${Object.entries(N).map(([g,l])=>g+' → '+l.join(', ')).join('; ')}) name other groups, and each is used by an import${badNeed.length?'; wrong: '+badNeed.join(', '):''}${used.length?'; not used: '+used.map(x=>x.join(' → ')).join(', '):''}`);
   const nGroup=Object.keys(N)[0],nNeed=nGroup&&N[nGroup][0],fileOf=g=>Object.keys(C.files).find(f=>C.files[f].group===g&&C.files[f].class==='optional');
-  const other=Object.keys(C.files).find(f=>C.files[f].class==='optional'&&C.files[f].group!==nGroup&&C.files[f].group!==nNeed&&!(N[C.files[f].group]||[]).includes(nNeed));
+  const other=Object.keys(C.files).find(f=>f!=='merge.js'&&C.files[f].class==='optional'&&C.files[f].group!==nGroup&&C.files[f].group!==nNeed&&!(N[C.files[f].group]||[]).includes(nNeed));
   const np={[fileOf(nGroup)]:[fileOf(nNeed)],[fileOf(nNeed)]:[fileOf(nGroup)],[other]:[fileOf(nNeed)]};
   const nv=violations(C,np);
   ok(nv.length===2&&nv.some(l=>l.startsWith(fileOf(nNeed)+' '))&&nv.some(l=>l.startsWith(other+' ')),
@@ -104,8 +104,10 @@ async function survey(eng,browser,{ok,url,C,page,imports}){
       if(u.pathname==='/render'&&k)return served[k]?j(served[k]):j({error:'not found'},404);
       if(u.pathname==='/me')return j({id:'owner',role:'owner',name:'Owner',caps:null,used:{}});if(u.pathname==='/sync')return j({rev:0,saved:0,data:null});return j({ok:true})});
     // each page script that runs to its end notes it (`__ran`, its last line, added here): which files a 404 took down with it
-    if(fail!==null)await ctx.route(u=>u.href.startsWith(origin)&&page.includes(u.pathname.slice(1)),async route=>{const f=new URL(route.request().url()).pathname.slice(1);
-      try{const r=await route.fetch();const body=await r.text();await route.fulfill({response:r,body:body+`\n;(globalThis.__ran||(globalThis.__ran=[])).push(${JSON.stringify(f)});\n`})}catch(e){await route.continue().catch(()=>{})}});
+    // (a fetch that fails three times is let through as it is, and that file's note is not looked for: `unmarked`)
+    if(fail!==null){ctx.unmarked=new Set();await ctx.route(u=>u.href.startsWith(origin)&&page.includes(u.pathname.slice(1)),async route=>{const f=new URL(route.request().url()).pathname.slice(1);
+      for(let k=0;k<3;k++)try{const r=await route.fetch({timeout:30000});const body=await r.text();await route.fulfill({response:r,body:body+`\n;(globalThis.__ran||(globalThis.__ran=[])).push(${JSON.stringify(f)});\n`});return}catch(e){}
+      ctx.unmarked.add(f);await route.continue().catch(()=>{})})}
     if(fail)await ctx.route(u=>u.href.startsWith(origin)&&u.pathname==='/'+fail,route=>route.fulfill({status:404,contentType:'text/plain',body:''}));
     await ctx.addInitScript(()=>{self.ASM_CM_SIZE=512});await ctx.clock.setFixedTime(DAY);return ctx};
   // the seeded wardrobe, the masters' keys and the server address, once: every case starts from this stored state
@@ -133,7 +135,10 @@ async function survey(eng,browser,{ok,url,C,page,imports}){
   const ranBy={};
   const one=async f=>{const ctx=await ctxFor(state,f||'');try{const p=await ctx.newPage();await p.goto(url,{waitUntil:'load'});const t0=Date.now();let r;
       let drawn=0;for(;;){r=await look(p);if(r.today&&!drawn)drawn=Date.now();if(r.card||(r.today&&r.fig)||(drawn&&Date.now()-drawn>8000)||Date.now()-t0>20000)break;await wait(250)}
-      ranBy[f||'(none)']=r.ran;return r.card?'card':!r.today?'no-today':r.fig?'picture':'no-picture'}
+      // (the notes read once they stop coming: a second without a new one)
+      for(let i=0,was=-1,still=0;i<40&&still<4;i++){const n=await p.evaluate(()=>(globalThis.__ran||[]).length);still=n===was?still+1:0;was=n;await wait(250)}
+      r.ran=await p.evaluate(()=>(globalThis.__ran||[]).slice());
+      ranBy[f||'(none)']=r.ran.concat([...(ctx.unmarked||[])]);return r.card?'card':!r.today?'no-today':r.fig?'picture':'no-picture'}
     catch(e){return 'error: '+e.message.split('\n')[0].slice(0,80)}finally{await ctx.close().catch(()=>{})}};
   const got={},ms={},queue=['(none)',...page];
   await Promise.all([0,1,2,3].map(async()=>{for(let f;(f=queue.shift())!==undefined;){const t=Date.now();got[f]=await one(f==='(none)'?null:f);ms[f]=Date.now()-t}}));

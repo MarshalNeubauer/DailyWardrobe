@@ -121,7 +121,7 @@ declare var STRAP_BANDS: typeof import('../core.js').STRAP_BANDS;
 declare var STRIPE_PATS: typeof import('../detect.js').STRIPE_PATS;
 declare var SW_GRAB: typeof import('../colpick.js').SW_GRAB;
 declare var SYNC_OLD: any;
-declare var SYNC_SEND_MAX: typeof import('../sync-photos.js').SYNC_SEND_MAX;
+declare var SYNC_SEND_MAX: typeof import('../sync.js').SYNC_SEND_MAX;
 declare var SYNC_SEND_TEST: any;
 declare var TAGIMG_CACHE: typeof import('../core.js').TAGIMG_CACHE;
 declare var TAG_MAX: typeof import('../core.js').TAG_MAX;

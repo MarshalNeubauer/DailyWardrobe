@@ -114,8 +114,12 @@ const app=async({ok,chromium,url,ROOT,settle})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.location={name:'Kuwait City, KW',lat:29.37,lon:47.98};HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-20T09:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,22);HOOK.show('today')});
-    // spies on the app's own functions: keeping an event goes through them
-    await p.evaluate(()=>{window.__calls=[];for(const f of ['setOccasion','dayOffAdd','packSetTrip']){const o=window[f];window[f]=function(...a){__calls.push([f,...a]);return o.apply(this,a)}}});
+    // spies on the app's own functions: keeping an event goes through them (calendar.js asks daysoff.js and pack.js through bus.js
+    // sockets since the restructure S6c, so the spy serves them in their place, calling the real ones; setOccasion, history.js's, is
+    // imported: what it set is read from the day records below)
+    await p.evaluate(async()=>{window.__calls=[];window.__real={dayOffAdd:HOOK.dayOffAdd,packSetTrip:HOOK.packSetTrip};const s=document.createElement('script');s.type='module';
+      s.textContent=`import {serve} from './bus.js';for(const [k,f] of [['day-off-add','dayOffAdd'],['pack-set-trip','packSetTrip']])serve(k,(...a)=>{__calls.push([f,...a]);return __real[f](...a)});window.__spied=1;`;
+      document.head.appendChild(s);for(let i=0;i<100&&!window.__spied;i++)await new Promise(r=>setTimeout(r,20))});
     await p.evaluate(()=>HOOK.openSettings('calendar'));await settle(p,300);
     const s0=await p.evaluate(()=>({field:!!HOOK.$('#cal-link'),btn:!!HOOK.$('#cal-connect')&&!HOOK.$('#cal-connect').disabled,sum:HOOK.$('#sum-calendar').textContent,guides:[...document.querySelectorAll('.cal-guides button')].map(b=>b.textContent)}));
     ok(s0.field&&s0.btn&&s0.sum==='Not connected'&&s0.guides.join()==='iPhone (iCloud),Google,Outlook',`Settings → Calendar: a link field, Connect, and how to get the link for iPhone, Google and Outlook (${JSON.stringify(s0)})`);
@@ -152,8 +156,8 @@ const app=async({ok,chromium,url,ROOT,settle})=>{
     await keep('Funeral of a family friend');await keep('Annual gala, black tie');await keep("Cousin's wedding");await keep('Vacation');await keep('Retail conference');
     const k=await p.evaluate(()=>({calls:__calls.map(c=>c.slice(0,3).join(' ')),f:HOOK.dayRecs['2026-11-24']&&HOOK.dayRecs['2026-11-24'].occasion,g:HOOK.dayRecs['2026-11-26']&&HOOK.dayRecs['2026-11-26'].formal,w:HOOK.dayRecs['2026-12-2']&&HOOK.dayRecs['2026-12-2'].occasion,
       off:(HOOK.settings.daysOff||[]).filter(x=>x.d>='2026-12-13'&&x.d<='2026-12-17').map(x=>x.d+' '+x.n),trip:HOOK.packTrip(),seen:Object.values(HOOK.settings.calSeen||{}).filter(v=>v==='k').length}));
-    ok(k.f==='funeral'&&k.g===true&&k.w==='wedding'&&k.calls.includes('setOccasion funeral 2026-11-24')&&k.calls.includes('setOccasion formal 2026-11-26')&&k.calls.includes('setOccasion wedding 2026-12-2'),
-      `✓ sets the funeral, the formal day and the wedding through setOccasion, as a day set by hand (${k.calls.join(', ')})`);
+    ok(k.f==='funeral'&&k.g===true&&k.w==='wedding',
+      `✓ sets the funeral, the formal day and the wedding on their days, as a day set by hand (setOccasion: ${JSON.stringify([k.f,k.g,k.w])})`);
     ok(k.off.length===5&&k.off[0]==='2026-12-13 Vacation'&&k.calls.includes('dayOffAdd 2026-12-13 2026-12-17'),`✓ on the vacation adds its days off through dayOffAdd (${k.off.join(', ')})`);
     ok(k.trip.a==='2026-12-07'&&k.trip.b==='2026-12-09'&&k.calls.includes('packSetTrip 2026-12-07 2026-12-09'),`✓ on the conference in Dubai sets the Packing list's trip (${JSON.stringify(k.trip)})`);
     ok(k.seen===5,'each kept event is remembered by its id');

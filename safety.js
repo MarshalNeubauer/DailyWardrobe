@@ -6,12 +6,10 @@
 /* ---- storage failures ---- */
 // is this error (or IndexedDB error event) a failure of the device's storage: marked by txs/atomic in app.js, a full disk, or a failed request
 import {askFor,served,serve} from './bus.js';
-import {ask,cardAt,db,fill,metaPut,queue,storeErr,storeFailText,storeFailure} from './app.js';
+import {db,queue,storeErr,storeFailText,storeFailure} from './app.js';
 import {esc} from './photo-keys.js';
-import {$,TAGIMG_CACHE,applyCustom,askPersist,inviteOver,isConnected,items,oneStop,setWardrobe,settings,settingsOpen,takeSettings} from './core.js';
-import {planDirty} from './today-plan.js';
+import {TAGIMG_CACHE,askPersist,inviteOver,isConnected,items,oneStop,settingsOpen} from './core.js';
 import {toast} from './toast.js';
-import {whenPulled} from './history.js';
 import {plainErr} from './ui.js';
 import {acts} from './act.js';
 let storeToldAt=0;
@@ -108,7 +106,7 @@ async function pruneTagImgs(){
     return n}
   catch(e){console.warn('kept tagging copies not checked',e);return 0}}
 /* once the wardrobe is loaded (from the start-up chain in app.js) */
-function safetyStart(){pruneTagImgs();errSoon(8000);if(items.length)askPersist();if(items.length)setTimeout(()=>askFor('safari-remind'),5000);whenPulled(()=>askFor('ward-pending-restore'));askFor('add-restore')}   // a name typed just before a kill (wardrobe.js); Add cards not saved before the app was closed (add-keep.js)
+function safetyStart(){pruneTagImgs();errSoon(8000);if(items.length)askPersist();if(items.length)setTimeout(()=>askFor('safari-remind'),5000);askFor('ward-pending-restore');askFor('add-restore')}   // a name typed just before a kill (wardrobe.js); Add cards not saved before the app was closed (add-keep.js)
 
 /* ---- tagging that failed: why, on the card, with Try again ---- */
 let tagWhy='',tagNetLast=false;

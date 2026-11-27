@@ -281,14 +281,14 @@ const BRIDGE={
   'itemsheet.js':['clearStripes','itemBody','patSummary','redetect','renderWardrobe','sete'],
   // stats (shopButton), start (closeShop), today-gestures (shopOpen); the rest: tests, which assign shop, shopBusy, shopWorker and shopShown (getters and setters)
   'shop.js':['closeShop','shopButton','shopOpen'],
-  // sync.js calls phIn, phOut and phBatch; PH_MIN, isPh, phMap and phStrings are read by tests only (backup-storage, lib-verify18)
-  'sync-photos.js':['SYNC_SEND_MAX','phBatch','phIn','phOut'],
   // the backup for every screen that saves (scheduleSync, syncNow) and the tests; restoring (snapshots.js), syncing and syncDue (tests)
   // have setters, syncTimer, syncRun and syncLater are getters
-  'sync.js':['WIPED_SYNC','adoptBackupSettings','afterPull','applyMerged','backedUpWords','localState','pulledYet','restoring','safariTab','scheduleSync','setRestoring','syncLaterRun','syncNeedsPull','syncNow','syncPaused','syncRedraw','syncRun','syncTimer','syncWaiting','syncing','tabBrowser'],
+  'sync.js':['SYNC_SEND_MAX','WIPED_SYNC','adoptBackupSettings','afterPull','applyMerged','backedUpWords','localState','pulledYet','restoring','safariTab','scheduleSync','setRestoring','syncLaterRun','syncNeedsPull','syncNow','syncPaused','syncRedraw','syncRun','syncTimer','syncWaiting','syncing','tabBrowser'],
   // backupfile.js draws the Backup line after a restore (showSyncStatus); the addcards and backup-storage tests too. Since the
   // restructure S3b the backup's state is sync.js's and an ended invitation who.js's
   'sync-status.js':['showSyncStatus'],
+  // sync.js calls phIn, phOut and phBatch; PH_MIN, isPh, phMap and phStrings are read by tests only (backup-storage, lib-verify18)
+  'sync-photos.js':['phBatch','phIn','phOut'],
   // settings.js lists the daily backups when Backup opens (loadSnapshots); the tests call the four (actsindex, backup-storage, clock,
   // rollback, sample)
   'snapshots.js':['loadSnapshots'],
@@ -321,13 +321,17 @@ const GROWN={
   // colNameTaken), tag-request.js (fieldLabel, valName, aiFields), add-ids.js (the readings in flight, closeTagImg, tagFailNote),
   // measure.js (makeSmall, cropSource, paperSteps), pattern-read.js (measureAndApply), checklist.js (matchShadeQ/E), planner.js
   // (shoesWhyUnused), sync-photos.js (the batch sizes); a handler beside what it calls (add.js, add-card.js, colpick.js)
+  // restructure S6c (2026-11-27): helpers moved down where an import across groups isn't allowed (STEP6 rule 3), their text unchanged:
+  // core.js (settingsOpen, inviteOver, isConnected, the Home Screen checks, tourSeen, oneStop, tagNetText, TAGIMG_CACHE, PAIR_TYPES,
+  // colNameTaken), tag-request.js (fieldLabel, valName, aiFields), add-ids.js (the readings in flight, closeTagImg, tagFailNote),
+  // measure.js (makeSmall, cropSource, paperSteps), pattern-read.js (measureAndApply), checklist.js (matchShadeQ/E), planner.js
+  // (shoesWhyUnused), sync-photos.js (the batch sizes); a handler beside what it calls (add.js, add-card.js, colpick.js)
   'tag-request.js':['aiFields','fieldLabel','valName'],
   'add-save.js':['recordTagResult'],
   'pattern-read.js':['measureAndApply'],
   'add-ids.js':['closeTagImg','readAbort','readBegin','readEnd','tagFailNote'],
   'checklist.js':['matchShadeE','matchShadeQ'],
   'add.js':['retryTag'],
-  'sync-photos.js':['SYNC_SEND_MAX'],
   'planner.js':['shoesWhyUnused'],
   // restructure S6a (2026-11-27): the shared helpers moved down (STEP6 rule 1), their text unchanged, into files every reader may import:
   // core.js (pure helpers: fmtDay, listAnd, SHOP_WEEKS, keyDate, the tag-request sizes and texSig, PH_MAX and phSm, paperCloth,

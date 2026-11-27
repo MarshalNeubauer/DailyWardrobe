@@ -5,8 +5,8 @@
    pattern-read.js (pattern readings, camouflage). */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit,askFor} from './bus.js';
-import {COLORS,COLS_BY,FABRIC,PATS_BY,TAG_Q,TEXTURE_TYPES,TYPES,accentsFor,accentsOf,colName,colsFor,dE00,isConnected,matsFor,normColFor,normPat,oneStop,ownMatName,patBase,patName} from './core.js';
-import {BLUR_SHARP,FAR_DE,MEAS_GAP,aiSignals,applyWb,closeRead,colRef,colourVerdicts,measHint,measKL,measureCard,undoMeasured} from './measure.js';
+import {COLORS,COLS_BY,FABRIC,PATS_BY,TEXTURE_TYPES,TYPES,accentsFor,accentsOf,colName,colsFor,dE00,isConnected,matsFor,normColFor,normPat,oneStop,ownMatName,patBase,patName} from './core.js';
+import {BLUR_SHARP,FAR_DE,MEAS_GAP,aiSignals,colRef,colourVerdicts,measHint,measKL,measureCard,undoMeasured} from './measure.js';
 import {ask,cardAt,cardIx,cardOf,generateSwatch,queue} from './app.js';
 import {esc} from './photo-keys.js';
 import {aiFields,fieldLabel,valName} from './tag-request.js';
@@ -109,6 +109,8 @@ function tagNotes(q){if(q.manual)return '';const out=[];if(q.meas)q.measV=colour
     if(q.newColor||far)out.push(`<div class="offer"><small>${q.newColor?`None of your colors quite fit: Claude calls it <b>${esc(q.newColor.name)}</b>${q.newColor.why?`, ${esc(q.newColor.why)}`:''}.`:'The measured color is far from every color for this item.'}</small><button type="button" class="chipbtn" data-act="tagNewCol" ${cardAt(q)}>Add as a new color</button></div>`)}
   if(!L&&PATS_BY[q.type]){if(q.newPattern)out.push(`<div class="offer"><small>No listed pattern fits: Claude calls it <b>${esc(q.newPattern.name)}</b>${q.newPattern.why?`: ${esc(q.newPattern.why)}`:''}.</small><button type="button" class="chipbtn" data-act="tagNewPat" ${cardAt(q)}>Add this pattern</button></div>`)}
   return out.join('')}
+function tagNewCol(el){askFor('col-form',cardIx(el))}   // (colpick.js, later: a socket)
+function tagNewPat(el){askFor('pat-form',cardIx(el))}
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it), above acts({…}), the file's one top-level
    call: add.js, add-card.js, measure.js, pattern-read.js, colpick.js and safety.js, classic scripts, and the modules add-save.js and
    tag-request.js (fieldLabel, valName), which read them as globals (they come before this file in the list), use these; confTxt is read by tests/records.test.js only */
@@ -123,4 +125,4 @@ function tagRefineAgain(el){refineAgain(cardIx(el))}
 function tagRefineUndo(el){undoRefine(cardIx(el))}
 function tagPatternAgain(el){patternAgain(cardIx(el))}
 function tagMeasUndo(el){undoMeasured(cardIx(el),el.dataset.f)}
-acts({tagRefineAgain,tagRefineUndo,tagPatternAgain,tagMeasUndo});
+acts({tagRefineAgain,tagRefineUndo,tagPatternAgain,tagMeasUndo,tagNewCol,tagNewPat});

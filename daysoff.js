@@ -161,7 +161,7 @@ Object.assign(globalThis,{COUNTRY_CODES,countryName,setHolidayCountry,refreshHol
 on('settings-draw',()=>{renderFormalUI();renderDaysOffUI()});
 on('settings-summaries',S=>{S.country=countryName});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,addDayOff,builtinHolidays,holYears,get holidayMsg(){return holidayMsg},nagerKeep,toggleHoliday,refreshHolidays,setHolidayCountry};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,addDayOff,builtinHolidays,holYears,get holidayMsg(){return holidayMsg},nagerKeep,toggleHoliday,refreshHolidays,setHolidayCountry,dayOffAdd};
 export {COUNTRY_CODES,countryName,holidayMsg,nagerKeep,builtinHolidays,holYears,setHolidayCountry,refreshHolidays,toggleHoliday,addDayOff,dayOffAdd,renderDaysOffUI,renderFormalUI};
 acts({occClear,countryPick,dayOffAddTap,occAddTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */

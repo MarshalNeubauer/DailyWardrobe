@@ -4,10 +4,10 @@
    type allows as a chip with its name, grouped by family and light to dark. A tap on a chip only shows it beside the photo; "Use …"
    saves it (setq on the Add card, sete in the editor). */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {emit,askFor} from './bus.js';
-import {$,COLORS,COLOR_OPTS,COLS_BY,COL_ALIAS,CUSTOM_COL,CUSTOM_PAT,DIAL_COLS,LUMS,PATS_BY,TEXTURE_TYPES,TYPES,accentsFor,accentsOf,colBaseFor,colName,colNameTaken,colsFor,dE00,hexRgb,isConnected,items,labOf,matTypeOne,matTypeWord,matsFor,normPat,ownColFind,ownKeyNorm,ownMatName,ownMats,ownNameClean,ownNameShort,ownPatFind,paperCloth,patBase,patName,patNameTaken,patOf,primaryCol,rgbLab,settings,shadeHex,shadeName,sockPatterned,sockToeKey,soleStyle,strapBand} from './core.js';
+import {emit,askFor,serve} from './bus.js';
+import {$,COLORS,COLOR_OPTS,COLS_BY,CUSTOM_COL,CUSTOM_PAT,DIAL_COLS,LUMS,PATS_BY,TEXTURE_TYPES,TYPES,accentsFor,accentsOf,colBaseFor,colName,colNameTaken,colsFor,dE00,hexRgb,isConnected,items,labOf,matTypeOne,matTypeWord,matsFor,normPat,ownColFind,ownMatName,ownMats,ownNameClean,ownNameShort,ownPatFind,paperCloth,patBase,patName,patNameTaken,patOf,primaryCol,rgbLab,settings,shadeHex,shadeName,sockPatterned,sockToeKey,soleStyle,strapBand} from './core.js';
 import {esc,srcOk} from './photo-keys.js';
-import {ask,cap1,cardIx,cardOf,editing,generateSwatch,imgOf,keepFocus,put,queue,refreshSwatch} from './app.js';
+import {ask,cap1,cardOf,editing,generateSwatch,imgOf,keepFocus,put,queue,refreshSwatch} from './app.js';
 import {addKeep} from './add-keep.js';
 import {planDirty} from './today-plan.js';
 import {closeRead,measHint,measKL,measureCard,measureCloth,measureParts,multiCol,nearestCols,paperCopy,paperNow,paperOf} from './measure.js';
@@ -107,9 +107,6 @@ function openPatForm(i){const q=queue[i];if(!q)return;const name=q.newPattern?q.
 /* what Settings' own lists do (act.js): "+ New color" / "+ New pattern" (data-kind), and a material's Remove (its type and name in
    data-t and data-m) */
 function custNewTap(el){openCustomNew(el.dataset.kind)}
-/* (moved from tagging.js with its text unchanged, the restructure S6c) */
-function tagNewCol(el){openColForm(cardIx(el))}
-function tagNewPat(el){openPatForm(cardIx(el))}
 /* (moved from checklist.js with its text unchanged, the restructure S6c) */
 /* the row's controls (act.js; data-s, data-k as accRow's src and ref, data-c the color: the three attributes keepFocus tells two controls
    apart by, app.js focusFind): × and "+ Add a color" (colpick.js) */
@@ -846,5 +843,6 @@ function rdRetakeFile(el,ev,f){cuGot(el,f,x=>rdRetake(x))}
 Object.assign(globalThis,{SW_GRAB,NEW_COL,patChoices,patVar,patBtn,EP,cnHex,RD_LOOKUPS,rdCostLine,rdAddBtn,lookShadeOk});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,cnDrawn,cnFromHsv,cnName,colAsk,colAskImgs,colChoices,colFamily,colFieldLabel,colNewAdd,colPickView,cpAskHint,get rd(){return rd},set rd(v){rd=v},rdAccOf,rdClose,rdColOf,get rdLast(){return rdLast},rdOpen,rdRender,rdRetake,rdRun,rdUndoAll,get colPick(){return colPick},set colPick(v){colPick=v},closeColPick,colPickSel,colTarget,patChoices,patVar,renderColPick,useColPick,colRows,colShows,openColNew,openColPick,openCustomNew};
-export {lookShadeOk,colPick,colFamily,colHas,SOCK_THIRD,colShows,colFieldLabel,colTidy,colRows,colTarget,colChoices,accDel,colNear,openColPick,closeColPick,SW_GRAB,colPickSel,colPickView,useColPick,renderColPick,colAsk,colAskImgs,NEW_COL,cpAskHint,patChoices,patVar,patBtn,EP,cnHex,cnFromHsv,cnDrawn,cnLeft,openColNew,openPatNew,openCustomNew,cnName,colNewAdd,rd,rdLast,RD_LOOKUPS,rdOff,rdCost,rdCostLine,rdEditorBtn,rdAddBtn,rdStart,rdRetake,rdRun,rdColOf,rdOpen,rdClose,rdAccOf,rdRender,rdUndoAll,rdDoneHtml,openColForm,openPatForm,custNewTap,tagNewCol,tagNewPat,accDelTap,accAddTap};
-acts({colBtnTap,cpViewTap,cpTileTap,cpCloseTap,cpUseTap,cpPicsTap,cpAskTap,cpAskAllTap,cnOpenTap,pnOpenTap,cnBackTap,cnCloseupTap,cnAskTap,cnDescType,cnDescKey,cnKindTap,cnAddTap,cnUseOldTap,pnAnywayTap,cnBasePick,cnTypeTap,cnAccentTap,cnForPick,cnSqPress,cnHuePress,cnSqKey,cnHueKey,cnSlideUp,cnHexType,cnHexDone,cnNameType,rdReadTap,rdKeepTap,rdChangeTap,rdUndoTap,rdUseTap,rdBothTap,rdCloseTap,rdAgainTap,rdUndoAllTap,colBackdropTap,cnRetakeFile,rdRetakeFile,tagNewCol,tagNewPat,custNewTap,accDelTap,accAddTap});
+export {lookShadeOk,colPick,colFamily,colHas,SOCK_THIRD,colShows,colFieldLabel,colTidy,colRows,colTarget,colChoices,accDel,colNear,openColPick,closeColPick,SW_GRAB,colPickSel,colPickView,useColPick,renderColPick,colAsk,colAskImgs,NEW_COL,cpAskHint,patChoices,patVar,patBtn,EP,cnHex,cnFromHsv,cnDrawn,cnLeft,openColNew,openPatNew,openCustomNew,cnName,colNewAdd,rd,rdLast,RD_LOOKUPS,rdOff,rdCost,rdCostLine,rdEditorBtn,rdAddBtn,rdStart,rdRetake,rdRun,rdColOf,rdOpen,rdClose,rdAccOf,rdRender,rdUndoAll,rdDoneHtml,openColForm,openPatForm,custNewTap,accDelTap,accAddTap};
+acts({colBtnTap,cpViewTap,cpTileTap,cpCloseTap,cpUseTap,cpPicsTap,cpAskTap,cpAskAllTap,cnOpenTap,pnOpenTap,cnBackTap,cnCloseupTap,cnAskTap,cnDescType,cnDescKey,cnKindTap,cnAddTap,cnUseOldTap,pnAnywayTap,cnBasePick,cnTypeTap,cnAccentTap,cnForPick,cnSqPress,cnHuePress,cnSqKey,cnHueKey,cnSlideUp,cnHexType,cnHexDone,cnNameType,rdReadTap,rdKeepTap,rdChangeTap,rdUndoTap,rdUseTap,rdBothTap,rdCloseTap,rdAgainTap,rdUndoAllTap,colBackdropTap,cnRetakeFile,rdRetakeFile,custNewTap,accDelTap,accAddTap});
+serve('col-form',openColForm);serve('pat-form',openPatForm);   // (tagging.js's New color and New pattern chips; the restructure S6c)
