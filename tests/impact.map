@@ -9030,7 +9030,6 @@ invite.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehid
 invite.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 invite.test.js	tagging.js	<loaded>
 invite.test.js	tests/fixedplan.js	<any>
-invite.test.js	tests/webkit.js	<any>
 invite.test.js	theme.js	<loaded>	applyTheme
 invite.test.js	toast.js	<loaded>	toast	toastOff
 invite.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -9552,7 +9551,7 @@ keptphotos.test.js	worker.js	<loaded>	corsFor	fetch	serve
 keptphotos.test.js	worker/items.js	<loaded>	ITEM_BG	ITEM_REF_PROMPT	itemPhoto	kvIsFull	renderItem
 keptphotos.test.js	worker/links.js	<loaded>	readCapped
 keptphotos.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendEach	usedOf	utcDay	whoIs
-keptphotos.test.js	worker/photostore.js	<loaded>	handleSync
+keptphotos.test.js	worker/photostore.js	handleSync
 keptphotos.test.js	worker/records.js	<loaded>	getRender	putRender	renderId	renderTtl
 keptphotos.test.js	worker/render.js	<loaded>	dataUrlToBlob	handleRender
 keptphotos.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
