@@ -264,6 +264,7 @@ async function handleSync(req, env, json, who, cors) {
 }
 /* an older app's whole backup (PUT /sync {baseRev, day, reason?, data}), its photos inline: stored by reference like any other save.
    pre: photos already cut out of the body (putParted), hash -> a function giving the photo's JSON string as bytes */
+/** @param {import('./backup.js').SaveLock} [lk] */
 async function putWhole(env, json, cors, who, body, pre = new Map(), lk = NO_LOCK) {
   // records and photos of the app's shape only (records.js; fix round 3, W2-13-02): refused, with the backup count given back
   const wrong = recCheck(body && body.data) || ([...pre.values()].some(f => !picBytesOk(f())) ? { error: 'bad photo', message: 'The backup was not saved: a photo in it is not a picture.' } : null);

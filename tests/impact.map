@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	eecdfdefe03241d9d426
+# tested	6b976880a465f267b470
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -3311,6 +3311,7 @@ backup-storage.test.js	tests/fixedplan.js	<any>
 backup-storage.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 backup-storage.test.js	tests/fixtures/old-worker/worker-036c1d6.js	<any>
 backup-storage.test.js	tests/fixtures/old-worker/worker-ef18d06.js	<any>
+backup-storage.test.js	tests/webkit.js	<any>
 backup-storage.test.js	theme.js	<loaded>	applyTheme
 backup-storage.test.js	toast.js	<loaded>	toast	toastOff
 backup-storage.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>todayTouch	@{constroot$today}	todayBusy
@@ -4701,6 +4702,7 @@ claudepattern.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 claudepattern.test.js	tests/fixtures/blazer-windowpane.jpg	<loaded>
 claudepattern.test.js	tests/fixtures/suit-pinstripe-closeup.jpg	<loaded>
 claudepattern.test.js	tests/fixtures/suit-pinstripe.jpg	<loaded>
+claudepattern.test.js	tests/webkit.js	<any>
 claudepattern.test.js	theme.js	<loaded>	applyTheme
 claudepattern.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 claudepattern.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -7000,6 +7002,7 @@ errreport.test.js	sync.js	<loaded>	@connRestored.then	adoptBackupSettings	afterP
 errreport.test.js	tag-request.js	<loaded>
 errreport.test.js	tagging.js	<loaded>
 errreport.test.js	tests/fixedplan.js	<any>
+errreport.test.js	tests/webkit.js	<any>
 errreport.test.js	theme.js	<loaded>	applyTheme
 errreport.test.js	toast.js	<loaded>
 errreport.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -9137,6 +9140,7 @@ itempics.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@
 itempics.test.js	tag-request.js	<loaded>
 itempics.test.js	tagging.js	<loaded>
 itempics.test.js	tests/fixedplan.js	<any>
+itempics.test.js	tests/webkit.js	<any>
 itempics.test.js	theme.js	<loaded>	applyTheme
 itempics.test.js	toast.js	<loaded>	toast
 itempics.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold
@@ -9538,6 +9542,7 @@ keptphotos.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then
 keptphotos.test.js	tag-request.js	<loaded>	tagImgOf
 keptphotos.test.js	tagging.js	<loaded>
 keptphotos.test.js	tests/fixedplan.js	<any>
+keptphotos.test.js	tests/webkit.js	<any>
 keptphotos.test.js	theme.js	<loaded>	applyTheme
 keptphotos.test.js	toast.js	<loaded>
 keptphotos.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constroot$today}
@@ -9553,7 +9558,7 @@ keptphotos.test.js	worker.js	<loaded>	corsFor	fetch	serve
 keptphotos.test.js	worker/items.js	<loaded>	ITEM_BG	ITEM_REF_PROMPT	itemPhoto	kvIsFull	renderItem
 keptphotos.test.js	worker/links.js	<loaded>	readCapped
 keptphotos.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendEach	usedOf	utcDay	whoIs
-keptphotos.test.js	worker/photostore.js	handleSync
+keptphotos.test.js	worker/photostore.js	<loaded>	handleSync
 keptphotos.test.js	worker/records.js	<loaded>	getRender	putRender	renderId	renderTtl
 keptphotos.test.js	worker/render.js	<loaded>	dataUrlToBlob	handleRender
 keptphotos.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
@@ -11224,6 +11229,7 @@ motif.test.js	tests/fixedplan.js	<any>
 motif.test.js	tests/fixtures/shirt-chevron-closeup.png	<loaded>
 motif.test.js	tests/fixtures/tie-neat-closeup.jpg	<loaded>
 motif.test.js	tests/fixtures/tie-neat.jpg	<loaded>
+motif.test.js	tests/webkit.js	<any>
 motif.test.js	tests/workersrc.js	<any>
 motif.test.js	theme.js	<loaded>	applyTheme
 motif.test.js	toast.js	<loaded>	toast	undoHere
@@ -11538,6 +11544,7 @@ multi.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@doc
 multi.test.js	tag-request.js	<loaded>	aiFields	customForTag	describeEstimate	keepTagImg	readEstimate	tagFixes	visTok
 multi.test.js	tagging.js	<loaded>	confTxt	tagNotes
 multi.test.js	tests/fixedplan.js	<any>
+multi.test.js	tests/webkit.js	<any>
 multi.test.js	theme.js	<loaded>	applyTheme
 multi.test.js	toast.js	<loaded>	toast	undoHere
 multi.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -12501,6 +12508,7 @@ ownnames.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@
 ownnames.test.js	tag-request.js	<loaded>
 ownnames.test.js	tagging.js	<loaded>	tagNotes
 ownnames.test.js	tests/fixedplan.js	<any>
+ownnames.test.js	tests/webkit.js	<any>
 ownnames.test.js	theme.js	<loaded>	applyTheme
 ownnames.test.js	toast.js	<loaded>	toast	toastDrop	undoOff
 ownnames.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -14076,6 +14084,7 @@ records.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@d
 records.test.js	tag-request.js	<loaded>	describeEstimate	readEstimate	tagImgOf	visTok
 records.test.js	tagging.js	<loaded>	confTxt
 records.test.js	tests/fixedplan.js	<any>
+records.test.js	tests/webkit.js	<any>
 records.test.js	theme.js	<loaded>	applyTheme
 records.test.js	toast.js	<loaded>	toast
 records.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>todayTouch	@{constroot$today}	todayBusy
@@ -14182,6 +14191,7 @@ remind.test.js	sync.js	<loaded>	@connRestored.then	@document.addEventListenervis
 remind.test.js	tag-request.js	<loaded>
 remind.test.js	tagging.js	<loaded>
 remind.test.js	tests/fixedplan.js	<any>
+remind.test.js	tests/webkit.js	<any>
 remind.test.js	theme.js	<loaded>	applyTheme
 remind.test.js	toast.js	<loaded>	toast
 remind.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>cancelHold
@@ -16537,6 +16547,7 @@ server-limits.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.t
 server-limits.test.js	tag-request.js	<loaded>
 server-limits.test.js	tagging.js	<loaded>
 server-limits.test.js	tests/fixedplan.js	<any>
+server-limits.test.js	tests/webkit.js	<any>
 server-limits.test.js	theme.js	<loaded>	applyTheme
 server-limits.test.js	toast.js	<loaded>	toast
 server-limits.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold	todayBusy
@@ -16670,6 +16681,7 @@ sett.test.js	tests/fixedplan.js	<any>
 sett.test.js	tests/fixtures/blazer-windowpane-closeup.jpg	<loaded>
 sett.test.js	tests/fixtures/blazer-windowpane.jpg	<loaded>
 sett.test.js	tests/fixtures/tie-plaid.jpg	<loaded>
+sett.test.js	tests/webkit.js	<any>
 sett.test.js	theme.js	<loaded>	applyTheme
 sett.test.js	toast.js	<loaded>	toast	toastDrop	toastOff	undoHere	undoOff
 sett.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -19741,6 +19753,7 @@ tagging.test.js	sync.js	<loaded>	@addEventListenerpagehide	@connRestored.then	@d
 tagging.test.js	tag-request.js	<loaded>	aiFields	benchEstimate	customForTag	describeEstimate	keepCloseImg	keepTagImg	ownMatsForTag	readEstimate	tagExtras	tagFixes	tagImgOf	tagStatsCard	valName	visTok
 tagging.test.js	tagging.js	<loaded>	confTxt	refineApply	refineFromCloseup	tagNewCol	tagNewPat	tagNotes	takeExtras	takeMaterial
 tagging.test.js	tests/fixedplan.js	<any>
+tagging.test.js	tests/webkit.js	<any>
 tagging.test.js	theme.js	<loaded>	applyTheme
 tagging.test.js	toast.js	<loaded>	toast	undoHere
 tagging.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -19847,6 +19860,7 @@ tagreads.test.js	tagging.js	<loaded>	confTxt	refineApply	refineContradicts	refin
 tagreads.test.js	tests/fixedplan.js	<any>
 tagreads.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 tagreads.test.js	tests/fixtures/suit-mink.jpg	<loaded>
+tagreads.test.js	tests/webkit.js	<any>
 tagreads.test.js	theme.js	<loaded>	applyTheme
 tagreads.test.js	toast.js	<loaded>
 tagreads.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -22270,6 +22284,7 @@ weeklockdays.test.js	weather.js	<loaded>	loadWeather
 weeklockdays.test.js	who.js	<loaded>	acctRole	applyRole	isTester
 workerfix.test.js	.github/workflows/deploy-worker.yml	<any>
 workerfix.test.js	merge.js	<loaded>	mergeList	mergeStateBy	stamp	stateSig	tombWins
+workerfix.test.js	tests/webkit.js	<any>
 workerfix.test.js	worker.js	<loaded>	corsFor	fetch	queue	scheduled	serve
 workerfix.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	fsOver	isParted	isPhoto	isPhotoOld	keepSnapshots	kvMeta	liteSig	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	phHash	putStored	sampleOnly	saveLock	splitPhotos	storedVersion	syncLitePost	syncLiteSave	syncVersion	writeBudget
 workerfix.test.js	worker/items.js	<loaded>	ITEM_BG	ITEM_PROMPT	itemPhoto	kvIsFull	kvLimit	nextUtcDay	noteKvFull	renderItem
