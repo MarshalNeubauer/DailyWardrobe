@@ -2,21 +2,21 @@
    Loaded after app.js and stats.js (an ES module since 2026-11-23); app.js calls in here from renderWardrobe, wardList,
    itemBody, save and rm. */
 import {emit,ask} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
-import {$,MATERIALS_BY,MAT_ALIAS,TYPES,accentsOf,colName,colorDesc,dayRecs,desc,hasPat,isCargo,itemFields,itemName,itemTitle,items,lumCol,matAlias,nameIso,nextStamp,nm,noBidi,patName,planCol,primaryCol,setWardrobe,sockPatterned,sockToeKey,strapBand,titleCls,trouserKind} from './core.js';
+import {$,MATERIALS_BY,MAT_ALIAS,TYPES,accentsOf,colName,colorDesc,dayRecs,desc,fmtDay,hasPat,isCargo,itemFields,itemName,itemTitle,items,lumCol,matAlias,nameIso,nextStamp,nm,noBidi,patName,phSm,planCol,primaryCol,setWardrobe,sockPatterned,sockToeKey,strapBand,titleCls,trouserKind} from './core.js';
 import {fam,favItemSet,isFavItem} from './planner.js';
 import {wornDays} from './stats.js';
-import {atomic,cap1,del,fixupRedraw,flt,put,putRaw,setFlt,tx} from './app.js';
+import {atomic,cap1,del,editing,fixupRedraw,flt,put,putRaw,setFlt,tx} from './app.js';
 import {esc,srcOk} from './photo-keys.js';
 import {wardPic} from './photos.js';
-import {phSm} from './item-photo.js';
 import {itemThumb} from './draw.js';
-import {dropItem,editing,itemGoneTell,openItem} from './item-view.js';
+import {dropItem,openItem} from './item-view.js';
 import {whenPulled} from './history.js';
 import {planDirty} from './today-plan.js';
 import {toast} from './toast.js';
 import {saveDay} from './days.js';
 import {show} from './nav.js';
 import {acts} from './act.js';
+import {itemGoneTell} from './ui.js';
 
 /* ---- an item's own name (its fields, sizes and rows are fields.js's since the restructure S3c: WARD_FIELDS, WARD_MAX) ---- */
 const WATCH_DETAILS_MAX=120;   // a watch's Details (itemsheet.js; W2-12-04: 5,036 letters were kept and synced)

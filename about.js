@@ -3,7 +3,7 @@
 import {on} from './bus.js';
 import {$,noBidi} from './core.js';
 import {toast} from './toast.js';
-import {connKeep,connRestored,db,dbConn,dbUnhold,queue,setConnReady,setDbConn,setDbCur,setDbWiping} from './app.js';
+import {ENDED,connKeep,connRestored,db,dbConn,dbUnhold,endedAnswer,inviteEnded,queue,setConnReady,setDbConn,setDbCur,setDbWiping} from './app.js';
 import {acts} from './act.js';
 
 /* ---- version ----

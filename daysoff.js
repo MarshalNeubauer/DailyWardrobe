@@ -1,12 +1,11 @@
 /* Daily Wardrobe: Settings → Days off: public holidays, your own days off and the occasions (formal days)
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of settings.js on 2026-11-17.) */
 import {on} from './bus.js';
-import {$,OCCASIONS,dayRecs,isoKey,key,nameHtml,nowMs,occLabel,occOf,setStr,setWardrobe,settings,takeSettings,todayDate,trueToday} from './core.js';
+import {$,OCCASIONS,dayRecs,isoKey,isoToDate,key,keyDate,nameHtml,nowMs,occLabel,occOf,setStr,setWardrobe,settings,shortDate,syncUrl,takeSettings,todayDate,trueToday,yearDate} from './core.js';
 import {esc,workerBase} from './photo-keys.js';
 import {saveUserSettings,settingsOpen,settingsSummaries,todayDirty} from './settings.js';
 import {metaGet} from './app.js';
 import {monthPlan,nextWorkday} from './month.js';
-import {keyDate} from './days.js';
 import {aAn} from './photos.js';
 import {setOccasion} from './history.js';
 import {acts} from './act.js';
@@ -94,7 +93,6 @@ async function refreshHolidays(){const due=()=>{const h=settings.holidays,f=h&&+
   return setHolidayCountry(settings.holidays.country,true)}
 async function toggleHoliday(d,on){const h=settings.holidays;if(!h)return;const skip=new Set(h.skip||[]);on?skip.delete(d):skip.add(d);
   settings.holidays={...h,skip:[...skip].sort()};await saveUserSettings();todayDirty();renderDaysOffUI()}
-const isoToDate=v=>{const [y,m,d]=String(v).split('-').map(Number);return new Date(y,m-1,d)};
 /* a day off's name is at most OFF_NAME_MAX letters (W2-12-02: a pasted 57-letter link pushed its chip's × off the screen, and nothing limited it) */
 const OFF_NAME_MAX=40,offNameCut=n=>{n=String(n||'').replace(/\s+/g,' ').trim();return [...n].length>OFF_NAME_MAX?[...n].slice(0,OFF_NAME_MAX-1).join('').trim()+'…':n};
 async function addDayOff(){const f=($('#cfg-off-from')||{}).value,t=($('#cfg-off-to')||{}).value||f,n=($('#cfg-off-name')||{}).value;
@@ -133,9 +131,6 @@ function renderDaysOffUI(){const box=$('#cfg-country'),list=$('#holiday-list');i
   if(settingsOpen())settingsSummaries()}   // the Days off summary follows an added or removed day (it kept the old count, audit 2026-11-13)
 async function removeDaysOff(csv){const ds=new Set(csv.split(','));settings.daysOff=(settings.daysOff||[]).filter(x=>!ds.has(x.d));holidayMsg='';await saveUserSettings();todayDirty();renderDaysOffUI()}
 /* ---- Settings: formal days (any upcoming workday) ---- */
-const shortDate=d=>d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
-/* with the year when it isn't this year's (the holiday list showed two "Thu, Nov 26 Thanksgiving Day" a year apart) */
-const yearDate=d=>d.getFullYear()===todayDate().getFullYear()?shortDate(d):d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});
 const isoDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 function renderFormalUI(msg){const list=$('#formal-list'),inp=$('#cfg-formal-date');if(!list)return;
   const T=todayDate();if(inp){inp.min=isoDate(T);if(!inp.value)inp.value=isoDate(nextWorkday(T)||T)}
@@ -161,11 +156,11 @@ function occAddTap(){addFormalDay()}
 /* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals: settings, setup,
    start, calendar, history and missed; the rest are read by tests; holidayMsg is a let only this file writes: a getter. Above the
    file's one top-level call (acts, when act.js did not load): the names are then still the page's */
-Object.assign(globalThis,{COUNTRY_CODES,countryName,setHolidayCountry,refreshHolidays,isoToDate,dayOffAdd,renderDaysOffUI,shortDate,yearDate,renderFormalUI});
+Object.assign(globalThis,{COUNTRY_CODES,countryName,setHolidayCountry,refreshHolidays,dayOffAdd,renderDaysOffUI,renderFormalUI});
 /* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
 on('settings-draw',()=>{renderFormalUI();renderDaysOffUI()});
 on('settings-summaries',S=>{S.country=countryName});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,addDayOff,builtinHolidays,holYears,get holidayMsg(){return holidayMsg},nagerKeep,toggleHoliday,isoToDate,refreshHolidays,setHolidayCountry,shortDate};
-export {COUNTRY_CODES,countryName,holidayMsg,nagerKeep,builtinHolidays,holYears,setHolidayCountry,refreshHolidays,toggleHoliday,isoToDate,addDayOff,dayOffAdd,renderDaysOffUI,shortDate,yearDate,renderFormalUI};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,addDayOff,builtinHolidays,holYears,get holidayMsg(){return holidayMsg},nagerKeep,toggleHoliday,refreshHolidays,setHolidayCountry};
+export {COUNTRY_CODES,countryName,holidayMsg,nagerKeep,builtinHolidays,holYears,setHolidayCountry,refreshHolidays,toggleHoliday,addDayOff,dayOffAdd,renderDaysOffUI,renderFormalUI};
 acts({occClear,countryPick,dayOffAddTap,occAddTap});

@@ -4,7 +4,7 @@
    and the item itself stay, so the plan and the outfit history are untouched. Each change's toast has Undo (picUndo; phEdit.undo holds the editor's steps). ---- */
 import {emit,ask} from './bus.js';   // emit: the Wardrobe's redraw (itemsheet.js, later); ask: the piece open (item-view.js). (No app.js ask() here)
 import {DEAD_MSG,deadCanvas,deadPic,fixupRedraw,imgOf,loadImg,put,refreshSwatch,shrink,stillCur} from './app.js';
-import {$,COLORS,colOf,items,primaryCol} from './core.js';
+import {$,CLOSE_MAX,PH_MAX,TAG_MAX,TAG_Q,TEX_MAX,TEX_MIN_PX,items,paperCloth,phSigOf,texSig} from './core.js';
 import {esc,srcOk} from './photo-keys.js';
 import {closeupBtn,cuGot,cuTouch} from './ui.js';
 import {toast} from './toast.js';
@@ -14,12 +14,9 @@ import {acts} from './act.js';
    itemsheet.js starts it again, with setPhEdit) */
 let phEdit={id:null,undo:[],crop:null};
 const setPhEdit=v=>{phEdit=v};
-const PH_MAX=1536;   // the item photo (2026-11-13, the owner: "upgrade the main photo size stored as well"; it was 720, before that 360)
 /* the photo's small copy for grids and lists (the wardrobe, stats, the piece picker): PH_SM px, kept on the item with the photo's signature
    (photoSm, phSig) and made again whenever the photo changes (makeSmall); every redraw of the wardrobe would otherwise carry the full photos */
 const PH_SM=480;
-const phSm=i=>i&&i.photo?(i.photoSm&&i.phSig===phSigOf(i.photo)?i.photoSm:i.photo):null;
-const phSigOf=u=>u?u.length+':'+u.slice(-48):'';
 async function makeSmall(it){if(!it)return false;if(!it.photo){const had=!!it.photoSm;delete it.photoSm;delete it.phSig;return had}
   const sig=phSigOf(it.photo);if(it.photoSm&&it.phSig===sig)return false;
   try{const im=await imgOf(it.photo);let sm=it.photo;if(Math.max(im.naturalWidth,im.naturalHeight)>PH_SM){const c=shrink(im,PH_SM);if(deadCanvas(c))return false;sm=c.toDataURL('image/jpeg',.82)}   // drawn black: keep the old copy
@@ -50,7 +47,6 @@ function photoTools(i){if(phEdit.crop)return '';const tex=lookCu(i.type),id=i.id
 /* the hint as "3 tiny steps" (2026-11-15, paper-hint-proposals A, the owner's choice; it was a sentence and a "Tips for a good close-up"
    link): "True color in 3 steps", Paper on an edge › Tap the paper › Take the photo, each with a small drawing (the owner's, at 40 px).
    The whole card is one button that opens the short tip (paperTip; its last line opens the full guide). Also in the Add card's Step 2. */
-const paperCloth=i=>{try{return COLORS[primaryCol(i)]?colOf(i):'#5d6478'}catch{return '#5d6478'}};
 const PAPER_CAM='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.6-2.2h6.8L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.6"/></svg>';
 const paperSteps=cloth=>{const pic=cls=>`<span class="wbpic ${cls}" style="--cloth:${cloth}"><i></i></span>`;
   return `<div class="wbsteps"><button type="button" class="wbstcard" data-act="paperTipTap" aria-label="True color in 3 steps: lay white paper along one edge, tap the paper on screen, take the photo. Open tips.">
@@ -164,9 +160,9 @@ function cropApply(el){applyCrop(el.dataset.id)}
 function cropDiscardTap(){cropDiscard()}
 /* the bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use as globals. Above the file's
    one top-level call (acts, when act.js did not load): the names are then still the page's */
-Object.assign(globalThis,{PH_MAX,phSm,makeSmall,smallPhotos,photoTools,paperCloth,paperSteps,paperHint,paperRetake,paperLine,replaceTexture,cropSource,cropEditor,cropKeep,setPhEdit});
+Object.assign(globalThis,{makeSmall,smallPhotos,photoTools,paperSteps,paperHint,paperRetake,paperLine,replaceTexture,cropSource,cropEditor,cropKeep,setPhEdit});
 Object.defineProperties(globalThis,{phEdit:{get:()=>phEdit}});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,applyCrop,layoutCrop,paperTip,phSigOf,setPhoto,setTexture,startCrop,undoPhoto,PH_MAX,makeSmall,get phEdit(){return phEdit},replaceTexture,smallPhotos};
-export {phEdit,setPhEdit,PH_MAX,phSm,phSigOf,makeSmall,smallPhotos,photoTools,paperCloth,paperSteps,paperHint,paperTip,paperRetake,paperLine,setPhoto,setTexture,replaceTexture,undoPhoto,startCrop,cropSource,cropEditor,cropKeep,layoutCrop,applyCrop};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,applyCrop,layoutCrop,paperTip,setPhoto,setTexture,startCrop,undoPhoto,makeSmall,get phEdit(){return phEdit},replaceTexture,smallPhotos};
+export {phEdit,setPhEdit,makeSmall,smallPhotos,photoTools,paperSteps,paperHint,paperTip,paperRetake,paperLine,setPhoto,setTexture,replaceTexture,undoPhoto,startCrop,cropSource,cropEditor,cropKeep,layoutCrop,applyCrop};
 acts({photoFile,photoRotate,photoCrop,photoCuRemove,photoCuFile,paperTipTap,cropDrag,cropZoom,cropApply,cropDiscardTap});

@@ -136,10 +136,6 @@
    "class": "optional",
    "group": "add"
   },
-  "sheet-swipe.js": {
-   "class": "optional",
-   "group": "sheet-swipe"
-  },
   "add-save.js": {
    "class": "optional",
    "group": "add"
@@ -179,10 +175,6 @@
   "scorecard.js": {
    "class": "today-no-picture",
    "group": "today"
-  },
-  "boxfold.js": {
-   "class": "optional",
-   "group": "boxfold"
   },
   "today-plan.js": {
    "class": "today-no-picture",

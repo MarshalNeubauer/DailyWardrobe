@@ -6,9 +6,8 @@ import {CAMO_TR,CHECK_PATS,MOTIF_PATS,STRIPE_PATS,TEXTURE_PATS,settFromCanvas,te
 import {FABRIC,PATS_BY,camoPat,dE00,hexRgb,items,labHex,patBase,patName,rgbLab} from './core.js';
 import {BLUR_SHARP,applyWb,closeRead,measureAndApply,sharpness,wbRead} from './measure.js';
 import {linSrgb8,srgbLin8} from './srgb.js';
-import {imgOf,put,queue} from './app.js';
+import {cardAt,cardIx,imgOf,put,queue} from './app.js';
 import {esc} from './photo-keys.js';
-import {cardAt,cardIx} from './add-ids.js';
 import {sharpCloseOf,tagImgOf} from './tag-request.js';
 import {planDirty} from './today-plan.js';
 

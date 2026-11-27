@@ -7,11 +7,10 @@
      the wardrobe changed since (shopSig) or it is over a week old
    - "Bought it" adds the piece as bought, on the way (item.order + item.paused, optional arrival date)
    - "Not for me" hides that colour and pattern for good (settings.shopSkip: keys type|colour group|pattern class, synced) */
-import {$,COOL,SLOTS,TODAY_OVERRIDE,avgText,climate,dayRecs,inRotation,isHandPick,isoKey,items,nm,nowMs,offDays,prettyCols,sentence,settings,todayDate,wearsJacket,wearsTie,weather} from './core.js';
-import {keyDate} from './days.js';
+import {$,COOL,SHOP_WEEKS,SLOTS,TODAY_OVERRIDE,avgText,climate,dayRecs,fmtDay,inRotation,isHandPick,isoKey,items,keyDate,listAnd,nm,nowMs,offDays,prettyCols,sentence,settings,todayDate,wearsJacket,wearsTie,weather} from './core.js';
 import {planDirty,strHash} from './today-plan.js';
 import {darkMode} from './planner.js';
-import {db,keepFocus,metaGet,metaPut,put} from './app.js';
+import {db,editing,keepFocus,metaGet,metaPut,put} from './app.js';
 import {esc} from './photo-keys.js';
 import {backDrop,backOn,backPush} from './back.js';
 import {figureSvg,itemThumb} from './draw.js';

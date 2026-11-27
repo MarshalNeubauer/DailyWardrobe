@@ -6,8 +6,7 @@
    The page's parts in other files (the setup's checklist, the sample wardrobe, What to buy's button, the favorites and cost-per-wear
    cards) are reached through bus.js (the restructure S3f): without the file nothing is asked, as the `typeof f==='function'` guards did. */
 import {emit,heard,ask} from './bus.js';   // (this file reads nothing of app.js's own ask(), the server request)
-import {$,COLORS,CUSTOM_COL,SLOTS,TYPES,avgText,colName,dayRecs,di,dressOut,isHandPick,isWorkday,itemName,itemSeason,items,nameHtml,nm,prettyCols,primaryCol,sentence,settings,shortDesc,titleCls,todayDate,wearsJacket,wearsTie} from './core.js';
-import {keyDate} from './days.js';
+import {$,COLORS,CUSTOM_COL,SHOP_WEEKS,SLOTS,TYPES,avgText,colName,dayRecs,di,dressOut,fmtDay,isHandPick,isWorkday,itemName,itemSeason,items,keyDate,listAnd,nameHtml,nm,phSm,prettyCols,primaryCol,sentence,settings,shortDesc,titleCls,todayDate,wearsJacket,wearsTie} from './core.js';
 import {cache,hasOutfit,planMonth,planStartDay} from './today-plan.js';
 import {HARD_CAP,QWIN,beltFit,beltWait,clothesScore,darkShirt,finish,jacketGroup,pairScore,patternScore,planSim,planStart,rateOutfit,shirtGroup,shirtScore,shoeSuits,tieGroup} from './planner.js';
 import {comboKey,esc,srcOk} from './photo-keys.js';

@@ -10,9 +10,8 @@
    3. Shoes, belts, socks, tie clip, cufflinks and coats: few options and a direct effect, so each is simulated and
       ranked by that effect (problem days fixed, checks no longer marked down, first-choice shoes, pairs worn two days running).
    4. Formal, wedding, funeral and no-jacket days are dressed once each to see what is missing. */
-import {COLORS,COLS_BY,COOL,CUSTOM_COL,OCCASIONS,SLOTS,TROUSER_KINDS,colName,dayClimate,di,dressOut,inRotation,isHandPick,isWorkday,items,key,nm,patBase,patName,patOf,planCol,prettyCols,primaryCol,setWardrobe,settings,sockPatterned,todayDate,trouserKind,wearsJacket,wearsTie} from './core.js';
+import {COLORS,COLS_BY,COOL,CUSTOM_COL,OCCASIONS,SHOP_PER_CAT,SHOP_TOP,SHOP_WEEKS,SLOTS,TROUSER_KINDS,colName,dayClimate,di,dressOut,inRotation,isHandPick,isWorkday,items,key,listAnd,nm,patBase,patName,patOf,planCol,prettyCols,primaryCol,setWardrobe,settings,sockPatterned,todayDate,trouserKind,wearsJacket,wearsTie} from './core.js';
 import {QWIN,SH,beltFit,clothesScore,colsOf,fam,finish,jacketGroup,leatherGroup,metalOf,outfit,pairScore,patInfo,patternScore,pcol,planSim,planStart,rateOutfit,shirtGroup,shirtLook,shoeSuits,sockBold,tieGroup,tieLook,withColRun} from './planner.js';
-const SHOP_WEEKS=26,SHOP_PER_CAT=5,SHOP_TOP=10;
 const keyDate2=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
 /* the workdays of the next `weeks` weeks, from tomorrow (today is worn or about to be: it isn't "the next 6 months"). Insights counts
    the same days (stats.js plannedDays), so both say the same number of outfits (they said 122 and 126, re-audit 2026-11-15) */
@@ -74,7 +73,6 @@ const TYPE_WORD={suit:['suit','suits'],blazer:['blazer','blazers'],pants:['pants
   tieclip:['tie clip','tie clips'],pocketsquare:['pocket square','pocket squares'],cufflinks:['cufflinks','cufflinks'],overcoat:['overcoat','overcoats'],raincoat:['raincoat','raincoats'],
   tee:['T-shirt','T-shirts'],polo:['polo','polos'],henley:['henley','henleys'],sweater:['sweater','sweaters'],sweatshirt:['sweatshirt','sweatshirts'],hoodie:['hoodie','hoodies'],qzip:['quarter-zip','quarter-zips'],cardigan:['cardigan','cardigans'],chore:['chore jacket','chore jackets'],blouse:['uniform blouse','uniform blouses']};
 const several=(n,t)=>`${n} ${TYPE_WORD[t][n===1?0:1]}`;
-const listAnd=a=>(a=[...new Set(a)]).length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
 
 /* ---- fit: which owned pieces a candidate makes a good outfit with ---- */
 function compatBase(L,season){
@@ -384,7 +382,7 @@ function occasionCheck(L,season){
   finally{setWardrobe({items:keep})}
 }
 /* the bridge (an ES module since 2026-11-24): what stats.js, shop.js, analysis-worker.js and the tests still use as globals (tests/bridge.test.js) */
-Object.assign(globalThis,{SHOP_WEEKS,horizonKeys,CLASS_NAMES,groupLabel,TYPE_WORD,listAnd,runAnalysis});
+Object.assign(globalThis,{horizonKeys,CLASS_NAMES,groupLabel,TYPE_WORD,runAnalysis});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,evalPlan,occasionCheck,shopList,shopShelved,SHOP_WEEKS,horizonKeys,runAnalysis};
-export {SHOP_WEEKS,horizonKeys,shopList,evalPlan,CLASS_NAMES,groupLabel,TYPE_WORD,listAnd,shopShelved,runAnalysis,occasionCheck};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,evalPlan,occasionCheck,shopList,shopShelved,horizonKeys,runAnalysis};
+export {horizonKeys,shopList,evalPlan,CLASS_NAMES,groupLabel,TYPE_WORD,shopShelved,runAnalysis,occasionCheck};

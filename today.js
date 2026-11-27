@@ -20,6 +20,7 @@ import {scoreCard,scoreOpen,setScoreOpen,toggleScore} from './scorecard.js';
 import {missedCard} from './missed.js';
 import {actTaps,acts} from './act.js';
 import {buildPlan} from './planner.js';
+import {boxFold,boxUnfold} from './ui.js';
 on('figure-cloth',figCuDone);   // draw.js figCuGet: the mannequin's cloth for an item is ready
 /* the day records and the week's locks a drawing of Today writes (recordDays, lockUpcoming) run in the background; recordRun is the latest
    run, so a test can wait until a device has finished writing before it counts its syncs (tests/sync.test.js quiet) */

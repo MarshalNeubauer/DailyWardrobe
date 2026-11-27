@@ -4,11 +4,10 @@ import {emit,serve} from './bus.js';   // emit: the Wardrobe's redraw (itemsheet
 import {$,TYPES,itemName,itemTitle,items,nm,titleCls} from './core.js';
 import {backLand,backOn,histDrop,histPush} from './back.js';
 import {cropKeep,phEdit} from './item-photo.js';
-import {layerFrom,layerInert,layerOpen,noMotion,tell} from './ui.js';
+import {layerFrom,layerInert,layerOpen,noMotion,sheetSwipe,tell} from './ui.js';
 import {esc} from './photo-keys.js';
-import {keepFocus} from './app.js';
+import {editing,keepFocus,setEditing} from './app.js';
 import {acts} from './act.js';
-let editing=null;
 /* ---- Wardrobe item sheet ----
    Tapping an item opens it in a sheet that slides up over the Wardrobe: the full width of a phone, to just under the top of the
    screen (a centred panel from 600px). The grid behind never moves, so closing puts you back exactly where you were. Ways out:
@@ -29,11 +28,10 @@ let itemFrom=null;   // the item the sheet was opened on: closing on another one
    look, cost (noMotion is ui.js's since the restructure S3d); closeItem, stepItem and wardList are called by tests only; a module imports them.
    Above the file's first call that can throw (backLand, when back.js did not load; then $ and acts): the names are then still the
    page's, as a classic script's were */
-Object.assign(globalThis,{itemSynced,itemGoneTell,renderItem,openItem,dropItem});
-Object.defineProperties(globalThis,{editing:{get:()=>editing,set:v=>{editing=v}}});
+Object.assign(globalThis,{itemSynced,renderItem,openItem,dropItem});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,closeItem,stepItem,wardList,get editing(){return editing},set editing(v){editing=v},dropItem,renderItem,openItem};
-export {editing,wardList,itemSynced,itemGoneTell,renderItem,openItem,closeItem,dropItem,stepItem};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,closeItem,stepItem,wardList,dropItem,renderItem,openItem};
+export {wardList,itemSynced,renderItem,openItem,closeItem,dropItem,stepItem};
 /* the phone's Back closes the sheet: it has its own history entry while it is open (back.js histPush/histDrop, kind 'item'); one asked for
    while a step back of ours was on its way is made once it lands. Back in the crop frame keeps the crop (cropKeep: when moved or zoomed)
    and leaves it, and the sheet keeps its entry (the Back audit, 2026-11-15: it closed the sheet) */
@@ -59,12 +57,10 @@ function itemSynced(was){if(!editing)return;const id=editing,now=items.find(x=>x
   const v=$('#item-view'),a=document.activeElement;
   if(v&&a&&v.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&!/^(button|checkbox|radio|range)$/.test(a.type||'')){a.addEventListener('blur',()=>setTimeout(()=>{if(editing===id&&!(v.contains(document.activeElement)&&/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)))renderItem()},0),{once:true});return}
   if(!phEdit.crop)renderItem()}
-/* a change made to a piece no longer here (deleted on another phone while its sheet was open): said, once per tap -> true when said */
-function itemGoneTell(id){if(items.some(x=>x.id===id))return false;tell('This piece was deleted on another phone, so the change wasn’t kept.');return true}
 /* draws the open item (called by renderWardrobe, so every edit redraws it; the scroll position stays) */
 function renderItem(){
   const v=$('#item-view');if(!v)return;const i=editing&&items.find(x=>x.id===editing);
-  if(!i){editing=null;itemShown(false);return}
+  if(!i){setEditing(null);itemShown(false);return}
   const l=wardList(),k=l.findIndex(x=>x.id===i.id);if(k>=0)ivAt=k;
   $('#ivhead').innerHTML=`<div class="ivt"><small class="gtype">${TYPES[i.type]||'Item'}</small><h2 id="iv-title" class="${titleCls(i)}">${esc(itemTitle(i)||TYPES[i.type]||'Item')}</h2></div>${k>=0?`<span class="pcount">${k+1} of ${l.length}</span>`:''}`;
   keepFocus($('#ivbody'),()=>{$('#ivbody').innerHTML=itemBody(i)});   // every edit redraws it: the field or button used keeps the focus (W2-19-01)
@@ -74,7 +70,7 @@ function renderItem(){
 const sheetSlides=()=>innerWidth<600;   // a phone: the sheet slides up from the bottom; wider, the panel fades in
 function openItem(id){
   if(!items.some(i=>i.id===id))return;const v=$('#item-view'),bd=$('#item-backdrop'),was=editing;
-  editing=id;itemGone=null;if(!was)itemFrom=id;if(lookOn())lookOpenFresh();/* (the Look beta: Look opens unfolded on every item opened) */histPush();ivSwipe();renderItem();$('#ivbody').scrollTop=0;if(!was)layerOpen(v);   // the focus goes into the sheet and comes back on closing (W2-19-02)
+  setEditing(id);itemGone=null;if(!was)itemFrom=id;if(lookOn())lookOpenFresh();/* (the Look beta: Look opens unfolded on every item opened) */histPush();ivSwipe();renderItem();$('#ivbody').scrollTop=0;if(!was)layerOpen(v);   // the focus goes into the sheet and comes back on closing (W2-19-02)
   for(const el of [v,bd]){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}
   if(was||noMotion())return;const o={duration:WARD_MS,easing:WARD_EASE};
   v.animate(sheetSlides()?[{transform:'translateY(100%)'},{transform:'none'}]:[{opacity:0,transform:'translateY(24px)'},{opacity:1,transform:'none'}],o);
@@ -83,7 +79,7 @@ function openItem(id){
 function closeItem(fromPop,dragged){
   const id=editing,v=$('#item-view'),bd=$('#item-backdrop');if(!id||!v)return;const moved=id!==itemFrom;
   if(phEdit.crop)cropKeep();   // closed in the crop frame: a moved or zoomed frame is kept (the owner: closing should save it)
-  editing=null;itemFrom=null;if(!fromPop)histDrop();
+  setEditing(null);itemFrom=null;if(!fromPop)histDrop();
   const y=dragged||0,op=+bd.style.opacity||1;v.style.transform=bd.style.opacity='';
   if(noMotion()){renderItem();itemFocusBack(id);return}
   v.classList.add('closing');bd.classList.add('closing');renderItem();itemFocusBack(id);   // the sheet stays up, drawn as it was, while it slides away
@@ -101,7 +97,7 @@ function itemFocusBack(id){const v=$('#item-view'),f=typeof layerFrom!=='undefin
   const to=g&&!g.closest('[inert]')?g:f&&f.isConnected&&!f.closest('[inert]')?f:ch&&!ch.closest('[inert]')?ch:null;
   if(to)try{to.focus({preventScroll:true})}catch{}}
 /* closing with nothing to slide away from: the item was deleted, or another tab is shown */
-function dropItem(){editing=null;itemFrom=null;histDrop();if(typeof layerFrom!=='undefined')layerFrom.delete($('#item-view'));for(const el of [$('#item-view'),$('#item-backdrop')])if(el){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}itemShown(false)}
+function dropItem(){setEditing(null);itemFrom=null;histDrop();if(typeof layerFrom!=='undefined')layerFrom.delete($('#item-view'));for(const el of [$('#item-view'),$('#item-backdrop')])if(el){for(const a of el.getAnimations())a.cancel();el.classList.remove('closing');el.style.transform=el.style.opacity=''}itemShown(false)}
 /* swiping the sheet down closes it. The header is a handle at any time; the content is one only while it is scrolled to the
    top (further down, a downward swipe scrolls it back up, as it must). The choice is made on the first move of a touch, before
    the browser starts scrolling. The sheet follows the finger and the Wardrobe behind brightens; let go past a quarter of the
@@ -119,7 +115,7 @@ function ivSwipe(){const v=$('#item-view'),b=$('#ivbody');if(!v||!b)return;
 function stepItem(n,from){
   const l=wardList(),k=l.findIndex(x=>x.id===editing),t=l[k+n];if(k<0||!t)return false;
   if(phEdit.crop)cropKeep();   // the crop frame left for the next item: kept when moved or zoomed
-  editing=t.id;renderItem();const b=$('#ivbody');b.scrollTop=0;
+  setEditing(t.id);renderItem();const b=$('#ivbody');b.scrollTop=0;
   const el=b.firstElementChild;if(el&&!noMotion())el.animate([{transform:`translateX(${from===undefined?n*56:from}px)`,opacity:0},{transform:'none',opacity:1}],{duration:220,easing:WARD_EASE});
   return true}
 (()=>{const b=$('#ivbody');if(!b)return;let st=null;const inn=()=>b.firstElementChild;

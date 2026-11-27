@@ -8,12 +8,12 @@
    cleaner or the laundry, or was marked cleaned; item.cleaned from before the log), plus, for wears before the first recorded one that
    were more than one cleaning's worth, the ones that must have come before; with none recorded, about wears ÷ wears per cleaning (care.js
    careLimit). Nothing is shown for an item without a price. */
-import {$,TYPES,isoKey,items,settings,titleCls,todayDate} from './core.js';
+import {$,CARE_ABLE,TYPES,careLimit,careWashed,isoKey,items,settings,titleCls,todayDate} from './core.js';
 import {cache} from './today-plan.js';
 import {statName1,statPic,wornDays} from './stats.js';
 import {esc} from './photo-keys.js';
 import {toast} from './toast.js';
-import {put} from './app.js';
+import {cardAt,cardIx,cardOf,editing,put} from './app.js';
 import {show} from './nav.js';
 import {openSettings,saveUserSettings} from './settings.js';
 import {acts} from './act.js';
@@ -179,6 +179,7 @@ function cpwCurPick(el){cpwSetCurrency(el.value)}
 Object.assign(globalThis,{cpwSum,cpwBlock,cpwQRow,cpwSaveFields,cpwStatsCard,cpwSettingsUI});
 /* the socket Insights asks for its cost-per-wear card (bus.js; stats.js no longer names this file) */
 import {serve} from './bus.js';
+import {itemGoneTell} from './ui.js';
 serve('cpw-stats-card',cpwStatsCard);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,cpwCleanYear,cpwCur,cpwHint,cpwMoney,cpwOf,cpwParse,cpwQSet,cpwSetPrice,cpwText};

@@ -3,9 +3,9 @@
    cards that are not a form yet (being read, couldn't be read, asking for the type). */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit} from './bus.js';
-import {$,BANDS,BEZELS,BLOUSE_TAPE_MAX,COLORS,CUFFS,DIAL_OPTS,FABRIC,MATERIALS_BY,METAL_TYPES,OCP_RANKS,PATS_BY,SEASONS,SEASON_TYPES,SHADE_MAX,SHOE_STYLES,TEXTURE_TYPES,TROUSER_KINDS,TYPES,VESTS,WATCH_STYLES,desc,hasPat,items,leatherLabel,leatherWord,leathersFor,matTypeOne,matsFor,metalOptsFor,normColFor,normPat,patName,sentence,shadeFor,shadeName,tapeText,watchOpts} from './core.js';
-import {cardAt,cardIx,cardOf,cardReading,needType,qAt,qh} from './add-ids.js';
-import {S,aiLabel,cap1,generateSwatch,imgOf,put,queue,updateSwatchParam} from './app.js';
+import {$,BANDS,BEZELS,BLOUSE_TAPE_MAX,COLORS,CUFFS,DIAL_OPTS,FABRIC,MATERIALS_BY,METAL_TYPES,OCP_RANKS,PATS_BY,SEASONS,SEASON_TYPES,SHADE_MAX,SHOE_STYLES,TEXTURE_TYPES,TROUSER_KINDS,TYPES,VESTS,WATCH_STYLES,desc,hasPat,items,leatherLabel,leatherWord,leathersFor,matTypeOne,matsFor,metalOptsFor,normColFor,normPat,paperCloth,patName,sentence,shadeFor,shadeName,tapeText,watchOpts} from './core.js';
+import {cardReading,needType,qh} from './add-ids.js';
+import {S,aiLabel,cap1,cardAt,cardIx,cardOf,generateSwatch,imgOf,put,qAt,queue,updateSwatchParam} from './app.js';
 import {WARD_FIELDS,WARD_MAX,fldRow,matLabel,matPicked,matRow,matTidy,notesRow,optLab} from './fields.js';
 import {addKeep,addKeepSoon} from './add-keep.js';
 import {BLUR_SHARP,measureCloth,nearestCols} from './measure.js';

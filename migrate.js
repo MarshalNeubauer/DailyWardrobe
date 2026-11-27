@@ -8,7 +8,7 @@
    matched, gains held to 0.6-1.6. The sharp copy is kept again under the new close-up's signature. Another device has nothing to do. */
 /* a picture's mean colour in linear light (on a 64x64 copy), and a canvas's colours scaled so its mean matches another's, each channel's
    gain held to 0.6-1.6: the two remakes below (one copy: CR-2-15) */
-import {colOf,isoKey,items} from './core.js';
+import {PH_MAX,TEX_MAX,colOf,isoKey,items} from './core.js';
 import {fixupRedraw,imgOf,put,refreshSwatch,stillCur} from './app.js';
 import {planDirty} from './today-plan.js';
 function linMean64(im){const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,64,64);const d=x.getImageData(0,0,64,64).data,m=[0,0,0];

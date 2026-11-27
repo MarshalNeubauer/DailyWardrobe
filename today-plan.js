@@ -4,8 +4,8 @@
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of today.js on 2026-11-17, Round C.) */
 /* the plan for a month. Every month from two months back shares one simulation (kept in the cache, so anything that clears
    the cache starts it again): another month only plans the days not planned yet. Earlier months are built on their own. */
-import {climate,dayRecs,isoKey,items,settings,todayDate,weather} from './core.js';
-import {idsOf,keyDate} from './days.js';
+import {climate,dayRecs,isoKey,items,keyDate,settings,todayDate,weather} from './core.js';
+import {idsOf} from './days.js';
 import {metaPut,view} from './app.js';
 let cache={};
 /* the one way to throw the plan away (Round B, CR-7-07: `cache={}` was written from 16 files): anything that changes what the planner

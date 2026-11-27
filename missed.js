@@ -1,7 +1,7 @@
 /* Daily Wardrobe: past workdays the app recorded by itself as worn (the app wasn't opened): the toast and Today's card to undo them
    (An ES module since 2026-11-23, the bridge in its last lines; split out of history.js, Round C 2026-11-17, and loaded right after it.) */
-import {dayRecs,isoKey,todayDate} from './core.js';
-import {keyDate,saveDay} from './days.js';
+import {dayRecs,isoKey,keyDate,shortDate,todayDate} from './core.js';
+import {saveDay} from './days.js';
 import {sel} from './app.js';
 import {esc} from './photo-keys.js';
 import {acts} from './act.js';

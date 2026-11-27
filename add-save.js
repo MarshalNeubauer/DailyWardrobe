@@ -2,9 +2,9 @@
    (A card found by its id, and whether Claude is still reading it, are add-ids.js's since the restructure S3c.) */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
 import {emit} from './bus.js';
-import {cardOf,cardReading,needType} from './add-ids.js';
-import {generateSwatch,queue,txs} from './app.js';
-import {$,COLORS,FABRIC,METAL_TYPES,SEASON_TYPES,TEXTURE_TYPES,TYPES,accentsOf,blouseTapes,hasPat,itemName,items,nameIso,nowMs,patBase,sentence,shortDesc,styleWord,watchOpts} from './core.js';
+import {cardReading,needType} from './add-ids.js';
+import {cardOf,generateSwatch,queue,txs} from './app.js';
+import {$,COLORS,FABRIC,METAL_TYPES,SEASON_TYPES,TEXTURE_TYPES,TYPES,accentsOf,askPersist,blouseTapes,hasPat,itemName,items,nameIso,nowMs,patBase,sentence,shortDesc,styleWord,watchOpts} from './core.js';
 import {toast} from './toast.js';
 import {addKeep} from './add-keep.js';
 import {matTidy,wardSaveFields} from './fields.js';

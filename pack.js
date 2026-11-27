@@ -5,9 +5,9 @@
    and pairs of shoes (on a copy of the day records, like the month's drag preview), and "Keep these outfits" locks the
    trip's days with the planner's own lock (rec.lock), so the list stays true when other days change.
    The trip and its limits are kept on the device in localStorage.pack_trip, ticks and travel wear per trip in pack_marks. */
-import {$,SLOTS,TYPES,arriveN,colName,dayRecs,di,handPickSlot,inRotation,isWorkday,isoKey,items,key,nameHtml,nameIso,needsJacket,nm,occOf,offName,planCol,primaryCol,setWardrobe,settings,todayDate} from './core.js';
+import {$,SLOTS,TYPES,arriveN,colName,dayRecs,di,handPickSlot,inRotation,isWorkday,isoKey,items,key,keyDate,nameHtml,nameIso,needsJacket,nm,occOf,offName,planCol,primaryCol,setWardrobe,settings,todayDate} from './core.js';
 import {leatherGroup,planSim,planStart,rateOutfit} from './planner.js';
-import {keyDate,saveDay} from './days.js';
+import {lockIds,saveDay} from './days.js';
 import {cache,hasOutfit,planMonth} from './today-plan.js';
 import {toast} from './toast.js';
 import {shortRest,shortTop,stackSVG} from './month.js';

@@ -5,19 +5,19 @@
    wardrobe.js, care.js and cost.js, whose parts it draws.) */
 import {on,serve,ask,served} from './bus.js';
 import {esc,srcOk} from './photo-keys.js';
-import {cap1,flt,keepFocus,put,refreshSwatch,setFlt} from './app.js';
-import {cropEditor,paperCloth,paperHint,paperLine,paperRetake,phEdit,phSm,photoTools,setPhEdit} from './item-photo.js';
+import {cap1,editing,flt,keepFocus,put,refreshSwatch,setFlt} from './app.js';
+import {cropEditor,paperHint,paperLine,paperRetake,phEdit,photoTools,setPhEdit} from './item-photo.js';
 import {wardPic} from './photos.js';
 import {itemThumb} from './draw.js';
-import {$,BANDS,BEZELS,BLOUSE_TAPE_MAX,COLORS,CUFFS,DIAL_OPTS,FABRIC,HANDPICK_TYPES,MATERIALS_BY,METAL_TYPES,OCP_RANKS,SEASONS,SEASON_TYPES,SHOE_STYLES,TROUSER_KINDS,TYPES,VESTS,WATCH_STYLES,dayRecs,hasPat,hasVest,isoKey,items,leatherLabel,leatherWord,leathersFor,metalOptsFor,normPat,patBase,patName,primaryCol,shadeName,shoeStyle,tapeText,todayDate,trouserKindShown,watchOpts} from './core.js';
-import {closeupBtn,isConnected,tell} from './ui.js';
+import {$,BANDS,BEZELS,BLOUSE_TAPE_MAX,CARE_ABLE,COLORS,CUFFS,DIAL_OPTS,FABRIC,HANDPICK_TYPES,MATERIALS_BY,METAL_TYPES,OCP_RANKS,SEASONS,SEASON_TYPES,SHOE_STYLES,TROUSER_KINDS,TYPES,VESTS,WATCH_STYLES,careTimes,careWashed,careWord,dayRecs,hasPat,hasVest,isoKey,items,keyDate,leatherLabel,leatherWord,leathersFor,metalOptsFor,normPat,paperCloth,patBase,patName,phSm,primaryCol,shadeName,shoeStyle,tapeText,todayDate,trouserKindShown,watchOpts} from './core.js';
+import {closeupBtn,isConnected,itemGoneTell,tell} from './ui.js';
 import {DETECT_PATS,detectPattern,usableSett} from './detect.js';
 import {WATCH_DETAILS_MAX,ivOn,matOnItem,wardBack,wardBar,wardCount,wardDelete,wardDuplicate,wardFieldsTop,wardFlt,wardFresh,wardGrid,wardKeep} from './wardrobe.js';
 import {isFavItem} from './planner.js';
-import {editing,itemGoneTell,renderItem} from './item-view.js';
+import {renderItem} from './item-view.js';
 import {planDirty} from './today-plan.js';
 import {toast} from './toast.js';
-import {keyDate,saveDay} from './days.js';
+import {saveDay} from './days.js';
 import {closeSettings} from './settings.js';
 import {acts} from './act.js';
 const E=(id,k,list,v,lab)=>`<label>${lab?lab:k==='primaryColor'?'Color':k==='secondaryColor'?'Second color':k==='tertiaryColor'?'Third color':k==='watchStyle'||k==='shoeStyle'?'Style':k==='trouserKind'?'Kind':k[0].toUpperCase()+k.slice(1)} <select data-act-change="itemPick" data-id="${esc(id)}" data-f="${k}">${list.map(x=>`<option value="${x[0]}" ${x[0]===v?'selected':''}>${cap1(x[1])}</option>`).join('')}</select></label>`;

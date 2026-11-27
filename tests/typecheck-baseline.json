@@ -4,7 +4,7 @@
  "files": {
   "page": {
    "about.js": 3,
-   "account.js": 13,
+   "account.js": 12,
    "add-paste.js": 4,
    "add-sheet.js": 1,
    "add.js": 4,
@@ -19,7 +19,7 @@
    "backupfile.js": 1,
    "care.js": 16,
    "colpick.js": 24,
-   "core.js": 2,
+   "core.js": 4,
    "daysoff.js": 4,
    "detect.js": 7,
    "draw.js": 3,
@@ -34,7 +34,7 @@
    "own-lists.js": 1,
    "pattern-read.js": 2,
    "photos.js": 4,
-   "safety.js": 2,
+   "safety.js": 1,
    "settings.js": 2,
    "shop.js": 1,
    "stats.js": 3,

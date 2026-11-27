@@ -15,7 +15,7 @@
      ("2 new calendar events"), never applied by themselves
    - the last answer is kept on this phone only (localStorage cal_last), for the review list and Today's trip note */
 import {on} from './bus.js';
-import {$,DAY_NAMES,dayRecs,isWorkday,isoKey,key,occOf,offName,todayDate} from './core.js';
+import {$,DAY_NAMES,dayRecs,isWorkday,isoKey,isoToDate,key,occOf,offName,todayDate,yearDate} from './core.js';
 import {closeSettings,openSettings,refreshToday,saveUserSettings,settingsOpen,settingsPart,settingsSummaries,todayDirty} from './settings.js';
 import {whenPulled} from './history.js';
 import {afterScripts,announce} from './app.js';

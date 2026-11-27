@@ -17,6 +17,7 @@ import {canPick,pickItem,slotLabel} from './history.js';
 import {esc} from './photo-keys.js';
 import {swatchSVG} from './draw.js';
 import {acts} from './act.js';
+import {boxFold,boxUnfold} from './ui.js';
 let scoreOpen=false;
 const dialTone=v=>v>=80?'good':v>=60?'ok':'low';
 const ordinal=n=>{const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])};

@@ -2,15 +2,8 @@
    photo, the fabric close-up, the owner's own colours, patterns and materials, the corrections the owner made before), the sharp copies
    kept on this device, what the tagger learns from the corrections, and what one tagging call costs. */
 
-import {CUSTOM_COL,CUSTOM_PAT,MATERIALS_BY,TAG_TYPES,TYPES,hasPat,ownMats,settings,tagTypesNow} from './core.js';
+import {CLOSE_MAX,CUSTOM_COL,CUSTOM_PAT,MATERIALS_BY,TAG_MAX,TAG_TYPES,TYPES,hasPat,ownMats,settings,tagTypesNow,texSig} from './core.js';
 import {esc} from './photo-keys.js';
-const TAG_MAX=2048,CLOSE_MAX=1536,TAG_Q=.92;
-/* a close-up under TEX_MIN_PX on its short side is refused (the Add card, the item sheet); TEX_MAX is the synced close-up (2026-11-13,
-   the owner: "the zoom-in pictures are still stored at 640"): as sharp as the device-only copy (CLOSE_MAX), now that photos are stored
-   one by one on the server and fetched when needed (it was 640). (Here since the restructure S3c, 2026-11-26: they were add.js's, and
-   migrate.js and item-photo.js read them too) */
-const TEX_MIN_PX=200;
-const TEX_MAX=1536;
 /* the colours and patterns the owner added, when there are any (the worker adds them to what the tagger may answer) */
 const customForTag=()=>{const c=settings.custom||{};return (c.colors||[]).length||(c.patterns||[]).length?{colors:c.colors||[],patterns:c.patterns||[]}:undefined};
 /* the latest corrections (another item's only: the benchmark must not hand an item its own answer) */
@@ -33,11 +26,6 @@ async function tagImgOf(id,it){try{if(!self.caches)return null;const c=await cac
   const b=await r.blob();return await new Promise(ok=>{const f=new FileReader();f.onload=()=>ok(f.result);f.onerror=()=>ok(null);f.readAsDataURL(b)})}catch{return null}}
 async function resignTagImg(id,photo){try{const u=await tagImgOf(id);if(u)await keepTagImg(id,u,photo)}catch{}}
 
-/* the sharp close-up (CLOSE_MAX, on this device only, in the same cache): the synced close-up was 640 px until 2026-11-13 (TEX_MAX is now
-   1536, the same), too small for a fine weave
-   (the owner's mid grey blazer: a fine broken twill read as a false micro-check at 480x640). Kept with the synced close-up's
-   signature, so a close-up replaced, removed or undone never sends the old sharp copy; another device sends the synced one. */
-const texSig=u=>u?u.length+':'+u.slice(-48):'';
 async function keepCloseImg(id,url,tex){try{if(!url||!tex||!self.caches)return;const c=await caches.open(TAGIMG_CACHE);
   await c.put(new Request('closeimg/'+id),new Response(await (await fetch(url)).blob(),{headers:{'content-type':'image/jpeg','x-tex':texSig(tex)}}))}catch(e){console.warn('sharp close-up not kept',e)}}
 async function sharpCloseOf(it){if(!it||!it.texture)return null;
@@ -82,6 +70,6 @@ const readEstimate=()=>describeEstimate('colour',true)+describeEstimate('pattern
 /* An ES module (2026-11-23): its names are its own. The bridge (tests/bridge.test.js lists it; the file has no top-level call): app.js,
    add.js, item-photo.js, migrate.js, measure.js, pattern-read.js, colpick.js, look.js, safety.js and stats.js, classic scripts, and
    add-keep.js, add-save.js, tagging.js (TAG_Q) and checklist.js (texSig), modules that read them as globals, use these */
-Object.assign(globalThis,{TAG_MAX,CLOSE_MAX,TAG_Q,TEX_MIN_PX,TEX_MAX,customForTag,tagFixes,tagExtras,TAGIMG_CACHE,keepTagImg,tagImgOf,resignTagImg,texSig,keepCloseImg,sharpCloseOf,recordTagResult,tagStatsCard,benchEstimate,describeEstimate,readEstimate});
-globalThis.HOOK={__proto__:globalThis.HOOK||null,TAGIMG_CACHE,TAG_MAX,TEX_MAX,keepCloseImg,keepTagImg,resignTagImg,sharpCloseOf,tagExtras,tagImgOf,texSig};
-export {TAG_MAX,CLOSE_MAX,TAG_Q,TEX_MIN_PX,TEX_MAX,customForTag,tagFixes,tagExtras,TAGIMG_CACHE,keepTagImg,tagImgOf,resignTagImg,texSig,keepCloseImg,sharpCloseOf,recordTagResult,tagStatsCard,benchEstimate,describeEstimate,readEstimate};
+Object.assign(globalThis,{customForTag,tagFixes,tagExtras,TAGIMG_CACHE,keepTagImg,tagImgOf,resignTagImg,keepCloseImg,sharpCloseOf,recordTagResult,tagStatsCard,benchEstimate,describeEstimate,readEstimate});
+globalThis.HOOK={__proto__:globalThis.HOOK||null,TAGIMG_CACHE,keepCloseImg,keepTagImg,resignTagImg,sharpCloseOf,tagExtras,tagImgOf};
+export {customForTag,tagFixes,tagExtras,TAGIMG_CACHE,keepTagImg,tagImgOf,resignTagImg,keepCloseImg,sharpCloseOf,recordTagResult,tagStatsCard,benchEstimate,describeEstimate,readEstimate};

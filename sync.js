@@ -4,8 +4,8 @@
    file since the restructure S3b, which moved the pause and the status here and an ended invitation to who.js), sync-photos.js (photos as references, batches), snapshots.js (daily backups, Roll back),
    backupfile.js (download and restore a file); what of the sample wardrobe goes up is kit.js kitShareFilter. */
 import {on,emit,serve} from './bus.js';
-import {$,CLOCK_AHEAD,CLOCK_MIN,cleanState,clockSkew,isoKey,itemName,items,mergeSettings,mergeState,nm,nowMs,setClockSkew,setWardrobe} from './core.js';
-import {addTombstones,atomic,connRestored,metaGet,metaPut,tx,txs} from './app.js';
+import {$,CLOCK_AHEAD,CLOCK_MIN,cleanState,clockSkew,isoKey,itemName,items,mergeSettings,mergeState,nm,nowMs,setClockSkew,setWardrobe,syncMark,syncUrl} from './core.js';
+import {ENDED,addTombstones,atomic,connRestored,editing,endedAnswer,inviteEnded,metaGet,metaPut,storeFailText,storeFailure,tx,txs} from './app.js';
 import {planDirty} from './today-plan.js';
 let restoring=false,syncing=false,syncTimer=null,syncAgain=null,syncRun=null,syncDue=0;
 /* a roll-back waiting for its upload (2026-11-15, the audit: Safari killed 200 ms after "Roll back" left the rolled-back wardrobe on the
@@ -51,7 +51,6 @@ const backupFullMsg=pr=>{let at='';try{at=new Date(nextUtcDay()).toLocaleTimeStr
 function backedUpWords(){const p=+localStorage.getItem('sync_pause')||0;if(p<=nowMs())return 'your wardrobe is backed up';
   let at='';try{at=new Date(p).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{}
   return `your wardrobe is backed up, though not right now: backups are paused until ${at||'tomorrow'}, and your newest changes are only on this phone until then`}
-const syncUrl=()=>{const u=(localStorage.getItem('worker_url')||'').trim();if(!u)return null;try{return new URL('sync',u.endsWith('/')?u:u+'/').href}catch{return null}};
 async function localState(){
   const [its,days,tombstones,settings]=await Promise.all([tx('readonly',s=>s.getAll()),txs('days','readonly',s=>s.getAll()),metaGet('tombstones'),metaGet('settings')]);
   return {items:its||[],days:days||[],tombstones:tombstones||{},settings:settings||null};
@@ -143,9 +142,6 @@ function syncNow(){
   if(!syncRun){const run=syncOnce().finally(()=>{if(syncRun===run)syncRun=null});syncRun=run;return run}
   if(!syncAgain){const run=syncRun;syncAgain=run.catch(()=>{}).then(()=>{syncAgain=null;return syncNow()})}
   return syncAgain}
-/* what this device last agreed on with the worker: the backup's version and a fingerprint of the wardrobe at that moment.
-   While both still hold, a sync is one tiny request: nothing is downloaded or uploaded (the backup is several MB of photos). */
-const syncMark=()=>{try{const m=JSON.parse(localStorage.getItem('sync_mark')||'null');return m&&m.url===syncUrl()&&m.v&&m.sig?m:null}catch{return null}};
 const setSyncMark=(rev,saved,sig)=>{try{localStorage.setItem('sync_mark',JSON.stringify({url:syncUrl(),v:rev+':'+saved,sig}))}catch{}};
 /* last_sync by the corrected time (core.js nowMs), as the server's times it is compared with (CR-5-06: syncWiped held the backups of a phone
    whose clock was behind, its last_sync read as before the server's wipe) */
@@ -311,7 +307,7 @@ function scheduleSync(){clearTimeout(syncTimer);try{if(!localStorage.getItem('sy
 function setRestoring(v){restoring=v}
 /* An ES module since 2026-11-24. The bridge (tests/bridge.test.js): what the classic scripts, the other modules and the tests still use
    as globals. Above the file's top-level set-up, whose connRestored.then and acts({…}) throw when app.js or act.js didn't load */
-Object.assign(globalThis,{syncPaused,syncWaiting,backedUpWords,tabBrowser,safariTab,syncUrl,localState,applyMerged,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,WIPED_SYNC,syncNow,syncMark,SYNC_SEND_MAX,scheduleSync,setRestoring});
+Object.assign(globalThis,{syncPaused,syncWaiting,backedUpWords,tabBrowser,safariTab,localState,applyMerged,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,WIPED_SYNC,syncNow,SYNC_SEND_MAX,scheduleSync,setRestoring});
 /* the socket the setup's Connection step asks for its words (bus.js; setup.js no longer names this file: the restructure S3f) */
 serve('backed-up-words',backedUpWords);
 Object.defineProperties(globalThis,{syncTimer:{get:()=>syncTimer},syncRun:{get:()=>syncRun},restoring:{get:()=>restoring,set:v=>{restoring=v}},syncing:{get:()=>syncing,set:v=>{syncing=v}}});
@@ -319,8 +315,8 @@ Object.defineProperties(globalThis,{syncTimer:{get:()=>syncTimer},syncRun:{get:(
 on('settings-saved',()=>scheduleSync());   // a backup soon after the settings were saved
 on('connection-saved',()=>{syncNow().catch(e=>console.warn('sync not started',e))});   // Settings' Done: a backup now
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,TESTER_SYNC_MS,backupFullMsg,get syncDue(){return syncDue},set syncDue(v){syncDue=v},syncJoinAt,syncJoinMark,get syncLater(){return syncLater},syncTap,get syncing(){return syncing},set syncing(v){syncing=v},applyMerged,backedUpWords,localState,pulledYet,scheduleSync,syncNow,syncPaused,syncRedraw,get syncRun(){return syncRun},get syncTimer(){return syncTimer},syncUrl};
-export {setSyncStatus,syncNetText,syncWaiting,pauseTillTomorrow,syncPaused,backupFullMsg,backedUpWords,tabBrowser,safariTab,restoring,syncing,syncTimer,syncRun,syncDue,syncUrl,localState,applyMerged,syncLater,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,syncTap,WIPED_SYNC,syncNow,syncMark,SYNC_SEND_MAX,syncJoinAt,syncJoinMark,TESTER_SYNC_MS,scheduleSync,setRestoring};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,TESTER_SYNC_MS,backupFullMsg,get syncDue(){return syncDue},set syncDue(v){syncDue=v},syncJoinAt,syncJoinMark,get syncLater(){return syncLater},syncTap,get syncing(){return syncing},set syncing(v){syncing=v},applyMerged,backedUpWords,localState,pulledYet,scheduleSync,syncNow,syncPaused,syncRedraw,get syncRun(){return syncRun},get syncTimer(){return syncTimer}};
+export {setSyncStatus,syncNetText,syncWaiting,pauseTillTomorrow,syncPaused,backupFullMsg,backedUpWords,tabBrowser,safariTab,restoring,syncing,syncTimer,syncRun,syncDue,localState,applyMerged,syncLater,syncRedraw,syncLaterRun,syncNeedsPull,pulledYet,afterPull,syncTap,WIPED_SYNC,syncNow,SYNC_SEND_MAX,syncJoinAt,syncJoinMark,TESTER_SYNC_MS,scheduleSync,setRestoring};
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='hidden'&&syncDue)syncNow();   // a tester's waiting changes, as the app closes
   else if(document.visibilityState==='visible'&&nowMs()-(+localStorage.getItem('last_sync')||0)>60000)syncNow()});
