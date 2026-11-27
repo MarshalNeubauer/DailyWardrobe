@@ -11,7 +11,7 @@ a11y.test.js	add-save.js	<loaded>	cardReady	get
 a11y.test.js	add-sheet.js	<loaded>	addManual	get	get addFor	get npsId	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
 a11y.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	wbNote
 a11y.test.js	analysis.js	<loaded>
-a11y.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	get queue	get sel	keepFocus	metaGet	metaPut	put	set	set flt	set sel	set view	setEditing	setFlt	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
+a11y.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	get editing	get queue	get sel	keepFocus	metaGet	metaPut	put	set	set flt	set sel	set view	setEditing	setFlt	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 a11y.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmWtWants
 a11y.test.js	asm-cm-page.js	<loaded>
 a11y.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmPileKind
@@ -625,7 +625,7 @@ addcards.test.js	analysis.js	<loaded>
 addcards.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addEventListener.once	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	del	endedAnswer	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	get queue	imgOf	keepFocus	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	qAt	renderBusy	set	set queue	setAiError	setAiModel	setEditing	setSel	setView	shrink	sockTag	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 addcards.test.js	asm-cm-job.js	<loaded>
 addcards.test.js	asm-cm-page.js	<any>	<loaded>
-addcards.test.js	asm-color.js	<any>	<loaded>	asmCmBtnCol	asmCmKind	asmCmPref
+addcards.test.js	asm-color.js	<loaded>	asmCmBtnCol	asmCmKind	asmCmPref
 addcards.test.js	asm-gl.js	<loaded>
 addcards.test.js	asm-keys.js	<loaded>
 addcards.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
@@ -2814,7 +2814,6 @@ assets.test.js	index.html	<any>
 assets.test.js	manifest.webmanifest	<any>
 assets.test.js	sw.js	<any>
 assets.test.js	tests/scriptlist.js	<any>
-assets.test.js	tests/webkit.js	<any>
 back.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutConn	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutSay	aboutShow	aboutStart	checkForUpdate	loadFeedback	renderAbout	swVersionOf
 back.test.js	account.js	<loaded>	@onsettingssummaries	acctSettingsPart	acctStart	dropInviteHash	get	loadAccount	renderAccountUI
 back.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -3877,7 +3876,6 @@ bus.test.js	sync.js	<any>
 bus.test.js	tag-request.js	<any>
 bus.test.js	tagging.js	<any>
 bus.test.js	tests/appsrc.js	<any>
-bus.test.js	tests/webkit.js	<any>
 bus.test.js	theme.js	<any>
 bus.test.js	toast.js	<any>
 bus.test.js	today-gestures.js	<any>
@@ -4318,7 +4316,7 @@ cardid.test.js	add-save.js	<loaded>	cardReady	get	save	saveCard	savedTitle
 cardid.test.js	add-sheet.js	<loaded>	get	npsLeave	renderAddFor	setAddFor
 cardid.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	cardPics	errToHand	get	measureGuess	multiMsg	renderAdd	skipCard	wbNote
 cardid.test.js	analysis.js	<loaded>
-cardid.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	get queue	imgOf	keepFocus	loadImg	metaGet	metaPut	put	qAt	set	set flt	setEditing	setSel	setView	shrink	texSwatches	tx	txFail	txs	window.fetch
+cardid.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	get editing	get queue	imgOf	keepFocus	loadImg	metaGet	metaPut	put	qAt	set	set flt	setEditing	setSel	setView	shrink	texSwatches	tx	txFail	txs	window.fetch
 cardid.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote
 cardid.test.js	asm-cm-page.js	<loaded>
 cardid.test.js	asm-color.js	<loaded>	asmCmKind	asmPileKind
@@ -4622,7 +4620,7 @@ claudepattern.test.js	add-save.js	<loaded>	cardReady	get	save	saveCard	savedTitl
 claudepattern.test.js	add-sheet.js	<loaded>	get	npsLeave	renderAddFor	setAddFor
 claudepattern.test.js	add.js	<loaded>	addFiles	addNoteText	addShowCard	addTexture	cardPics	get	renderAdd	texGains	wbNote
 claudepattern.test.js	analysis.js	<loaded>
-claudepattern.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	get queue	imgOf	keepFocus	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	set	set queue	setEditing	setSel	setView	shrink	sockTag	stillCur	storeFailure	texSwatches	tx	txFail	txs	window.fetch
+claudepattern.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	get editing	get queue	imgOf	keepFocus	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	set	set queue	setEditing	setSel	setView	shrink	sockTag	stillCur	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 claudepattern.test.js	asm-cm-job.js	<loaded>	asmGapNote
 claudepattern.test.js	asm-cm-page.js	<loaded>
 claudepattern.test.js	asm-color.js	<loaded>
@@ -4934,7 +4932,7 @@ closeupsheet.test.js	add-save.js	<loaded>	cardReady	get
 closeupsheet.test.js	add-sheet.js	<loaded>	addManual	get	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
 closeupsheet.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	addTexture	dropTexture	renderAdd	texGains	wbNote
 closeupsheet.test.js	analysis.js	<loaded>
-closeupsheet.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	get queue	imgOf	keepFocus	loadImg	matchLight	metaGet	metaPut	put	putRaw	qAt	refreshSwatch	set	set editing	set flt	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
+closeupsheet.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	get editing	get queue	imgOf	keepFocus	loadImg	matchLight	metaGet	metaPut	put	putRaw	qAt	refreshSwatch	set	set editing	set flt	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
 closeupsheet.test.js	asm-cm-job.js	<loaded>	asmGapNote
 closeupsheet.test.js	asm-cm-page.js	<loaded>
 closeupsheet.test.js	asm-color.js	<loaded>
@@ -6373,7 +6371,6 @@ deps.test.js	tagging.js	<any>
 deps.test.js	tests/deps.json	<any>
 deps.test.js	tests/modscope.js	<any>
 deps.test.js	tests/scriptlist.js	<any>
-deps.test.js	tests/webkit.js	<any>
 deps.test.js	theme.js	<any>
 deps.test.js	toast.js	<any>
 deps.test.js	today-gestures.js	<any>
@@ -6627,7 +6624,7 @@ editorrework.test.js	add-save.js	<loaded>
 editorrework.test.js	add-sheet.js	<loaded>	get
 editorrework.test.js	add.js	<loaded>	@document.addEventListenerclick
 editorrework.test.js	analysis.js	<loaded>
-editorrework.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	imgOf	keepFocus	metaGet	metaPut	put	putRaw	set	set editing	set flt	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
+editorrework.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	get editing	imgOf	keepFocus	metaGet	metaPut	put	putRaw	set	set editing	set flt	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
 editorrework.test.js	asm-cm-job.js	<loaded>	asmGapNote
 editorrework.test.js	asm-cm-page.js	<loaded>
 editorrework.test.js	asm-color.js	<loaded>
@@ -7229,7 +7226,7 @@ fieldmerge.test.js	add-save.js	<loaded>
 fieldmerge.test.js	add-sheet.js	<loaded>	get
 fieldmerge.test.js	add.js	<loaded>
 fieldmerge.test.js	analysis.js	<loaded>
-fieldmerge.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	del	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	keepFocus	metaGet	metaPut	put	putRaw	set	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
+fieldmerge.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	del	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	get editing	keepFocus	metaGet	metaPut	put	putRaw	set	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 fieldmerge.test.js	asm-cm-job.js	<loaded>	asmGapNote
 fieldmerge.test.js	asm-cm-page.js	<loaded>
 fieldmerge.test.js	asm-color.js	<loaded>	asmCmBtnCol	asmCmKind	asmCmPref
@@ -7706,6 +7703,7 @@ garmentdraw.test.js	tag-request.js	<loaded>
 garmentdraw.test.js	tagging.js	<loaded>
 garmentdraw.test.js	tests/appsrc.js	<any>
 garmentdraw.test.js	tests/fixedplan.js	<any>
+garmentdraw.test.js	tests/webkit.js	<any>
 garmentdraw.test.js	theme.js	<loaded>	applyTheme
 garmentdraw.test.js	toast.js	<loaded>
 garmentdraw.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -7932,7 +7930,7 @@ garmentpaint.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$tod
 garmentpaint.test.js	today-photofold.js	<loaded>
 garmentpaint.test.js	today-picture.js	<loaded>	@{constel$todayinPice}	applyZoom	swApply	zoomTarget
 garmentpaint.test.js	today-plan.js	<loaded>	get	hasOutfit	planFor	planMonth	planSnapUse
-garmentpaint.test.js	today.js	<loaded>	@setInterval	newDayCheck	renderToday	todaySay	wornPill	wxFit	wxPreload
+garmentpaint.test.js	today.js	<loaded>	@setInterval	newDayCheck	planWith	renderToday	todaySay	wornPill	wxFit	wxPreload
 garmentpaint.test.js	tools/asm-cm-upload.js	<any>
 garmentpaint.test.js	tools/upload-budget.js	<any>
 garmentpaint.test.js	ui.js	<loaded>	inviteOver	isConnected	layerInert	layerUp
@@ -8124,7 +8122,6 @@ globals.test.js	tag-request.js	<any>
 globals.test.js	tagging.js	<any>
 globals.test.js	tests/modscope.js	<any>
 globals.test.js	tests/scriptlist.js	<any>
-globals.test.js	tests/webkit.js	<any>
 globals.test.js	theme.js	<any>
 globals.test.js	toast.js	<any>
 globals.test.js	today-gestures.js	<any>
@@ -9169,7 +9166,7 @@ itemredesign.test.js	add-save.js	<loaded>	cardReady	get	save	saveCard	savedTitle
 itemredesign.test.js	add-sheet.js	<loaded>	@backOnnps	addManual	get	get npsId	npsBack	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
 itemredesign.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	get	renderAdd	skipCard	wbNote
 itemredesign.test.js	analysis.js	<loaded>
-itemredesign.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	afterDom	afterScripts	aiLabel	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	get queue	imgOf	keepFocus	metaGet	metaPut	qAt	set	set editing	set flt	setEditing	setSel	setView	storeFailure	tx	txFail	txs	window.fetch
+itemredesign.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	afterDom	afterScripts	aiLabel	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	get editing	get queue	imgOf	keepFocus	metaGet	metaPut	qAt	set	set editing	set flt	setEditing	setSel	setView	storeFailure	tx	txFail	txs	window.fetch
 itemredesign.test.js	asm-cm-job.js	<loaded>	asmGapNote
 itemredesign.test.js	asm-cm-page.js	<loaded>
 itemredesign.test.js	asm-color.js	<loaded>
@@ -12428,7 +12425,7 @@ ownnames.test.js	add-save.js	<loaded>	cardReady	get	savedTitle
 ownnames.test.js	add-sheet.js	<loaded>	@backOnnps	addManual	get	npsBack	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
 ownnames.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	renderAdd	skipCard	wbNote
 ownnames.test.js	analysis.js	<loaded>
-ownnames.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	keepFocus	loadImg	metaGet	metaPut	set	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
+ownnames.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	get editing	keepFocus	loadImg	metaGet	metaPut	set	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 ownnames.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmWtWants
 ownnames.test.js	asm-cm-page.js	<loaded>
 ownnames.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmPileKind
@@ -12627,7 +12624,7 @@ packcare-taps.test.js	add-sheet.js	<loaded>	addManual	addManualTap	get	npsCard	n
 packcare-taps.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	wbNote
 packcare-taps.test.js	analysis-worker.js	<any>
 packcare-taps.test.js	analysis.js	<any>	<loaded>	groupKind	groupLabel	horizonKeys
-packcare-taps.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	get flt	get queue	get sel	keepFocus	metaGet	metaPut	put	qAt	set	set sel	set view	setEditing	setFlt	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
+packcare-taps.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	get editing	get flt	get queue	get sel	keepFocus	metaGet	metaPut	put	qAt	set	set sel	set view	setEditing	setFlt	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 packcare-taps.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmWtWants
 packcare-taps.test.js	asm-cm-page.js	<loaded>
 packcare-taps.test.js	asm-color.js	<loaded>	asmCmBtnCol	asmCmKind	asmCmPref	asmPileKind
@@ -21575,7 +21572,7 @@ wardrobe.test.js	add-save.js	<loaded>	cardReady	get	save	saveCard	savedTitle
 wardrobe.test.js	add-sheet.js	<loaded>	addManual	get	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
 wardrobe.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	get	renderAdd	wbNote
 wardrobe.test.js	analysis.js	<loaded>
-wardrobe.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	del	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	get flt	get queue	get sel	imgOf	keepFocus	metaGet	metaPut	put	putRaw	qAt	set	set editing	set flt	set sel	set view	setEditing	setFlt	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
+wardrobe.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	del	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	get editing	get flt	get queue	get sel	imgOf	keepFocus	metaGet	metaPut	put	putRaw	qAt	set	set editing	set flt	set sel	set view	setEditing	setFlt	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 wardrobe.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmWtWants
 wardrobe.test.js	asm-cm-page.js	<loaded>
 wardrobe.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmPileKind
@@ -21679,7 +21676,7 @@ wardrobetap.test.js	add-save.js	<loaded>	cardReady	get	savedTitle
 wardrobetap.test.js	add-sheet.js	<loaded>	get	npsLeave	renderAddFor	setAddFor
 wardrobetap.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	cardSkip	errToHand	renderAdd	skipCard	wbNote
 wardrobetap.test.js	analysis.js	<loaded>
-wardrobetap.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	del	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	get queue	imgOf	keepFocus	metaGet	metaPut	put	putRaw	set	set editing	set flt	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
+wardrobetap.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	del	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	get editing	get queue	imgOf	keepFocus	metaGet	metaPut	put	putRaw	set	set editing	set flt	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 wardrobetap.test.js	asm-cm-job.js	<loaded>	asmGapNote
 wardrobetap.test.js	asm-cm-page.js	<loaded>
 wardrobetap.test.js	asm-color.js	<loaded>
