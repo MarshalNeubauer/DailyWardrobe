@@ -1,8 +1,8 @@
 /* Daily Wardrobe: the month view (wear plan): the calendar of fabric stacks
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14.) */
-/* a day opened from the month says emit('day-changed') (bus.js; the restructure S3e, 2026-11-26): today.js, which runs after this file,
+/* a day opened from the month says runHooks('day-changed') (bus.js; the restructure S3e, 2026-11-26): today.js, which runs after this file,
    pins renderToday for it */
-import {emit,serve,ask,served} from './bus.js';
+import {serve,ask,served,runHooks} from './bus.js';
 import {fabricDef} from './draw.js';
 import {$,MONTH_EASE,MONTH_MS,colName,dayRecs,isWorkday,itemName,key,keyDate,occOf,offName,patName,primaryCol,shortCol,todayDate,wearsJacket,esc} from './core.js';
 import {cache,hasOutfit,planFor,planMonth} from './today-plan.js';
@@ -148,7 +148,7 @@ function monthRelease(dx,ms){const sw=$('#mswipe');if(!sw)return false;const fas
     sw.style.transition='transform .16s ease-in,opacity .16s';sw.style.transform=`translateX(${dx<0?-w:w}px)`;sw.style.opacity='0';
     setTimeout(()=>monthStep(n,(dx<0?1:-1)*w*.6),160);return true}
   sw.style.transition='transform .2s ease-out,opacity .2s';sw.style.transform='translateX(0)';sw.style.opacity='1';return false}
-function openDay(t){setSel(new Date(t));setView({y:sel.getFullYear(),m:sel.getMonth()});setMonthOpen(false);emit('day-changed');scrollTo({top:0,behavior:'smooth'})}
+function openDay(t){setSel(new Date(t));setView({y:sel.getFullYear(),m:sel.getMonth()});setMonthOpen(false);runHooks('day-changed');scrollTo({top:0,behavior:'smooth'})}
 /* the box on Today: the next few workdays as small stacks; tap it and the month unfolds below */
 function monthLink(){
   const days=[];for(let d=new Date(sel),g=0;days.length<5&&g<14;g++,d.setDate(d.getDate()+1))if(isWorkday(d)){const o=planOn(d);if(hasOutfit(o))days.push([new Date(d),o])}

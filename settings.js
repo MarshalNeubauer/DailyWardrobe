@@ -3,12 +3,12 @@
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14;
    days off, weather, toasts, dates and the theme are in daysoff.js, weather.js, toast.js, locale.js and theme.js since 2026-11-17.)
    The categories other files draw (days off, weather, the dress code, own lists, Laundry, the connection, Backup, About, the calendar,
-   the account box, the reminder) are not named here: Settings announces on the notice board (bus.js) when it is drawn, opened, its
-   summaries written, a category opened, saved or closed, and each of those files pinned what it does then (restructure step 0's
-   pilot, 2026-11-25). It imports only the board: an import of core.js or back.js broke the offline deep link (the service worker
+   the account box, the reminder) are not named here: Settings runs the features' hooks (bus.js runHooks; N2, 2026-11-27: they were
+   notes on the notice board from restructure step 0's pilot, 2026-11-25) when it is drawn, opened, its summaries written, a category
+   opened or saved, and each of those files registered what it does then. It imports only the board: an import of core.js or back.js broke the offline deep link (the service worker
    answers a file asked for under another folder with the root's copy, so an import resolved against the root ran the file a second
    time; bus.js keeps nothing on the page, so a second copy of it is harmless). Everything else it still reads as globals. */
-import {on,heard,emit,ask,served,serve,need,needFn} from './bus.js';
+import {on,emit,ask,served,serve,need,needFn,runHooks,slotsOf,hooked} from './bus.js';
 import {$,DAY_NAMES,MATERIALS_BY,applyCustom,dayRecs,inviteOver,isoKey,key,keyDate,keySettings,mergeSettings,nowMs,occOf,ownMats,setWardrobe,settings,settingsOpen,stampSettings,todayDate,wearsJacket,wearsTie} from './core.js';
 import {layerClose,layerOpen,tell} from './ui.js';
 import {backDrop,backKind,backPush} from './back.js';
@@ -22,7 +22,7 @@ function setCatOpen(key,open,instant){const el=$('#sc-'+key);if(!el)return;el.cl
   el.classList.toggle('open',open);const b=el.querySelector('.scat-head');if(b)b.setAttribute('aria-expanded',open);
   // a category opened: Backup reads the daily backups list (snapshots.js), About draws itself only as it opens (CR-7-06: its header ran
   // it on closing too, and asked the server each time), Laundry & cleaning draws its lists (care.js)
-  if(open)emit('settings-category',key)}
+  if(open)runHooks('settings-category',key)}
 // a category unfolds where it is: no scroll to show what opened (the owner, 2026-11-17: "I want it to unfold and not scroll automatically at all")
 // the summaries (what was changed inside) are written once the fold has finished moving, not in its first frames
 /** @param {*} key */ function toggleCat(key){const el=$('#sc-'+key);if(!el)return;const open=!el.classList.contains('open');setCatOpen(key,open);
@@ -39,7 +39,7 @@ function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
     return days<=0?'today':days===1?'yesterday':d.toLocaleDateString(undefined,{month:'short',day:'numeric'})};
   // (2026-11-15, the audit: "Backed up today" while the day's saves were used up and none of the new items was on the server)
   const pz=+localStorage.getItem('sync_pause')||0;
-  if(served('sync-paused')?ask('sync-paused'):pz>nowMs()){const p=pausedUntil(pz);return last?`Paused until ${p} · last saved ${when(last)}`:`Paused until ${p}: not backed up yet`}
+  const R=slotsOf('settings-rows');if(R.syncPaused?R.syncPaused():pz>nowMs()){const p=pausedUntil(pz);return last?`Paused until ${p} · last saved ${when(last)}`:`Paused until ${p}: not backed up yet`}
   if(/^Backups held/.test(st))return 'Held: deleted from the server on another device';   // (sync.js syncWiped)
   if(/^Backing up/.test(st))return last?`Backing up photos · last saved ${when(last)}`:'Backing up photos: not finished yet';   // (photos going up in batches, sync-photos.js phBatch)
   if(/^Not backed up:/.test(st))return last?`Waiting for a connection · last saved ${when(last)}`:'Waiting for a connection: not backed up yet';
@@ -48,7 +48,7 @@ function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
 /* the summaries: the files whose category a line describes fill in what only they know (S: the dress code's words, the country's
    name, the calendar's line, the unit, whether connected, the connection's line), and the account and the reminder do what they do
    whenever Settings changes (account.js applyRole, remind.js remindSoon); a part that isn't here leaves its line as Settings words it */
-function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textContent=t};const S={};emit('settings-summaries',S);
+function settingsSummaries(){const set=(k,t)=>{const e=$('#sum-'+k);if(e)e.textContent=t};const S={};runHooks('settings-summary',S);
   // the days from the week's first one: the first day (Sunday first) whose day before isn't one of them, so Sun–Thu reads "Sun–Thu"
   // (sorted from Monday it read "Mon, Tue, Wed, Thu, Sun", audit 2026-11-13)
   const days=l=>{const has=new Set(l),s0=weekFirst(l),s=[...has].sort((a,b)=>((a-s0+7)%7)-((b-s0+7)%7)),n=i=>DAY_NAMES[i].slice(0,3);if(!s.length)return 'none';
@@ -81,7 +81,7 @@ function scheduleWear(days,S){const j=wearsJacket(),t=wearsTie();
   try{if($('#cfg-url')) $('#cfg-url').value=localStorage.getItem('worker_url')||'';
     if($('#cfg-token')) $('#cfg-token').value=localStorage.getItem('app_token')||''}catch(e){console.warn('connection not read',e)}
   // Settings opening: the Advanced folds start closed every time (ui.js advClose), the Backup line is written (sync-status.js)
-  try{emit('settings-open')}catch(e){console.warn('backup line not drawn',e)}
+  try{runHooks('settings-open')}catch(e){console.warn('backup line not drawn',e)}
   try{renderSettingsExtras()}catch(e){console.warn('Settings drawn in part',e)}
   try{settingsSummaries()}catch(e){console.warn('Settings summaries not drawn',e)}
   if($('#settings-modal')){ $('#settings-modal').style.display='block'; $('#settings-modal').style.pointerEvents='auto'; }
@@ -123,8 +123,8 @@ function saveSettings(){
   // next sync merged this phone's wardrobe into the other account
   const tu=$('#cfg-url')?$('#cfg-url').value.trim():null,tt=$('#cfg-token')?$('#cfg-token').value.trim():null,cu=(localStorage.getItem('worker_url')||'').trim(),ct=(localStorage.getItem('app_token')||'').trim();
   // (CR-5-07, 2026-11-17) a first connection typed here too: it skipped the server's check of the code and "Add this phone's N pieces…?"
-  if(heard('connection-typed')&&tu&&tt&&(!ct||!cu||tt!==ct||tu.replace(/\/*$/,'/')!==cu.replace(/\/*$/,'/'))){
-    closeSettings();emit('connection-typed',tu,tt);return}   // (account.js acctTyped)
+  if(hooked('connection-typed')&&tu&&tt&&(!ct||!cu||tt!==ct||tu.replace(/\/*$/,'/')!==cu.replace(/\/*$/,'/'))){
+    closeSettings();runHooks('connection-typed',tu,tt);return}   // (account.js acctTyped)
   // full or blocked storage: Done still closes Settings (it threw before closing), and says the connection wasn't kept
   try{if($('#cfg-url')) localStorage.setItem('worker_url',$('#cfg-url').value.trim());
     if($('#cfg-token')) localStorage.setItem('app_token',$('#cfg-token').value.trim())}
@@ -132,7 +132,7 @@ function saveSettings(){
   need('conn-keep');   // the database's copy of the connection follows (app.js)
   closeSettings();
   try{need('add-draw')}catch(e){console.warn('Add page not drawn',e)}
-  emit('connection-saved');   // a backup now (sync.js syncNow)
+  runHooks('connection-saved');   // a backup now (sync.js syncNow)
 }
 
 /* another tab of the app (an invitation link tapped twice opens a second one) may have saved the settings since this page read them:
@@ -148,25 +148,26 @@ async function saveUserSettings(){stampSettings(settings);need('plan-dirty');   
       if(st&&st.ks&&settings.ks&&(st.updated||0)>setSeen){setWardrobe({settings:mergeSettings(st,settings)});keySettings(settings);applyCustom(settings.custom);todayDirty()}}
     catch(e){console.warn('stored settings not read',e)}}
   setSeen=settings.updated||0;
-  await need('meta-put','settings',settings);need('plan-dirty');try{if(setChan)setChan.postMessage({u:setSeen})}catch{}emit('settings-saved')}   // (sync.js: a backup soon)
+  await need('meta-put','settings',settings);need('plan-dirty');try{if(setChan)setChan.postMessage({u:setSeen})}catch{}runHooks('settings-saved')}   // (sync.js: a backup soon)
 /* testers have daily limits instead of costs: no "about 7¢" for them (account.js knows who is connected) */
 const showCost=()=>!(served('is-tester')&&ask('is-tester'));
 /* the parts of Settings drawn by later scripts (Round B, CR-7-11: account.js and remind.js replaced renderSettingsExtras with a wrapper
    at load, so a reader of this file couldn't see that every redraw also draws the account box, asks /me and draws the reminder):
-   each registers once with settingsPart(fn), and renderSettingsExtras runs them last, in the order they registered (script order).
-   Since the restructure's pilot (2026-11-25) a part is a note on the notice board's 'settings-parts' (bus.js), the same order */
-function settingsPart(fn){on('settings-parts',fn)}
+   each feature's 'settings-parts' hook (bus.js register; N2, 2026-11-27: it was settingsPart(fn), a note on the notice board), which
+   renderSettingsExtras runs last, in load order. Its 'settings-rows' slots (bus.js slots) are the rows drawn where main drew them:
+   item pictures and Start the plan over first, the painter's rows after Today's outfit, the backup's pause in the Backup line */
 /* Settings drawn: the parts other files own draw themselves on 'settings-draw' (dress.js the dress code, daysoff.js the occasions and
    the days off, own-lists.js the own colors, patterns and materials, ui.js the connection, care.js the cleaning limits, weather.js the
-   location and units), in their load order; then what this file draws, then the summaries, then the parts drawn last */
+   location and units, cost.js the cleaning costs), in their load order; then what this file draws, then the summaries, then the parts
+   drawn last */
 function renderSettingsExtras(){
-  need('item-pic-ui');need('replan-ui');emit('settings-draw');
-  renderPicturesUI();if(served('asm-ui')){ask('asm-ui');if(need('asm-live'))ask('asm-sync')}
+  const R=slotsOf('settings-rows');R.renderItemPicUI?.();R.renderReplanUI?.();runHooks('settings-draw');
+  renderPicturesUI();if(R.renderAsmUI){R.renderAsmUI();if(need('asm-live'))R.asmSync?.()}
   const tog=(id,list)=>{const el=$(id);if(el)el.innerHTML=DAY_NAMES.map((n,i)=>`<button type="button" class="dtog ${list.includes(i)?'on':''}" data-act="dayTap" data-list="${id}" data-i="${i}" aria-pressed="${list.includes(i)}">${n.slice(0,3)}</button>`).join('')};
   tog('#cfg-workdays',settings.workdays);tog('#cfg-blazer',settings.blazerDays.filter(d=>settings.workdays.includes(d)));
   if($('#cfg-vest'))$('#cfg-vest').value=settings.vestMode||'auto';if($('#cfg-dark'))$('#cfg-dark').value=settings.darkShirts||'some';
   settingsSummaries();
-  emit('settings-parts');   // look.js renderLookSetting, account.js acctSettingsPart, calendar.js renderCalUI, remind.js renderRemindUI
+  runHooks('settings-parts');   // look.js renderLookSetting, account.js acctSettingsPart, calendar.js renderCalUI, remind.js renderRemindUI
 }
 /* ---- Settings → Outfit pictures: "Painted pictures" (the default) or "Drawing only" (photos.js picsDrawn; settings.pictures, synced).
    For everyone, at the top of the category, not in the Advanced fold; drawn here rather than in index.html, like the other rows made
@@ -180,12 +181,12 @@ function renderPicturesUI(){const pan=$('#sp-photos .mpanel-in');if(!pan)return;
 <label class="srow">Show <select id="cfg-pictures" data-act-change="picsPick" aria-label="Today’s outfit" aria-describedby="pics-help"><option value="painted">Painted pictures</option><option value="drawn">Drawing only</option></select></label>`;
   $('#cfg-pictures').value=v}
 async function setPictures(v){const d=v==='drawn';if(d===need('pics-drawn'))return;settings.pictures=d?'drawn':'painted';await saveUserSettings();picsSwitched();
-  renderPicturesUI();if(served('asm-ui'))ask('asm-ui');settingsSummaries()}
+  renderPicturesUI();slotsOf('settings-rows').renderAsmUI?.();settingsSummaries()}
 /* the choice changed (here, or on another device: start.js onSyncedData): Today is drawn again (once Settings closes, refreshToday), and
    back on "Painted pictures" the day on screen is painted or downloaded at once, while Settings is still open, and building ahead resumes
    from asmEnsure; on "Drawing only" building ahead stops at its next look (asmAhead's stop) */
 function picsSwitched(){refreshToday();if(need('pics-drawn')||!need('asm-live'))return;
-  ask('asm-sync');const o=need('plan-for')[key(need('sel-day'))];if(o&&need('has-outfit',o))ask('asm-ensure',o);need('prefetch-soon')}
+  const P=slotsOf('pictures-switched');P.asmSync?.();const o=need('plan-for')[key(need('sel-day'))];if(o&&need('has-outfit',o))P.asmEnsure?.(o);P.schedulePrefetch?.()}
 /* (vest, workdays, blazer days and units are drawn on Today too: todayStale redraws it when Settings closes; it stayed stale until a restart, audit 2026-11-14) */
 function setVestMode(v){settings.vestMode=v;saveUserSettings();todayDirty();settingsSummaries()}
 /* how often dark shirts are planned (planner.js, darkMode): the coming week is planned again with the new choice */
@@ -217,7 +218,7 @@ function setViewStale(v){viewStale=v}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 serve('refresh-today',refreshToday);   // (the restructure S6p: the painter, asm-today.js and asm-cm-page.js, redraws Today when a picture is ready; it loads before this file)
 globalThis.HOOK={__proto__:globalThis.HOOK||null,SET_CATS,saveSettings,setCatOpen,setDarkShirts,setOpenTap,get setOther(){return setOther},setPictures,get todayStale(){return todayStale},backupSummary,toggleDay,settingsSummaries,closeSettings,openSettings,refreshToday,renderSettingsExtras,saveUserSettings,showCost,toggleCat};
-export {SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayStale,todayDirty,viewStale,refreshToday,closeSettings,saveSettings,setSeen,setOther,saveUserSettings,showCost,settingsPart,renderSettingsExtras,renderPicturesUI,setPictures,picsSwitched,setVestMode,setDarkShirts,toggleDay,setWanted,setOpenTap,setSetSeen,setViewStale};
+export {SET_CATS,setCatOpen,toggleCat,backupSummary,settingsSummaries,weekFirst,openSettings,todayStale,todayDirty,viewStale,refreshToday,closeSettings,saveSettings,setSeen,setOther,saveUserSettings,showCost,renderSettingsExtras,renderPicturesUI,setPictures,picsSwitched,setVestMode,setDarkShirts,toggleDay,setWanted,setOpenTap,setSetSeen,setViewStale};
 /* the notice board (bus.js): what Settings does when the router announces it (nav.js no longer names this file; the restructure S3f) */
 on('page-showing',()=>closeSettings());   // another page is shown: Settings closes
 on('page-back',()=>{if(settingsOpen())saveSettings()});   // the phone's Back with no page over Settings: what Done does

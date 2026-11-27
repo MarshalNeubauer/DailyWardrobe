@@ -2,7 +2,7 @@
    subOpen, openAdd, pagesOn) is nav.js's since the restructure S3f (2026-11-26); this file keeps the tabs' and Add's handlers, so a tap
    on a tab during loading counts from where it always did (this file's place in the list)
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14.) */
-import {ask,need,needFn} from './bus.js';
+import {ask,need,needFn,slotsOf,runHooksSeq} from './bus.js';
 import {backOn} from './back.js';
 import {PAGES,openAdd,pageBack,setPageWant,setPagesOn,show,showWanted,subBack} from './nav.js';
 import {$,applyCustom,cleanDay,cleanRecord,key,setWardrobe,settings,settingsOpen,takeSettings,todayDate} from './core.js';
@@ -58,16 +58,16 @@ function applyStored(r,d,st,sn){startRead={r,d};const kept=need('stored-clean',r
   if(key(need('sel-day'))===key(todayDate())){const h=need('home-day');need('sel-set',new Date(h));need('view-set',{y:h.getFullYear(),m:h.getMonth()})}
   need('plan-snap-use',sn)}
 /* started before Today is first drawn: the plan rules check and the one-time fix-ups of old records */
-function startChecks(){need('plan-rules-check').then(()=>need('when-pulled',needFn('check-arrivals'))).then(()=>{if(!$('#today').hidden)refreshToday()});
-  need('after-scripts',()=>ask('vests-migrate'));need('when-pulled',needFn('learn-drop'));
-  need('when-pulled',()=>need('after-scripts',()=>need('kit-fix-old').then(n=>{if(n&&!$('#today').hidden)refreshToday()})));
-  need('when-pulled',()=>need('kit-sample-migrate'))}
+function startChecks(){const P=slotsOf('start-checks');Promise.resolve(P.checkPlanRules?.()).then(()=>need('when-pulled',needFn('check-arrivals'))).then(()=>{if(!$('#today').hidden)refreshToday()});
+  need('after-scripts',()=>P.migrateVests?.());need('when-pulled',()=>P.dropLearn?.());
+  need('when-pulled',()=>need('after-scripts',()=>{if(P.kitFixOldImports)P.kitFixOldImports().then(n=>{if(n&&!$('#today').hidden)refreshToday()})}));
+  need('when-pulled',()=>P.kitSampleMigrate?.())}
 /* after Today is drawn: the setup, the weather and holidays, the kept photos (then appReady) and the photo fix-ups, the safety checks */
-function startJobs(){need('after-scripts',()=>ask('setup-start'));ask('weather-load');need('after-scripts',()=>ask('holidays-refresh'));   // (without setup.js, weather.js or daysoff.js start-up goes on: the restructure S6h)
-  need('renders-load').then(()=>/** @type {any} */(need('asm-live')?ask('asm-load'):0)).then(()=>{need('after-dom',()=>{window.appReady=true});if(need('asm-live'))need('after-scripts',()=>ask('asm-sync'));if(Object.keys(need('renders')).length&&!$('#today').hidden)refreshToday();
+function startJobs(){const P=slotsOf('start-jobs');need('after-scripts',()=>P.setupStart?.());ask('weather-load');need('after-scripts',()=>P.refreshHolidays?.());   // (without setup.js, weather.js or daysoff.js start-up goes on: the restructure S6h)
+  need('renders-load').then(()=>/** @type {any} */(need('asm-live')?P.asmLoad?.():0)).then(()=>{need('after-dom',()=>{window.appReady=true});if(need('asm-live'))need('after-scripts',()=>P.asmSync?.());if(Object.keys(need('renders')).length&&!$('#today').hidden)refreshToday();
     need('item-backdrops-fix').then(n=>{if(n&&!$('#today').hidden)refreshToday()});
     need('when-pulled',()=>need('tex-swatches').then(n=>{if(n&&!$('#today').hidden)refreshToday()}));
-    need('when-pulled',()=>need('spec-recolour').then(n=>{if(n&&!$('#today').hidden)refreshToday()}).then(()=>need('closeups-upgrade')).then(()=>need('photos-upgrade')).then(()=>need('backdrops-fix')).then(()=>need('small-photos')));
+    need('when-pulled',()=>runHooksSeq('after-pull-fixups'));   // (migrate.js's recolor, close-ups, photos and backdrops, then item-photo.js's small photos: load order, one after another)
     need('after-scripts',()=>need('safety-start'))})}
 
 /* (Today opens on the home day once the settings are read: today, or the next workday when today is a weekend or a day off; it opened on the
@@ -78,8 +78,8 @@ function startJobs(){need('after-scripts',()=>ask('setup-start'));ask('weather-l
 /* service worker: fresh files on every load, offline fallback (only over http/https) */
 if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(e=>console.warn('service worker not registered',e));
 /* sync brought new data: refresh the in-memory outfit history too */
-function onSyncedData(m){setWardrobe({days:Object.fromEntries((m.days||[]).map(d=>[d.date,d]))});const drawn=need('pics-drawn');if(m.settings){setWardrobe({settings:takeSettings(settings,m.settings)});setSetSeen(m.settings.updated||0);applyCustom(settings.custom)}ask('dress-synced',m);ask('weather-load');ask('remind-soon');   // (another device may have changed the coming outfits: the reminder lines follow, CR-4-09)
-  if(need('pics-drawn')!==drawn){picsSwitched();if(settingsOpen()){renderPicturesUI();ask('asm-ui')}}}   // "Drawing only" chosen on another device
+function onSyncedData(m){setWardrobe({days:Object.fromEntries((m.days||[]).map(d=>[d.date,d]))});const drawn=need('pics-drawn');if(m.settings){setWardrobe({settings:takeSettings(settings,m.settings)});setSetSeen(m.settings.updated||0);applyCustom(settings.custom)}const Y=slotsOf('synced');Y.dressSynced?.(m);Y.wardSynced?.(m);ask('weather-load');ask('remind-soon');   // (another device may have changed the coming outfits: the reminder lines follow, CR-4-09)
+  if(need('pics-drawn')!==drawn){picsSwitched();if(settingsOpen()){renderPicturesUI();slotsOf('settings-rows').renderAsmUI?.()}}}   // "Drawing only" chosen on another device
 /* the markup's handlers (act.js): Add's ‹, the Wardrobe's round +, and the Wardrobe and Insights tabs (data-page: the page shown) */
 function addBackTap(){subBack()}
 function wardAddTap(){openAdd()}

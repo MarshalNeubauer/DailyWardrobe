@@ -32,7 +32,7 @@ function kitHist(){if(kit&&kit.hist===undefined)kit.hist=backBorrow('kit')}
 /* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
 function setKitNoMine(v){kitNoMine=v}
 /* the notice board (bus.js): "Try a sample wardrobe" on an empty Insights or Packing list (stats.js no longer names this file) */
-import {on,askFor,served,serve,emit} from './bus.js';
+import {on,askFor,served,serve,runHooks,register} from './bus.js';
 import {savedTitle} from './add-save.js';
 import {addKeep,addRevive} from './add-keep.js';
 import {multiMsg,renderAdd} from './add.js';
@@ -131,7 +131,7 @@ async function kitUnsave(b){if(!b)return;
   if(back.length)await addKeep();
   try{await kitDelMany(b.its,b.olds||[])}catch(e){for(const q of back){const k=queue.indexOf(q);if(k>=0)queue.splice(k,1)}if(back.length)addKeep();throw e}
   if(kitBatch===b)kitBatch=null;planDirty();todayDirty();if(b.qs.length)multiMsg('');   // ("Saved 5 items to your wardrobe." stayed over the cards Undo brought back)
-  if(b.qs.length&&$('#add')&&!$('#add').hidden)renderAdd();else if($('#wardrobe')&&!$('#wardrobe').hidden)emit('wardrobe-changed');
+  if(b.qs.length&&$('#add')&&!$('#add').hidden)renderAdd();else if($('#wardrobe')&&!$('#wardrobe').hidden)runHooks('wardrobe-changed');
   const ol=(b.olds||[]).length;   // (b.olds: pieces an import updated, put back as they were)
   toast(ol?`Undone: ${b.its.length?`${b.its.length} item${b.its.length===1?'':'s'} taken out, `:''}${ol} piece${ol===1?'':'s'} as ${ol===1?'it was':'they were'}.`:b.its.length===1?'Undone: the item is back on Add.':`Undone: ${b.its.length} items taken out.`,3000)}
 
@@ -179,7 +179,7 @@ async function kitDelMany(ids,put=[],days=[]){ids=[...new Set(ids)];const now=no
 const KIT_NO_COPY=['id','added','updated','paused','order','arrives','away','cleaned','cleans','sample','sampleMine'];
 /** @param {*} id */ async function kitDuplicate(id){const it=items.find(x=>x.id===id);if(!it)return;const c=JSON.parse(JSON.stringify(it));for(const k of KIT_NO_COPY)delete c[k];
   c.id=crypto.randomUUID();c.added=nowMs();await put(c);items.push(c);planDirty();todayDirty();
-  if($('#wardrobe')&&!$('#wardrobe').hidden)emit('wardrobe-changed');
+  if($('#wardrobe')&&!$('#wardrobe').hidden)runHooks('wardrobe-changed');
   askFor('item-show',c.id);toast('Duplicated. Change anything that differs, like its name.',3500)}
 
 /* ---- import from a spreadsheet ----
@@ -525,7 +525,7 @@ async function kitImportGo(){if(!kitImp||kitImpBusy)return;const rows=kitImp.row
   let ok=false,list=[];try{list=cards.map(kitItem);ok=await kitStore(list,cards.length>40?prog:null,news)}finally{kitImpBusy=false;for(const x of cx)if(x)x.disabled=false}
   if(!ok){kitImpBtn();return}
   const ids=list.map(i=>i.id);kitImp=null;if(ids.length)try{localStorage.setItem(KIT_IMP_LAST,JSON.stringify({ids,at:Date.now()}))}catch{}
-  kitClose();if($('#add')&&!$('#add').hidden)renderAdd();else if($('#wardrobe')&&!$('#wardrobe').hidden)emit('wardrobe-changed');
+  kitClose();if($('#add')&&!$('#add').hidden)renderAdd();else if($('#wardrobe')&&!$('#wardrobe').hidden)runHooks('wardrobe-changed');
   const said=[ids.length?`Imported ${ids.length} item${ids.length===1?'':'s'}`:'',news.length?`${ids.length?'updated':'Updated'} ${news.length} piece${news.length===1?'':'s'}`:''].filter(Boolean).join(' and ');
   toast(`${said}.`,KIT_IMP_UNDO_MS,{label:'Undo',fn:()=>kitUnsave({its:ids,qs:[],olds})})}
 /* imports made on the 14 Nov version saved a row naming an own colour as its place in settings.custom.colors ("0", "1"), shown as "None",
@@ -717,7 +717,7 @@ function kitShareFilter(st,remote,join){kitSdNew={};const off=new Set((st.items|
   return {...st,items:st.items.filter(i=>!off.has(i.id)),days}}
 /* a sample piece kept as the owner's own (the item sheet) */
 async function kitKeepSample(id){const it=items.find(i=>i.id===id);if(!it||!it.sample)return;delete it.sample;delete it.sampleMine;await put(it);planDirty();todayDirty();
-  if($('#wardrobe')&&!$('#wardrobe').hidden)emit('wardrobe-changed');toast('It’s yours now: Remove the sample keeps it.',3000)}
+  if($('#wardrobe')&&!$('#wardrobe').hidden)runHooks('wardrobe-changed');toast('It’s yours now: Remove the sample keeps it.',3000)}
 /* marks: the Wardrobe grid's tag and the item sheet's note */
 const kitSampleTag=i=>i.sample&&!kitEdited(i)?'<span class="pausetag sampletag">Sample</span>':'';
 /** @param {*} i */ const kitSampleNote=i=>i.sample&&!kitEdited(i)?`<section class="card ivsec ivsample"><p class="shelp">A piece of the sample wardrobe: Remove the sample takes it away. Change anything on it, or keep it, and it stays as yours.</p><div class="btns"><button type="button" id="iv-keep" data-act="kitKeepTap" data-id="${esc(i.id)}">Keep it as mine</button></div></section>`:'';
@@ -821,5 +821,8 @@ acts({kitShut,kitBackTap,kitNextTap,kitGuideTap,kitUnimportTap,kitTemplateTap,ki
   kitKeepTap,kitAddOwnTap,kitSampleRemoveTap,kitTourTap,kitSampleTap,kitSetupSampleTap,homeInstallTap,homeCopyTap,
   importOpenTap,tourAgainTap,homeAgainTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('kit-quiet',()=>kitQuiet);serve('kit-saved',kitSaved);serve('paper-tip',()=>kitOpen([PAPER_CARD]));serve('kit-sample-tag',kitSampleTag);serve('kit-duplicate',kitDuplicate);serve('kit-sample-note',kitSampleNote);serve('kit-no-mine',setKitNoMine);serve('kit-share-filter',kitShareFilter);serve('kit-sent-stamp',kitSentStamp);serve('kit-share-done',kitShareDone);serve('kit-shown',()=>!!kit);serve('home-open',homeOpen);serve('safari-remind',safariRemind);serve('kit-home-close',()=>{if(kit&&kit.cards[0]===HOME_CARD)kitClose()});serve('tour-open',tourOpen);serve('home-steps',homeSteps);serve('kit-start-row',kitStartRow);serve('home-tester',homeTester);serve('home-copy-btn',homeCopyBtn);serve('kit-sample-load',kitSampleLoad);serve('kit-import-open',kitImportOpen);serve('kit-open',kitOpen);serve('home-about',homeAbout);
-serve('kit-user-edit',kitUserEdit);serve('kit-sample-banner',kitSampleBanner);serve('kit-fix-old',kitFixOldImports);serve('kit-sample-migrate',kitSampleMigrate);   // the restructure S6f: what required and today-no-picture files ask of this file
+serve('kit-quiet',()=>kitQuiet);serve('paper-tip',()=>kitOpen([PAPER_CARD]));serve('kit-duplicate',kitDuplicate);serve('kit-no-mine',setKitNoMine);serve('kit-shown',()=>!!kit);serve('home-open',homeOpen);serve('kit-home-close',()=>{if(kit&&kit.cards[0]===HOME_CARD)kitClose()});serve('tour-open',tourOpen);serve('home-steps',homeSteps);serve('kit-start-row',kitStartRow);serve('home-tester',homeTester);serve('home-copy-btn',homeCopyBtn);serve('kit-sample-load',kitSampleLoad);serve('kit-import-open',kitImportOpen);serve('kit-open',kitOpen);serve('home-about',homeAbout);
+serve('kit-user-edit',kitUserEdit);   // the restructure S6f: what required and today-no-picture files ask of this file
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('kit',{'start-checks':()=>({kitFixOldImports,kitSampleMigrate}),'start-safety':()=>({safariRemind}),'today-parts':()=>({kitSampleBanner}),
+  'item-sheet-parts':()=>({kitSampleNote}),'wardrobe-tile':()=>({kitSampleTag}),'card-saved':()=>({kitSaved}),'sync-send':()=>({kitShareFilter,kitSentStamp,kitShareDone})});

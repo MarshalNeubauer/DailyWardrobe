@@ -6,7 +6,7 @@
    - tell(message): a plain notice (a toast that stays long enough to read)
    - isConnected(), needConn(): what the buttons that need the server show while the app is not connected
    - advToggle(button), advClose(): the "Advanced" folds in Settings */
-import {on,ask,need,served,serve} from './bus.js';   // (the restructure S6f: what this file asks of later and optional files)
+import {on,ask,need,served,serve,register} from './bus.js';   // (the restructure S6f: what this file asks of later and optional files)
 import {ACTS,acts} from './act.js';
 import {toast} from './toast.js';
 import {backBorrow,backOn,backReturn,backSettled} from './back.js';
@@ -151,10 +151,6 @@ function sheetSwipe(v,o){if(!v||v.dataset.swipe)return;v.dataset.swipe='1';let s
   v.addEventListener('pointermove',e=>{if(!st||st.pid!==e.pointerId)return;if(move(e.clientX,e.clientY,e.timeStamp))e.preventDefault()});
   const pend=e=>{if(!st||st.pid!==e.pointerId)return;try{v.releasePointerCapture(e.pointerId)}catch{}end()};
   v.addEventListener('pointerup',pend);v.addEventListener('pointercancel',pend);v.addEventListener('dragstart',e=>{if(st&&st.pid!==undefined)e.preventDefault()})}   // (a photo in the handle would be dragged off as a picture)
-/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
-on('settings-open',()=>advClose());   // the Advanced folds start closed every time Settings opens
-on('settings-draw',()=>renderConnUI());
-on('settings-summaries',S=>{S.connected=isConnected;S.conn=connSummary});
 backOn('ask',()=>askBack());
 /* the first paragraph of the message is the question (bold), the rest the explanation; a question asked while another is up answers that one no */
 function askConfirm(message,opt){const o={...ASK_NONE,...(opt||{})};if(asking)askAnswer(false);
@@ -347,3 +343,6 @@ globalThis.HOOK={__proto__:globalThis.HOOK||null,closeupClose,get connBusy(){ret
 export {noMotion,asking,askAnswer,askConfirm,cuTouch,cuOpen,closeupBtn,cuGot,closeupPick,closeupClose,tell,layerFrom,layerInert,layerOpen,layerClose,netErr,plainErr,NEED_CONN,needConn,connSummary,connMsg,connBusy,renderConnUI,addGate,advClose,itemGoneTell,boxUnfold,foldEdge,boxFold,revealNeed,pageScroll,monthBelow,keepInView,foldQuiet,sheetSwipe,BOX_LIFT,boxStop};
 acts({advTap,askNoTap,askYesTap,cuBtnTap,connOwnTap,connLinkKey,connGoTap,connOffTap,addConnTap});
 serve('tell',tell);   // the restructure S6f: app.js, which loads before this file, tells of an ended invitation
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('ui',{'settings-open':()=>advClose(),   // the Advanced folds start closed every time Settings opens
+  'settings-draw':()=>renderConnUI(),'settings-summary':S=>{S.connected=isConnected;S.conn=connSummary}});

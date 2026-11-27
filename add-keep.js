@@ -1,7 +1,7 @@
 /* Daily Wardrobe: Add, the cards kept when the app is closed (split from add.js, Round C 2026-11-17): every card's form and
    pictures in the database's meta store, brought back at the next start (addRestore, addRevive), and the listeners that keep them. */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {emit,askFor,serve} from './bus.js';
+import {emit,askFor,serve,register} from './bus.js';
 import {fill,generateSwatch,imgOf,metaGet,queue,shrink,txs} from './app.js';
 import {$,TAG_MAX,items} from './core.js';
 import {toast} from './toast.js';
@@ -71,4 +71,6 @@ function addWatch(){if(addWatchOn)return;addWatchOn=true;askFor('guard-unsaved')
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get addKeepT(){return addKeepT},get addRestoreState(){return addRestoreState},set addRestoreState(v){addRestoreState=v}};
 export {addKeepT,addRestoreState,addKeepSoon,addCardRec,addKeep,addRevive,addRestore,addWatch};
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('add-keep',addKeep);serve('add-restore',addRestore);serve('add-keep-soon',addKeepSoon);
+serve('add-keep',addKeep);serve('add-keep-soon',addKeepSoon);
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('add-keep',{'start-safety':()=>({addRestore})});   // Add cards not saved before the app was closed

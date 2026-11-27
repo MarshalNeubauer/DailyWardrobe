@@ -4,52 +4,34 @@
 // listed announcer or listener that no longer does it, a listener with nobody announcing, or an announcement nobody hears.
 // The typed registry (types/sockets.d.ts, N1, 2026-11-27): it fails on a socket the files use that it doesn't declare, a declared one
 // nobody asks, an index signature, a need of a name outside Needs, a hook outside Hooks, and a copy that tools/sockets-dts.js wouldn't
-// write; the hooks (register, runHooks, runHooksSeq, registered) are checked as bus.js runs them.
+// write; the hooks (register, runHooks, runHooksSeq, registered, slotsOf, hooked) are checked as bus.js runs them.
+// The hooks (the notice board made clean, N2, 2026-11-27): HOOKS lists each moment with the files that run it and the features that register
+// for it, in load order; it fails on a moment used but not listed, a runner or a feature that changed, a feature that registers twice, under
+// another name than its file's, or anywhere but as its file's last statement.
 const fs=require('fs'),path=require('path'),vm=require('vm');
 const {appSrc}=require('./appsrc');
 
 /* topic -> {emit: files that announce it, on: files that pin for it (in load order), what: what it means} */
 const TOPICS={
-  'settings-open':{emit:['settings.js'],on:['ui.js','sync-status.js'],what:'Settings is opening: the Advanced folds close, the Backup line is written'},
-  'settings-draw':{emit:['settings.js'],on:['daysoff.js','weather.js','ui.js','dress.js','own-lists.js','care.js'],what:'Settings is drawn: each part draws its own rows'},
-  'settings-summaries':{emit:['settings.js'],on:['weather.js','daysoff.js','ui.js','dress.js','account.js','calendar.js','remind.js'],what:'the category summaries are written: parts fill in what only they know'},
-  'settings-parts':{emit:['settings.js'],on:['look.js','account.js','calendar.js','remind.js'],what:'the parts drawn last (settingsPart)'},
-  'settings-category':{emit:['settings.js'],on:['care.js','snapshots.js','about.js'],what:'a category opened (its key)'},
-  'settings-saved':{emit:['settings.js'],on:['sync.js'],what:'the settings were stored: a backup soon'},
   'settings-closed':{emit:['settings.js'],on:['nav.js'],what:'Settings closed (the page a sync changed meanwhile, or null)'},
-  'connection-saved':{emit:['settings.js'],on:['sync.js'],what:'Done stored the connection: a backup now'},
-  'connection-typed':{emit:['settings.js'],on:['account.js'],what:'another address or code typed in Connection: the account decides'},
   'folding-all':{emit:['today.js'],on:['ui.js'],what:'a swipe to another day folds everything at once (true), and is done (false): the folds are quiet meanwhile'},
-  'day-changed':{emit:['month.js','history.js'],on:['today.js'],what:'the day shown or its record changed (a day opened from the month, a swap, a pick, a mark, an occasion, Reset): Today is drawn again'},
   'backup-changed':{emit:['sync.js'],on:['sync-status.js'],what:'the backup\'s status changed (a sync ran, failed, paused or was held): the Backup line is written again'},
   'figure-cloth':{emit:['draw.js'],on:['today.js'],what:'the mannequin\'s cloth for an item is ready (draw.js figCuGet): Today\'s figure is drawn again with it'},
-  'invite-ended':{emit:['app.js'],on:['sync-status.js','account.js'],what:'the invitation this phone uses has ended: the Backup line, then the account box, say so'},
   'page-showing':{emit:['nav.js'],on:['settings.js'],what:'a page is being shown (its name): Settings closes'},
   'page-back':{emit:['nav.js'],on:['settings.js'],what:'the phone\'s Back with no page over Settings: Settings, when open, does what Done does'},
   'sub-opening':{emit:['nav.js'],on:['settings.js'],what:'a page opens over another (subOpen): Settings, when open, fills in S.set, its open categories and scroll'},
   'sub-back':{emit:['nav.js'],on:['settings.js'],what:'that page goes back to Settings (subBack, with what S.set held): Settings opens as it was'},
   'sample-asked':{emit:['stats.js'],on:['kit.js'],what:'"Try a sample wardrobe" tapped on an empty Insights or Packing list (heard: whether the button is offered)'},
   'card-changed':{emit:['measure.js','pattern-read.js','tagging.js','checklist.js','add-keep.js','own-lists.js','colpick.js','add-more.js','add-save.js','add-card.js','add-sheet.js','account.js'],on:['add.js'],what:'an Add card changed (a field, a reading, a measurement): Add is drawn again (the restructure S3c: the files loaded before add.js never call renderAdd; S6c: nor account.js, another group)'},
-  'wardrobe-changed':{emit:['app.js','pattern-read.js','checklist.js','photos.js','colpick.js','add-card.js','look.js','fav.js','item-photo.js','item-view.js','wardrobe.js','care.js','shop.js','sync.js','kit.js'],on:['itemsheet.js'],what:'a piece changed (or the Wardrobe\'s filter): the Wardrobe and the item sheet are drawn again (renderWardrobe; the restructure S3d: the files loaded before itemsheet.js never call it; S6c: nor shop.js, sync.js and kit.js, other groups, where the Wardrobe shows)'},
 };
 
 /* name -> {serve: files that serve it (one), ask: files that ask for it (in load order), what: what it does}. A socket is how a
    required (or today-no-picture) file calls into an optional one without importing it (tests/load-contract.json) */
 const SOCKETS={
-  'add-for':{serve:'add-sheet.js',ask:['nav.js'],what:'Add opened with the type Today\'s "Add one" asked for, or that type dropped when Add is left (setAddFor; the restructure S3c)'},
-  'nps-leave':{serve:'add-sheet.js',ask:['nav.js'],what:'Add is left with the "Add without a photo" sheet open: it goes, its Back entry handed back first (npsLeave)'},
   'add-draw':{serve:'add.js',ask:['nav.js','settings.js'],what:'Add is shown: it is drawn (renderAdd)'},
-  'setup-yield':{serve:'setup.js',ask:['nav.js'],what:'a page is shown: a setup that opened by itself steps aside (setupYield)'},
-  'shop-close':{serve:'shop.js',ask:['nav.js'],what:'another page is shown: What to buy closes (closeShop)'},
-  'pack-show':{serve:'pack.js',ask:['nav.js'],what:'a page is shown: the packing list page shows or hides (packShow)'},
   'setup-needs':{serve:'setup.js',ask:['month.js','stats.js'],what:'what the wardrobe still needs before a day can be dressed (setupNeeds), for Insights'},
-  'shop-button':{serve:'shop.js',ask:['stats.js'],what:'What to buy\'s button on Insights (shopButton)'},
-  'fav-stats-card':{serve:'fav.js',ask:['stats.js'],what:'the favorites card on Insights (favStatsCard)'},
-  'cpw-stats-card':{serve:'cost.js',ask:['stats.js'],what:'the cost-per-wear card on Insights (cpwStatsCard)'},
   'item-open':{serve:'item-view.js',ask:['toast.js','nav.js','checklist.js','item-photo.js'],what:'which piece the item sheet has open: its id, or null (editing; the restructure S3d)'},
   'item-draw':{serve:'item-view.js',ask:['nav.js','checklist.js'],what:'the item sheet is drawn again, or put away when nothing is open (renderItem)'},
-  'item-drop':{serve:'item-view.js',ask:['nav.js'],what:'another page is shown: the item sheet goes without sliding (dropItem)'},
-  'wardrobe-draw':{serve:'itemsheet.js',ask:['nav.js'],what:'the Wardrobe is shown: it is drawn (renderWardrobe)'},
   'backed-up-words':{serve:'sync.js',ask:['ui.js','setup.js'],what:'how the backup stands, in words, for the setup\'s Connection step (backedUpWords)'},
   'look-use-pick':{serve:'look.js',ask:['colpick.js'],what:'the color sheet\'s Use on a material, leather, metal or buckle (lookUsePick; the restructure S5d: colpick.js loads before look.js)'},
   'look-set-enamel':{serve:'look.js',ask:['colpick.js'],what:'a tie clip\'s enamel set from the color sheet (lookSetEnamel)'},
@@ -62,8 +44,6 @@ const SOCKETS={
   'pat-summary':{serve:'itemsheet.js',ask:['look.js'],what:'the item sheet\'s pattern layout in words, under the Look beta\'s Pattern row (patSummary)'},
   'pat-redetect':{serve:'itemsheet.js',ask:['look.js'],what:'Read pattern from photo, from the Look beta\'s Pattern row (redetect)'},
   'pat-clear':{serve:'itemsheet.js',ask:['look.js'],what:'Use generic, from the Look beta\'s Pattern row (clearStripes)'},
-  'care-tag':{serve:'care.js',ask:['wardrobe.js'],what:'a piece away being cleaned, in words, on its Wardrobe tile (careTag; the restructure S5d: wardrobe.js loads before care.js)'},
-  'care-badge':{serve:'care.js',ask:['wardrobe.js'],what:'"Due for cleaning" on a Wardrobe tile (careBadge)'},
   'care-log':{serve:'care.js',ask:['add-more.js'],what:'a piece back from the cleaner noted in its record (careLog)'},
   'care-back-text':{serve:'care.js',ask:['add-more.js'],what:'the toast for pieces back from the cleaner (careBackText)'},
   // the painter's (the restructure S6p, 2026-11-27): where a today-no-picture file (assemble, asm-look, asm-today, draw), a required one
@@ -107,10 +87,6 @@ const SOCKETS={
   'asm-cm-warm':{serve:'asm-cm-page.js',ask:['asm-today.js'],what:'the coming looks\' masters set up ahead (asmCmWarm)'},
   'asm-cm-ui':{serve:'asm-cm-page.js',ask:['asm-today.js'],what:'Settings\' Pictures ahead and Painted plain rows (asmCmUI)'},
   'asm-suit-weave':{serve:'asm-look.js',ask:['draw.js'],what:'the weave the painter reads from a jacket, for the drawn figure (asmSuitWeave)'},
-  'asm-load':{serve:'asm-today.js',ask:['start.js'],what:'the painted pictures kept on the device read at start-up (asmLoad)'},
-  'asm-sync':{serve:'asm-today.js',ask:['settings.js','start.js'],what:'the pictures on the server listed, the day\'s painted (asmSync)'},
-  'asm-ensure':{serve:'asm-today.js',ask:['settings.js'],what:'the day\'s picture painted when "Painted pictures" is chosen again (asmEnsure)'},
-  'asm-ui':{serve:'asm-today.js',ask:['settings.js','start.js'],what:'Settings\' Outfit pictures Advanced rows drawn (renderAsmUI)'},
   'pattern-readable':{serve:'pattern-read.js',ask:['asm-cm-job.js'],what:'whether a piece\'s pattern can be read, for Painted plain (readable; the painter may not import the Add group)'},
   'pattern-reread':{serve:'pattern-read.js',ask:['asm-cm-page.js'],what:'Read N patterns: a piece\'s pattern read again (rereadSett)'},
   'refresh-today':{serve:'settings.js',ask:['asm-today.js','asm-cm-page.js','photos.js','missed.js','today.js'],what:'Today redrawn when its picture is ready (refreshToday; settings.js loads after the painter)'},
@@ -119,7 +95,6 @@ const SOCKETS={
   // need (a ReferenceError when nothing is served, as the bare name threw when the file was missing)
   'announce':{serve:'app.js',ask:['toast.js'],what:"words read out by the live region (announce): the Undo button's"},
   'today-draw':{serve:'today.js',ask:['nav.js','settings.js'],what:"Today drawn (renderToday): the router, Settings closing, a redraw; without today.js the router still throws, so start-up says \"Today couldn’t be shown\""},
-  'stats-draw':{serve:'stats.js',ask:['nav.js'],what:"Insights drawn (renderStats)"},
   'pics-drawn':{serve:'photo-keys.js',ask:['settings.js','start.js'],what:"whether \"Drawing only\" is chosen (picsDrawn)"},
   'today-home':{serve:'today.js',ask:['settings.js'],what:"Today on the home day follows a workday taken away (keepHome)"},
   'conn-keep':{serve:'app.js',ask:['settings.js'],what:"the database's copy of the connection follows (connKeep)"},
@@ -130,9 +105,6 @@ const SOCKETS={
   'has-outfit':{serve:'today-plan.js',ask:['settings.js'],what:"whether a planned day has an outfit (hasOutfit)"},
   'plan-dirty':{serve:'today-plan.js',ask:['app.js','days.js','settings.js'],what:"the cached plan is stale (planDirty)"},
   'asm-live':{serve:'photos.js',ask:['settings.js','start.js'],what:"whether the painter is on (asmLive)"},
-  'item-pic-ui':{serve:'photos.js',ask:['settings.js'],what:"Settings' Generate item pictures button (renderItemPicUI)"},
-  'prefetch-soon':{serve:'photos.js',ask:['settings.js'],what:"the coming days' pictures fetched soon (schedulePrefetch)"},
-  'replan-ui':{serve:'history.js',ask:['settings.js'],what:"Settings' Start the plan over line (renderReplanUI)"},
   'locks-clear':{serve:'days.js',ask:['settings.js'],what:"the coming days' locks let go after a rules change (clearLocks)"},
   'after-dom':{serve:'app.js',ask:['start.js'],what:"fn once the page's scripts have run (afterDom)"},
   'after-scripts':{serve:'app.js',ask:['start.js'],what:"fn once the page has loaded (afterScripts)"},
@@ -148,15 +120,11 @@ const SOCKETS={
   'plan-snap-use':{serve:'today-plan.js',ask:['start.js'],what:"the stored plan snapshot taken at start-up (planSnapUse)"},
   'wx-preload':{serve:'today.js',ask:['start.js'],what:"the kept weather put in place at start-up (wxPreload)"},
   'home-day':{serve:'month.js',ask:['missed.js','start.js'],what:"the day Today opens on (homeDay)"},
-  'plan-rules-check':{serve:'history.js',ask:['start.js'],what:"the plan rules checked at start-up (checkPlanRules)"},
-  'learn-drop':{serve:'history.js',ask:['start.js'],what:"an old setting dropped once the first pull is in (dropLearn)"},
   'when-pulled':{serve:'history.js',ask:['start.js'],what:"fn once the first pull is in (whenPulled)"},
   'weather-load':{serve:'weather.js',ask:['today.js','start.js','sync.js'],what:"the weather loaded (loadWeather): start-up, a sync"},
-  'holidays-refresh':{serve:'daysoff.js',ask:['start.js'],what:"the public holidays refreshed at start-up (refreshHolidays)"},
   'renders-load':{serve:'photo-keys.js',ask:['start.js'],what:"the kept pictures read at start-up (loadRenders)"},
   'renders':{serve:'photo-keys.js',ask:['start.js'],what:"the kept pictures (renders)"},
   'item-backdrops-fix':{serve:'photos.js',ask:['start.js'],what:"the one-time gray backdrops of item pictures (fixItemBackdrops)"},
-  'small-photos':{serve:'item-photo.js',ask:['start.js'],what:"the one-time small copies of item photos (smallPhotos)"},
   'belt-stuck':{serve:'pickscore.js',ask:['history.js'],what:"the words when the belt has to stay (BELT_STUCK)"},
   'pick-follow':{serve:'pickscore.js',ask:['history.js'],what:"which slots follow a swapped or picked one (FOLLOW)"},
   'beltless':{serve:'pickscore.js',ask:['history.js'],what:"whether a belt would need shoes that don't suit the outfit (beltless)"},
@@ -180,13 +148,10 @@ const SOCKETS={
   'pic-stop':{serve:'today-photofold.js',ask:['today.js'],what:"a photo's motion stopped for another tile (picStop)"},
   'zoom-apply':{serve:'today-picture.js',ask:['today.js'],what:"the picture's zoom put back after a redraw (applyZoom)"},
   'ovl-piece':{serve:'today-picture.js',ask:['today.js'],what:"a cloth swatch on the picture (ovlPiece)"},
-  'sw-apply':{serve:'today-picture.js',ask:['today.js'],what:"an open swatch kept open through a redraw (swApply)"},
   'sw-tap':{serve:'today-picture.js',ask:['today.js'],what:"a swatch tapped: it opens up close (swTap)"},
-  'zoom-out':{serve:'today-picture.js',ask:['today.js'],what:"the picture zoomed out for another day (zoomOut)"},
   'ph-edit':{serve:'item-photo.js',ask:['photos.js'],what:"the photo editor's state (phEdit): a crop under way holds the Wardrobe's redraw"},
   'horizon-keys':{serve:'analysis.js',ask:['stats.js'],what:"the workdays Insights and What to buy measure (horizonKeys)"},
   'dress-why-unused':{serve:'dress.js',ask:['stats.js'],what:"why shoes are never worn, without jackets (dressWhyUnused)"},
-  'tag-stats-card':{serve:'tag-request.js',ask:['stats.js'],what:"the tagging card on Insights (tagStatsCard)"},
   'swatch-svg':{serve:'draw.js',ask:['fav.js'],what:'a piece\'s swatch on the favorites (swatchSVG; fav.js, a logic file, may not import the painter)'},
   // the restructure S6c (2026-11-27, STEP6 rule 3): an optional file's call into another group it doesn't need, or into a file of its own
   // group that loads after it
@@ -203,22 +168,13 @@ const SOCKETS={
   'guard-unsaved':{serve:'safety.js',ask:['add-keep.js'],what:'the warning before the tab closes over unsaved cards (guardUnsaved)'},
   'err-report':{serve:'safety.js',ask:['about.js'],what:'the problems noted on this phone, for Feedback (errReport)'},
   'sync-store-tell':{serve:'safety.js',ask:['sync.js'],what:'a storage failure during a sync told (syncStoreTell)'},
-  'safari-remind':{serve:'kit.js',ask:['safety.js'],what:'Safari\'s \"Download a backup\" reminder (safariRemind)'},
-  'ward-pending-restore':{serve:'wardrobe.js',ask:['safety.js'],what:'a name typed just before the app was killed put back (wardPendingRestore)'},
-  'add-restore':{serve:'add-keep.js',ask:['safety.js'],what:'the Add cards not saved before the app was closed brought back (addRestore)'},
   'app-version':{serve:'about.js',ask:['safety.js'],what:'the app\'s version, for the error report (appVersion)'},
   'acct-role':{serve:'who.js',ask:['ui.js','safety.js','sync.js','kit.js','about.js'],what:'the role this phone is connected as: owner, tester or null (acctRole)'},
   'acct-me':{serve:'who.js',ask:['ui.js','photos.js','colpick.js','look.js'],what:'the account the server answered (acct.me), whose lookups count is kept up to date'},
   'kit-quiet':{serve:'kit.js',ask:['add-keep.js'],what:'whether the sample or an import is being written (kitQuiet)'},
-  'kit-saved':{serve:'kit.js',ask:['add-save.js'],what:'\"Saved\", with Undo, for an item saved from Add (kitSaved)'},
   'paper-tip':{serve:'kit.js',ask:['item-photo.js'],what:'the white paper tip opened (kitOpen([PAPER_CARD]))'},
-  'kit-sample-tag':{serve:'kit.js',ask:['wardrobe.js'],what:'a sample piece\'s tag on its Wardrobe tile (kitSampleTag)'},
   'kit-duplicate':{serve:'kit.js',ask:['wardrobe.js'],what:'a piece duplicated (kitDuplicate)'},
-  'kit-sample-note':{serve:'kit.js',ask:['itemsheet.js'],what:'the item sheet\'s note on a sample piece (kitSampleNote)'},
   'kit-no-mine':{serve:'kit.js',ask:['itemsheet.js'],what:'a change that doesn\'t make a sample piece his, on and off (setKitNoMine)'},
-  'kit-share-filter':{serve:'kit.js',ask:['sync.js'],what:'what of the sample wardrobe a backup sends (kitShareFilter)'},
-  'kit-sent-stamp':{serve:'kit.js',ask:['sync.js'],what:'a sample day\'s stamp as sent (kitSentStamp)'},
-  'kit-share-done':{serve:'kit.js',ask:['sync.js'],what:'the sample days sent noted (kitShareDone)'},
   'kit-shown':{serve:'kit.js',ask:['account.js'],what:'whether the kit\'s sheet is open'},
   'home-open':{serve:'kit.js',ask:['account.js'],what:'the Home Screen sheet opened (homeOpen)'},
   'kit-home-close':{serve:'kit.js',ask:['setup.js'],what:'the kit\'s Home Screen sheet closed when the setup shows its own step'},
@@ -235,7 +191,6 @@ const SOCKETS={
   'setup-finish':{serve:'setup.js',ask:['kit.js'],what:'the setup finished (setupFinish)'},
   'setup-sample':{serve:'setup.js',ask:['kit.js'],what:'the sample wardrobe from the setup\'s last step (setupSample)'},
   'setup-conn-draw':{serve:'setup.js',ask:['account.js'],what:'the setup\'s Connection and All set steps drawn again, when showing'},
-  'setup-ward-empty':{serve:'setup.js',ask:['wardrobe.js'],what:'the empty Wardrobe\'s first steps (setupWardEmpty)'},
   'tz-country':{serve:'setup.js',ask:['weather.js'],what:'the country of the phone\'s time zone (tzCountry)'},
 'country-codes':{serve:'daysoff.js',ask:['setup.js'],what:'the countries with a holiday list (COUNTRY_CODES) (the restructure S6g)'},
 'holiday-country-set':{serve:'daysoff.js',ask:['setup.js'],what:"the time zone's holidays fetched at the setup's end (setHolidayCountry) (the restructure S6g)"},
@@ -261,34 +216,21 @@ const SOCKETS={
   'card-field':{serve:'add-card.js',ask:['own-lists.js','colpick.js'],what:'an Add card\'s field set and counted as chosen (setQField)'},
   'add-keep':{serve:'add-keep.js',ask:['pattern-read.js','tagging.js','about.js'],what:'the Add cards kept now (addKeep)'},
   'add-keep-soon':{serve:'add-keep.js',ask:['cost.js'],what:'the Add cards kept soon (addKeepSoon)'},
-  'look-section':{serve:'look.js',ask:['add-card.js'],what:'the Look beta\'s section of an Add card (lookSection)'},
-  'look-save':{serve:'look.js',ask:['add-save.js'],what:'the Look beta\'s fields saved with an item (lookSave)'},
   'look-own-mat-ui':{serve:'look.js',ask:['own-lists.js'],what:'the Look beta\'s own leathers and metals in Settings (lookOwnMatUI)'},
-  'new-suit-vest':{serve:'dress.js',ask:['add-save.js','add-card.js'],what:'whether a new suit has a vest (newSuitVest)'},
   'dress-new-item':{serve:'dress.js',ask:['add-save.js','shop.js','kit.js'],what:'the dress code looked at again after a new item (dressNewItem)'},
-  'cpw-save-fields':{serve:'cost.js',ask:['add-save.js'],what:'the price and the day bought saved with an item (cpwSaveFields)'},
-  'cpw-q-row':{serve:'cost.js',ask:['add-card.js'],what:'an Add card\'s price row (cpwQRow)'},
-  'cpw-settings-ui':{serve:'cost.js',ask:['care.js'],what:'the currency and what a cleaning costs, in Laundry & cleaning (cpwSettingsUI)'},
-  'cpw-block':{serve:'cost.js',ask:['itemsheet.js'],what:'the item sheet\'s price and cost per wear (cpwBlock)'},
-  'cpw-sum':{serve:'cost.js',ask:['itemsheet.js'],what:'the cost per wear in the item sheet\'s summary (cpwSum)'},
   'care-band-soon':{serve:'care.js',ask:['today-picture.js'],what:'the cleaning banner\'s cut follows the swatches (careBandSoon)'},
-  'care-state':{serve:'care.js',ask:['itemsheet.js'],what:'a piece\'s wears since cleaning (careState)'},
-  'care-card':{serve:'care.js',ask:['itemsheet.js'],what:'the item sheet\'s cleaning card (careCard)'},
   'care-reminders':{serve:'care.js',ask:['remind.js'],what:'the cleaning reminders for the days ahead (careReminders)'},
   'care-unlock':{serve:'locks.js',ask:['add-more.js','care.js'],what:'the locks made while a piece was away released (careUnlock)'},
   'check-arrivals':{serve:'add-more.js',ask:['today.js','start.js','care.js'],what:'the pieces on order that arrived put in rotation (checkArrivals)'},
   'remind-soon':{serve:'remind.js',ask:['days.js','start.js','care.js'],what:'the reminders sent again soon (remindSoon)'},
   'fav-ward':{serve:'fav.js',ask:['wardrobe.js'],what:'whether the Wardrobe shows the favorite pieces'},
   'fav-mark':{serve:'fav.js',ask:['history.js','wardrobe.js'],what:'a favorite\'s heart on its tile (favMark)'},
-  'fav-item-row':{serve:'fav.js',ask:['itemsheet.js'],what:'the item sheet\'s favorite switch (favItemRow)'},
   'fav-chip':{serve:'fav.js',ask:['itemsheet.js'],what:'the Wardrobe\'s Favorites chip (favChip)'},
   'fav-off':{serve:'fav.js',ask:['itemsheet.js'],what:'the Favorites chip let go (favOff)'},
   'item-show':{serve:'item-view.js',ask:['cost.js','kit.js'],what:'a piece opened in the item sheet (openItem)'},
-  'item-synced':{serve:'item-view.js',ask:['sync.js'],what:'the item sheet follows a synced copy (itemSynced)'},
   'replace-texture':{serve:'item-photo.js',ask:['colpick.js'],what:'an item\'s close-up replaced (replaceTexture)'},
   'item-field':{serve:'wardrobe.js',ask:['colpick.js'],what:'a saved piece\'s field set as the Wardrobe sets it (setItemField)'},
   'ward-view':{serve:'wardrobe.js',ask:['item-view.js'],what:'the Wardrobe\'s pieces as shown (wardView)'},
-  'ward-synced':{serve:'wardrobe.js',ask:['dress.js'],what:'the materials and sock toes of synced pieces from an older app made current'},
   'item-body':{serve:'itemsheet.js',ask:['item-view.js'],what:'the item sheet\'s body (itemBody)'},
   'zoomed':{serve:'today-picture.js',ask:['today-gestures.js'],what:'the picture\'s zoom, or null'},
   'shop-open':{serve:'shop.js',ask:['today-gestures.js'],what:'whether What to buy is open (shopOpen)'},
@@ -331,7 +273,6 @@ const SOCKETS={
   'cat-toggle':{serve:'settings.js',ask:['ui.js'],what:"a Settings category folds or unfolds (toggleCat) (the restructure S6f)"},
   'settings-extras':{serve:'settings.js',ask:['ui.js'],what:"Settings' parts drawn again (renderSettingsExtras) (the restructure S6f)"},
   'settings-open':{serve:'settings.js',ask:['ui.js','today.js'],what:"Settings opens, on a part (openSettings) (the restructure S6f)"},
-  'stats-show':{serve:'stats.js',ask:['nav.js'],what:"Insights is shown (statsShow) (the restructure S6f)"},
   'show-cost':{serve:'settings.js',ask:['photos.js'],what:"whether costs are shown (showCost) (the restructure S6f)"},
   'week-first':{serve:'settings.js',ask:['month.js','scorecard.js'],what:"the work week's first day (weekFirst) (the restructure S6f)"},
   'after-pull':{serve:'sync.js',ask:['history.js'],what:"a call once the first pull is merged (afterPull) (the restructure S6f)"},
@@ -344,12 +285,7 @@ const SOCKETS={
   'formal-ui':{serve:'daysoff.js',ask:['history.js'],what:"Settings' occasions drawn again (renderFormalUI) (the restructure S6f)"},
   'fav-why':{serve:'fav.js',ask:['scorecard.js'],what:"the score card's \"a favorite look\" line (favWhy) (the restructure S6f)"},
   'temp':{serve:'weather.js',ask:['scorecard.js'],what:"a temperature in the person's units (temp) (the restructure S6f)"},
-  'sw-close':{serve:'today-picture.js',ask:['today.js'],what:"an open swatch closes (swClose) (the restructure S6f)"},
   'pulled-yet':{serve:'sync.js',ask:['today.js'],what:"whether the first pull is merged (pulledYet) (the restructure S6f)"},
-  'fav-last-icon':{serve:'fav.js',ask:['today.js'],what:"the last-worn pill's icon (favLastIcon) (the restructure S6f)"},
-  'fav-pill-seg':{serve:'fav.js',ask:['today.js'],what:"the ♡ joined to the worn pill (favPillSeg) (the restructure S6f)"},
-  'care-frame':{serve:'care.js',ask:['today.js'],what:"Today's cleaning frame for a piece (careFrame) (the restructure S6f)"},
-  'wx-chip':{serve:'weather.js',ask:['today.js'],what:"Today's weather chip (wxChip) (the restructure S6f)"},
   'wx-unit':{serve:'weather.js',ask:['setup.js'],what:"the person's temperature unit (unit); served = the setup's Weather step is shown (the restructure S6h)"},
   'wx-units-set':{serve:'weather.js',ask:['setup.js'],what:'the temperature unit chosen (setUnits) (the restructure S6h)'},
   'wx-location-set':{serve:'weather.js',ask:['setup.js'],what:'the weather location set (setLocation) (the restructure S6h)'},
@@ -357,27 +293,45 @@ const SOCKETS={
   'wx-city-find':{serve:'weather.js',ask:['setup.js'],what:'the city search (findCity) (the restructure S6h)'},
   'wx-city-found':{serve:'weather.js',ask:['setup.js'],what:"the city search's answers (cityFound) (the restructure S6h)"},
   'wx-city-found-set':{serve:'weather.js',ask:['setup.js'],what:"the city search's answers cleared (setCityFound) (the restructure S6h)"},
-  'setup-today':{serve:'setup.js',ask:['today.js'],what:"Today's first-outfit checklist (setupToday) (the restructure S6f)"},
-  'kit-sample-banner':{serve:'kit.js',ask:['today.js'],what:"Today's sample banner (kitSampleBanner) (the restructure S6f)"},
-  'care-note':{serve:'care.js',ask:['today.js'],what:"Today's cleaning note (careNote) (the restructure S6f)"},
-  'cal-banner':{serve:'calendar.js',ask:['today.js'],what:"Today's calendar banner (calBanner) (the restructure S6f)"},
-  'sync-paused':{serve:'sync.js',ask:['settings.js'],what:"whether the backup is paused (syncPaused) (the restructure S6f)"},
   'storage-down':{serve:'safety.js',ask:['start.js'],what:"the page for a phone whose storage can't be read (storageDown) (the restructure S6f)"},
   'safety-start':{serve:'safety.js',ask:['start.js'],what:"start-up's safety checks: Add's unsaved cards back, the error report (safetyStart) (the restructure S6f)"},
-  'vests-migrate':{serve:'dress.js',ask:['start.js'],what:"start-up's one-time vest values (migrateVests) (the restructure S6f)"},
-  'kit-fix-old':{serve:'kit.js',ask:['start.js'],what:"start-up's fix of old spreadsheet imports (kitFixOldImports) (the restructure S6f)"},
-  'kit-sample-migrate':{serve:'kit.js',ask:['start.js'],what:"start-up's one-time move of the sample's pieces (kitSampleMigrate) (the restructure S6f)"},
-  'setup-start':{serve:'setup.js',ask:['start.js'],what:"start-up opens the setup when it is due (setupStart) (the restructure S6f)"},
-  'spec-recolour':{serve:'migrate.js',ask:['start.js'],what:"start-up's one-time recolor of read setts (recolourSpecSetts) (the restructure S6f)"},
-  'closeups-upgrade':{serve:'migrate.js',ask:['start.js'],what:"start-up's one-time close-up remake (upgradeCloseups) (the restructure S6f)"},
-  'photos-upgrade':{serve:'migrate.js',ask:['start.js'],what:"start-up's one-time photo remake (upgradePhotos) (the restructure S6f)"},
-  'backdrops-fix':{serve:'migrate.js',ask:['start.js'],what:"start-up's one-time fix of cut-outs on black (fixBlackBackdrops) (the restructure S6f)"},
-  'dress-synced':{serve:'dress.js',ask:['start.js'],what:"a sync brought dress settings (dressSynced) (the restructure S6f)"},
+};
+
+/* moment -> {run: the files that run it (runHooks, runHooksSeq, slotsOf, hooked), register: the features (each its file) with a hook for it,
+   in load order}. What each moment means, and which are run and which are slots, is tools/sockets-dts.js HOOKS (types/sockets.d.ts Hooks) */
+const HOOKS={
+  'start-checks':{run:['start.js'],register:['history.js','dress.js','kit.js']},
+  'start-jobs':{run:['start.js'],register:['asm-today.js','daysoff.js','setup.js']},
+  'start-safety':{run:['safety.js'],register:['add-keep.js','wardrobe.js','kit.js']},
+  'after-pull-fixups':{run:['start.js'],register:['migrate.js','item-photo.js']},
+  'synced':{run:['start.js','sync.js'],register:['dress.js','item-view.js','wardrobe.js']},
+  'settings-open':{run:['settings.js'],register:['ui.js','sync-status.js']},
+  'settings-draw':{run:['settings.js'],register:['ui.js','daysoff.js','weather.js','dress.js','own-lists.js','care.js','cost.js']},
+  'settings-rows':{run:['settings.js','start.js'],register:['asm-today.js','photos.js','history.js','sync.js']},
+  'settings-parts':{run:['settings.js'],register:['look.js','account.js','calendar.js','remind.js']},
+  'settings-summary':{run:['settings.js'],register:['ui.js','daysoff.js','weather.js','dress.js','account.js','calendar.js','remind.js']},
+  'settings-category':{run:['settings.js'],register:['care.js','snapshots.js','about.js']},
+  'settings-saved':{run:['settings.js'],register:['sync.js']},
+  'connection-saved':{run:['settings.js'],register:['sync.js']},
+  'connection-typed':{run:['settings.js'],register:['account.js']},
+  'pictures-switched':{run:['settings.js'],register:['asm-today.js','photos.js']},
+  'page-shown':{run:['nav.js'],register:['add-sheet.js','stats.js','pack.js','item-view.js','itemsheet.js','shop.js','setup.js']},
+  'today-parts':{run:['today.js'],register:['today-picture.js','weather.js','fav.js','care.js','kit.js','setup.js','calendar.js']},
+  'today-fold':{run:['today.js'],register:['today-picture.js']},
+  'day-changed':{run:['month.js','history.js'],register:['today.js']},
+  'insights-cards':{run:['stats.js'],register:['tag-request.js','fav.js','cost.js','shop.js']},
+  'item-sheet-parts':{run:['itemsheet.js'],register:['fav.js','care.js','cost.js','kit.js']},
+  'wardrobe-tile':{run:['wardrobe.js'],register:['care.js','kit.js','setup.js']},
+  'wardrobe-changed':{run:['app.js','pattern-read.js','checklist.js','photos.js','colpick.js','add-card.js','look.js','fav.js','item-photo.js','item-view.js','wardrobe.js','care.js','shop.js','sync.js','kit.js'],register:['itemsheet.js']},
+  'add-card-sections':{run:['add-card.js'],register:['dress.js','look.js','cost.js']},
+  'card-saved':{run:['add-save.js'],register:['dress.js','look.js','cost.js','kit.js']},
+  'sync-send':{run:['sync.js'],register:['kit.js']},
+  'invite-ended':{run:['app.js'],register:['sync-status.js','account.js']},
 };
 
 module.exports=async({ok,ROOT})=>{
   /* bus.js itself, run as a script with its export blanked */
-  const ctx=vm.createContext({});vm.runInContext(appSrc(ROOT,'bus.js')+';this.B={on,emit,heard,serve,ask,served,need,needFn,register,runHooks,runHooksSeq,registered}',ctx);
+  const ctx=vm.createContext({});vm.runInContext(appSrc(ROOT,'bus.js')+';this.B={on,emit,heard,serve,ask,served,need,needFn,register,runHooks,runHooksSeq,registered,slotsOf,hooked}',ctx);
   const {on,emit,heard,serve,ask,served,need,needFn,register,runHooks,runHooksSeq,registered}=ctx.B,log=[];
   /* the hooks (N1; owner decision D1: a feature that didn't load registered nothing and is absent, nothing throws) */
   {const got=[];
@@ -395,7 +349,11 @@ module.exports=async({ok,ROOT})=>{
     const seq=await runHooksSeq('after-pull-fixups');
     ok(seq.join()==='1,2'&&got.join()==='k1,f1','runHooksSeq awaits each hook before the next, in load order, and answers their results');
     const sb=new Error('sb');got.length=0;register('cal',{'after-pull-fixups':()=>{throw sb}});let sg=null;try{await runHooksSeq('after-pull-fixups')}catch(e){sg=e}
-    ok(sg===sb&&!got.length,'runHooksSeq stops at the first hook that throws: the later ones never run (a .then chain)')}
+    ok(sg===sb&&!got.length,'runHooksSeq stops at the first hook that throws: the later ones never run (a .then chain)');
+    const {slotsOf,hooked}=ctx.B,f1=()=>1,f2=()=>2;ok(JSON.stringify(slotsOf('nobody'))==='{}'&&!hooked('nobody'),'slotsOf for a moment nobody fills gives {} (each part absent), and hooked says no');
+    register('weather',{'page-shown':()=>({wxA:f1})});register('kit',{'page-shown':()=>({kitB:f2}),'synced':()=>{}});
+    const SL=slotsOf('page-shown');ok(SL.wxA===f1&&SL.kitB===f2&&Object.keys(SL).join()==='wxA,kitB'&&hooked('page-shown')&&hooked('synced')&&!hooked('today-fold'),'slotsOf joins each feature\'s parts into one object, and hooked says whether any feature has a hook for the moment');
+    ok(JSON.stringify(slotsOf('synced'))==='{}','a hook that answers no object fills no part')}
   /* the sockets */
   ok(ask('nobody',1,2)===undefined,'ask for a name nobody serves: nothing is called and the answer is undefined (the old typeof guard)');
   const seen=[];serve('sum',(a,b)=>{seen.push([a,b]);return a+b});
@@ -420,7 +378,7 @@ module.exports=async({ok,ROOT})=>{
   ok(log.join()==='first','a fn pinned while the topic is being announced is called from the next announcement on');
   /* the topics the app uses */
   const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8'),page=[...html.matchAll(/<script[^>]*\bsrc="([^"]+)"/g)].map(m=>m[1]);
-  const used={},sockUsed={},needUsed=new Set(),hookUsed=new Set();
+  const used={},sockUsed={},needUsed=new Set(),hookUsed=new Set(),hookRun={},hookReg={},regBad=[];
   const acorn=require('acorn');
   for(const f of page){if(f==='bus.js')continue;const src=fs.readFileSync(path.join(ROOT,f),'utf8');let ast;
     try{ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:'module'})}catch(e){try{ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:'script'})}catch(e2){continue}}
@@ -428,18 +386,29 @@ module.exports=async({ok,ROOT})=>{
     const imp=new Map(ast.body.filter(s=>s.type==='ImportDeclaration'&&s.source.value==='./bus.js').flatMap(s=>s.specifiers.map(x=>[x.local.name,x.imported?x.imported.name:x.local.name])));
     const add=(k,t)=>{const u=used[t]=used[t]||{emit:[],on:[],heard:[]};if(!u[k].includes(f))u[k].push(f)};
     const sock=(k,t)=>{const u=sockUsed[t]=sockUsed[t]||{serve:[],ask:[]};if(!u[k].includes(f))u[k].push(f)};
+    const walk2=(n,fn)=>{if(!n||typeof n.type!=='string')return;fn(n);for(const k in n){const v=n[k];if(Array.isArray(v))v.forEach(x=>walk2(x,fn));else if(v&&typeof v.type==='string')walk2(v,fn)}};
     const walk=n=>{if(!n||typeof n.type!=='string')return;
       if(n.type==='CallExpression'&&n.callee.type==='Identifier'){const c0=imp.get(n.callee.name)||null,c=c0==='askFor'||c0==='served'||c0==='need'||c0==='needFn'?'ask':c0,a=n.arguments[0],lit=a&&a.type==='Literal'&&typeof a.value==='string';
-        // (settingsPart(fn) is settings.js's own way to pin for 'settings-parts': counted as the caller's pin)
-        if(n.callee.name==='settingsPart'&&f!=='settings.js')add('on','settings-parts');
-        else if(c&&/^(?:emit|on|heard)$/.test(c)&&lit&&!(f==='settings.js'&&c==='on'&&a.value==='settings-parts'))add(c,a.value);
+        if(c&&/^(?:emit|on|heard)$/.test(c)&&lit)add(c,a.value);
         else if(c&&/^(?:serve|ask)$/.test(c)){if(lit){sock(c,a.value);if(c0==='need'||c0==='needFn')needUsed.add(a.value)}else ok(false,`${f} calls ${n.callee.name}() of bus.js with a name that is not a plain string`)}
-        // (the hooks: runHooks/runHooksSeq's name, and each key of register's object)
-        else if(c0==='runHooks'||c0==='runHooksSeq'){if(lit)hookUsed.add(a.value);else ok(false,`${f} calls ${n.callee.name}() of bus.js with a name that is not a plain string`)}
-        else if(c0==='register'){const o=n.arguments[1];if(o&&o.type==='ObjectExpression')for(const p of o.properties){const k=p.key&&(p.key.type==='Literal'?p.key.value:p.key.name);if(k)hookUsed.add(k)}}
+        // (the hooks: runHooks/runHooksSeq/slotsOf/hooked's name, and each key of register's object)
+        else if(/^(?:runHooks|runHooksSeq|slotsOf|hooked)$/.test(c0||'')){if(lit){hookUsed.add(a.value);(hookRun[a.value]=hookRun[a.value]||[]).includes(f)||hookRun[a.value].push(f)}else ok(false,`${f} calls ${n.callee.name}() of bus.js with a name that is not a plain string`)}
+        else if(c0==='register'){const o=n.arguments[1];if(o&&o.type==='ObjectExpression')for(const p of o.properties){const k=p.key&&(p.key.type==='Literal'?p.key.value:p.key.name);if(k){hookUsed.add(k);(hookReg[k]=hookReg[k]||[]).push(f)}}}
         else if(!c&&/^(?:emit|heard|serve)$/.test(n.callee.name))ok(false,`${f} calls ${n.callee.name}() without importing it from './bus.js'`)}
       for(const k in n){const v=n[k];if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v.type==='string')walk(v)}};
-    walk(ast)}
+    walk(ast);
+    const regs=[];walk2(ast,n=>{if(n.type==='CallExpression'&&n.callee.type==='Identifier'&&imp.get(n.callee.name)==='register')regs.push(n)});
+    if(regs.length){const last=ast.body[ast.body.length-1],r=regs[0],nm=f.replace(/\.js$/,'');
+      if(regs.length>1)regBad.push(f+' registers '+regs.length+' times');
+      if(!(r.arguments[0]&&r.arguments[0].type==='Literal'&&r.arguments[0].value===nm))regBad.push(f+' registers under another name than '+nm);
+      if(!(last&&last.type==='ExpressionStatement'&&last.expression===r))regBad.push(f+'\'s register is not its last statement')}}
+  ok(!regBad.length,`each feature registers once, under its file's name, as its file's last statement (${Object.values(hookReg).flat().filter((x,i,l)=>l.indexOf(x)===i).length} features)${regBad.length?': '+regBad.join('; '):''}`);
+  {const hb=[],hl=[...hookUsed].filter(m=>!HOOKS[m]);
+    for(const [m,d] of Object.entries(HOOKS)){const run=[...(hookRun[m]||[])].sort(),reg=hookReg[m]||[];
+      if(run.join()!==[...d.run].sort().join())hb.push(`${m}: run by ${run.join(', ')||'nobody'}, listed ${d.run.join(', ')}`);
+      if(reg.join()!==d.register.join())hb.push(`${m}: registered by ${reg.join(', ')||'nobody'} (load order), listed ${d.register.join(', ')}`);
+      if(!d.run.length||!d.register.length)hb.push(m+': needs a file that runs it and a feature that registers for it')}
+    ok(!hl.length&&!hb.length,`each moment is run and registered by the files HOOKS lists, in load order (${Object.keys(HOOKS).length} moments)${hl.length?': not listed '+hl.join(', '):''}${hb.length?': '+hb.join('; '):''}`)}
   const sockNotListed=Object.keys(sockUsed).filter(t=>!SOCKETS[t]);
   ok(!sockNotListed.length,`every socket the files use is in SOCKETS${sockNotListed.length?': not '+sockNotListed.join(', '):''}`);
   const sbad=[];
@@ -484,3 +453,4 @@ module.exports=async({ok,ROOT})=>{
 };
 module.exports.TOPICS=TOPICS;
 module.exports.SOCKETS=SOCKETS;
+module.exports.HOOKS=HOOKS;

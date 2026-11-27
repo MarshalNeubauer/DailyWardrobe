@@ -3,9 +3,9 @@
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14. Round C,
    2026-11-17: the missed days are in missed.js, the week's locks in locks.js, the picker's scoring in pickscore.js, the score card in
    scorecard.js and the cards' fold motion in boxfold.js, loaded right after this file.) */
-/* a change to the day shown says emit('day-changed') (bus.js; the restructure S3e, 2026-11-26): today.js pins renderToday for it, so
+/* a change to the day shown says runHooks('day-changed') (bus.js; the restructure S3e, 2026-11-26): today.js pins renderToday for it, so
    this file, which runs before today.js, no longer calls it */
-import {emit,ask,need,serve,served} from './bus.js';
+import {ask,need,serve,served,runHooks,register} from './bus.js';
 import {afterScripts,metaGet,metaPut,sel} from './app.js';
 import {$,CASUAL_JACKETS,CASUAL_TOPS,DAY_NAMES,SLOTS,SLOT_TYPE,TYPES,dayRecs,di,handPickSlot,hasVest,inRotation,isCargo,isHandPick,isWorkday,itemTitle,items,key,keyDate,nm,occLabel,offName,phSm,sentence,settings,settingsOpen,shortDate,titleCls,todayDate,trueToday,esc} from './core.js';
 import {firstReal,missedNote} from './missed.js';
@@ -56,7 +56,7 @@ async function swapSlot(slot){
   const k=key(sel),o=planFor()[k];if(!o||o.frozen)return;
   const cur=o[slot]&&o[slot].id,pool=items.filter(i=>(slot==='coat'?i.type==='overcoat'||i.type==='raincoat':i.type===SLOT_TYPE(slot,o.suitDay))&&!isHandPick(i)&&inRotation(i,di(sel)));   // (Suggest another never brings a hand-pick piece)
   const suitOff=slot==='bot'&&!!o.offSuit;   // a suit's jacket taken off: its own pants are one more choice
-  if(pool.length+(suitOff?1:0)<2){swapMsg=`That's your only ${slot==='coat'?'coat':(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to swap.`;emit('day-changed');return}
+  if(pool.length+(suitOff?1:0)<2){swapMsg=`That's your only ${slot==='coat'?'coat':(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to swap.`;runHooks('day-changed');return}
   const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest};
   const skip={...(rec.skip||{})};skip[slot]=[...new Set([...(skip[slot]||[]),cur].filter(Boolean))];
   if(pool.every(i=>skip[slot].includes(i.id)))skip[slot]=[cur];       // tried them all: start the cycle again
@@ -66,9 +66,9 @@ async function swapSlot(slot){
   // the planner keeps a suit's own pants with its jacket off, so Suggest another pins the best-matching pants not shown yet (fitOf)
   if(suitOff){const nx=pool.filter(i=>!skip.bot.includes(i.id)).map(i=>[need('fit-of','bot',o,i),i]).sort((a,b)=>b[0]-a[0]||(a[1].id<b[1].id?-1:1))[0];if(nx)force.bot=nx[1].id}
   need('keep-off',force,k,slot);rec.skip=skip;rec.force=force;delete rec.lock;notAhead(rec,k);
-  if(slot==='belt'&&o.belt&&need('beltless',k,rec)){swapMsg=need('belt-stuck');emit('day-changed');return}
+  if(slot==='belt'&&o.belt&&need('beltless',k,rec)){swapMsg=need('belt-stuck');runHooks('day-changed');return}
   need('suggest-clean',k,o,slot,rec,pool);
-  swapMsg='';await saveDay(rec);await need('unlock-clash',k);emit('day-changed');
+  swapMsg='';await saveDay(rec);await need('unlock-clash',k);runHooks('day-changed');
 }
 /* the planner no longer learns from swaps and picks (removed 2026-11-15, the owner's ask): the votes earlier versions kept in the settings
    (settings.learn) are dropped at start-up, after the first pull, so they stop syncing as dead weight. The removal is stamped like any
@@ -84,7 +84,7 @@ const slotLabel=(s,o)=>({top:o.top&&CASUAL_JACKETS.includes(o.top.type)?TYPES[o.
 const pluralWord=w=>/^(shoes|pants|socks|cufflinks|jeans|chinos)$/.test(w);   // "Choose shoes", not "Choose a shoes" (W2-17-13)
 const pickPic=i=>i.photo?`<img src="${srcOk(phSm(i))}" alt="">`:itemPic(i)?`<img src="${srcOk(itemPic(i).img)}" alt="">`:itemThumb(i,true);
 function openPicker(slot){const o=planFor()[key(sel)];if(!o||!canPick(o))return;const pool=need('slot-pool',slot,o),hand=need('hand-pool',slot,o),cur=o[slot]&&o[slot].id,label=slotLabel(slot,{...o,shirt:null,top:null}).toLowerCase();   // (the slot's own word, not a casual piece's: "Choose a shirt")
-  if(!o.frozen&&pool.length+hand.length<2&&!(slot==='pocket'&&!o.pocket&&pool.length)){swapMsg=`That's your only ${slot==='coat'?'coat':(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to choose from.`;emit('day-changed');return}
+  if(!o.frozen&&pool.length+hand.length<2&&!(slot==='pocket'&&!o.pocket&&pool.length)){swapMsg=`That's your only ${slot==='coat'?'coat':(TYPES[SLOT_TYPE(slot,o.suitDay)]||slot).toLowerCase()}, so there's nothing to choose from.`;runHooks('day-changed');return}
   const scored=pool.map(i=>[need('fit-of',slot,o,i),i]).sort((a,b)=>b[0]-a[0]||(a[1].id<b[1].id?-1:1)),best=scored.length?scored[0][0]:0;
   const card=([f,i])=>{const [cls,txt]=need('fit-tag',best-f),on=i.id===cur,sub=slot==='bot'&&i.type==='suit'?'The suit’s own pants':need('pick-sub',i,pool);
     return `<button class="pick-it${on?' cur':''}" data-act="pickItTap" data-slot="${slot}" data-id="${esc(i.id)}" aria-label="${esc(itemTitle(i)||nm(i))}${sub?', '+esc(sub):''}: ${on?'wearing, ':''}${txt.toLowerCase()}"${on?' aria-current="true"':''}><span class="pick-pic">${pickPic(i)}</span>${served('fav-mark')?ask('fav-mark',i):''}<span class="pick-nm ${titleCls(i)}">${esc(itemTitle(i)||sentence(nm(i)))}</span>${sub?`<small class="mut pick-sub">${esc(sub)}</small>`:''}<small class="fit ${cls}">${on?(o.frozen?'Recorded':'Wearing')+' · ':''}${txt}</small></button>`};
@@ -120,8 +120,8 @@ async function pickItem(slot,id){const k=key(sel),o=planFor()[k];if(!o)return;cl
   const rec={...(dayRecs[k]||{date:k}),ids:idsOf(o),suitDay:o.suitDay,vestOn:!!o.vest},follow=need('pick-follow')[slot]||[],force={};
   for(const s of SLOTS)if(s!==slot&&!follow.includes(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
   force[slot]=id;need('suit-pants',force,slot,o);need('keep-hand',force,slot,o);need('boots-off',force,slot,o);need('keep-off',force,k,slot);const skip={...(rec.skip||{})};delete skip[slot];rec.force=force;rec.skip=skip;delete rec.lock;notAhead(rec,k);need('pocket-on',rec,slot);
-  if(slot==='belt'&&need('beltless',k,rec)){swapMsg='That belt needs shoes that don’t suit this outfit, so the belt stays as it was.';emit('day-changed');return}
-  swapMsg='';await saveDay(rec);await need('unlock-clash',k);emit('day-changed')}
+  if(slot==='belt'&&need('beltless',k,rec)){swapMsg='That belt needs shoes that don’t suit this outfit, so the belt stays as it was.';runHooks('day-changed');return}
+  swapMsg='';await saveDay(rec);await need('unlock-clash',k);runHooks('day-changed')}
 /* wear a favorite look (fav.js, the picker's "Favorite looks" strip) on the day shown: its jacket, shirt and tie become the owner's own
    picks (rec.force, as pickItem's), the pieces that follow them are chosen again, a jacket of the other kind brings its kind (rec.kind),
    and the days after it that hold one of them let go (unlockClash); Undo puts the day's record back */
@@ -131,10 +131,10 @@ async function wearFav(k){const dk=key(sel),o=planFor()[dk],l=favLooks().find(x=
   for(const s of SLOTS)if(!follow.has(s)&&o[s]&&!(s==='bot'&&o.suitDay))force[s]=o[s].id;
   if(p.j){force.top=p.j.id;if(!isHandPick(p.j))rec.kind=p.j.type==='suit'?'suit':'blazer'}force.shirt=p.sh.id;if(p.tie)force.tie=p.tie.id;
   rec.force=force;delete rec.skip;delete rec.lock;delete rec.off;notAhead(rec,dk);
-  swapMsg='';await saveDay(rec);await need('unlock-clash',dk);emit('day-changed');
-  toast(`Wearing a favorite look ${dayWord()==='today'?'today':'on '+shortDate(sel)}.`,need('fav-undo-ms'),{label:'Undo',fn:async()=>{await saveDay({...was});emit('day-changed')}})}
+  swapMsg='';await saveDay(rec);await need('unlock-clash',dk);runHooks('day-changed');
+  toast(`Wearing a favorite look ${dayWord()==='today'?'today':'on '+shortDate(sel)}.`,need('fav-undo-ms'),{label:'Undo',fn:async()=>{await saveDay({...was});runHooks('day-changed')}})}
 /* ---- correcting a past day: what was really worn replaces what was planned, so rest and "last worn" stay true ---- */
-function togglePastEdit(){const k=key(sel);pastEdit=pastEdit===k?null:k;if(pastEdit)need('list-open-set',true);swapMsg='';emit('day-changed')}
+function togglePastEdit(){const k=key(sel);pastEdit=pastEdit===k?null:k;if(pastEdit)need('list-open-set',true);swapMsg='';runHooks('day-changed')}
 async function correctPast(slot,it,picked){const k=key(sel),r=dayRecs[k],o=planFor()[k];if(!r||!r.ids||!o||(pastEdit!==k&&!picked))return;   // (picked: from the picker, pickItem)
   const ids={...r.ids};let suitDay=!!r.suitDay;
   if(slot==='top'){if(!it)return;ids.top=it.id;if(it.type==='suit'){suitDay=true;ids.bot=it.id}else{if(suitDay||ids.bot===r.ids.top)ids.bot=null;suitDay=false}}
@@ -144,13 +144,13 @@ async function correctPast(slot,it,picked){const k=key(sel),r=dayRecs[k],o=planF
   swapMsg='Corrected.';
   // the locked days after it let go when one holds what was really worn (the jacket on the next workday, the tie within three): yesterday
   // corrected to the pink suit left today locked on it, "the same suit as the workday before" (fix round 3, W2-17-06)
-  await saveDay(rec);await need('unlock-clash',k,true);emit('day-changed')}
+  await saveDay(rec);await need('unlock-clash',k,true);runHooks('day-changed')}
 const setFormal=(v,k)=>setOccasion(v?'formal':null,k);
 /* give a day an occasion (or none): its swaps are dropped, since the outfit is chosen afresh for the occasion, and the coming days are
    released so they are planned around it (the suit that is right for the occasion may be locked on the day before) */
-async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.off;delete r.roll;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;delete r.lock;delete r.kind;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await clearLocks();await saveDay(r);if(settingsOpen()){need('today-dirty');ask('formal-ui')}else emit('day-changed')}   // (kind too: a piece taken off, a moved outfit or a favorite worn pinned the blazer, and a funeral set later stayed a blazer day, the 2026-11-24 review's R4 N-1)
-async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.off;delete n.roll;delete n.force;delete n.skip;delete n.worn;delete n.vest;delete n.lock;delete n.kind;notAhead(n,k);swapMsg='';await saveDay(n);emit('day-changed')}   // (kind too: a piece taken off or a moved outfit pinned the suit or blazer, CR-4-07)
-async function setWorn(v){const k=key(sel),o=planFor()[k];if(!o)return;const r=dayRecs[k]||{date:k};await saveDay({...r,ids:r.ids&&o.frozen?r.ids:idsOf(o),suitDay:o.suitDay,vestOn:o.frozen?!!r.vestOn:!!o.vest,worn:v});emit('day-changed')}
+async function setOccasion(occ,k){k=k||key(sel);const r={...(dayRecs[k]||{date:k})};delete r.force;delete r.off;delete r.roll;delete r.skip;delete r.vest;delete r.formal;delete r.occasion;delete r.lock;delete r.kind;if(occ==='formal')r.formal=true;else if(occ)r.occasion=occ;if(k===key(sel))swapMsg='';await clearLocks();await saveDay(r);if(settingsOpen()){need('today-dirty');ask('formal-ui')}else runHooks('day-changed')}   // (kind too: a piece taken off, a moved outfit or a favorite worn pinned the blazer, and a funeral set later stayed a blazer day, the 2026-11-24 review's R4 N-1)
+async function resetDay(){const k=key(sel),r=dayRecs[k];if(!r)return;const n={...r};delete n.off;delete n.roll;delete n.force;delete n.skip;delete n.worn;delete n.vest;delete n.lock;delete n.kind;notAhead(n,k);swapMsg='';await saveDay(n);runHooks('day-changed')}   // (kind too: a piece taken off or a moved outfit pinned the suit or blazer, CR-4-07)
+async function setWorn(v){const k=key(sel),o=planFor()[k];if(!o)return;const r=dayRecs[k]||{date:k};await saveDay({...r,ids:r.ids&&o.frozen?r.ids:idsOf(o),suitDay:o.suitDay,vestOn:o.frozen?!!r.vestOn:!!o.vest,worn:v});runHooks('day-changed')}
 /* clear what swaps and vest choices pinned on days after today, so the planner picks those days again; formal days stay.
    rules (new PLAN_RULES): only what the app chose goes, the week's locks (rec.lock) and pieces it recorded by itself (rec.auto);
    the owner's own picks (force, skip, the vest, a moved outfit's kind, a piece taken off) stay. Returns the days changed
@@ -195,8 +195,8 @@ async function replanButton(){const T=todayDate(),n=replanCount();
 /** @param {*} [msg] */ function renderReplanUI(msg){const el=$('#replan-status');if(!el)return;const n=replanCount();
   el.textContent=msg||((n?`${n} day${n===1?' has':'s have'} your changes (swaps, picks, the vest, pieces taken off).`:'Today and the coming days follow the planner.')+' Plans afresh from today, throwing out the week\'s locks and your changes; occasions, days off and days marked worn stay.')}
 async function setVest(v){const k=key(sel),o=planFor()[k];if(!o)return;
-  if(o.frozen){const r0=dayRecs[k];if(pastEdit!==k||!r0)return;await saveDay({...r0,vestOn:!!v,worn:true,edited:true});emit('day-changed');return}
- const r={...(dayRecs[k]||{date:k})};r.vest=v;swapMsg='';await saveDay(r);emit('day-changed')}
+  if(o.frozen){const r0=dayRecs[k];if(pastEdit!==k||!r0)return;await saveDay({...r0,vestOn:!!v,worn:true,edited:true});runHooks('day-changed');return}
+ const r={...(dayRecs[k]||{date:k})};r.vest=v;swapMsg='';await saveDay(r);runHooks('day-changed')}
 /* Reset: a card of its own under the month, like the other cards, on a day the user changed (a swap, a pick, the vest); it puts the
    planned outfit back */
 function resetCard(o){return o&&!o.frozen&&(o.overrides||o.vestOverride)?`<section class="mbox resetbox" id="rbox"><button class="month-link resetlink" data-act="resetTap" aria-label="Reset changes" title="Undo your changes to this day"><span class="rsicon" aria-hidden="true">↺</span><b>Reset</b></button></section>`:''}
@@ -226,5 +226,7 @@ function pickNextTap(){pickNext()}
 function resetTap(){resetDay()}
 function pastEditTap(){togglePastEdit()}
 acts({pickBackdropTap,replanTap,pickItTap,pickCloseTap,pickNextTap,resetTap,pastEditTap});
-serve('replan-ui',renderReplanUI);serve('plan-rules-check',checkPlanRules);serve('learn-drop',dropLearn);serve('when-pulled',whenPulled);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
+serve('when-pulled',whenPulled);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
 serve('picker-close',closePicker);   // the restructure S6f: ui.js's Escape (it loads before this file)
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('history',{'start-checks':()=>({checkPlanRules,dropLearn}),'settings-rows':()=>({renderReplanUI})});

@@ -5,7 +5,7 @@
 
 /* ---- storage failures ---- */
 // is this error (or IndexedDB error event) a failure of the device's storage: marked by txs/atomic in app.js, a full disk, or a failed request
-import {askFor,served,serve} from './bus.js';
+import {askFor,served,serve,slotsOf} from './bus.js';
 import {db,queue,storeErr,storeFailText,storeFailure} from './app.js';
 import {TAGIMG_CACHE,askPersist,inviteOver,isConnected,items,oneStop,settingsOpen,esc} from './core.js';
 import {toast} from './toast.js';
@@ -95,7 +95,7 @@ async function pruneTagImgs(){
     return n}
   catch(e){console.warn('kept tagging copies not checked',e);return 0}}
 /* once the wardrobe is loaded (from the start-up chain in app.js) */
-function safetyStart(){pruneTagImgs();errSoon(8000);if(items.length)askPersist();if(items.length)setTimeout(()=>askFor('safari-remind'),5000);askFor('ward-pending-restore');askFor('add-restore')}   // a name typed just before a kill (wardrobe.js); Add cards not saved before the app was closed (add-keep.js)
+function safetyStart(){pruneTagImgs();errSoon(8000);if(items.length)askPersist();const P=slotsOf('start-safety');if(items.length)setTimeout(()=>P.safariRemind?.(),5000);P.wardPendingSoon?.();P.addRestore?.()}   // a name typed just before a kill (wardrobe.js); Add cards not saved before the app was closed (add-keep.js)
 
 /* ---- tagging that failed: why, on the card, with Try again ---- */
 let tagWhy='',tagNetLast=false;

@@ -1,6 +1,6 @@
 /* Daily Wardrobe: the item sheet itself: open, close, swipe down, ‹ › and the sideways swipe, the phone's Back, the focus back, and a
    sync's change to the piece open. (An ES module since 2026-11-23; split out of itemsheet.js on 2026-11-17, no behavior change.) */
-import {askFor,served,serve,emit} from './bus.js';   // emit: the Wardrobe's redraw (itemsheet.js, later); serve: the piece open, its redraw and its drop
+import {askFor,served,serve,runHooks,register} from './bus.js';   // emit: the Wardrobe's redraw (itemsheet.js, later); serve: the piece open, its redraw and its drop
 import {$,TYPES,itemName,itemTitle,items,nm,titleCls,esc} from './core.js';
 import {backLand,backOn,histDrop,histPush} from './back.js';
 import {cropKeep,phEdit} from './item-photo.js';
@@ -30,7 +30,7 @@ export {wardList,itemSynced,renderItem,openItem,closeItem,dropItem,stepItem};
    while a step back of ours was on its way is made once it lands. Back in the crop frame keeps the crop (cropKeep: when moved or zoomed)
    and leaves it, and the sheet keeps its entry (the Back audit, 2026-11-15: it closed the sheet) */
 backLand(()=>{if(editing)histPush()});
-backOn('item',()=>{if(editing&&phEdit.crop){cropKeep();emit('wardrobe-changed');histPush()}else if(editing)closeItem(true)});
+backOn('item',()=>{if(editing&&phEdit.crop){cropKeep();runHooks('wardrobe-changed');histPush()}else if(editing)closeItem(true)});
 /* show or hide the sheet; while it is up the app behind it takes no taps or keyboard focus */
 function itemShown(on){const v=$('#item-view'),bd=$('#item-backdrop');if(!v)return;const was=v.classList.contains('on');
   v.classList.toggle('on',on);if(bd)bd.classList.toggle('on',on);document.body.classList.toggle('iv-on',on);
@@ -129,7 +129,7 @@ function stepItem(n,from){
       el.style.transition='transform .2s ease-out,opacity .2s';el.style.transform='translateX(0)';el.style.opacity='1'}};
   b.addEventListener('touchend',end,{passive:true});b.addEventListener('touchcancel',end,{passive:true});
   document.addEventListener('keydown',e=>{if(!editing)return;
-    if(e.key==='Escape'){if(phEdit.crop){cropKeep();emit('wardrobe-changed')}else closeItem();return}   // Esc leaves the crop as Back does: a moved frame is kept
+    if(e.key==='Escape'){if(phEdit.crop){cropKeep();runHooks('wardrobe-changed')}else closeItem();return}   // Esc leaves the crop as Back does: a moved frame is kept
     if(/** @type {Element} */(e.target).closest&&/** @type {Element} */(e.target).closest('input,select,textarea'))return;
     if(e.key==='ArrowRight')stepItem(1);if(e.key==='ArrowLeft')stepItem(-1)});
 })();
@@ -138,7 +138,9 @@ function itemCloseTap(){closeItem()}
 function itemStepTap(el){stepItem(+el.dataset.n)}
 /* the sockets (bus.js): nav.js (required), toast.js (required), checklist.js and item-photo.js ask which piece is open (its id, or null), and
    nav.js has the sheet drawn again or dropped when another page shows (the restructure S3d) */
-serve('item-open',()=>editing);serve('item-draw',renderItem);serve('item-drop',dropItem);
+serve('item-open',()=>editing);serve('item-draw',renderItem);
 acts({itemCloseTap,itemStepTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('item-show',openItem);serve('item-synced',itemSynced);
+serve('item-show',openItem);
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('item-view',{'page-shown':()=>({dropItem}),'synced':()=>({itemSynced})});   // (the sheet dropped when another page shows; it follows a sync's new copy)

@@ -65,6 +65,6 @@ module.exports=async({ok,ROOT})=>{
   ok(!seen.cache&&!seen.todayStale,'the plan cache and "redraw Today later" are written only by their owners (today.js planDirty, settings.js todayDirty)');
   ok(!seen.settings&&!seen.items&&!seen.dayRecs,'the wardrobe, history and settings are set through core.js setWardrobe (the planner\'s brief swaps in analysis.js, pack.js packPlanOf and today.js planWith too, since S1a)');
   ok(!Object.keys(seen).length,'no app file assigns another file\'s top-level name: it calls the owner\'s setter (restructure S1a: once files import each other an imported binding is read-only)'+(Object.keys(seen).length?': '+Object.keys(seen).join(', '):''));
-  ok(!seen.renderSettingsExtras,'no script replaces another\'s function (account.js and remind.js register their parts of Settings with settingsPart)');
+  ok(!seen.renderSettingsExtras,'no script replaces another\'s function (account.js and remind.js register their parts of Settings: bus.js register, their settings-parts hooks)');
 };
 module.exports.measure=measure;

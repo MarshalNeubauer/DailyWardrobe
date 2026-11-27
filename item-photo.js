@@ -2,7 +2,7 @@
    the white-paper steps. (An ES module since 2026-11-23; split out of itemsheet.js on 2026-11-17, no behavior change.) */
 /* ---- Wardrobe editor: replace, rotate, zoom-crop the item's photo. Only the picture changes: the tags (colour, pattern...)
    and the item itself stay, so the plan and the outfit history are untouched. Each change's toast has Undo (picUndo; phEdit.undo holds the editor's steps). ---- */
-import {serve,emit,ask,askFor} from './bus.js';   // emit: the Wardrobe's redraw (itemsheet.js, later); ask: the piece open (item-view.js). (No app.js ask() here)
+import {serve,ask,askFor,runHooks,register} from './bus.js';   // emit: the Wardrobe's redraw (itemsheet.js, later); ask: the piece open (item-view.js). (No app.js ask() here)
 import {DEAD_MSG,deadPic,fixupRedraw,imgOf,loadImg,put,refreshSwatch,shrink,stillCur} from './app.js';
 import {$,CLOSE_MAX,PH_MAX,TAG_MAX,TAG_Q,TEX_MAX,TEX_MIN_PX,items,paperCloth,phSigOf,texSig,esc} from './core.js';
 import {srcOk} from './photo-keys.js';
@@ -49,13 +49,13 @@ function paperLine(i){if(!i.texture||!lookCu(i.type)||phEdit.paper!==texSig(i.te
    come through here (2026-11-15) */
 async function setPic(id,k,url,msg){const it=items.find(x=>x.id===id);if(!it)return;if(url&&await deadPic(url)){toast(DEAD_MSG,8000);return false}
   const prev=it[k]||null;if(phEdit.id===id||!phEdit.id){phEdit.undo.push({k,v:prev});if(phEdit.undo.length>10)phEdit.undo.shift()}
-  if(url)it[k]=url;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);planDirty();emit('wardrobe-changed');
+  if(url)it[k]=url;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);planDirty();runHooks('wardrobe-changed');
   if(msg)Array.isArray(msg)?toast(...msg):toast(msg,4000,{label:'Undo',fn:()=>picUndo(id,k,prev)})}
 /* a toast's Undo: the editor's own Undo while the sheet is still on this item and that change is the last one, else the picture as it was
    (the sheet may be closed or on another item by then) */
 async function picUndo(id,k,prev){const it=items.find(x=>x.id===id);if(!it)return;const top=phEdit.undo[phEdit.undo.length-1];
   if(ask('item-open')===id&&phEdit.id===id&&top&&top.k===k&&top.v===(prev||null)){await undoPhoto(id);return}
-  if(prev)it[k]=prev;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);planDirty();emit('wardrobe-changed')}
+  if(prev)it[k]=prev;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);planDirty();runHooks('wardrobe-changed')}
 const setPhoto=(id,url,msg)=>setPic(id,'photo',url,msg),setTexture=(id,url,msg)=>setPic(id,'texture',url,msg);
 /* a close-up added later stays as taken: the item photo's light reading may not hold for another moment */
 /* a close-up under TEX_MIN_PX on its short side is refused, as on the Add card (2026-11-15, the re-audit: the editor took a 40×40 one) */
@@ -82,10 +82,10 @@ async function rotatePhoto(id){const it=items.find(x=>x.id===id);if(!it||!it.pho
   if(await setPhoto(id,c.toDataURL('image/jpeg',.9),['Photo rotated.',4000,photoUndoAct(id,prev,sharp,b)])===false){it.pbox=b;return}   // drawn black: the box stays as it was
   if(sharp)try{const si=await imgOf(sharp),sc=document.createElement('canvas');sc.width=si.naturalHeight;sc.height=si.naturalWidth;const sx=sc.getContext('2d');sx.translate(sc.width,0);sx.rotate(Math.PI/2);sx.drawImage(si,0,0);await keepTagImg(id,sc.toDataURL('image/jpeg',TAG_Q),it.photo)}catch(e){console.warn('sharp copy not turned',e)}}
 async function undoPhoto(id){const it=items.find(x=>x.id===id);if(!it||!phEdit.undo.length)return;const {k,v}=phEdit.undo.pop();
-  if(v)it[k]=v;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);planDirty();emit('wardrobe-changed')}
+  if(v)it[k]=v;else delete it[k];if(k==='texture')await refreshSwatch(it);if(k==='photo')await makeSmall(it);await put(it);planDirty();runHooks('wardrobe-changed')}
 /* zoom & crop: a square frame; the slider zooms (about the centre), dragging moves the picture */
 async function startCrop(id){const it=items.find(x=>x.id===id);if(!it||!it.photo)return;const im=await imgOf(it.photo);
-  phEdit.crop={w:im.naturalWidth,h:im.naturalHeight,z:1,cx:.5,cy:.5};emit('wardrobe-changed');const b=$('#ivbody');if(b)b.scrollTop=0;requestAnimationFrame(layoutCrop)}
+  phEdit.crop={w:im.naturalWidth,h:im.naturalHeight,z:1,cx:.5,cy:.5};runHooks('wardrobe-changed');const b=$('#ivbody');if(b)b.scrollTop=0;requestAnimationFrame(layoutCrop)}
 function cropEditor(i){const c=phEdit.crop;return `<div class="cropwrap"><div class="cropbox" id="cropbox" data-act-pointerdown="cropDrag"><img id="cropimg" src="${srcOk(i.photo)}" alt="Photo being cropped" draggable="false"></div>
   <label class="cropzoom">Zoom <input type="range" min="1" max="4" step="0.05" value="${c.z}" data-act-input="cropZoom" aria-label="Zoom"></label>
   <p class="mut" style="margin:2px 0 6px;font-size:13px">Drag the picture to position it.</p>
@@ -94,7 +94,7 @@ function cropEditor(i){const c=phEdit.crop;return `<div class="cropwrap"><div cl
    I want it to save"): Done, the backdrop, swiping the sheet down, the phone's Back, Esc and ‹ › apply a frame that was moved or zoomed, with
    "Crop saved." and Undo in a toast (the sheet may be gone, and its Undo with it); a frame left as it opened changes nothing. Discard drops it. */
 const cropDirty=()=>{const c=phEdit.crop;return !!c&&(Math.abs(c.z-1)>.001||Math.abs(c.cx-.5)>.001||Math.abs(c.cy-.5)>.001)};
-function cropDiscard(){phEdit.crop=null;emit('wardrobe-changed')}
+function cropDiscard(){phEdit.crop=null;runHooks('wardrobe-changed')}
 /* the crop left without Apply: kept when changed (applyCrop measures the frame at once, so the sheet may close or redraw right after) */
 function cropKeep(){if(!phEdit.crop)return null;const id=phEdit.id;if(!cropDirty()){phEdit.crop=null;return null}return applyCrop(id,true)}
 /* the toast's Undo: the editor's own Undo while the sheet is still on this item, else the photo as it was; the sharp copy is the same picture again */
@@ -114,7 +114,7 @@ function cropDrag(box,e){const c=phEdit.crop;if(!c)return;e.preventDefault();box
 async function applyCrop(id,left){const it=items.find(x=>x.id===id),g=cropGeom(),cr=phEdit.crop;if(!it||!g||!cr)return;phEdit.crop=null;const prev=it.photo;
   const im=await cropSource(it),f=(im.naturalWidth||im.width)/cr.w;   // the frame is measured on the photo; f scales it to the source
   const side=g.V/g.s*f,sx=-g.x/g.s*f,sy=-g.y/g.s*f,out=Math.min(PH_MAX,Math.round(side)),c=document.createElement('canvas');c.width=c.height=out;
-  c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,out,out);if(await setPhoto(id,c.toDataURL('image/jpeg',.9),[left?'Crop saved.':'Photo cropped.',4000,{label:'Undo',fn:()=>cropUndo(id,prev)}])===false){emit('wardrobe-changed');return}   // drawn black: nothing saved
+  c.getContext('2d').drawImage(im,sx,sy,side,side,0,0,out,out);if(await setPhoto(id,c.toDataURL('image/jpeg',.9),[left?'Crop saved.':'Photo cropped.',4000,{label:'Undo',fn:()=>cropUndo(id,prev)}])===false){runHooks('wardrobe-changed');return}   // drawn black: nothing saved
   if(typeof resignTagImg==='function')await resignTagImg(id,it.photo)}   // the same picture, cropped: the sharp copy (and the pattern's box on it) still holds
 /* what the photo tools' and the crop frame's controls do (act.js; the item by its id in data-id) */
 function photoFile(el){replacePhoto(el.dataset.id,el.files[0]);el.value=''}
@@ -132,4 +132,6 @@ export {phEdit,setPhEdit,smallPhotos,photoTools,paperHint,paperTip,paperRetake,p
 acts({photoFile,photoRotate,photoCrop,photoCuRemove,photoCuFile,paperTipTap,cropDrag,cropZoom,cropApply,cropDiscardTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('replace-texture',replaceTexture);
-serve('small-photos',smallPhotos);serve('ph-edit',()=>phEdit);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
+serve('ph-edit',()=>phEdit);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('item-photo',{'after-pull-fixups':smallPhotos});   // start-up's small photos, after migrate.js's fix-ups (load order)

@@ -1,7 +1,7 @@
 /* Daily Wardrobe: photo tagging, pattern readings (split from tagging.js, Round B CR-2-17): the full pattern (sett) from the pixels, Claude's
    reading (POST /pattern) coloured from the pixels, motifs, a dress shirt's weave texture and camouflage. */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {emit,serve,askFor} from './bus.js';
+import {emit,serve,askFor,runHooks} from './bus.js';
 import {CAMO_TR,CHECK_PATS,MOTIF_PATS,STRIPE_PATS,TEXTURE_PATS,settFromCanvas,texPat,tieWeave} from './detect.js';
 import {FABRIC,PATS_BY,camoPat,dE00,hexRgb,inviteOver,items,labHex,patBase,patName,rgbLab,settingsOpen,esc} from './core.js';
 import {BLUR_SHARP,applyMeasured,applyWb,closeRead,measureCard,sharpness,wbRead} from './measure.js';
@@ -114,7 +114,7 @@ function settNote(q){if(!readable(q.type,q.pattern,q.weave))return '';
   if(!chk.s){toast(spec===null&&patternFail?'Claude couldn’t read the pattern right now (the server had a problem). Try again later.':'No clear pattern found. Add a fabric close-up (or a sharper photo) and try again.',6000);return}
   // drawn again at once, the open sheet included (it shows the reading); with Settings opened while Claude read it waits for Settings to
   // close (renderWardrobe closes Settings: the 2026-11-24 review's R1 N1)
-  it.sett=chk.s;delete it.stripes;await put(it);planDirty();if(settingsOpen())askFor('sync-redraw','wardrobe');else emit('wardrobe-changed');toast(`Pattern read: ${settSummary(s)}.`)}
+  it.sett=chk.s;delete it.stripes;await put(it);planDirty();if(settingsOpen())askFor('sync-redraw','wardrobe');else runHooks('wardrobe-changed');toast(`Pattern read: ${settSummary(s)}.`)}
 
 /* ---- the pattern read by Claude (worker POST /pattern) and coloured from the pixels. The pixel reader alone is thrown by the
    noise in a photo (a seam, moire, panes made uneven by drape); Claude reports the pattern as woven: every band of a repeat each

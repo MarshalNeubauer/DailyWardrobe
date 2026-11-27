@@ -3,7 +3,7 @@
    C:\code\audit-2026-11-13\item-redesign\prototype\compare-side.html (DESIGN.md, INVENTORY.md beside it).
    (An ES module, run in index.html's order; what the classic scripts still use of it is bridged in its last lines; nothing else runs at load.) */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {emit,ask} from './bus.js';
+import {emit,ask,runHooks} from './bus.js';
 import {ACCENT_MAX,COLORS,SHADE_MAX,accentsOf,colName,items,primaryCol,shadeFor,shadeName,sockPatterned,sockToeKey,texSig,esc} from './core.js';
 import {cap1,cardOf,imgOf,put,queue} from './app.js';
 import {itemThumb} from './draw.js';
@@ -161,7 +161,7 @@ function cmpUndoTap(el){cmpMatchUndo(el.dataset.s,el.dataset.k)}
 function cmpMatchGo(src,ref){const it=src==='q'?cardOf(ref):items.find(x=>x.id===ref);if(!it)return;CMP_UNDO[src==='q'?it.id:ref]=it.shade||0;
   if(src==='q'){it.checked={...it.checked,tex:1};matchShadeQ(ref)}else matchShadeE(ref)}
 async function cmpMatchUndo(src,ref){const it=src==='q'?cardOf(ref):items.find(x=>x.id===ref);if(!it)return;const key=src==='q'?it.id:ref,v=CMP_UNDO[key];if(v===undefined)return;delete CMP_UNDO[key];
-  if(v)it.shade=v;else delete it.shade;if(src==='q'){emit('card-changed');return}await put(it);planDirty();emit('wardrobe-changed')}
+  if(v)it.shade=v;else delete it.shade;if(src==='q'){emit('card-changed');return}await put(it);planDirty();runHooks('wardrobe-changed')}
 /* whether the close-up has white paper: {ref, warm} (measure.js paperOf, kept in memory by the pictures' signatures), worked out once and
    then drawn again; an Add card's measurement says it at once */
 function cmpPaper(src,it){const n=paperNow(it);if(n)return n;if(src==='q'&&it.meas&&it.meas.src==='closeup')return {ref:!!it.meas.ref,warm:false};
@@ -175,7 +175,7 @@ function cmpPaperLine(p,retake){if(!p)return '';
 function matchShadeQ(i){const q=cardOf(i);if(!q||!q.meas)return;q.shade=shadeFor(q,q.meas.lab);if(!q.shade)delete q.shade;emit('card-changed');toast(q.shade?`Swatch set ${shadeName(q.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
 async function matchShadeE(id){const it=items.find(x=>x.id===id);if(!it)return;let lab=it.meas&&it.meas.src==='closeup'?it.meas.lab:null;
   if(!lab&&it.texture)try{const im=await imgOf(it.texture),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);lab=measureCloth(c,null,{}).lab}catch{}
-  if(!lab)return;it.shade=shadeFor(it,lab);if(!it.shade)delete it.shade;await put(it);planDirty();emit('wardrobe-changed');toast(it.shade?`Swatch set ${shadeName(it.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
+  if(!lab)return;it.shade=shadeFor(it,lab);if(!it.shade)delete it.shade;await put(it);planDirty();runHooks('wardrobe-changed');toast(it.shade?`Swatch set ${shadeName(it.shade).toLowerCase()} to match the close-up.`:'The swatch already matches the close-up.')}
 globalThis.HOOK={__proto__:globalThis.HOOK||null,CK_OPEN};
 export {CK_OPEN,ckIsOpen,ckSec,ckToggle,ckChip,ckColSum,accRow,ckSure,cmpDrawn,cmpHtml,cmpMount,cmpLab,cmpDiff,cmpSteps,cmpDiffText,cmpMatchHtml,cmpPaper,cmpPaperLine,matchShadeQ,matchShadeE};
 acts({ckHeadTap,cmpGoTap,cmpUndoTap});

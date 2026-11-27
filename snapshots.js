@@ -1,5 +1,5 @@
 /* Daily Wardrobe: the server's daily backups and Roll back (split from sync.js, 2026-11-17). */
-import {on} from './bus.js';
+import {register} from './bus.js';
 import {$,cleanState,inviteOver,items,nowMs,settingsOpen,stampAllSettings,syncUrl,esc} from './core.js';
 import {applyMerged,localState,setRestoring,syncNow} from './sync.js';
 import {ENDED,endedAnswer,inviteEnded} from './app.js';
@@ -75,9 +75,9 @@ async function rollBack(pick){const sel=$('#snap-list'),id=pick&&pick.id||sel&&s
 /* the markup's handlers (act.js): the Daily backups list on focus (it loads its days), and Roll back */
 function snapFocus(){loadSnapshots()}
 function rollBackTap(){rollBack()}
-/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
-on('settings-category',k=>{if(k==='backup')loadSnapshots()});   // the daily backups list is read as Backup opens
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,rollBack,rollBackState,snapLabel,loadSnapshots};
 export {snapLabel,loadSnapshots,rollBackState,rollBack};
 acts({snapFocus,rollBackTap});
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('snapshots',{'settings-category':k=>{if(k==='backup')loadSnapshots()}});   // the daily backups list is read as Backup opens

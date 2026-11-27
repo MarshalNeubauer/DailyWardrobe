@@ -1,6 +1,6 @@
 /* Daily Wardrobe: photo tagging, the person's own lists (split from tagging.js, Round B CR-2-17): adding a colour or a pattern the lists
    lack, own materials from Claude's offers, and their Settings lists. */
-import {askFor,emit,on} from './bus.js';   // emit: a card changed (add.js redraws Add on 'card-changed'; this file loads before add.js since the restructure S3c)
+import {askFor,emit,register} from './bus.js';   // emit: a card changed (add.js redraws Add on 'card-changed'; this file loads before add.js since the restructure S3c)
 import {$,CASUAL_JACKETS,CASUAL_TOPS,COLORS,COLS_BY,CUSTOM_COL,CUSTOM_PAT,MATERIALS_BY,OWN_COL_RE,OWN_MAT_MAX,OWN_PAT_RE,PATS_BY,TYPES,applyCustom,colName,colNameTaken,colsFor,items,matTypeWord,matsFor,normCol,ownColFind,ownColKey,ownDescClean,ownFreeKey,ownMatName,ownMats,ownNameBad,ownNameClean,ownNameShort,ownPatKey,patLabel,patNameTaken,settings,esc} from './core.js';
 import {planDirty} from './today-plan.js';
 import {saveUserSettings} from './settings.js';
@@ -108,10 +108,10 @@ function renderOwnMatUI(){const el=$('#ownmat-list');if(!el)return;const rows=[]
   el.innerHTML=rows.length?rows.join('')+'<p class="mut"><small>Removing one leaves the items that use it as they are; it just stops being offered.</small></p>'
     :'<p class="mut"><small>None yet. When Claude reads a material that is on no list (cupro, say), the Add card offers to add it here.</small></p>';
   if(lookOn())el.insertAdjacentHTML('beforeend',askFor('look-own-mat-ui')??'')}   // (the Look beta: leathers and metals too, and "+ New material": look.js)
-/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
-on('settings-draw',()=>{renderCustomUI();renderOwnMatUI()});
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,guessPatBase,addCustomColor,addCustomPattern,addOwnMaterial,groupOf,newColHex,removeOwnMaterial,renderCustomUI};
 export {groupOf,typePl,ownColOffer,newColHex,addCustomColor,guessPatBase,addCustomPattern,renderCustomUI,removeCustom,addOwnMaterial,removeOwnMaterial,matOffer,matGuessUse,renderOwnMatUI};
 function ownMatRmTap(el){removeOwnMaterial(el.dataset.t,el.dataset.m)}
 acts({ownMatRmTap});
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('own-lists',{'settings-draw':()=>{renderCustomUI();renderOwnMatUI()}});

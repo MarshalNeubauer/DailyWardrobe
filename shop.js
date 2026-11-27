@@ -30,12 +30,11 @@ const shopFresh=()=>!!shop&&shop.sig===shopSig()&&Date.now()-(shop.at||0)<SHOP_S
 const shopHid=x=>(settings.shopSkip||[]).includes(x.key);
 const shopRecs=r=>r?r.cats.reduce((a,c)=>a+c.recs.filter(x=>!shopHid(x)).length,0):0;
 const shopFind=key=>{const r=shopPart||(shop&&shop.res);if(!r)return null;for(const c of r.cats){const x=c.recs.find(x=>x.key===key);if(x)return x}return null};
-/* the socket nav.js asks as another page is shown (bus.js): What to buy closes */
-import {serve,askFor,emit} from './bus.js';
+/* What to buy closes as another page is shown, and its button on Insights (bus.js register, at the end) */
+import {serve,askFor,runHooks,register} from './bus.js';
 import {layerClose,layerOpen} from './ui.js';
 import {CLASS_NAMES,TYPE_WORD,groupLabel,runAnalysis} from './analysis.js';
-serve('shop-close',closeShop);serve('shop-button',shopButton);   // (and its button on Insights: stats.js)
-db.then(()=>metaGet('shop')).then(v=>{if(v&&v.res&&v.res.v===2&&!shop){shop=v;if(!$('#wardrobe').hidden&&!editing)emit('wardrobe-changed')}}).catch(()=>{});
+db.then(()=>metaGet('shop')).then(v=>{if(v&&v.res&&v.res.v===2&&!shop){shop=v;if(!$('#wardrobe').hidden&&!editing)runHooks('wardrobe-changed')}}).catch(()=>{});
 
 /* the button on the Wardrobe tab */
 /* What to buy needs a wardrobe big enough to judge: on a few pieces it advised buying nearly everything. Until it has 3 jackets
@@ -185,11 +184,11 @@ async function shopBought(key){
   askFor('dress-new-item');
   for(const x of rec.items){const it={...x,...(x.type==='suit'?{vest:'no'}:{}),id:crypto.randomUUID(),added:now,paused:true,order:true,...(arrives?{arrives}:{})};await put(it);items.push(it)}
   planDirty();shopForm=null;shopMsg=`Added to your wardrobe as on the way: ${rec.name}${arrives?`, arriving ${fmtDay(arrives)}`:''}.`;
-  if(!$('#wardrobe').hidden&&!editing)emit('wardrobe-changed');
+  if(!$('#wardrobe').hidden&&!editing)runHooks('wardrobe-changed');
   analyzeWardrobe();
 }
 /* not for me: hidden at once, and left out of every later check (the next check puts another idea in its place) */
-async function shopHide(key){settings.shopSkip=[...new Set([...(settings.shopSkip||[]),key])];await saveUserSettings();shopMsg='Hidden. You can bring it back under "Hidden ideas" at the bottom.';renderShop();if(!$('#wardrobe').hidden&&!editing)emit('wardrobe-changed')}
+async function shopHide(key){settings.shopSkip=[...new Set([...(settings.shopSkip||[]),key])];await saveUserSettings();shopMsg='Hidden. You can bring it back under "Hidden ideas" at the bottom.';renderShop();if(!$('#wardrobe').hidden&&!editing)runHooks('wardrobe-changed')}
 async function shopUnhide(key){settings.shopSkip=(settings.shopSkip||[]).filter(k=>k!==key);await saveUserSettings();shopMsg='';if(shopFind(key))renderShop();else analyzeWardrobe()}
 /* what the controls do (act.js). index.html's: What to buy's backdrop */
 function shopBackdropTap(){closeShop()}
@@ -210,3 +209,5 @@ export {shop,shopBusy,shopPart,shopWorker,shopOpen,shopShown,shopForm,shopSig,sh
 acts({shopBackdropTap,shopOpenTap,shopCloseTap,shopAgainTap,shopGoTap,shopRecTap,shopFormTap,shopCancelTap,shopBoughtTap,shopHideTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('shop-open',()=>shopOpen);
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('shop',{'page-shown':()=>({closeShop}),'insights-cards':()=>({shopButton})});

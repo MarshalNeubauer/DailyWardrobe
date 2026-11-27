@@ -9,7 +9,7 @@ import {metaPut,sel,txs} from './app.js';
 import {planFor} from './today-plan.js';
 import {ASM_AHEAD,ASM_AHEAD_N,ASM_AHEAD_WAIT,ASM_KEEP,ASM_ON,ASM_OUT_RANGE,ASM_PRE_RE,ASM_RETRY_MS,asmAheadOn,asmIdleArm,asmImgOf,asmOffPage,asmPreGetting,asmPreNo,asmRetryAt,asmTried,asmUrls,setAsmAheadOn} from './assemble.js';
 import {asmCmAny,asmCmHeld,asmCmKey,asmCmUse,asmDrawn,asmFresh,asmFullWins,asmListAt,asmListGet,asmLookId,asmOut,asmOutKey,asmPreSigOk,asmStale,asmWants,setAsmOut} from './asm-look.js';
-import {ask,serve,served} from './bus.js';
+import {ask,served,register} from './bus.js';
 /* look for the outfit's colour-coded master on the worker, once a session: in the worker's list (one small request), else by downloading it */
 const asmCmLook=async o=>{if(!ASM_ON||!served('asm-cm-kind'))return;const k=ask('asm-kind-of',o);if(!k)return;
   await ask('asm-cm-mf-get');   // the masters' manifest first: it may outdate a photo held here, and its dates are in the look's key
@@ -92,8 +92,9 @@ function asmSync(force){if(!ASM_ON||asmDrawn()||!workerBase())return Promise.res
 /* (with "Drawing only" the group is hidden, and with it the whole Advanced fold (styles.css #adv-photos:has(#asm-group[hidden])): Pictures
    ahead, Painted plain and the graphics-chip switch are about the painter; and asmCmStatus would read the worker's list) */
 function renderAsmUI(){const on=ASM_ON&&!asmDrawn(),grp=$('#asm-group');if(grp)grp.hidden=!on;if(on)ask('asm-cm-ui')}
-/* sockets (bus.js; the restructure S6p, 2026-11-27): what start-up and Settings (settings.js and start.js, required) ask of this file, which they may not import */
-serve('asm-load',asmLoad);serve('asm-sync',(...a)=>asmSync(...a));serve('asm-ensure',asmEnsure);serve('asm-ui',renderAsmUI);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get asmAhead(){return asmAhead},set asmAhead(v){asmAhead=v},get asmAheadSoon(){return asmAheadSoon},set asmAheadSoon(v){asmAheadSoon=v},asmBlobUp,asmCmLook,get asmSyncing(){return asmSyncing},asmEnsure,asmFor,asmGetPre,asmLoad,asmShow,asmShown,asmSync,renderAsmUI};
 export {asmCmLook,asmFor,asmShown,asmGetPre,asmLoad,asmKeepOut,asmBlobUp,asmEnsure,asmShow,asmSync,renderAsmUI,asmSyncing,asmAheadSoon,asmAhead};
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+/* (start-up and Settings, settings.js and start.js, required, may not import this file: the restructure S6p) */
+register('asm-today',{'start-jobs':()=>({asmLoad,asmSync}),'settings-rows':()=>({renderAsmUI,asmSync}),'pictures-switched':()=>({asmSync,asmEnsure})});

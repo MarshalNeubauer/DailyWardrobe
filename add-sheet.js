@@ -1,7 +1,7 @@
 /* Daily Wardrobe: Add without a photo (split from add.js, Round C 2026-11-17): addManual, the type Today's "Add one" asked for
    (addFor), and the bottom sheet the card opens in (#nps-sheet: open, draw, close, Back, swipe). */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {askFor,serve,emit} from './bus.js';   // serve: nav.js (required) sets and drops what Today's "Add one" asked for, and leaves the sheet, through sockets
+import {askFor,serve,emit,register} from './bus.js';   // serve: nav.js (required) sets and drops what Today's "Add one" asked for, and leaves the sheet, through sockets
 import {addCardRec,addWatch} from './add-keep.js';
 import {keepFocus,queue} from './app.js';
 import {$,PAIR_TYPES,TYPES,normPat,watchOpts,esc} from './core.js';
@@ -73,9 +73,6 @@ function setAddFor(v){addFor=v}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,addManual,npsClose,get addFor(){return addFor},npsCancel,get npsId(){return npsId}};
 export {addManual,addFor,renderAddFor,npsId,npsAsking,npsInert,npsDraw,npsClose,npsCancel,npsLeave,setAddFor};
-/* the router (nav.js, a required file loaded before this one) reaches these through bus.js sockets (the restructure S3c): opening Add
-   with a type ('add-for'), and leaving Add with the sheet open ('nps-leave'); without this file they do nothing */
-serve('add-for',setAddFor);serve('nps-leave',npsLeave);
 backOn('nps',()=>npsBack());
 /* Add left while the sheet is up (start.js show): the sheet closes; a card with changes stays on Add as a card of the list, an
    untouched one goes */
@@ -91,3 +88,6 @@ function addManualTap(){addManual()}
 function npsCloseTap(){npsCancel()}
 acts({npsCancelTap,addManualTap,npsCloseTap});
 serve('nps-id',()=>npsId);serve('nps-inert',npsInert);serve('nps-asking',()=>npsAsking);serve('nps-cancel',npsCancel);   // the restructure S6f: ui.js's layers and Escape (a required file) and the "Add without a photo" sheet
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+/* the router (nav.js, a required file loaded before this one) opens Add with a type (setAddFor), and leaves Add with the sheet open (npsLeave); without this file they do nothing */
+register('add-sheet',{'page-shown':()=>({setAddFor,npsLeave})});

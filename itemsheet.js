@@ -3,7 +3,7 @@
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14, and by
    job on 2026-11-17: item-photo.js the photo tools, item-view.js the sheet itself. Since the restructure S3d, 2026-11-26, it loads after
    wardrobe.js, care.js and cost.js, whose parts it draws.) */
-import {on,serve,ask,served,askFor} from './bus.js';
+import {serve,ask,served,askFor,slotsOf,register} from './bus.js';
 import {srcOk} from './photo-keys.js';
 import {cap1,editing,flt,keepFocus,put,refreshSwatch,setFlt} from './app.js';
 import {cropEditor,paperHint,paperLine,paperRetake,phEdit,photoTools,setPhEdit} from './item-photo.js';
@@ -66,20 +66,20 @@ scope,'pattern',{mark:'good',title:'Pattern',sum:esc(cap1(patName(normPat(i.type
     (i.type==='pants'?E(id,'trouserKind',TROUSER_KINDS,trouserKindShown(i)):'')+(i.type==='shoes'?E(id,'shoeStyle',SHOE_STYLES,shoeStyle(i)):'')+(i.type==='blouse'?blouseFields(id,i):'')+(!L&&(i.type==='shoes'||i.type==='belt')?E(id,'leather',leathersFor(i).map(c=>[c,cap1(leatherWord(i,c))]),i.leather||'calf',leatherLabel(i)):'')+
     (i.type==='watch'?`<label class="wdetails">Details <input type="text" maxlength="${WATCH_DETAILS_MAX}" dir="auto" value="${esc(String(i.details||'').slice(0,WATCH_DETAILS_MAX))}" placeholder="e.g. three subdials, 12 and 6 numerals" data-act-change="itemDetails" data-id="${esc(id)}"></label>`+(L?'':E(id,'dial',DIAL_OPTS(watchOpts(i).dial),watchOpts(i).dial))+E(id,'band',BANDS,watchOpts(i).band)+E(id,'bezel',BEZELS,watchOpts(i).bezel)+E(id,'watchStyle',WATCH_STYLES,watchOpts(i).style):'');
   const details=ckSec(scope,'details',{mark:'good',title:'Details',sum:esc(ivDetailSum(i)),body:det+(fab||L?'':gap),cls:'ivtags'});
-  const cs=CARE_ABLE.includes(i.type)&&!i.order&&served('care-state')?askFor('care-state',i):null;
+  const P=slotsOf('item-sheet-parts'),cs=CARE_ABLE.includes(i.type)&&!i.order&&P.careState?P.careState(i):null;   // (the sheet's parts: bus.js slots)
   const rotIn=`${i.paused?(i.order?`<div class="rotnote ordrow"><p class="shelp">On the way: it isn't in your outfits yet.</p><label class="ordate">Arrives (optional) <input type="date" value="${i.arrives||''}" min="${isoKey(todayDate())}" data-act-change="itemArrives" data-id="${esc(id)}"></label><small class="mut ordhint">${orderHint(i.arrives)}</small></div>`:i.away?'<p class="shelp rotnote">Away being cleaned: it is out of your outfits until it is back (see Care below).</p>':'<p class="shelp rotnote">Out of rotation: the planner won\'t pick it, and it isn\'t offered when you change a piece. Outfits you already wore keep it.</p>'):'<p class="shelp">In rotation: the planner picks it for your outfits.</p>'}
-  ${askFor('fav-item-row',i)??''}${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" data-act="itemPause" data-id="${esc(id)}" data-want="${i.paused?0:1}" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}${askFor('care-card',i)??''}${askFor('cpw-block',i)??''}`;   // (cost.js: price, day bought, cost per wear)
-  const care=ckSec(scope,'care',{mark:cs&&cs.due?'warn':'good',title:'Planning &amp; care',sum:esc(ivCareSum(i,cs)+(askFor('cpw-sum',i)??'')),body:rotIn,open:!!(cs&&cs.due),cls:'ivrot'});
+  ${P.favItemRow?.(i)??''}${i.away?'':`<div class="btns"><button class="rotbtn${i.paused?' on':''}" data-act="itemPause" data-id="${esc(id)}" data-want="${i.paused?0:1}" aria-pressed="${!!i.paused}">${i.paused?(i.order?'It arrived: put in rotation':'Put back in rotation'):'Take out of rotation'}</button></div>`}${P.careCard?.(i)??''}${P.cpwBlock?.(i)??''}`;   // (cost.js: price, day bought, cost per wear)
+  const care=ckSec(scope,'care',{mark:cs&&cs.due?'warn':'good',title:'Planning &amp; care',sum:esc(ivCareSum(i,cs)+(P.cpwSum?.(i)??'')),body:rotIn,open:!!(cs&&cs.due),cls:'ivrot'});
   const filled=['name','brand','notes'].filter(k=>String(i[k]||'').trim());
   const names=ckSec(scope,'names',{mark:filled.length?'good':'opt',title:'Name &amp; notes',sum:filled.length?esc(cap1(filled.join(', ')))+' filled in'+(filled.length<3?` · no ${['name','brand','notes'].filter(k=>!filled.includes(k)).join(' or ')}`:''):'Name, brand, notes · optional',body:wardFieldsTop(i)+notesRow(i.notes,ivOn(id))});
   const pics=ckSec(scope,'pics',{mark:'opt',title:'Pictures',sum:esc(cap1([i.photo?'photo':'no photo',tex&&i.texture?'close-up':''].filter(Boolean).join(', ')))+' · replace, rotate, crop',body:`<div class="ivhero">${pair}</div>${photoTools(i)}`,cls:'ivpics'});
   const ends=`<div class="ivdup"><button type="button" id="iv-dup" data-act="itemDup" data-id="${esc(id)}">Duplicate this item</button></div><div class="ivdel"><button class="danger" data-act="itemDelete" data-id="${esc(id)}">Delete item</button></div>`;
-  const sample=askFor('kit-sample-note',i)??'';
+  const sample=P.kitSampleNote?.(i)??'';
   return `<div class="ivin ivck"><div class="ivcols"><div class="ivcl">${top}${sample}${look||pics}</div><div class="ivcr">${lkSec}${color}${pattern}${mat}${details}${care}${names}${look?pics:''}</div></div>${ends}</div>`;
 }
 /* the summary line at the top of the item sheet: the photo (or the drawing), "In rotation" / "Out of rotation" / "On the way", how many
    wears are left before cleaning (or "Due for cleaning"), the material and the season (a choice's label: fields.js optLab) */
-function ivSummary(i,pic){const s=CARE_ABLE.includes(i.type)&&!i.order&&served('care-state')?askFor('care-state',i):null,left=s?s.limit-s.wears:0;
+function ivSummary(i,pic){const P=slotsOf('item-sheet-parts'),s=CARE_ABLE.includes(i.type)&&!i.order&&P.careState?P.careState(i):null,left=s?s.limit-s.wears:0;
   const rot=i.paused?`<span class="ivpill${i.order?'':' warn'}">${i.order?'On the way':i.away?(i.away.why==='laundry'?'In the laundry':'At the cleaner’s'):'Out of rotation'}</span>`:'<span class="ivpill good">In rotation</span>';
   const care=s&&!i.away&&s.limit>1?(s.due?`<span class="ivpill warn">Due for ${careWord(i.type)}</span>`:`<span class="ivpill">${careWashed(i.type)?'Wash':'Clean'} in ${left} wear${left===1?'':'s'}</span>`):'';
   const meta=[i.material?matLabel(i.material):'',SEASON_TYPES.includes(i.type)&&i.season&&i.season!=='all'?optLab(SEASONS,i.season):''].filter(Boolean).join(' · ');
@@ -176,9 +176,6 @@ function stepType(n,from){
   sl.style.transition='transform .24s cubic-bezier(.2,.8,.2,1),opacity .2s ease-out';sl.style.transform='translateX(0)';sl.style.opacity='1';return true}
 /* an item's edits, asked for by colpick.js and look.js (loaded before this file, of the Add group: tests/bus.test.js SOCKETS) */
 serve('item-set',sete);serve('pat-summary',patSummary);serve('pat-redetect',redetect);serve('pat-clear',clearStripes);
-/* the Wardrobe's redraw for the files loaded before this one (bus.js: they announce 'wardrobe-changed'; nav.js asks 'wardrobe-draw' when
-   the page shows), the restructure S3d */
-on('wardrobe-changed',renderWardrobe);serve('wardrobe-draw',renderWardrobe);
 (()=>{const el=$('#wardrobe');let st=null;const slide=()=>$('#wslide');
   el.addEventListener('touchstart',e=>{const t=e.touches[0];
     st=e.touches.length>1||editing||t.clientX<24||t.clientX>innerWidth-24||e.target.closest('.chips,input,select,textarea,.cropwrap')?null:{x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0}},{passive:true});
@@ -226,3 +223,6 @@ function wardChip(el){setFlt(el.dataset.t);askFor('fav-off');renderWardrobe()}
 acts({itemPick,itemDetails,itemReadPat,itemGeneric,itemArrives,itemPause,itemDup,itemDelete,wardChip,tapeSet});   // (tapeSet: the uniform blouse's tapes)
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('item-body',itemBody);
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+/* the Wardrobe's redraw: the files that changed a piece run 'wardrobe-changed' (the restructure S3d: they never call renderWardrobe), and nav.js draws it as the page shows */
+register('itemsheet',{'wardrobe-changed':renderWardrobe,'page-shown':()=>({renderWardrobe})});

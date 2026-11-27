@@ -1,7 +1,7 @@
 /* Daily Wardrobe: the Wardrobe tab's search and sort, an item's own name, brand, material and notes, and Delete with Undo.
    Loaded after app.js and stats.js (an ES module since 2026-11-23); app.js calls in here from renderWardrobe, wardList,
    itemBody, save and rm. */
-import {askFor,served,serve,emit,ask} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
+import {askFor,serve,slotsOf,register,runHooks} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
 import {$,MATERIALS_BY,MAT_ALIAS,TYPES,accentsOf,colName,colorDesc,dayRecs,desc,fmtDay,hasPat,isCargo,itemFields,itemName,itemTitle,items,lumCol,matAlias,nameIso,nextStamp,nm,noBidi,patName,phSm,planCol,primaryCol,setWardrobe,sockPatterned,sockToeKey,strapBand,titleCls,trouserKind,esc} from './core.js';
 import {fam,favItemSet,isFavItem} from './planner.js';
 import {wornDays} from './stats.js';
@@ -90,7 +90,7 @@ function wardBar(){
     `<button type="button" class="wclear" id="wclear" aria-label="Clear search" data-act="wardClearTap"${wardQ?'':' hidden'}>×</button></div>`+
     `<select class="wsort" id="wsort" aria-label="Sort the wardrobe" data-act-change="wardSortPick">${WARD_SORTS.map(([k,l])=>`<option value="${k}"${k===s?' selected':''}>${l}</option>`).join('')}</select></div>`}
 /* a box's tag: Sample, Out of rotation, On the way, away being cleaned, due for cleaning */
-function giTag(i){return i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:i.away?ask('care-tag',i)??'Out of rotation':'Out of rotation'}</span>`:i.sample&&served('kit-sample-tag')?askFor('kit-sample-tag',i):ask('care-badge',i)??''}
+function giTag(i){const P=slotsOf('wardrobe-tile');return i.paused?`<span class="pausetag">${i.order?`On the way${i.arrives?' · '+fmtDay(i.arrives):''}`:i.away?P.careTag?.(i)??'Out of rotation':'Out of rotation'}</span>`:i.sample&&P.kitSampleTag?P.kitSampleTag(i):P.careBadge?.(i)??''}
 /* ...read out with the box's name: the aria-label took its place, so a sample piece sounded like one's own (re-audit 2026-11-15) */
 function giNote(tag){const t=String(tag||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();return t?', '+t:''}
 /* the grid, or what to say when there is nothing to show */
@@ -99,7 +99,7 @@ function wardGrid(list){
       wl=i=>!w?'':`<small class="wwear">${m.sort==='worn'?(w.n[i.id]?`Worn ${w.n[i.id]} time${w.n[i.id]===1?'':'s'}`:'Not worn yet'):w.last[i.id]?`Last worn ${w.last[i.id].toLocaleDateString(undefined,{month:'short',day:'numeric'})}`:'Not worn yet'}</small>`;
     return `<div class="grid">${list.map(i=>{const tag=giTag(i),wp=wardPic(i);return `<div class="gi${i.paused?' paused':''}" id="gi-${esc(i.id)}"><button class="giopen" data-act="wardOpenTap" data-id="${esc(i.id)}" aria-label="Open ${esc(TYPES[i.type]||'item')}: ${esc(itemTitle(i))}${giNote(tag)}${isFavItem(i.id)?', favorite':''}">${askFor('fav-mark',i)??''}${wp?`<img class="ph" src="${srcOk(wp)}" alt="">`:i.photo?`<img class="ph" src="${srcOk(phSm(i))}" alt="">`:itemThumb(i)}<span class="gimeta"><small class="gtype">${isCargo(i)?'Cargo pants':i.type==='pants'&&trouserKind(i)!=='dress'?cap1(trouserKind(i)):TYPES[i.type]||'Item'}</small><b class="${titleCls(i)}">${esc(itemTitle(i))}</b>${wl(i)}</span>${tag}</button></div>`}).join('')}</div>`}   // (wardPic once a box: each call schedules the picture's download)
   const q=wardNorm(wardQ);
-  if(!items.length&&served('setup-ward-empty'))return askFor('setup-ward-empty');   // setup.js: the empty Wardrobe's card
+  const P=slotsOf('wardrobe-tile');if(!items.length&&P.setupWardEmpty)return P.setupWardEmpty();   // setup.js: the empty Wardrobe's card
   if(!q||!items.length)return '<p class="mut">Nothing here yet. Add one with the + button.</p>';
   const all=flt==='all'?0:items.filter(i=>wardMatch(i,q)).length,tl=(TYPES[flt]||'').toLowerCase();
   return `<div class="wnone" id="wnone"><b>Nothing matches “${esc(wardQ.trim())}”${flt==='all'?'':` in ${esc(tl)}`}</b><p class="mut">${all?`${all} item${all===1?' matches':'s match'} in the rest of your wardrobe.`:'Search looks at names, brands, notes, materials, types, colors and patterns.'}</p>`+
@@ -146,7 +146,7 @@ async function setItemField(id,k,v){
   const it=items.find(x=>x.id===id);if((!it)&&itemGoneTell(id))return;if(!it||!WARD_FIELDS.includes(k))return;v=noBidi(v).trim().slice(0,WARD_MAX[k]);if((it[k]||'')===v)return;   // (noBidi: no right-to-left overrides, W2-12-06, core.js)
   if(v)it[k]=v;else delete it[k];if(it.sample)it.sampleMine=1;   // his edit (also when typed text is saved after the sheet closed: kit.js kitEdited)
   await put(it);
-  if(k==='material'){emit('wardrobe-changed');return}   // Other shows or hides its field
+  if(k==='material'){runHooks('wardrobe-changed');return}   // Other shows or hides its field
   wardRefresh();const h=$('#iv-title');if(h&&editing===id){h.textContent=itemTitle(it)||TYPES[it.type]||'Item';h.className=titleCls(it)}}
 /* (the Add card's name, brand, notes and Material are kept on the card by add-card.js setQField) */
 
@@ -197,7 +197,7 @@ const wardDelete=id=>wardOnce('del:'+id,()=>wardDeleteNow(id));
 async function wardDeleteNow(id){
   const k=items.findIndex(i=>i.id===id);if(k<0)return;const it=items[k],snap=JSON.parse(JSON.stringify(it));
   const days=Object.values(dayRecs).filter(r=>JSON.stringify(r).includes(id)).map(r=>JSON.parse(JSON.stringify(r)));   // the days that refer to it, as they are now
-  const at=await del(id);setWardrobe({items:items.filter(i=>i.id!==id)});planDirty();if(editing===id)dropItem();emit('wardrobe-changed');
+  const at=await del(id);setWardrobe({items:items.filter(i=>i.id!==id)});planDirty();if(editing===id)dropItem();runHooks('wardrobe-changed');
   toast(`Deleted ${nameIso(itemName(it)||nm(it))}`,WARD_UNDO_MS,{label:'Undo',fn:()=>wardUndelete(snap,k,days,at)})}
 async function wardUndelete(it,k,days,at){
   if(items.some(i=>i.id===it.id))return;
@@ -217,7 +217,7 @@ function wardSearchKey(el,ev){if(ev.key==='Escape'&&el.value){ev.stopPropagation
 function wardClearTap(){wardClear()}
 function wardSortPick(el){setWardSort(el.value)}
 function wardOpenTap(el){openItem(el.dataset.id)}
-function wardAllTap(){setFlt('all');emit('wardrobe-changed')}   // (setFlt: itemsheet.js, the one place the type filter is set)
+function wardAllTap(){setFlt('all');runHooks('wardrobe-changed')}   // (setFlt: itemsheet.js, the one place the type filter is set)
 /* the item sheet's Name, Brand and Notes (ivOn: data-id, data-f), as they are typed and when the field is left; Material on the item sheet
    (fields.js matPicked; an Add card's: add-card.js matCardPick) */
 function itemFieldType(el){itemFieldSoon(el.dataset.id,el.dataset.f,el.value)}
@@ -225,4 +225,11 @@ function itemFieldDone(el){itemFieldNow(el.dataset.id,el.dataset.f,el.value)}
 function matItemPick(el){setItemField(el.dataset.id,'material',matPicked(el))}
 acts({wardSearchType,wardSearchKey,wardClearTap,wardSortPick,wardOpenTap,wardAllTap,itemFieldType,itemFieldDone,matItemPick});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('item-field',setItemField);serve('ward-view',wardView);serve('ward-pending-restore',()=>whenPulled(wardPendingRestore));serve('ward-synced',m=>{if(m&&(m.items||[]).some(matRenameTo))matMigrate();if(m&&(m.items||[]).some(sockLegacy))sockToeMigrate()});
+serve('item-field',setItemField);serve('ward-view',wardView);
+/* a name typed just before a kill is put back once the backup is merged (safety.js safetyStart), and a sync's pieces from an older app
+   are brought up to date: a material renamed, a sock's toe cap (start.js onSyncedData) */
+function wardPendingSoon(){whenPulled(wardPendingRestore)}
+/** @param {*} m */ function wardSynced(m){if(m&&(m.items||[]).some(matRenameTo))matMigrate();if(m&&(m.items||[]).some(sockLegacy))sockToeMigrate()}
+export {wardPendingSoon,wardSynced};
+/* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
+register('wardrobe',{'start-safety':()=>({wardPendingSoon}),'synced':()=>({wardSynced})});

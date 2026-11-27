@@ -1,7 +1,7 @@
 /* Daily Wardrobe: Add, saving (split from add.js, Round C 2026-11-17): Save all, the Saved toast's title and Confirm (save, saveCard).
    (A card found by its id, and whether Claude is still reading it, are add-ids.js's since the restructure S3c.) */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {emit,askFor} from './bus.js';
+import {emit,askFor,slotsOf} from './bus.js';
 import {cardReading,closeTagImg,needType} from './add-ids.js';
 import {cardOf,generateSwatch,queue,storeFailure,txs} from './app.js';
 import {$,COLORS,CUSTOM_COL,CUSTOM_PAT,FABRIC,METAL_TYPES,SEASON_TYPES,TEXTURE_TYPES,TYPES,accentsOf,askPersist,blouseTapes,hasPat,itemName,items,nameIso,nowMs,patBase,sentence,settings,shortDesc,styleWord,watchOpts} from './core.js';
@@ -57,7 +57,8 @@ async function saveCard(q){
   if(q.order){it.paused=true;it.order=true;if(q.arrives)it.arrives=q.arrives}   // bought, on the way
   if(METAL_TYPES.includes(q.type))it.metal=q.metal||'silver';
   if(q.type==='shirt')it.cuff=q.cuff||'button';
-  if(q.type==='suit')it.vest=(q.vest||(askFor('new-suit-vest')??'no'))==='yes'?'yes':'no';askFor('dress-new-item');
+  const P=slotsOf('card-saved');   // (what other features save with the card: bus.js slots)
+  if(q.type==='suit')it.vest=(q.vest||(P.newSuitVest?.()??'no'))==='yes'?'yes':'no';askFor('dress-new-item');
   if(SEASON_TYPES.includes(q.type)&&q.season&&q.season!=='all')it.season=q.season;
   if(q.type==='shoes'||q.type==='belt')it.leather=q.leather||'calf';
   if(q.type==='pants'&&(q.trouserKind==='chinos'||q.trouserKind==='jeans'||q.trouserKind==='cargo'))it.trouserKind=q.trouserKind;   // dress trousers: no field (as before kinds)
@@ -68,14 +69,14 @@ async function saveCard(q){
   if(q.texture&&TEXTURE_TYPES.includes(q.type))it.texture=q.texture;
   if(q.meas)it.meas={lab:q.meas.lab,ref:!!q.meas.ref,src:q.meas.src,...(q.meas.parts?{parts:q.meas.parts.map(p=>({role:p.role,lab:p.lab,hex:p.hex,share:p.share}))}:{})};   // a patterned cloth's ground and stripe too (colpick.js)
   if(q.tagAI&&!q.manual)it.tagAI=q.tagAI;   // Claude's colour it gave, how sure it was, its runner-ups (measure.js aiSignals): to calibrate the verdict later
-  wardSaveFields(q,it);matTidy(it);askFor('cpw-save-fields',q,it);   // (cost.js: the price and the day bought)   // name, brand, material, notes (wardrobe.js); no material the type can't have (CR-1-06)
+  wardSaveFields(q,it);matTidy(it);P.cpwSaveFields?.(q,it);   // (cost.js: the price and the day bought)   // name, brand, material, notes (wardrobe.js); no material the type can't have (CR-1-06)
   if(q.shade)it.shade=q.shade;   // drawn darker or lighter than the swatch, to match the close-up   // the owner's own colour samples (calibLab)
   if(q.sett&&!q.settOff&&readable(it.type,it.pattern,q.weave)){it.sett=q.sett;if(q.patternBox)it.pbox=q.patternBox}   // the full pattern (pattern-read.js)
   if(q.weave&&FABRIC.includes(it.type)&&it.pattern!=='solid'){it.weave=q.weave;if(q.weave.description)it.patternText=q.weave.description}
   if(q.spec&&it.sett&&it.sett.src==='claude+pixels')it.patternSpec=q.spec;   // Claude's reading of the pattern (pattern-read.js)
   // the old brightness-only stripe reader: only where the full reader had nothing to go on (no close-up), and never after it turned down a reading as contradicting the tag
   if(!it.sett&&!q.texture&&!q.settReject)try{const st=detectQueued(q,it);if(st)it.stripes=st}catch(e){console.warn('pattern detection failed',e)}
-  askFor('look-save',q,it);   // the Look beta's fields (look.js: a coat's pattern, a knit's close-up, Looks right, Claude's runner-ups, own leather or metal); nothing with it off
+  P.lookSave?.(q,it);   // the Look beta's fields (look.js: a coat's pattern, a knit's close-up, Looks right, Claude's runner-ups, own leather or metal); nothing with it off
   colTidy(it);   // no second or third colour its type can't show (colpick.js)
   if(q.sample)it.sample=true;   // the sample wardrobe (kit.js kitSampleLoad)
   // the item and its copies (the same shirt or pair again, qtyRow) in one transaction: all of them or none (a kill right after
@@ -85,7 +86,7 @@ async function saveCard(q){
   await txs('items','readwrite',s=>{for(const x of all)s.put(x)});askFor('sync-soon');
   items.push(...all);
   const i=queue.indexOf(q);planDirty();if(i>=0)queue.splice(i,1);{const c=askFor('add-calm');if(c)c.ok=1}emit('card-changed');   // (only a card that really went closes up the list: a failed save's Confirm can be tapped again at once)
-  askFor('kit-saved',it,q,Math.max(0,i),copies);   // Saved, with Undo for all of them (kit.js)
+  P.kitSaved?.(it,q,Math.max(0,i),copies);   // Saved, with Undo for all of them (kit.js)
   if(q.tagImg)for(const x of all)keepTagImg(x.id,q.tagImg,it.photo);recordTagResult(q,it);askPersist();   // tag-request.js: the sharp copy (signed with the photo), for every copy too (CR-1-04); what the tagger got wrong
   if(it.texture&&q.raw&&q.raw.tex)closeTagImg(q).then(u=>{for(const x of all)keepCloseImg(x.id,u,it.texture)}).catch(()=>{});   // the sharp close-up for later readings (tag-request.js)
   q.raw=null;q.big=null;q.texCanvas=null;   // the card's canvases (a 2048 px photo, its 800 px copy, the close-up) go now, not when the last reply about the card comes back
