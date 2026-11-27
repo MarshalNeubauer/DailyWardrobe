@@ -1,7 +1,7 @@
 /* Daily Wardrobe: the Wardrobe tab's search and sort, an item's own name, brand, material and notes, and Delete with Undo.
    Loaded after app.js and stats.js (an ES module since 2026-11-23); app.js calls in here from renderWardrobe, wardList,
    itemBody, save and rm. */
-import {askFor,serve,slotsOf,register,runHooks} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
+import {askFor,slotsOf,register,runHooks} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
 import {$,MATERIALS_BY,MAT_ALIAS,TYPES,accentsOf,colName,colorDesc,dayRecs,desc,fmtDay,hasPat,isCargo,itemFields,itemName,itemTitle,items,lumCol,matAlias,nameIso,nextStamp,nm,noBidi,patName,phSm,planCol,primaryCol,setWardrobe,sockPatterned,sockToeKey,strapBand,titleCls,trouserKind,esc} from './core.js';
 import {fam,favItemSet,isFavItem} from './planner.js';
 import {wornDays} from './stats.js';
@@ -225,7 +225,6 @@ function itemFieldDone(el){itemFieldNow(el.dataset.id,el.dataset.f,el.value)}
 function matItemPick(el){setItemField(el.dataset.id,'material',matPicked(el))}
 acts({wardSearchType,wardSearchKey,wardClearTap,wardSortPick,wardOpenTap,wardAllTap,itemFieldType,itemFieldDone,matItemPick});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('item-field',setItemField);serve('ward-view',wardView);
 /* a name typed just before a kill is put back once the backup is merged (safety.js safetyStart), and a sync's pieces from an older app
    are brought up to date: a material renamed, a sock's toe cap (start.js onSyncedData) */
 function wardPendingSoon(){whenPulled(wardPendingRestore)}

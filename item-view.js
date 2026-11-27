@@ -10,6 +10,8 @@ import {acts} from './act.js';
 import {cmpMount} from './checklist.js';
 import {lookOn} from './look-base.js';
 import {lookOpenFresh} from './look.js';
+import {wardView} from './wardrobe.js';
+import {itemBody} from './itemsheet.js';
 /* ---- Wardrobe item sheet ----
    Tapping an item opens it in a sheet that slides up over the Wardrobe: the full width of a phone, to just under the top of the
    screen (a centred panel from 600px). The grid behind never moves, so closing puts you back exactly where you were. Ways out:
@@ -20,7 +22,7 @@ const WARD_EASE='cubic-bezier(.2,.8,.2,1)',WARD_MS=320;
 /* the filtered, sorted list on screen (wardrobe.js), with the open item kept in it at the place it had (ivAt) when an edit took it out of the
    filter (CR-1-05: a suit made a blazer under the Suit chip lost "n of m", ‹ ›, the sideways swipe and its focus on closing) */
 let ivAt=0;
-const wardList=()=>{const l=askFor('ward-view');if(!editing||l.some(x=>x.id===editing))return l;const it=items.find(x=>x.id===editing);if(!it)return l;
+const wardList=()=>{const l=wardView();if(!editing||l.some(x=>x.id===editing))return l;const it=items.find(x=>x.id===editing);if(!it)return l;
   const c=l.slice();c.splice(Math.min(ivAt,c.length),0,it);return c};
 let itemFrom=null;   // the item the sheet was opened on: closing on another one brings that one's box into view first
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
@@ -57,7 +59,7 @@ function renderItem(){
   if(!i){setEditing(null);itemShown(false);return}
   const l=wardList(),k=l.findIndex(x=>x.id===i.id);if(k>=0)ivAt=k;
   $('#ivhead').innerHTML=`<div class="ivt"><small class="gtype">${TYPES[i.type]||'Item'}</small><h2 id="iv-title" class="${titleCls(i)}">${esc(itemTitle(i)||TYPES[i.type]||'Item')}</h2></div>${k>=0?`<span class="pcount">${k+1} of ${l.length}</span>`:''}`;
-  keepFocus($('#ivbody'),()=>{$('#ivbody').innerHTML=askFor('item-body',i)});   // every edit redraws it: the field or button used keeps the focus (W2-19-01)
+  keepFocus($('#ivbody'),()=>{$('#ivbody').innerHTML=itemBody(i)});   // every edit redraws it: the field or button used keeps the focus (W2-19-01)
   if(typeof cmpMount==='function')cmpMount($('#ivbody'));
   $('#iv-prev').disabled=k<=0;$('#iv-next').disabled=k<0||k>=l.length-1;
   itemShown(true)}

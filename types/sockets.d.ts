@@ -319,64 +319,6 @@ export interface Sockets {
   'dress-new-item': typeof import('../dress.js').dressNewItem;
   /** why shoes are never worn, without jackets (dressWhyUnused) (dress.js) */
   'dress-why-unused': typeof import('../dress.js').dressWhyUnused;
-  /** the Add cards kept now (addKeep) (add-keep.js) */
-  'add-keep': typeof import('../add-keep.js').addKeep;
-  /** the Add cards kept soon (addKeepSoon) (add-keep.js) */
-  'add-keep-soon': typeof import('../add-keep.js').addKeepSoon;
-  /** the New color sheet on an Add card's main color, with Claude's name (openColForm) (colpick.js) */
-  'col-form': typeof import('../colpick.js').openColForm;
-  /** the New pattern sheet on an Add card's pattern, with Claude's name (openPatForm) (colpick.js) */
-  'pat-form': typeof import('../colpick.js').openPatForm;
-  /** the pieces on order that arrived put in rotation (checkArrivals) (add-more.js) */
-  'check-arrivals': typeof import('../add-more.js').checkArrivals;
-  /** an Add card's field set as the card sets it (setq) (add-card.js) */
-  'card-set': typeof import('../add-card.js').setq;
-  /** an Add card's field set and counted as chosen (setQField) (add-card.js) */
-  'card-field': typeof import('../add-card.js').setQField;
-  /** the piece the "Add without a photo" sheet is open for (npsId) (the restructure S6f) (add-sheet.js) */
-  'nps-id': () => any;
-  /** the rest of Add out of reach around that sheet (npsInert) (the restructure S6f) (add-sheet.js) */
-  'nps-inert': typeof import('../add-sheet.js').npsInert;
-  /** that sheet asks a question (npsAsking) (the restructure S6f) (add-sheet.js) */
-  'nps-asking': () => typeof import('../add-sheet.js').npsAsking;
-  /** that sheet closes (npsCancel) (the restructure S6f) (add-sheet.js) */
-  'nps-cancel': typeof import('../add-sheet.js').npsCancel;
-  /** Add is shown: it is drawn (renderAdd) (add.js) */
-  'add-draw': typeof import('../add.js').renderAdd;
-  /** a close-up added to an Add card (addTexture) (add.js) */
-  'add-texture': typeof import('../add.js').addTexture;
-  /** an Add card tagged again, its Try again (retryTag) (add.js) */
-  'retry-tag': typeof import('../add.js').retryTag;
-  /** an Add card's close-up removed (dropTexture) (add.js) */
-  'drop-texture': typeof import('../add.js').dropTexture;
-  /** Add's line for several items (multiMsg) (add.js) */
-  'multi-msg': typeof import('../add.js').multiMsg;
-  /** the calm Add keeps while a card closes (addCalm) (add.js) */
-  'add-calm': () => any;
-  /** an Add card measured again after a type chosen (measureGuess) (add.js) */
-  'measure-guess': typeof import('../add.js').measureGuess;
-  /** an Add card's white balance note (wbNote) (add.js) */
-  'wb-note': typeof import('../add.js').wbNote;
-  /** an Add card skipped (skipCard) (add.js) */
-  'skip-card': typeof import('../add.js').skipCard;
-  /** back online: the cards that failed for want of a connection read again (addBackOnline) (add.js) */
-  'add-back-online': typeof import('../add.js').addBackOnline;
-  /** the color sheet's Use on a material, leather, metal or buckle (lookUsePick; the restructure S5d: colpick.js loads before look.js) (look.js) */
-  'look-use-pick': typeof import('../look.js').lookUsePick;
-  /** a tie clip's enamel set from the color sheet (lookSetEnamel) (look.js) */
-  'look-set-enamel': typeof import('../look.js').lookSetEnamel;
-  /** a field written from the color sheet: a watch's dial (lookWrite) (look.js) */
-  'look-write': typeof import('../look.js').lookWrite;
-  /** the color sheet drawn as the material, leather, metal or buckle picker (renderLookPick) (look.js) */
-  'look-pick-draw': typeof import('../look.js').renderLookPick;
-  /** the color sheet's Suggested colors in the beta (lookSugCols) (look.js) */
-  'look-sug-cols': typeof import('../look.js').lookSugCols;
-  /** the pattern sheet's Suggested patterns in the beta (lookSugPats) (look.js) */
-  'look-sug-pats': typeof import('../look.js').lookSugPats;
-  /** the beta's Shade under the color sheet's preview (lookShadeHtml) (look.js) */
-  'look-shade-html': typeof import('../look.js').lookShadeHtml;
-  /** the Look beta's own leathers and metals in Settings (lookOwnMatUI) (look.js) */
-  'look-own-mat-ui': typeof import('../look.js').lookOwnMatUI;
   /** the days really worn, for the wears since cleaning (wornDays; care.js asks: with an import, a missing stats.js left care.js unrun and Today drew its picture, where main's contract says none) (stats.js) */
   'worn-days': typeof import('../stats.js').wornDays;
   /** a piece's small picture in Laundry & cleaning (statPic) (stats.js) */
@@ -401,20 +343,30 @@ export interface Sockets {
   'pack-set-trip': typeof import('../pack.js').packSetTrip;
   /** the packing list opened (openPack) (pack.js) */
   'pack-open': typeof import('../pack.js').openPack;
-  /** an item's close-up replaced (replaceTexture) (item-photo.js) */
-  'replace-texture': typeof import('../item-photo.js').replaceTexture;
   /** the photo editor's state (phEdit): a crop under way holds the Wardrobe's redraw (item-photo.js) */
   'ph-edit': () => typeof import('../item-photo.js').phEdit;
+  /** the Add cards kept now (addKeep) (add-keep.js) */
+  'add-keep': typeof import('../add-keep.js').addKeep;
+  /** the Add cards kept soon (addKeepSoon) (add-keep.js) */
+  'add-keep-soon': typeof import('../add-keep.js').addKeepSoon;
+  /** the pieces on order that arrived put in rotation (checkArrivals) (add-more.js) */
+  'check-arrivals': typeof import('../add-more.js').checkArrivals;
+  /** the piece the "Add without a photo" sheet is open for (npsId) (the restructure S6f) (add-sheet.js) */
+  'nps-id': () => any;
+  /** the rest of Add out of reach around that sheet (npsInert) (the restructure S6f) (add-sheet.js) */
+  'nps-inert': typeof import('../add-sheet.js').npsInert;
+  /** that sheet asks a question (npsAsking) (the restructure S6f) (add-sheet.js) */
+  'nps-asking': () => typeof import('../add-sheet.js').npsAsking;
+  /** that sheet closes (npsCancel) (the restructure S6f) (add-sheet.js) */
+  'nps-cancel': typeof import('../add-sheet.js').npsCancel;
+  /** Add is shown: it is drawn (renderAdd) (add.js) */
+  'add-draw': typeof import('../add.js').renderAdd;
   /** which piece the item sheet has open: its id, or null (editing; the restructure S3d) (item-view.js) */
   'item-open': () => typeof import('../app.js').editing;
   /** the item sheet is drawn again, or put away when nothing is open (renderItem) (item-view.js) */
   'item-draw': typeof import('../item-view.js').renderItem;
   /** a piece opened in the item sheet (openItem) (item-view.js) */
   'item-show': typeof import('../item-view.js').openItem;
-  /** a saved piece's field set as the Wardrobe sets it (setItemField) (wardrobe.js) */
-  'item-field': typeof import('../wardrobe.js').setItemField;
-  /** the Wardrobe's pieces as shown (wardView) (wardrobe.js) */
-  'ward-view': typeof import('../wardrobe.js').wardView;
   /** a piece back from the cleaner noted in its record (careLog) (care.js) */
   'care-log': typeof import('../care.js').careLog;
   /** the toast for pieces back from the cleaner (careBackText) (care.js) */
@@ -423,16 +375,6 @@ export interface Sockets {
   'care-band-soon': typeof import('../care.js').careBandSoon;
   /** the cleaning reminders for the days ahead (careReminders) (care.js) */
   'care-reminders': typeof import('../care.js').careReminders;
-  /** a saved piece's field set as the item sheet sets it (sete; the restructure S5d: both load before itemsheet.js) (itemsheet.js) */
-  'item-set': typeof import('../itemsheet.js').sete;
-  /** the item sheet's pattern layout in words, under the Look beta's Pattern row (patSummary) (itemsheet.js) */
-  'pat-summary': typeof import('../itemsheet.js').patSummary;
-  /** Read pattern from photo, from the Look beta's Pattern row (redetect) (itemsheet.js) */
-  'pat-redetect': typeof import('../itemsheet.js').redetect;
-  /** Use generic, from the Look beta's Pattern row (clearStripes) (itemsheet.js) */
-  'pat-clear': typeof import('../itemsheet.js').clearStripes;
-  /** the item sheet's body (itemBody) (itemsheet.js) */
-  'item-body': typeof import('../itemsheet.js').itemBody;
   /** whether What to buy is open (shopOpen) (shop.js) */
   'shop-open': () => typeof import('../shop.js').shopOpen;
   /** how the backup stands, in words, for the setup's Connection step (backedUpWords) (sync.js) */
@@ -609,15 +551,15 @@ export interface Needs {
   'tag-fail-text': Sockets['tag-fail-text'];
   'storage-down': Sockets['storage-down'];
   'safety-start': Sockets['safety-start'];
+  'fav-pieces': Sockets['fav-pieces'];
+  'fav-undo-ms': Sockets['fav-undo-ms'];
+  'ph-edit': Sockets['ph-edit'];
   'check-arrivals': Sockets['check-arrivals'];
   'nps-id': Sockets['nps-id'];
   'nps-inert': Sockets['nps-inert'];
   'nps-asking': Sockets['nps-asking'];
   'nps-cancel': Sockets['nps-cancel'];
   'add-draw': Sockets['add-draw'];
-  'fav-pieces': Sockets['fav-pieces'];
-  'fav-undo-ms': Sockets['fav-undo-ms'];
-  'ph-edit': Sockets['ph-edit'];
   'after-pull': Sockets['after-pull'];
 }
 
@@ -740,20 +682,20 @@ export interface Slots {
     schedulePrefetch: typeof import('../photos.js').schedulePrefetch;
   };
   'page-shown': {
-    /** (add-sheet.js) */
-    setAddFor: typeof import('../add-sheet.js').setAddFor;
-    /** (add-sheet.js) */
-    npsLeave: typeof import('../add-sheet.js').npsLeave;
     /** (stats.js) */
     statsShow: typeof import('../stats.js').statsShow;
     /** (stats.js) */
     renderStats: typeof import('../stats.js').renderStats;
     /** (pack.js) */
     packShow: typeof import('../pack.js').packShow;
-    /** (item-view.js) */
-    dropItem: typeof import('../item-view.js').dropItem;
     /** (itemsheet.js) */
     renderWardrobe: typeof import('../itemsheet.js').renderWardrobe;
+    /** (add-sheet.js) */
+    setAddFor: typeof import('../add-sheet.js').setAddFor;
+    /** (add-sheet.js) */
+    npsLeave: typeof import('../add-sheet.js').npsLeave;
+    /** (item-view.js) */
+    dropItem: typeof import('../item-view.js').dropItem;
     /** (shop.js) */
     closeShop: typeof import('../shop.js').closeShop;
     /** (setup.js) */

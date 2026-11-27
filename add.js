@@ -14,11 +14,11 @@ import {aiError,aiModel,ask,cardAt,cardIx,cardOf,fill,generateSwatch,imgOf,keepF
 import {aiFields,customForTag,tagFixes} from './tag-request.js';
 import {cardReading,needType,readAbort} from './add-ids.js';
 import {toast} from './toast.js';
+import {npsDraw,npsId,renderAddFor} from './add-sheet.js';
 import {addKeep,addKeepSoon,addRestoreState,addWatch} from './add-keep.js';
 import {refineFromCloseup,takeExtras} from './tagging.js';
 import {$,CLOSE_MAX,COLORS,PAIR_TYPES,PH_MAX,TAG_MAX,TAG_Q,TEX_MAX,TEX_MIN_PX,TYPES,hasInviteHash,inviteOver,isConnected,tagNetText,tagTypesNow,watchOpts} from './core.js';
 import {addGate,noMotion,plainErr} from './ui.js';
-import {npsDraw,npsId,renderAddFor} from './add-sheet.js';
 import {cardReady,saveAll,saveAllOn} from './add-save.js';
 import {busyCard,cardSafe,errCard,formCard,multiErrCard,typeCard} from './add-card.js';
 import {cmpMount} from './checklist.js';
@@ -230,4 +230,3 @@ globalThis.HOOK={__proto__:globalThis.HOOK||null,addNoteText,cardPics,countWord,
 export {cardPics,addTexture,dropTexture,wbNote,addFiles,STOPPED,stopRead,addCalm,measureGuess,errToHand,skipCard,multiMsg,countWord,multiAgain,addNoteText,renderAdd,addBackOnline,retryTag};
 acts({cardWb,cardSkip,cardStop,cardMultiAgain,cardByHand,saveAllTap,addPhotosPick});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('add-texture',addTexture);serve('retry-tag',retryTag);serve('drop-texture',dropTexture);serve('multi-msg',multiMsg);serve('add-calm',()=>addCalm);serve('measure-guess',measureGuess);serve('wb-note',wbNote);serve('skip-card',skipCard);serve('add-back-online',addBackOnline);

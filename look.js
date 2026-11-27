@@ -5,9 +5,9 @@
    (Photo tagging → Beta features) turns it on for this phone only (localStorage beta_look, not synced); off, the app is exactly as before.
    Both UIs read and write the same item fields; the beta's own fields (lookOk, lookHint, leatherOwn, metalOwn) are ignored by the old UI.
    Loaded after checklist.js (an ES module since 2026-11-23); nothing runs at load but Settings' registration. */
-import {served,serve,ask,askFor,runHooks,register} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
-import {RD_LOOKUPS,SOCK_THIRD,SW_GRAB,closeColPick,cnHex,cnLeft,colHas,colNear,colPick,colPickSel,colTarget,lookShadeOk,openColForm,openColNew,openColPick,openPatForm,openPatNew,patChoices,patVar,rdCost,rdOff,renderColPick,useColPick} from './colpick.js';
+import {served,ask,askFor,runHooks,register} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
 import {addTexture,renderAdd} from './add.js';
+import {RD_LOOKUPS,SOCK_THIRD,SW_GRAB,closeColPick,cnHex,cnLeft,colHas,colNear,colPick,colPickSel,colTarget,lookShadeOk,openColForm,openColNew,openColPick,openPatForm,openPatNew,patChoices,patVar,rdCost,rdOff,renderColPick,useColPick} from './colpick.js';
 import {addOwnMaterial,groupOf,matOffer,newColHex,removeOwnMaterial,renderOwnMatUI} from './own-lists.js';
 import {announce,cap1,cardAt,cardIx,editing,generateSwatch,put,qAt,queue,refreshSwatch} from './app.js';
 import {saveUserSettings,showCost} from './settings.js';
@@ -27,6 +27,7 @@ import {DETECT_PATS} from './detect.js';
 import {tagImgOf} from './tag-request.js';
 import {acts} from './act.js';
 import {LOOK_CLIP_METALS,LOOK_COATS,LOOK_CU,LOOK_ENAMEL,LOOK_LS,LOOK_METALT,LOOK_SHIRT_AS,LOOK_SHIRT_CLOTHS,LOOK_SHIRT_FIBERS,lookBuiltins,lookClipMetal,lookCu,lookCur,lookHasPat,lookOn,lookVal,setLookMemo} from './look-base.js';
+import {sete,patSummary,redetect,clearStripes} from './itemsheet.js';
 
 /* ---- the switch ---- */
 /* flipping it redraws what is open (Add, the no-photo sheet, the item sheet); nothing is saved or lost either way */
@@ -39,8 +40,6 @@ function lookSet(on){on=!!on;try{if(on)localStorage.setItem(LOOK_LS,'1');else lo
 function renderLookSetting(){const el=document.querySelector('#beta-list');if(!el)return;const on=lookOn();
   el.innerHTML=`<div class="dress-row"><span class="dress-txt"><b id="beta-look-l">New Look editor (beta)</b><small id="beta-look-h">One Look section for color, pattern and material when you add or open an item. This phone only; switch it off any time and nothing is lost.</small></span><button type="button" class="dress-sw${on?' on':''}" id="beta-look" role="switch" aria-checked="${on}" aria-labelledby="beta-look-l" aria-describedby="beta-look-h" data-act="lkSwitch" data-on="${!on}"><i></i></button></div>`}
 /* the color sheet's beta parts, asked for by colpick.js (loaded before this file: tests/bus.test.js SOCKETS) */
-serve('look-use-pick',lookUsePick);serve('look-set-enamel',lookSetEnamel);serve('look-write',lookWrite);serve('look-pick-draw',renderLookPick);
-serve('look-sug-cols',lookSugCols);serve('look-sug-pats',lookSugPats);serve('look-shade-html',lookShadeHtml);
 
 /* ---- which types have what ---- */
 const LOOK_NOPAT=['shoes','belt','watch','tieclip','cufflinks'];   // the Pattern row is there, dimmed, so the three rows never move
@@ -178,7 +177,7 @@ const LOOK_FIELD_WORD={primaryColor:'Color',pattern:'Pattern',material:'Material
 async function lookUse(src,id,f,v,hk){const it=lookItem(src,id);if(!it)return;const snap=lookSnap(it,LOOK_UNDO_F);
   if(src==='e'&&hk&&it.lookHint){const h={...it.lookHint};delete h[hk];it.lookHint=h}
   const name=lookName(it,f,v);
-  if(f==='primaryColor'||f==='pattern'){if(src==='q'){const i=qAt(id);if(i<0)return;setq(i,f,v)}else await ask('item-set',id,f,v)}
+  if(f==='primaryColor'||f==='pattern'){if(src==='q'){const i=qAt(id);if(i<0)return;setq(i,f,v)}else await sete(id,f,v)}
   else if(f==='material'){if(src==='q'){if(it.matGuess&&lookFiber(it,it.matGuess.key)===v)delete it.matGuess;await lookWrite('q',id,{material:v,matSet:1,matAI:undefined})}else await lookWrite('e',id,{material:v})}
   else await lookSetMat(src,id,f,v,true);
   toast(`${LOOK_FIELD_WORD[f]||'Look'}: ${f==='primaryColor'?cap1(colName(v)):f==='pattern'?cap1(patName(v)):name}.`,6000,{label:'Undo',fn:()=>lookRestore(src,id,snap)})}
@@ -346,7 +345,7 @@ function lookSum(src,it,ch){const t=it.type,en=t==='tieclip'?lookCur(it,'enamel'
   return {mark:ok?'good':any?'warn':'todo',title:'Look',sum:lookSum(src,it,any&&!ok),body,warn:any&&!ok}}
 /* the item sheet's pattern reading (Pattern layout, Read pattern from photo) and the outfit pictures' note stay under the Pattern row */
 function lookPatExtras(i){const id=i.id,fab=FABRIC.includes(i.type);
-  const layout=fab&&(DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett)?`<div class="ivpat"><p class="shelp">Pattern layout: ${ask('pat-summary',i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" data-id="${esc(id)}" data-how="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?'reread':'detect'}" data-act="lkReread">Read pattern from photo</button>`}${i.stripes||i.sett?`<button data-id="${esc(id)}" data-act="lkClearStripes">Use generic</button>`:''}</div></div>`:'';
+  const layout=fab&&(DETECT_PATS.includes(patBase(i.pattern))||settable(i.type,i.pattern,i.weave)||claudeOnly(i.type,i.pattern)||i.sett)?`<div class="ivpat"><p class="shelp">Pattern layout: ${patSummary(i)}</p><div class="btns">${!i.photo&&!i.texture?'<p class="shelp nopatpic">Add a photo above to read its pattern from it.</p>':claudeOnly(i.type,i.pattern)&&!isConnected()?'':`<button id="readpat-btn" data-id="${esc(id)}" data-how="${i.texture||i.pbox||claudeOnly(i.type,i.pattern)?'reread':'detect'}" data-act="lkReread">Read pattern from photo</button>`}${i.stripes||i.sett?`<button data-id="${esc(id)}" data-act="lkClearStripes">Use generic</button>`:''}</div></div>`:'';
   return layout+(served('asm-gap-note')?ask('asm-gap-note',i):'')}
 /* the item sheet's "Looks right": kept on the item (lookOk, synced); a later edit leaves it (the owner's question 4: it stays) */
 async function lookCheck(id){const it=items.find(x=>x.id===id);if(!it){itemGoneTell(id);return}if(it.lookOk)delete it.lookOk;else it.lookOk=1;await put(it);runHooks('wardrobe-changed')}
@@ -438,8 +437,8 @@ function lkUndoMeas(el){undoMeasured(qAt(el.dataset.id),'primaryColor')}
 function lkStop(el){lookReadStop(...lkSI(el))}
 function lkRead(el){lookRead(...lkSI(el))}
 function lkCheck(el){lookCheck(el.dataset.id)}
-function lkReread(el){if(el.dataset.how==='reread')rereadSett(el.dataset.id);else ask('pat-redetect',el.dataset.id)}
-function lkClearStripes(el){ask('pat-clear',el.dataset.id)}
+function lkReread(el){if(el.dataset.how==='reread')rereadSett(el.dataset.id);else redetect(el.dataset.id)}
+function lkClearStripes(el){clearStripes(el.dataset.id)}
 function lkNewCol(){openColNew()}
 function lkNewPat(){openPatNew()}
 function lkCuFileQ(el,ev,f){cuGot(el,f,x=>addTexture(cardIx(el),x,true))}   // (the Add card's "Add a close-up for a truer color": read at once)
@@ -451,6 +450,5 @@ globalThis.HOOK={__proto__:globalThis.HOOK||null,LOOK_OTHER,lookCheck,lookOwnMat
 export {lookSet,lookOwnMats,LOOK_OTHER,lookWrite,lookOwnMatUI,lookSetMat,lookSetEnamel,renderLookPick,lookUsePick,lookShadeHtml,lookShadeStep,lookSugCols,lookSugPats,lookSection,lookCheck,lookOpenFresh,lookSave};
 acts({lkSwitch,lkAddChip,lkUse,lkOwnRm,lkOwnAdd,lkOwnCancel,lkOwnOpen,lkSel,lkClose,lkOther,lkSaveOther,lkNewName,lkNewAdd,lkNewOpen,lkUsePick,lkShade,lkRow,lkUndoMeas,lkStop,lkRead,lkCheck,lkReread,lkClearStripes,lkNewCol,lkNewPat,lkCuFileQ});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('look-own-mat-ui',lookOwnMatUI);
 /* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
 register('look',{'settings-parts':renderLookSetting,'add-card-sections':()=>({lookSection}),'card-saved':()=>({lookSave})});

@@ -3,7 +3,7 @@
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14, and by
    job on 2026-11-17: item-photo.js the photo tools, item-view.js the sheet itself. Since the restructure S3d, 2026-11-26, it loads after
    wardrobe.js, care.js and cost.js, whose parts it draws.) */
-import {serve,ask,served,askFor,slotsOf,register} from './bus.js';
+import {ask,served,askFor,slotsOf,register} from './bus.js';
 import {srcOk} from './photo-keys.js';
 import {cap1,editing,flt,keepFocus,put,refreshSwatch,setFlt} from './app.js';
 import {cropEditor,paperHint,paperLine,paperRetake,phEdit,photoTools,setPhEdit} from './item-photo.js';
@@ -175,7 +175,6 @@ function stepType(n,from){
   sl.style.transition='none';sl.style.transform=`translateX(${x}px)`;sl.style.opacity='0';void sl.offsetWidth;
   sl.style.transition='transform .24s cubic-bezier(.2,.8,.2,1),opacity .2s ease-out';sl.style.transform='translateX(0)';sl.style.opacity='1';return true}
 /* an item's edits, asked for by colpick.js and look.js (loaded before this file, of the Add group: tests/bus.test.js SOCKETS) */
-serve('item-set',sete);serve('pat-summary',patSummary);serve('pat-redetect',redetect);serve('pat-clear',clearStripes);
 (()=>{const el=$('#wardrobe');let st=null;const slide=()=>$('#wslide');
   el.addEventListener('touchstart',e=>{const t=e.touches[0];
     st=e.touches.length>1||editing||t.clientX<24||t.clientX>innerWidth-24||e.target.closest('.chips,input,select,textarea,.cropwrap')?null:{x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0}},{passive:true});
@@ -222,7 +221,6 @@ function itemDelete(el){rm(el.dataset.id)}
 function wardChip(el){setFlt(el.dataset.t);askFor('fav-off');renderWardrobe()}
 acts({itemPick,itemDetails,itemReadPat,itemGeneric,itemArrives,itemPause,itemDup,itemDelete,wardChip,tapeSet});   // (tapeSet: the uniform blouse's tapes)
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('item-body',itemBody);
 /* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
 /* the Wardrobe's redraw: the files that changed a piece run 'wardrobe-changed' (the restructure S3d: they never call renderWardrobe), and nav.js draws it as the page shows */
 register('itemsheet',{'wardrobe-changed':renderWardrobe,'page-shown':()=>({renderWardrobe})});

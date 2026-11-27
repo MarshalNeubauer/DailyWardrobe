@@ -2,11 +2,12 @@
    photo pair, the shade rows (the Add card's and the item sheet's), and the card's drawing: the checklist's sections, formCard, and the
    cards that are not a form yet (being read, couldn't be read, asking for the type). */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {emit,askFor,serve,slotsOf,runHooks} from './bus.js';
+import {emit,askFor,slotsOf,runHooks} from './bus.js';
 import {$,BANDS,BEZELS,BLOUSE_TAPE_MAX,COLORS,CUFFS,DIAL_OPTS,FABRIC,MATERIALS_BY,METAL_TYPES,OCP_RANKS,PATS_BY,SEASONS,SEASON_TYPES,SHADE_MAX,SHOE_STYLES,TEXTURE_TYPES,TROUSER_KINDS,TYPES,VESTS,WATCH_STYLES,desc,hasPat,inviteOver,isConnected,items,leatherLabel,leatherWord,leathersFor,matTypeOne,matsFor,metalOptsFor,normColFor,normPat,paperCloth,patName,sentence,shadeName,tapeText,watchOpts,esc} from './core.js';
 import {cardReading,needType,qh,tagFailNote} from './add-ids.js';
 import {S,aiLabel,cap1,cardAt,cardIx,cardOf,generateSwatch,put,qAt,queue,updateSwatchParam} from './app.js';
 import {WARD_FIELDS,WARD_MAX,fldRow,matLabel,matPicked,matRow,matTidy,notesRow,optLab} from './fields.js';
+import {save,saveAllOn,savedTitle} from './add-save.js';
 import {addKeep,addKeepSoon} from './add-keep.js';
 import {BLUR_SHARP,nearestCols,paperSteps} from './measure.js';
 import {readSett} from './pattern-read.js';
@@ -17,14 +18,14 @@ import {CK_OPEN,accRow,ckColSum,ckIsOpen,ckSec,ckSure,cmpDiff,cmpDiffText,cmpDra
 import {closeupBtn,cuGot,cuTouch} from './ui.js';
 import {colRows,colShows,patBtn,patVar,rdAddBtn,rdCost,rdCostLine,rdDoneHtml,rdOff,rdStart} from './colpick.js';
 import {orderRow,qtyLabel,qtyOf,qtyRow} from './add-more.js';
-import {save,saveAllOn,savedTitle} from './add-save.js';
 import {tagNotes} from './tagging.js';
 import {matGuessUse,matOffer} from './own-lists.js';
 import {acts} from './act.js';
 import {lookCu,lookOn} from './look-base.js';
+import {addTexture,dropTexture,measureGuess,retryTag,wbNote} from './add.js';
 const shirtColFix=o=>{for(const f of ['primaryColor','secondaryColor','tertiaryColor'])if(o[f])o[f]=normColFor(o.type,o[f],f!=='primaryColor')};
 /** @param {*} i @param {*} k @param {*} v */ const setq=(i,k,v)=>{const q=cardOf(i);if(!q)return;i=queue.indexOf(q);const asked=k==='type'&&needType(q);q[k]=v==='none'?null:v;if(k==='type')matTidy(q);q.edited={...q.edited,[k]:true};const ck=CK_FIELD[k]&&!(q.checked&&q.checked[CK_FIELD[k]]);if(ck)q.checked={...q.checked,[CK_FIELD[k]]:1};queueMicrotask(addKeep);
-  if(asked){askFor('measure-guess',q);q.pattern=normPat(v,q.pattern);shirtColFix(q);emit('card-changed');return}   /* the type asked for (needType): the colour measured, the full card */
+  if(asked){measureGuess(q);q.pattern=normPat(v,q.pattern);shirtColFix(q);emit('card-changed');return}   /* the type asked for (needType): the colour measured, the full card */
 if(k==='shoeStyle'&&v==='combat'&&!(q.edited&&q.edited.leather)&&(q.manual||!q.leather||q.leather==='calf'))q.leather='suede';   /* a combat boot added by hand is suede and nylon (the owner, 2026-11-18) */
 if(k==='shoeStyle'&&!leathersFor(q).includes(q.leather))q.leather='calf';if(k==='shoeStyle'||k==='trouserKind'||k==='band'){emit('card-changed');return}if((k==='primaryColor'||k==='type')&&q.texCanvas)generateSwatch(q);if(k==='type'){q.pattern=normPat(v,q.pattern);shirtColFix(q)}if(k==='type'||q.manual||k==='primaryColor'||k==='pattern'){if(k==='type'&&q.meas)q.meas.near=nearestCols(q.type,q.meas.lab,q.meas.ref);if(k==='type'||k==='pattern')readSett(q);emit('card-changed')}else if(ck)emit('card-changed');else{const t=$('#tagsw-q'+i);if(t)t.innerHTML=tagSwInner(q)}};   // (a section newly checked: its mark and the count follow)
 /* next to an item's photo: the colour and texture as tagged (what the app draws), so the two can be compared */
@@ -141,7 +142,7 @@ function formCard(q,i,inSheet){const secs=addCkSecs(q,i),{n,M}=addCkCount(q,secs
   return `<div class="card qcard ckcard" data-q="${esc(q.id)}">${inSheet?'':`<button type="button" class="qx" aria-label="Close" title="Close" data-act="cardSkip" ${cardAt(q)}>×</button><div class="ckhd"><small>New item · check and confirm</small><b>${esc(savedTitle(q))}</b></div>`}`+
     `<div class="ckprog"><b>${n} of ${M} checked</b><span class="cktrack" aria-hidden="true"><i style="width:${M?Math.round(n/M*100):0}%"></i></span></div>`+
     `<div class="ckcols"><div class="ckcol">${q.multi?`<p class="multi-h"><b>Item ${q.multi.n} of ${q.multi.of}</b> <span class="conf ${q.multi.confidence}">${q.multi.confidence} confidence</span></p>`:''}${tagFailNote(q)}${unreadNote(q,qh(q))}`+
-    `<div class="ckintro"><div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${askFor('wb-note',q,i)??''}<p class="shelp ckhelp">${q.manual||!q.ai?'Pick the type and the colors, then confirm.':'Claude filled these in. Check each part, or fix it.'}</p></div>${tagNotes(q)}${sec('tex')}</div>`+
+    `<div class="ckintro"><div class="rv">${q.photo?photoPair(q.photo,q,'tagsw-q'+i):itemThumb(q)}</div>${wbNote(q,i)??''}<p class="shelp ckhelp">${q.manual||!q.ai?'Pick the type and the colors, then confirm.':'Claude filled these in. Check each part, or fix it.'}</p></div>${tagNotes(q)}${sec('tex')}</div>`+
     `<div class="ckcol">${sec('type')}${sec('lk')}${sec('colors')}${sec('pattern')}${sec('fabric')}${sec('more')}</div></div>`+
     `${inSheet?'':`<div class="ckfoot">${ckLeftLine(q,secs)}<div class="btns">${confBtn(q,i)}<button data-act="cardSkip" ${cardAt(q)}>${q.manual?'Cancel':'Skip'}</button></div></div>`}${q.manual?'':`<small class="ckai">${aiLabel(q)}</small>`}</div>`}
 const confBtn=(q,i)=>`<button class="pri" id="qconf-${i}" data-act="cardSave" ${cardAt(q)}${cardReading(q)?' disabled title="Claude is still reading this item"':q.saving||saveAllOn?' disabled':''}>${qtyLabel(q)}</button>`;
@@ -180,12 +181,11 @@ function cardField(el){setQField(cardIx(el),el.dataset.f,el.value)}
 function matCardPick(el){setQField(cardIx(el),'material',matPicked(el))}   // (the Material dropdown or its "Which material?" field: fields.js matPicked)
 /* (moved from tagging.js with its text unchanged, the restructure S6c) */
 function tagSet(el){setq(cardIx(el),el.dataset.f,el.dataset.v)}
-function cardRetryTag(el){askFor('retry-tag',cardIx(el))}   // (add.js, later: a socket)
-function cardCuRemove(el){askFor('drop-texture',cardIx(el))}
-function cardCuFile(el,ev,f){cuGot(el,f,x=>askFor('add-texture',cardIx(el),x))}   // (a close-up chosen: ui.js closeupBtn, cuGot)
+function cardRetryTag(el){retryTag(cardIx(el))}   // (add.js)
+function cardCuRemove(el){dropTexture(cardIx(el))}
+function cardCuFile(el,ev,f){cuGot(el,f,x=>addTexture(cardIx(el),x))}   // (a close-up chosen: ui.js closeupBtn, cuGot)
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,addCkSecs,ckCheck,cardSafe,setQField,setq};
 export {shirtColFix,setq,setQField,matOn,shadeRow,photoPair,cardSafe,matNewOf,matGuessOf,ckLr,ckCheck,addCkSecs,ckLeftLine,formCard,confBtn,busyCard,multiErrCard,errCard,typeCard,tagSet};
 acts({shadeStep,shadeMatch,cardSave,cardMatOffer,cardMatGuess,cardCheck,cardRdStart,cardPatTile,cardTypePick,cardSel,cardSwatch,cardField,matCardPick,tapeQ,tagSet,cardRetryTag,cardCuRemove,cardCuFile});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('card-set',setq);serve('card-field',setQField);

@@ -33,17 +33,6 @@ const SOCKETS={
   'item-open':{serve:'item-view.js',ask:['toast.js','nav.js','checklist.js','item-photo.js'],what:'which piece the item sheet has open: its id, or null (editing; the restructure S3d)'},
   'item-draw':{serve:'item-view.js',ask:['nav.js','checklist.js'],what:'the item sheet is drawn again, or put away when nothing is open (renderItem)'},
   'backed-up-words':{serve:'sync.js',ask:['ui.js','setup.js'],what:'how the backup stands, in words, for the setup\'s Connection step (backedUpWords)'},
-  'look-use-pick':{serve:'look.js',ask:['colpick.js'],what:'the color sheet\'s Use on a material, leather, metal or buckle (lookUsePick; the restructure S5d: colpick.js loads before look.js)'},
-  'look-set-enamel':{serve:'look.js',ask:['colpick.js'],what:'a tie clip\'s enamel set from the color sheet (lookSetEnamel)'},
-  'look-write':{serve:'look.js',ask:['colpick.js'],what:'a field written from the color sheet: a watch\'s dial (lookWrite)'},
-  'look-pick-draw':{serve:'look.js',ask:['colpick.js'],what:'the color sheet drawn as the material, leather, metal or buckle picker (renderLookPick)'},
-  'look-sug-cols':{serve:'look.js',ask:['colpick.js'],what:'the color sheet\'s Suggested colors in the beta (lookSugCols)'},
-  'look-sug-pats':{serve:'look.js',ask:['colpick.js'],what:'the pattern sheet\'s Suggested patterns in the beta (lookSugPats)'},
-  'look-shade-html':{serve:'look.js',ask:['colpick.js'],what:'the beta\'s Shade under the color sheet\'s preview (lookShadeHtml)'},
-  'item-set':{serve:'itemsheet.js',ask:['colpick.js','look.js'],what:'a saved piece\'s field set as the item sheet sets it (sete; the restructure S5d: both load before itemsheet.js)'},
-  'pat-summary':{serve:'itemsheet.js',ask:['look.js'],what:'the item sheet\'s pattern layout in words, under the Look beta\'s Pattern row (patSummary)'},
-  'pat-redetect':{serve:'itemsheet.js',ask:['look.js'],what:'Read pattern from photo, from the Look beta\'s Pattern row (redetect)'},
-  'pat-clear':{serve:'itemsheet.js',ask:['look.js'],what:'Use generic, from the Look beta\'s Pattern row (clearStripes)'},
   'care-log':{serve:'care.js',ask:['add-more.js'],what:'a piece back from the cleaner noted in its record (careLog)'},
   'care-back-text':{serve:'care.js',ask:['add-more.js'],what:'the toast for pieces back from the cleaner (careBackText)'},
   // the painter's (the restructure S6p, 2026-11-27): where a today-no-picture file (assemble, asm-look, asm-today, draw), a required one
@@ -201,22 +190,8 @@ const SOCKETS={
   'limit-note':{serve:'account.js',ask:['pattern-read.js'],what:'today\'s limit on readings said (limitNote)'},
   'wipe-device':{serve:'about.js',ask:['account.js'],what:'this phone cleared (wipeDevice)'},
   'about-note':{serve:'about.js',ask:['account.js'],what:'the key of About\'s one-time note (ABOUT_NOTE)'},
-  'add-texture':{serve:'add.js',ask:['colpick.js','add-card.js'],what:'a close-up added to an Add card (addTexture)'},
-  'retry-tag':{serve:'add.js',ask:['add-card.js'],what:'an Add card tagged again, its Try again (retryTag)'},
-  'drop-texture':{serve:'add.js',ask:['add-card.js'],what:'an Add card\'s close-up removed (dropTexture)'},
-  'col-form':{serve:'colpick.js',ask:['tagging.js'],what:'the New color sheet on an Add card\'s main color, with Claude\'s name (openColForm)'},
-  'pat-form':{serve:'colpick.js',ask:['tagging.js'],what:'the New pattern sheet on an Add card\'s pattern, with Claude\'s name (openPatForm)'},
-  'multi-msg':{serve:'add.js',ask:['add-save.js'],what:'Add\'s line for several items (multiMsg)'},
-  'add-calm':{serve:'add.js',ask:['add-save.js'],what:'the calm Add keeps while a card closes (addCalm)'},
-  'measure-guess':{serve:'add.js',ask:['add-card.js'],what:'an Add card measured again after a type chosen (measureGuess)'},
-  'wb-note':{serve:'add.js',ask:['add-card.js'],what:'an Add card\'s white balance note (wbNote)'},
-  'skip-card':{serve:'add.js',ask:['add-sheet.js'],what:'an Add card skipped (skipCard)'},
-  'add-back-online':{serve:'add.js',ask:['add-keep.js'],what:'back online: the cards that failed for want of a connection read again (addBackOnline)'},
-  'card-set':{serve:'add-card.js',ask:['colpick.js'],what:'an Add card\'s field set as the card sets it (setq)'},
-  'card-field':{serve:'add-card.js',ask:['own-lists.js','colpick.js'],what:'an Add card\'s field set and counted as chosen (setQField)'},
   'add-keep':{serve:'add-keep.js',ask:['pattern-read.js','tagging.js','about.js'],what:'the Add cards kept now (addKeep)'},
   'add-keep-soon':{serve:'add-keep.js',ask:['cost.js'],what:'the Add cards kept soon (addKeepSoon)'},
-  'look-own-mat-ui':{serve:'look.js',ask:['own-lists.js'],what:'the Look beta\'s own leathers and metals in Settings (lookOwnMatUI)'},
   'dress-new-item':{serve:'dress.js',ask:['add-save.js','shop.js','kit.js'],what:'the dress code looked at again after a new item (dressNewItem)'},
   'care-band-soon':{serve:'care.js',ask:['today-picture.js'],what:'the cleaning banner\'s cut follows the swatches (careBandSoon)'},
   'care-reminders':{serve:'care.js',ask:['remind.js'],what:'the cleaning reminders for the days ahead (careReminders)'},
@@ -228,10 +203,6 @@ const SOCKETS={
   'fav-chip':{serve:'fav.js',ask:['itemsheet.js'],what:'the Wardrobe\'s Favorites chip (favChip)'},
   'fav-off':{serve:'fav.js',ask:['itemsheet.js'],what:'the Favorites chip let go (favOff)'},
   'item-show':{serve:'item-view.js',ask:['cost.js','kit.js'],what:'a piece opened in the item sheet (openItem)'},
-  'replace-texture':{serve:'item-photo.js',ask:['colpick.js'],what:'an item\'s close-up replaced (replaceTexture)'},
-  'item-field':{serve:'wardrobe.js',ask:['colpick.js'],what:'a saved piece\'s field set as the Wardrobe sets it (setItemField)'},
-  'ward-view':{serve:'wardrobe.js',ask:['item-view.js'],what:'the Wardrobe\'s pieces as shown (wardView)'},
-  'item-body':{serve:'itemsheet.js',ask:['item-view.js'],what:'the item sheet\'s body (itemBody)'},
   'zoomed':{serve:'today-picture.js',ask:['today-gestures.js'],what:'the picture\'s zoom, or null'},
   'shop-open':{serve:'shop.js',ask:['today-gestures.js'],what:'whether What to buy is open (shopOpen)'},
   'today-busy':{serve:'today-gestures.js',ask:['sync.js'],what:'whether a finger is on Today (todayBusy)'},
@@ -315,7 +286,7 @@ const HOOKS={
   'connection-saved':{run:['settings.js'],register:['sync.js']},
   'connection-typed':{run:['settings.js'],register:['account.js']},
   'pictures-switched':{run:['settings.js'],register:['asm-today.js','photos.js']},
-  'page-shown':{run:['nav.js'],register:['add-sheet.js','stats.js','pack.js','item-view.js','itemsheet.js','shop.js','setup.js']},
+  'page-shown':{run:['nav.js'],register:['stats.js','pack.js','add-sheet.js','item-view.js','itemsheet.js','shop.js','setup.js']},
   'today-parts':{run:['today.js'],register:['today-picture.js','weather.js','fav.js','care.js','kit.js','setup.js','calendar.js']},
   'today-fold':{run:['today.js'],register:['today-picture.js']},
   'day-changed':{run:['month.js','history.js'],register:['today.js']},
@@ -380,6 +351,11 @@ module.exports=async({ok,ROOT})=>{
   const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8'),page=[...html.matchAll(/<script[^>]*\bsrc="([^"]+)"/g)].map(m=>m[1]);
   const used={},sockUsed={},needUsed=new Set(),hookUsed=new Set(),hookRun={},hookReg={},regBad=[];
   const acorn=require('acorn');
+  /* the order the files run in, so the order they register in: the tags', but a file's imports run first (in the Add and item sheet
+     cycle, itemsheet.js's tag comes first and it runs last: the notice board made clean, N3) */
+  const runs=[];{const seen=new Set(),imps=f=>{const s=fs.readFileSync(path.join(ROOT,f),'utf8');let a;try{a=acorn.parse(s,{ecmaVersion:'latest',sourceType:'module'})}catch(e){return []}
+      return a.body.filter(n=>(n.type==='ImportDeclaration'||n.type==='ExportAllDeclaration'||n.type==='ExportNamedDeclaration')&&n.source).map(n=>path.posix.normalize(path.posix.join(path.posix.dirname(f),n.source.value)))};
+    const visit=f=>{if(seen.has(f)||!page.includes(f))return;seen.add(f);for(const t of imps(f))visit(t);runs.push(f)};page.forEach(visit)}
   for(const f of page){if(f==='bus.js')continue;const src=fs.readFileSync(path.join(ROOT,f),'utf8');let ast;
     try{ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:'module'})}catch(e){try{ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:'script'})}catch(e2){continue}}
     // local name -> bus.js's name (a file that also reads app.js's own ask() imports bus.js's second name for it, askFor; served, need and needFn count as asking)
@@ -404,7 +380,7 @@ module.exports=async({ok,ROOT})=>{
       if(!(last&&last.type==='ExpressionStatement'&&last.expression===r))regBad.push(f+'\'s register is not its last statement')}}
   ok(!regBad.length,`each feature registers once, under its file's name, as its file's last statement (${Object.values(hookReg).flat().filter((x,i,l)=>l.indexOf(x)===i).length} features)${regBad.length?': '+regBad.join('; '):''}`);
   {const hb=[],hl=[...hookUsed].filter(m=>!HOOKS[m]);
-    for(const [m,d] of Object.entries(HOOKS)){const run=[...(hookRun[m]||[])].sort(),reg=hookReg[m]||[];
+    for(const [m,d] of Object.entries(HOOKS)){const run=[...(hookRun[m]||[])].sort(),reg=[...(hookReg[m]||[])].sort((x,y)=>runs.indexOf(x)-runs.indexOf(y));
       if(run.join()!==[...d.run].sort().join())hb.push(`${m}: run by ${run.join(', ')||'nobody'}, listed ${d.run.join(', ')}`);
       if(reg.join()!==d.register.join())hb.push(`${m}: registered by ${reg.join(', ')||'nobody'} (load order), listed ${d.register.join(', ')}`);
       if(!d.run.length||!d.register.length)hb.push(m+': needs a file that runs it and a feature that registers for it')}

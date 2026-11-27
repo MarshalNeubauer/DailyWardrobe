@@ -131,7 +131,6 @@ globalThis.HOOK={__proto__:globalThis.HOOK||null,applyCrop,layoutCrop,paperTip,s
 export {phEdit,setPhEdit,smallPhotos,photoTools,paperHint,paperTip,paperRetake,paperLine,setPhoto,setTexture,replaceTexture,undoPhoto,startCrop,cropEditor,cropKeep,layoutCrop,applyCrop};
 acts({photoFile,photoRotate,photoCrop,photoCuRemove,photoCuFile,paperTipTap,cropDrag,cropZoom,cropApply,cropDiscardTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('replace-texture',replaceTexture);
 serve('ph-edit',()=>phEdit);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
 /* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
 register('item-photo',{'after-pull-fixups':smallPhotos});   // start-up's small photos, after migrate.js's fix-ups (load order)
