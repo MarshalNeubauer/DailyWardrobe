@@ -29,25 +29,25 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     ok(e.same&&e.diff,'camoField is the same for the same seed and different for another');
     ok(e.shares.every((s,k)=>Math.abs(s-[.4,.3,.2,.1][k])<.005),'each colour covers its share ('+e.shares.map(s=>s.toFixed(3)).join(', ')+')');
     ok(e.edge>=e.inner*.8,'the tile is seamless: the colours across its edge join as they do inside ('+e.edge+' / '+e.inner+')');
-    e=await p.evaluate(()=>{applyCustom({patterns:[{key:'own-multicam-ocp',name:'Camouflage (OCP/MultiCam)',desc:'irregular blotches',base:'other',types:['pants']},{key:'own-micro-check',name:'micro check',base:'other',types:['pants']}]});
+    e=await p.evaluate(()=>{HOOK.applyCustom({patterns:[{key:'own-multicam-ocp',name:'Camouflage (OCP/MultiCam)',desc:'irregular blotches',base:'other',types:['pants']},{key:'own-micro-check',name:'micro check',base:'other',types:['pants']}]});
       const it={id:'cm1',type:'pants',primaryColor:'khaki',secondaryColor:'brown',tertiaryColor:'olive',pattern:'camouflage'},own={...it,id:'cm2',pattern:'own-multicam-ocp'},chk={...it,id:'cm3',pattern:'own-micro-check'};
-      const s=usableSett(it),s2=usableSett(own);
-      return {pat:[camoPat('camouflage'),camoPat('own-multicam-ocp'),camoPat('own-micro-check'),camoPat('solid')].join(),look:!!(s&&s.camo&&s.camo.cols.length===5&&s.camo.cols[0]===colOf(it)),own:!!(s2&&s2.camo),chk:!!(usableSett(chk)&&usableSett(chk).camo),
-        fab:fabricDef('t1',it,'bot','fig'),sw:swatchSVG(it,true),route:asmCmRoute(it,'trousers').how,tex:(t=>t&&[t.TW,t.TH,t.t.length].join())(HOOK.asmCamoTex(it)),
-        read:(()=>{const r={...it,sett:{v:5,camo:{cols:['#111111','#eeeeee','#777777'],shares:[.5,.4,.1],seed:3},tr:4,cr:1,src:'pixels'}};const x=usableSett(r),tag=usableSett(it);
-          return {ground:x.camo.cols[0]===colOf(it),fromTags:x.camo.cols.every(h=>tag.camo.cols.includes(h)),noPhoto:!x.camo.cols.includes('#111111'),seed:x.camo.seed,shares:x.camo.shares.join()!==tag.camo.shares.join(),light:Math.min(...x.camo.shares)<=.12+1e-9}})(),
-        stripe:(()=>{const r={...it,pattern:'pinstripe',sett:{v:5,camo:{cols:['#111111','#eeeeee'],shares:[.6,.4],seed:3},tr:4,cr:1}};const x=usableSett(r);return !!(x&&x.camo)})()}});
+      const s=HOOK.usableSett(it),s2=HOOK.usableSett(own);
+      return {pat:[HOOK.camoPat('camouflage'),HOOK.camoPat('own-multicam-ocp'),HOOK.camoPat('own-micro-check'),HOOK.camoPat('solid')].join(),look:!!(s&&s.camo&&s.camo.cols.length===5&&s.camo.cols[0]===HOOK.colOf(it)),own:!!(s2&&s2.camo),chk:!!(HOOK.usableSett(chk)&&HOOK.usableSett(chk).camo),
+        fab:HOOK.fabricDef('t1',it,'bot','fig'),sw:HOOK.swatchSVG(it,true),route:HOOK.asmCmRoute(it,'trousers').how,tex:(t=>t&&[t.TW,t.TH,t.t.length].join())(HOOK.asmCamoTex(it)),
+        read:(()=>{const r={...it,sett:{v:5,camo:{cols:['#111111','#eeeeee','#777777'],shares:[.5,.4,.1],seed:3},tr:4,cr:1,src:'pixels'}};const x=HOOK.usableSett(r),tag=HOOK.usableSett(it);
+          return {ground:x.camo.cols[0]===HOOK.colOf(it),fromTags:x.camo.cols.every(h=>tag.camo.cols.includes(h)),noPhoto:!x.camo.cols.includes('#111111'),seed:x.camo.seed,shares:x.camo.shares.join()!==tag.camo.shares.join(),light:Math.min(...x.camo.shares)<=.12+1e-9}})(),
+        stripe:(()=>{const r={...it,pattern:'pinstripe',sett:{v:5,camo:{cols:['#111111','#eeeeee'],shares:[.6,.4],seed:3},tr:4,cr:1}};const x=HOOK.usableSett(r);return !!(x&&x.camo)})()}});
     ok(e.pat==='true,true,false,false','camoPat: the pattern and an own pattern named for camouflage; not another own pattern or solid');
     ok(e.look&&e.own&&!e.chk,'a camouflage with no reading is drawn in its own colors (the tagged colour as the ground); an own pattern named MultiCam too');
     ok(e.read.ground&&e.read.fromTags&&e.read.noPhoto&&e.read.seed===3&&e.read.shares&&!e.stripe,'a reading sets only the shares and the seed: the colours stay the tagged ones, the main colour the ground ('+JSON.stringify(e.read)+'); a camouflage reading on another pattern is not used');
     ok(/<pattern id="t1"[^>]*>.*<image href="data:image\/png/.test(e.fab)&&/<svg/.test(e.sw),'fabricDef draws a camouflage tile (an image of its blotches); the swatch draws');
-    ok(await p.evaluate(()=>asmCmRoute({id:'cs',type:'shirt',primaryColor:'khaki',secondaryColor:'brown',pattern:'camouflage'},'shirt').how)==='camo','a camouflage shirt is painted with the same blotches as camouflage pants (route camo)');
+    ok(await p.evaluate(()=>HOOK.asmCmRoute({id:'cs',type:'shirt',primaryColor:'khaki',secondaryColor:'brown',pattern:'camouflage'},'shirt').how)==='camo','a camouflage shirt is painted with the same blotches as camouflage pants (route camo)');
     ok(e.route==='camo'&&e.tex==='384,384,442368','the painter paints camouflage pants with its own tile ('+e.route+', '+e.tex+')');
     // v2: the tagged colours (a muted accent), soft edges and grain in the image the drawings and the painter share
-    e=await p.evaluate(()=>{const it={id:'g1',type:'shirt',primaryColor:'brown',secondaryColor:'green',tertiaryColor:'none',pattern:'camouflage'},s=usableSett(it);
-      const L=h=>rgbLab(...hexRgb(h)),C=l=>Math.hypot(l[1],l[2]),g=s.camo.cols.find(h=>L(h)[0]>30&&L(h)[2]<L(COLORS.brown)[2]&&L(h)[1]<0);
-      const im=camoImage(64,['#000000','#ffffff'],[.5,.5],5);let mid=0;for(let j=0;j<im.length;j+=3)if(im[j]>40&&im[j]<215)mid++;
-      return {muted:!!g&&C(L(g))<C(L(COLORS.green)),ground:s.camo.cols[0]===colOf(it),soft:mid/(64*64),len:im.length}});
+    e=await p.evaluate(()=>{const it={id:'g1',type:'shirt',primaryColor:'brown',secondaryColor:'green',tertiaryColor:'none',pattern:'camouflage'},s=HOOK.usableSett(it);
+      const L=h=>HOOK.rgbLab(...HOOK.hexRgb(h)),C=l=>Math.hypot(l[1],l[2]),g=s.camo.cols.find(h=>L(h)[0]>30&&L(h)[2]<L(HOOK.COLORS.brown)[2]&&L(h)[1]<0);
+      const im=HOOK.camoImage(64,['#000000','#ffffff'],[.5,.5],5);let mid=0;for(let j=0;j<im.length;j+=3)if(im[j]>40&&im[j]<215)mid++;
+      return {muted:!!g&&C(L(g))<C(L(HOOK.COLORS.green)),ground:s.camo.cols[0]===HOOK.colOf(it),soft:mid/(64*64),len:im.length}});
     ok(e.ground&&e.muted,'a camouflage takes its tagged colours, the main as the ground, a bright accent muted toward it');
     ok(e.len===64*64*3&&e.soft>.03&&e.soft<.4,'camoImage softens the blotches\' edges (a blended band, not a cut-out: '+(e.soft*100).toFixed(1)+'% in between)');
     // the close-up reader: three coloured regions in known shares
@@ -55,16 +55,16 @@ module.exports=async({ok,chromium,url,ROOT})=>{
       x.fillStyle='#4f6b3a';x.fillRect(60,60,180,90);x.fillStyle='#3a2a24';x.fillRect(60,150,180,45);
       const s=HOOK.camoFromPixels({tex:c});return s&&{n:s.camo.cols.length,cols:s.camo.cols,shares:s.camo.shares,src:s.src}});
     ok(e&&e.n===3&&e.shares[0]>.45&&e.shares[1]>.25&&e.shares[2]>.12,'camoFromPixels finds the three colours and their shares, the largest first ('+JSON.stringify(e)+')');
-    e=await p.evaluate(()=>{const a={type:'pants',primaryColor:'khaki',pattern:'camouflage'},jk={type:'suit',primaryColor:'olive',pattern:'camouflage'};return {pi:patInfo(a,'bot'),pis:patInfo({type:'shirt',pattern:'camouflage',primaryColor:'olive'},'shirt'),formal:formalTop(jk)<formalTop({...jk,pattern:'windowpane'}),pats:['suit','blazer','pants','shirt'].every(t=>PATS_BY[t].includes('camouflage'))&&!PATS_BY.tie.includes('camouflage')}});
+    e=await p.evaluate(()=>{const a={type:'pants',primaryColor:'khaki',pattern:'camouflage'},jk={type:'suit',primaryColor:'olive',pattern:'camouflage'};return {pi:HOOK.patInfo(a,'bot'),pis:HOOK.patInfo({type:'shirt',pattern:'camouflage',primaryColor:'olive'},'shirt'),formal:HOOK.formalTop(jk)<HOOK.formalTop({...jk,pattern:'windowpane'}),pats:['suit','blazer','pants','shirt'].every(t=>HOOK.PATS_BY[t].includes('camouflage'))&&!HOOK.PATS_BY.tie.includes('camouflage')}});
     ok(e.pi&&e.pi.type==='camo'&&e.pi.scale===3&&e.pis.scale===3,'the planner counts camouflage as a bold, large pattern of its own kind');
     ok(e.formal,'a camouflage suit is kept off a formal day, further than a windowpane');
     ok(e.pats,'camouflage is a pattern of suits, blazers, pants and shirts');
     // a uniform (the owner, 2026-11-16: "the military requires you to wear both together"): a camouflage shirt and pants are one pattern
     e=await p.evaluate(()=>{const sh={id:'u1',type:'shirt',primaryColor:'khaki',secondaryColor:'brown',pattern:'camouflage'},pt={id:'u2',type:'pants',primaryColor:'khaki',secondaryColor:'olive',pattern:'camouflage'},
         wsh={id:'u3',type:'shirt',primaryColor:'white',pattern:'solid'},npt={id:'u4',type:'pants',primaryColor:'navy',pattern:'solid'},day={clim:{season:'mild',rain:false,cold:false},nojkt:true,hasLinks:false};
-      const r=rateOutfit({top:null,bot:pt,shirt:sh,tie:null,shoes:null,suitDay:false});
-      return {ps:patternScore([[null,'top'],[pt,'bot'],[sh,'shirt']]),hard:HOOK.clothesHard(null,pt,sh,null,false,day,()=>true),pat:(r.checks.find(c=>c.label==='Patterns')||{}).pts,same:!!r.checks.find(c=>/same color/.test(c.why||'')),
-        together:clothesScore(null,pt,sh,null,false,day),split1:clothesScore(null,pt,wsh,null,false,day),split2:clothesScore(null,npt,sh,null,false,day),suit:clothesScore({id:'u5',type:'suit',primaryColor:'brown',pattern:'solid'},null,sh,null,true,day)-clothesScore({id:'u5',type:'suit',primaryColor:'brown',pattern:'solid'},null,wsh,null,true,day),
+      const r=HOOK.rateOutfit({top:null,bot:pt,shirt:sh,tie:null,shoes:null,suitDay:false});
+      return {ps:HOOK.patternScore([[null,'top'],[pt,'bot'],[sh,'shirt']]),hard:HOOK.clothesHard(null,pt,sh,null,false,day,()=>true),pat:(r.checks.find(c=>c.label==='Patterns')||{}).pts,same:!!r.checks.find(c=>/same color/.test(c.why||'')),
+        together:HOOK.clothesScore(null,pt,sh,null,false,day),split1:HOOK.clothesScore(null,pt,wsh,null,false,day),split2:HOOK.clothesScore(null,npt,sh,null,false,day),suit:HOOK.clothesScore({id:'u5',type:'suit',primaryColor:'brown',pattern:'solid'},null,sh,null,true,day)-HOOK.clothesScore({id:'u5',type:'suit',primaryColor:'brown',pattern:'solid'},null,wsh,null,true,day),
         three:HOOK.patsOf([[pt,'bot'],[sh,'shirt'],[{type:'tie',pattern:'stripe',primaryColor:'navy'},'tie']]).length}});
     ok(e.ps===0&&!e.hard&&(e.pat==null||e.pat===10)&&!e.same&&e.three===2,'a camouflage shirt with camouflage pants is one pattern, no clash or same-color mark ('+JSON.stringify(e)+')');
     ok(e.together>e.split1&&e.together>e.split2,'a camouflage shirt and pants are planned together: either with a plain piece scores lower');
@@ -72,8 +72,8 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     // the owner's camouflage shirt (2026-11-16): no photo, a close-up, no reading of its own: the item sheet opened on nothing (it described
     // i.sett), so it couldn't be opened or deleted
     e=await p.evaluate(async()=>{const c=document.createElement('canvas');c.width=c.height=240;const x=c.getContext('2d');x.fillStyle='#81613c';x.fillRect(0,0,240,240);x.fillStyle='#3f2600';x.fillRect(40,40,120,80);
-      const sh={id:'cs1',type:'shirt',primaryColor:'brown',pattern:'camouflage',cuff:'button',added:1,texture:c.toDataURL('image/jpeg',.9)};HOOK.items=[sh];await put(sh);HOOK.cache={};show('wardrobe');openItem('cs1');await new Promise(r=>setTimeout(r,500));
-      const v=document.querySelector('#item-view'),txt=v&&v.textContent||'';return {open:!!v&&!v.hidden&&/Delete/i.test(txt),says:/camouflage drawn in its own colors/.test(txt),sum:patSummary(sh),gen:settSummary(null)}});
+      const sh={id:'cs1',type:'shirt',primaryColor:'brown',pattern:'camouflage',cuff:'button',added:1,texture:c.toDataURL('image/jpeg',.9)};HOOK.items=[sh];await HOOK.put(sh);HOOK.cache={};HOOK.show('wardrobe');HOOK.openItem('cs1');await new Promise(r=>setTimeout(r,500));
+      const v=document.querySelector('#item-view'),txt=v&&v.textContent||'';return {open:!!v&&!v.hidden&&/Delete/i.test(txt),says:/camouflage drawn in its own colors/.test(txt),sum:HOOK.patSummary(sh),gen:HOOK.settSummary(null)}});
     ok(e.open&&e.says,'a camouflage shirt with no reading opens, its Delete there, and says its camouflage is drawn in its own colors ('+e.sum+')');
     ok(e.gen==='generic','settSummary of no reading is "generic", never an error');
     ok(!errs.length,'no page errors: '+errs.join(' | '));

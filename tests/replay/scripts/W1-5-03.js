@@ -3,7 +3,7 @@
 const V = require('./lib-verify5.js');
 V.run(async () => {
   const { A, B } = await V.startTwo('w03');
-  const sets = ph => ph.page.evaluate(() => ({ units: settings.units, care: settings.care || {}, blazer: (settings.blazerDays || []).join(''), work: (settings.workdays || []).join('') }));
+  const sets = ph => ph.page.evaluate(() => ({ units: HOOK.settings.units, care: HOOK.settings.care || {}, blazer: (HOOK.settings.blazerDays || []).join(''), work: (HOOK.settings.workdays || []).join('') }));
   await V.offline(B, true);
   await V.openSettings(A); await V.cat(A, 'care'); await V.choose(A, '#care-lim-tie', '5');
   await V.cat(A, 'weather'); await V.choose(A, '#cfg-units', 'F');

@@ -12,7 +12,7 @@ const todaytight=async({ok,chromium,url,settle})=>{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
       HOOK.items=[I('suit','navy'),I('shirt','white'),I('tie','burgundy'),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
-      settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};show('today')});
+      HOOK.settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.show('today')});
     const g=await p.evaluate(()=>{const R=s=>document.querySelector(s).getBoundingClientRect(),h=R('header'),t=R('header h1'),b=[...document.querySelectorAll('header button')].map(x=>x.getBoundingClientRect()).filter(x=>x.height>0);
       const sc=getComputedStyle(document.querySelector('.score'));
       return {h:h.height,slack:h.height-Math.max(t.height,...b.map(x=>x.height)),btn:Math.min(...b.map(x=>x.height)),day:R('.nav.day').height,
@@ -30,20 +30,20 @@ const todaytight=async({ok,chromium,url,settle})=>{
     ok(m.centre<=1,`the weather stays centred under the date (${m.centre}px off)`);
     ok(m.circles===0&&!m.pill,'no ✕ / ✓ circles on the picture; no last-worn text for a look never worn');
     ok(g.day<=50,'the date bar keeps its height with the pill');
-    await p.click('#wpill');await p.waitForFunction(()=>planFor()[key(sel)].worn===false&&document.querySelector('#wpill').textContent==="✕ Didn't");
+    await p.click('#wpill');await p.waitForFunction(()=>HOOK.planFor()[HOOK.key(HOOK.sel)].worn===false&&document.querySelector('#wpill').textContent==="✕ Didn't");
     ok(await p.evaluate(()=>document.querySelector('#wpill').classList.contains('no')&&document.querySelector('#wpill').getAttribute('aria-pressed')==='false'),'a tap records it as not worn: "✕ Didn\'t", grey');
-    await p.click('#wpill');await p.waitForFunction(()=>planFor()[key(sel)].worn===undefined&&document.querySelector('#wpill').textContent==='✓ Wore');
+    await p.click('#wpill');await p.waitForFunction(()=>HOOK.planFor()[HOOK.key(HOOK.sel)].worn===undefined&&document.querySelector('#wpill').textContent==='✓ Wore');
     ok(true,'a tap again goes back to worn (the default: nothing recorded, so today\'s outfit is not frozen)');
     // last worn: the same look a week earlier (a day counts unless marked "Didn't")
-    const lw=await p.evaluate(()=>{const o=planFor()[key(sel)];dayRecs['2026-11-3']={date:'2026-11-3',ids:idsOf(o),suitDay:true,vestOn:!!o.vest};renderToday();
+    const lw=await p.evaluate(()=>{const o=HOOK.planFor()[HOOK.key(HOOK.sel)];HOOK.dayRecs['2026-11-3']={date:'2026-11-3',ids:HOOK.idsOf(o),suitDay:true,vestOn:!!o.vest};HOOK.renderToday();
       const pill=document.querySelector('.wornbar .lastworn'),f=document.querySelector('#mannequin-container').getBoundingClientRect(),b=pill&&pill.getBoundingClientRect();return {t:pill&&pill.textContent,right:b&&f.right-b.right<=16}});
     ok(/^This look last worn \w{3}, \w{3} \d+$/.test(lw.t)&&lw.right,`a look worn before (not marked either way) shows "Last worn" at the picture's bottom right (${lw.t})`);
-    const lw2=await p.evaluate(()=>{for(const r of Object.values(dayRecs))if(r.ids&&keyDate(r.date)<sel)r.worn=false;renderToday();return !document.querySelector('.lastworn')});   // (every earlier day, the week's locks recorded too: each counts unless marked)
+    const lw2=await p.evaluate(()=>{for(const r of Object.values(HOOK.dayRecs))if(r.ids&&HOOK.keyDate(r.date)<HOOK.sel)r.worn=false;HOOK.renderToday();return !document.querySelector('.lastworn')});   // (every earlier day, the week's locks recorded too: each counts unless marked)
     ok(lw2,'a day marked "Didn\'t" is not a last wear');
     // a future day: no pill (it can't have been worn yet), the weather centred
-    const fut=await p.evaluate(()=>{HOOK.sel=new Date(2026,10,12);renderToday();return {pill:!!document.querySelector('#wpill'),cls:document.querySelector('.day h2 .wx').className}});
+    const fut=await p.evaluate(()=>{HOOK.sel=new Date(2026,10,12);HOOK.renderToday();return {pill:!!document.querySelector('#wpill'),cls:document.querySelector('.day h2 .wx').className}});
     ok(!fut.pill&&fut.cls==='wx','future days have no pill');
-    for(const w of [320,360]){await p.setViewportSize({width:w,height:800});await p.evaluate(()=>{settings.location=null;HOOK.sel=new Date(2026,10,10);renderToday()});
+    for(const w of [320,360]){await p.setViewportSize({width:w,height:800});await p.evaluate(()=>{HOOK.settings.location=null;HOOK.sel=new Date(2026,10,10);HOOK.renderToday()});
       const n=await p.evaluate(()=>{const a=document.querySelector('.day h2 .wx a'),pl=document.querySelector('#wpill');return {fit:a.scrollWidth<=a.clientWidth+1,t:a.textContent,over:document.documentElement.scrollWidth>innerWidth,pr:pl.getBoundingClientRect().right<=document.querySelector('.day h2').getBoundingClientRect().right+1}});
       ok(n.fit&&n.t==='Set location'&&!n.over&&n.pr,`${w}px, no location: "Set location" fits beside the pill, nothing scrolls sideways`)}
     ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
@@ -63,10 +63,10 @@ const todaycards=async({ok,chromium,url})=>{
       const r=await p.evaluate(async()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',added:1,...x});
         HOOK.items=[I('suit','deeptaupe'),I('suit','navy'),I('shirt','lightblue'),I('shirt','white'),I('tie','brown',{pattern:'stripe',secondaryColor:'cream'}),I('tie','burgundy'),
           I('shoes','brown',{leather:'calf'}),I('belt','brown',{leather:'calf',metal:'silver'}),I('socks','brown'),I('watch','silver',{metal:'silver'})];
-        settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.listOpen=false;HOOK.monthOpen=false;
+        HOOK.settings.workdays=[1,2,3,4,5];HOOK.TODAY_OVERRIDE='2026-11-10T12:00:00';HOOK.dayRecs={};HOOK.cache={};HOOK.sel=new Date(2026,10,10);HOOK.view={y:2026,m:10};HOOK.listOpen=false;HOOK.monthOpen=false;
         // a stand-in photo for the day's look; a background refresh (weather, holidays) can re-plan the day, so set it again until it shows
         const img='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#5f5449"/></svg>');
-        show('today');for(let n=0;n<40;n++){const o=planFor()[key(sel)];if(!renders[comboKey(o)]){HOOK.renderTried.add(comboKey(o));renders[comboKey(o)]={sig:'x',img,model:'x',t:1};renderToday()}
+        HOOK.show('today');for(let n=0;n<40;n++){const o=HOOK.planFor()[HOOK.key(HOOK.sel)];if(!HOOK.renders[HOOK.comboKey(o)]){HOOK.renderTried.add(HOOK.comboKey(o));HOOK.renders[HOOK.comboKey(o)]={sig:'x',img,model:'x',t:1};HOOK.renderToday()}
           await new Promise(r=>setTimeout(r,100));if(document.querySelector('.fig.photo img')&&n>=3)break}
         const R=s=>document.querySelector(s).getBoundingClientRect(),seq=['#mannequin-container','.below','.score','#ibox','#mbox'].map(R);
         const cards=['.score','#ibox','#mbox'].map(R),text=[...document.querySelectorAll('#ibox .mltxt,#mbox .mltxt')].map(e=>Math.round(e.getBoundingClientRect().left));
@@ -76,7 +76,7 @@ const todaycards=async({ok,chromium,url})=>{
       ok(new Set(r.text).size===1&&new Set(r.slots).size===1,`${name}: their pictures share one width and their text starts in one column (${r.slots}; ${r.text})`);
       ok(r.gaps.every(g=>g===r.gaps[0])&&r.gaps[0]===12,`${name}: even spacing between the picture, the tiles and each card (${r.gaps.join(', ')})`);
       ok(r.tileH<r.tileW*1.1,`${name}: tiles are short (${Math.round(r.tileH)}px tall, ${Math.round(r.tileW)}px wide)`);
-      const o=await p.evaluate(async()=>{const d=document.querySelector('#sbox'),h=d.getBoundingClientRect().height;toggleScore();await new Promise(r=>setTimeout(r,700));
+      const o=await p.evaluate(async()=>{const d=document.querySelector('#sbox'),h=d.getBoundingClientRect().height;HOOK.toggleScore();await new Promise(r=>setTimeout(r,700));
         return {grew:d.getBoundingClientRect().height>h+40,turned:getComputedStyle(d.querySelector('.chev')).transform!=='none'}});
       ok(o.grew&&o.turned,`${name}: the score card opens with its chevron turned, like the other cards`);
       // an unfolded tile photo is spaced like everything else; folded it takes no space

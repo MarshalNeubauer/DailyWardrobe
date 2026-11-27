@@ -9,25 +9,25 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++).toString().padStart(3,'0'),type,primaryColor,pattern:'solid',updated:1,...x});
       HOOK.items=[I('suit','navy'),I('suit','charcoal'),I('blazer','navy'),I('pants','grey'),I('shirt','white'),I('shirt','lightblue'),I('shirt','pink'),I('shirt','white'),I('shirt','cream'),
         I('tie','burgundy'),I('tie','navy'),I('tie','green'),I('tie','gold'),I('shoes','black',{leather:'calf'}),I('shoes','brown',{leather:'calf'})];
-      settings.holidays={country:'KW',list:[{d:'2026-12-01',n:'Holiday'}],skip:[],fetched:1};settings.daysOff=[];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};
-      HOOK.shopBusy={i:-1,n:1,label:'',t0:Date.now()};HOOK.shop=null;show('stats')});   // (a check "already running", so none starts)
+      HOOK.settings.holidays={country:'KW',list:[{d:'2026-12-01',n:'Holiday'}],skip:[],fetched:1};HOOK.settings.daysOff=[];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};
+      HOOK.shopBusy={i:-1,n:1,label:'',t0:Date.now()};HOOK.shop=null;HOOK.show('stats')});   // (a check "already running", so none starts)
     await p.click('#shop-btn');await settle(p,500);
-    ok(await p.evaluate(()=>shopOpen&&$('#shop-sheet').classList.contains('on')),'What to buy opens from Insights');
-    await p.evaluate(()=>syncRedraw('stats'));await settle(p,300);
-    ok(await p.evaluate(()=>shopOpen&&$('#shop-sheet').classList.contains('on')&&!$('#stats').hidden),'a sync that brings changes redraws Insights and leaves What to buy open over it');
+    ok(await p.evaluate(()=>HOOK.shopOpen&&HOOK.$('#shop-sheet').classList.contains('on')),'What to buy opens from Insights');
+    await p.evaluate(()=>HOOK.syncRedraw('stats'));await settle(p,300);
+    ok(await p.evaluate(()=>HOOK.shopOpen&&HOOK.$('#shop-sheet').classList.contains('on')&&!HOOK.$('#stats').hidden),'a sync that brings changes redraws Insights and leaves What to buy open over it');
     await p.click('#shop-sheet .pick-x');await settle(p,400);
-    ok(await p.evaluate(()=>!shopOpen),'× still closes it');
+    ok(await p.evaluate(()=>!HOOK.shopOpen),'× still closes it');
     // the kept result's signature
     const fresh=()=>p.evaluate(()=>HOOK.shopFresh());
     await p.evaluate(()=>{HOOK.shopBusy=null;HOOK.shop={sig:HOOK.shopSig(),at:Date.now(),res:{v:2,base:{},cats:[],top:[],occasions:[]}}});
     ok(await fresh(),'the kept result is fresh to begin with');
-    await p.evaluate(()=>{const it=items[0];it.photo='data:image/jpeg;base64,AAAA';it.name='My navy suit';it.notes='from the tailor';it.updated=Date.now();settings.holidays={...settings.holidays,fetched:Date.now()}});
+    await p.evaluate(()=>{const it=HOOK.items[0];it.photo='data:image/jpeg;base64,AAAA';it.name='My navy suit';it.notes='from the tailor';it.updated=Date.now();HOOK.settings.holidays={...HOOK.settings.holidays,fetched:Date.now()}});
     ok(await fresh(),'a new photo, a name, notes and the holiday list fetched again leave it fresh: the planner reads none of them');
-    await p.evaluate(()=>{items[1].primaryColor='grey'});
+    await p.evaluate(()=>{HOOK.items[1].primaryColor='grey'});
     ok(!(await fresh()),'a changed color makes it stale');
-    await p.evaluate(()=>{items[1].primaryColor='charcoal';settings.daysOff=[{d:'2026-11-25',n:'Trip'}]});
+    await p.evaluate(()=>{HOOK.items[1].primaryColor='charcoal';HOOK.settings.daysOff=[{d:'2026-11-25',n:'Trip'}]});
     ok(!(await fresh()),'a new day off makes it stale');
-    await p.evaluate(()=>{settings.daysOff=[];settings.holidays={...settings.holidays,skip:['2026-12-01']}});
+    await p.evaluate(()=>{HOOK.settings.daysOff=[];HOOK.settings.holidays={...HOOK.settings.holidays,skip:['2026-12-01']}});
     ok(!(await fresh()),'a holiday worked anyway makes it stale');
     ok(!errs.length,'no page errors ('+errs.join(' | ')+')');
   }finally{await browser.close()}

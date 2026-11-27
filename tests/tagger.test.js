@@ -28,7 +28,7 @@ const claude=async({ok,chromium,url,ROOT})=>{
     await tag({ANTHROPIC_API_KEY:'k',CLAUDE_MODEL:'claude-haiku-5-5'});
     ok(sent.body.model==='claude-haiku-5-5'&&!('fallbacks' in sent.body)&&!sent.headers['anthropic-beta'],'CLAUDE_MODEL overrides the model; no fallback parameter on Haiku');
     // the worker's colour list matches the app's
-    const appCols=await (async()=>{const b=await chromium.launch();const p=await b.newPage();await p.goto(url);await p.waitForFunction(()=>window.appReady);const k=await p.evaluate(()=>Object.keys(COLORS));await b.close();return k})();
+    const appCols=await (async()=>{const b=await chromium.launch();const p=await b.newPage();await p.goto(url);await p.waitForFunction(()=>window.appReady);const k=await p.evaluate(()=>Object.keys(HOOK.COLORS));await b.close();return k})();
     ok(appCols.filter(c=>c!=='coyote').sort().join()===sch.schema.properties.primaryColor.enum.slice().sort().join(),'the worker colour enum matches COLORS in the app (coyote only for an app that names combat: combatboot.test.js)');
     // errors
     reply=()=>[401,{type:'error',error:{type:'authentication_error',message:'invalid x-api-key'}}];
@@ -53,14 +53,14 @@ const claude=async({ok,chromium,url,ROOT})=>{
     reply=()=>[401,{type:'error',error:{type:'authentication_error',message:'invalid x-api-key'}}];
     const p=await ctx.newPage();await p.goto(url);await p.evaluate(()=>{localStorage.setItem('worker_url','https://w.test/');localStorage.setItem('app_token','t')});await p.reload();await p.waitForFunction(()=>window.appReady);
     const pic=`(async()=>{const c=document.createElement('canvas');c.width=c.height=200;c.getContext('2d').fillRect(0,0,200,200);return new File([await new Promise(r=>c.toBlob(r,'image/png'))],'x.png',{type:'image/png'})})()`;   // (large enough to read: add.js ADD_MIN_PX)
-    await p.evaluate(`(async()=>{show('add');await addFiles([await ${pic}])})()`);
+    await p.evaluate(`(async()=>{HOOK.show('add');await HOOK.addFiles([await ${pic}])})()`);
     ok(/Photo tagging failed: Reading photos isn’t available on this server yet/.test(await p.textContent('#note')),'the Add screen shows why tagging failed, in plain words (a connection whose role is not known yet: ui.js plainErr)');
-    ok(await p.evaluate(()=>{HOOK.rememberRole({role:'owner'});return /ANTHROPIC_API_KEY/.test(tagFailText(500,{},'invalid x-api-key: add an ANTHROPIC_API_KEY secret'))}),'the owner reads the technical reason');
+    ok(await p.evaluate(()=>{HOOK.rememberRole({role:'owner'});return /ANTHROPIC_API_KEY/.test(HOOK.tagFailText(500,{},'invalid x-api-key: add an ANTHROPIC_API_KEY secret'))}),'the owner reads the technical reason');
     reply=()=>[200,{model:'claude-opus-5-5',stop_reason:'end_turn',usage:{input_tokens:1,output_tokens:1},content:[{type:'text',text:JSON.stringify(answer)}]}];
     await ctx.unroute('https://w.test/**');
     await ctx.route('https://w.test/**',async route=>{const q=route.request();const res=await worker.fetch(new Request(q.url(),{method:q.method(),headers:q.headers(),body:q.postData()}),{APP_TOKEN:'t',ANTHROPIC_API_KEY:'k'});
       await route.fulfill({status:res.status,headers:Object.fromEntries(res.headers),body:await res.text()})});
-    await p.evaluate(`(async()=>{await addFiles([await ${pic}])})()`);
+    await p.evaluate(`(async()=>{await HOOK.addFiles([await ${pic}])})()`);
     ok((await p.textContent('#queue')).includes('Tagged by Claude.')&&!/claude-|Cloudflare AI/.test(await p.textContent('#queue')),'each photo card says Claude tagged it, without the model\'s name (audit 2026-11-15)');
     ok(!/claude-/.test(await p.textContent('#note'))&&/read automatically/.test(await p.textContent('#note')),`the Add screen names no model ("${await p.textContent('#note')}")`);
     await b.close();
