@@ -616,6 +616,8 @@ const READS_KEPT={
   'tests/replay/scripts/W1-4-01.js':['PLAN_RULES','items','metaGet','openSettings','queue','settings','syncNow','syncRun','syncing'],
   /* S6t4: oldAddCards runs on the 14 Nov 7a28f96 app (no HOOK); reopenNew reads PLAN_RULES bare only while the page is still that app */
   'tests/replay/scripts/_verify2-lib.js':['PLAN_RULES','items','queue','settings'],
+  /* S6t4: the 14 Nov import's result is read on that app (7a28f96, no HOOK), before the update */
+  'tests/replay/scripts/W1-2-01.js':['items'],
   /* S6t4: origin/main's draw.js run in a scope of its own (new Function): the two names are that source's own declarations, not the page's */
   'tests/garmentdraw.test.js':['itemThumb','swatchSVG'],
 };

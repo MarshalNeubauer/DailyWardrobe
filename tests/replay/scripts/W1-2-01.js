@@ -11,7 +11,8 @@ const ROWS = 'Type\tColour\tPattern\tName\nTie\tGray\tSolid\tGray tie\nTrousers\
   const built = await v.oldAddCards(ph, info);
   console.log('own colours (14 Nov)', JSON.stringify(built.custom.colors.map(c => c.name)));
   await v.oldImport(ph, ROWS);
-  const old = await ph.page.evaluate(() => HOOK.items.filter(i => /^(Gray tie|Navy trousers|Mocha two)$/.test(i.name || '')).map(i => [i.name, i.primaryColor]));
+  // still the 14 Nov app, which has no HOOK: `items` is its global there (READS_KEPT in tests/bridge.test.js)
+  const old = await ph.page.evaluate(() => items.filter(i => /^(Gray tie|Navy trousers|Mocha two)$/.test(i.name || '')).map(i => [i.name, i.primaryColor]));
   console.log('saved by 14 Nov import', JSON.stringify(old));
   await ph.background(); await v.sleep(1500); await ph.kill(); await v.stopLab();
   // the app and server are updated
