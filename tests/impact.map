@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	bface917a9bd899218a0
 a11y.test.js	about.js	<loaded>	@onsettingscategory	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	swVersionOf
 a11y.test.js	account.js	<loaded>	@onsettingssummaries	acctSettingsPart	acctStart	get	loadAccount	renderAccountUI
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -993,7 +994,7 @@ aiverdict.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 aiverdict.test.js	care.js	<loaded>
 aiverdict.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
 aiverdict.test.js	colpick.js	<loaded>	colBtn	colFieldLabel	colHas	colRows	colShows	colTidy	get	patBtn	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdOff
-aiverdict.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	accentsOf	acctBase	applyCustom	askPersist	camoPat	casualTop	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	get	get dayRecs	get items	get settings	hasInviteHash	hasPat	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	keySettings	keySplit	labOf	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownMats	paperCloth	patBase	patLabel	patName	phSigOf	primaryCol	rgbHex	rgbLab	sentence	set	set items	setWardrobe	shadeName	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	syncUrl	tagTypesNow	takeSettings	thirdOf	todayDate	watchOpts
+aiverdict.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	accentsOf	acctBase	applyCustom	askPersist	camoPat	casualTop	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	get	get dayRecs	get items	get settings	hasInviteHash	hasPat	hexRgb	isWorkday	isoKey	itemName	itemTitle	key	keySettings	keySplit	labOf	lum	matTypeOne	matTypeWord	matsFor	metalWord	mix	noBidi	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownMats	paperCloth	patBase	patLabel	patName	phSigOf	primaryCol	rgbHex	rgbLab	sentence	set	set items	setWardrobe	shadeName	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	syncUrl	tagTypesNow	takeSettings	texSig	thirdOf	todayDate	watchOpts
 aiverdict.test.js	cost.js	<loaded>	cpwCur	cpwCurOk	cpwFmt	cpwQRow	cpwRegion	cpwSaveFields	cpwSym
 aiverdict.test.js	days.js	<loaded>
 aiverdict.test.js	daysoff.js	<loaded>	refreshHolidays
@@ -2718,7 +2719,7 @@ back.test.js	add-save.js	<loaded>
 back.test.js	add-sheet.js	<loaded>	get	npsLeave	renderAddFor	setAddFor
 back.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd
 back.test.js	analysis.js	<loaded>	horizonKeys
-back.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	keepFocus	metaGet	metaPut	set	set flt	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
+back.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	get editing	keepFocus	metaGet	metaPut	set	set flt	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 back.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmGapNote	asmPileKind	asmWtWants
 back.test.js	asm-gl.js	<loaded>
 back.test.js	asm-keys.js	<loaded>
@@ -2813,7 +2814,7 @@ backgesture-item.test.js	add-save.js	<loaded>
 backgesture-item.test.js	add-sheet.js	<loaded>	get
 backgesture-item.test.js	add.js	<loaded>	@document.addEventListenerclick
 backgesture-item.test.js	analysis.js	<loaded>
-backgesture-item.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	imgOf	keepFocus	metaGet	metaPut	put	renderBusy	set	set editing	set flt	set sel	set view	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
+backgesture-item.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	get editing	imgOf	keepFocus	metaGet	metaPut	put	renderBusy	set	set editing	set flt	set sel	set view	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
 backgesture-item.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmGapNote
 backgesture-item.test.js	asm-gl.js	<loaded>
 backgesture-item.test.js	asm-keys.js	<loaded>
@@ -2911,7 +2912,7 @@ backgesture-over.test.js	add-save.js	<loaded>	cardReady	get	savedTitle
 backgesture-over.test.js	add-sheet.js	<loaded>	@backOnnps	addManual	addManualTap	get	get npsId	npsBack	npsCancel	npsCard	npsClose	npsCloseTap	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
 backgesture-over.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	errToHand	renderAdd	skipCard	wbNote
 backgesture-over.test.js	analysis.js	<loaded>
-backgesture-over.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusWatch	get	get queue	imgOf	keepFocus	metaGet	metaPut	renderBusy	set	set editing	set flt	set sel	set view	setEditing	setSel	setView	storeFailure	tx	txFail	txs	window.fetch
+backgesture-over.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusWatch	get	get editing	get queue	imgOf	keepFocus	metaGet	metaPut	renderBusy	set	set editing	set flt	set sel	set view	setEditing	setSel	setView	storeFailure	tx	txFail	txs	window.fetch
 backgesture-over.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute
 backgesture-over.test.js	asm-gl.js	<loaded>
 backgesture-over.test.js	asm-keys.js	<loaded>
@@ -3010,7 +3011,7 @@ backgesture.test.js	add-save.js	<loaded>	cardReady	savedTitle
 backgesture.test.js	add-sheet.js	<loaded>	@backOnnps	addManual	get	npsBack	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
 backgesture.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	errToHand	renderAdd	skipCard	wbNote
 backgesture.test.js	analysis.js	<loaded>	horizonKeys
-backgesture.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	imgOf	keepFocus	metaGet	metaPut	put	putRaw	renderBusy	set	set editing	set flt	set sel	set view	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
+backgesture.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	get editing	imgOf	keepFocus	metaGet	metaPut	put	putRaw	renderBusy	set	set editing	set flt	set sel	set view	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
 backgesture.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmGapNote
 backgesture.test.js	asm-gl.js	<loaded>
 backgesture.test.js	asm-keys.js	<loaded>
@@ -4660,7 +4661,7 @@ closeupread.test.js	add-save.js	<loaded>	cardReady	get
 closeupread.test.js	add-sheet.js	<loaded>	addManual	get	npsCard	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
 closeupread.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	addTexture	renderAdd	texGains	wbNote
 closeupread.test.js	analysis.js	<loaded>
-closeupread.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	afterDom	afterScripts	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	get queue	imgOf	keepFocus	loadImg	matchLight	metaGet	metaPut	put	putRaw	qAt	refreshSwatch	renderBusy	set	set editing	set flt	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
+closeupread.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	afterDom	afterScripts	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	get editing	get queue	imgOf	keepFocus	loadImg	matchLight	metaGet	metaPut	put	putRaw	qAt	refreshSwatch	renderBusy	set	set editing	set flt	setEditing	setSel	setView	shrink	storeFailure	tx	txFail	txs	window.fetch
 closeupread.test.js	asm-color.js	<loaded>	asmGapNote
 closeupread.test.js	asm-gl.js	<loaded>
 closeupread.test.js	asm-keys.js	<loaded>
@@ -5274,7 +5275,7 @@ colpick.test.js	add-save.js	<loaded>	cardReady	get	savedTitle
 colpick.test.js	add-sheet.js	<loaded>	get	npsLeave	renderAddFor	setAddFor
 colpick.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	wbNote
 colpick.test.js	analysis.js	<loaded>
-colpick.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	addTombstones	afterDom	afterScripts	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	imgOf	keepFocus	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	set	set editing	set flt	setEditing	setSel	setView	sockTag	texSwatches	tx	txFail	txs	window.fetch
+colpick.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	addTombstones	afterDom	afterScripts	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	imgOf	keepFocus	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	set	set editing	set flt	setEditing	setSel	setView	sockTag	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 colpick.test.js	asm-color.js	<loaded>	asmGapNote
 colpick.test.js	asm-gl.js	<loaded>
 colpick.test.js	asm-keys.js	<loaded>
@@ -5290,7 +5291,7 @@ colpick.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink
 colpick.test.js	care.js	<loaded>	careBadge	careCard	careCounts	careState	careWornLine
 colpick.test.js	checklist.js	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpBind	cmpDiff	cmpDiffText	cmpDrawn	cmpHtml	cmpImg	cmpLab	cmpLoad	cmpMatchHtml	cmpMount	cmpPaint	cmpPaper	cmpPaperLine	cmpSize	cmpSlide	cmpSt	cmpSteps
 colpick.test.js	colpick.js	<loaded>	@window.addEventListenerkeydown	COL_FIELDS	EP	closeColPick	colAddNew	colAllDiff	colAllOf	colAskHtml	colAskImgs	colAskRun	colAskUseAll	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colLabel	colLetters	colNameTaken	colNear	colNewFor	colPickDraw	colPickSel	colPickView	colRows	colShows	colSwipe	colTarget	cpAskAllTap	cpAskHint	cpAskTap	cpFig	cpSeg	cpSwipe	cpTileTap	cpTyping	cpUseTap	cpViews	get	openColPick	patAddNew	patAskHtml	patBtn	patChoices	patGroupOf	patNewBase	patNewFor	patTitle	patVar	rdAddBtn	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick	renderPatPick	useColPick
-colpick.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	acctBase	applyCustom	camoField	camoImage	camoPat	careLimit	careWashed	careWord	casualTop	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	get	get dayRecs	get items	get settings	hasInviteHash	hasPat	hasVest	hexRgb	isCargo	isHandPick	isOcp	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matTypeOne	matTypeWord	matsFor	mergeState	metalWord	mix	nextStamp	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownColFind	ownColKey	ownDescClean	ownFreeKey	ownKeyNorm	ownKeyOther	ownMats	ownNameBad	ownNameClean	ownNameShort	ownNameTidy	ownPatFind	ownPatKey	paperCloth	patBase	patLabel	patLetters	patName	patNameTaken	phSm	primaryCol	rgbHex	rgbLab	sentence	set	set items	setWardrobe	shadeFor	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	subStamp	syncUrl	takeSettings	texSig	thirdOf	titleCls	todayDate	trouserKind
+colpick.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	accentOf	accentsOf	acctBase	applyCustom	camoField	camoImage	camoPat	careLimit	careWashed	careWord	casualTop	colBaseFor	colName	colOf	colorDesc	colsFor	dE00	dayClimate	desc	di	fitCol	get	get dayRecs	get items	get settings	hasInviteHash	hasPat	hasVest	hexRgb	isCargo	isHandPick	isOcp	isWorkday	isoKey	itemFields	itemName	itemTitle	key	keySettings	keySplit	labHex	labOf	lum	matTypeOne	matTypeWord	matsFor	mergeState	metalWord	mix	nextStamp	normCol	normColFor	normPat	nowMs	occOf	offDays	offName	ownColFind	ownColKey	ownDescClean	ownFreeKey	ownKeyNorm	ownKeyOther	ownMats	ownNameBad	ownNameClean	ownNameShort	ownNameTidy	ownPatFind	ownPatKey	paperCloth	patBase	patLabel	patLetters	patName	patNameTaken	phSm	primaryCol	rgbHex	rgbLab	sentence	set	set items	setWardrobe	shadeFor	shadeName	shoeStyle	shortCol	shortDesc	sockPatterned	stampSettings	styleWord	subHashes	subStamp	syncMark	syncUrl	takeSettings	texSig	thirdOf	titleCls	todayDate	trouserKind
 colpick.test.js	cost.js	<loaded>	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSum	cpwSym
 colpick.test.js	days.js	<loaded>
 colpick.test.js	daysoff.js	<loaded>	refreshHolidays
@@ -5842,7 +5843,7 @@ costwear.test.js	add-save.js	<loaded>	cardReady	get	save	saveCard	savedTitle
 costwear.test.js	add-sheet.js	<loaded>	addManual	get	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
 costwear.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	get	renderAdd	wbNote
 costwear.test.js	analysis.js	<loaded>	horizonKeys
-costwear.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	get queue	keepFocus	metaGet	metaPut	put	qAt	set	set flt	set queue	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
+costwear.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	S	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	get editing	get queue	keepFocus	metaGet	metaPut	put	qAt	set	set flt	set queue	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 costwear.test.js	asm-color.js	<loaded>	asmCmBtnCol	asmCmKind	asmCmPref	asmCmRoute	asmGapNote	asmPileKind	asmWtWants
 costwear.test.js	asm-gl.js	<loaded>
 costwear.test.js	asm-keys.js	<loaded>
@@ -7825,7 +7826,6 @@ globals.test.js	tag-request.js	<any>
 globals.test.js	tagging.js	<any>
 globals.test.js	tests/modscope.js	<any>
 globals.test.js	tests/scriptlist.js	<any>
-globals.test.js	tests/webkit.js	<any>
 globals.test.js	theme.js	<any>
 globals.test.js	toast.js	<any>
 globals.test.js	today-gestures.js	<any>
@@ -8698,6 +8698,7 @@ invite.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehid
 invite.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 invite.test.js	tagging.js	<loaded>
 invite.test.js	tests/fixedplan.js	<any>
+invite.test.js	tests/webkit.js	<any>
 invite.test.js	theme.js	<loaded>	applyTheme
 invite.test.js	toast.js	<loaded>	toast	toastOff
 invite.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -8728,7 +8729,7 @@ itempics.test.js	add-save.js	<loaded>
 itempics.test.js	add-sheet.js	<loaded>	get
 itempics.test.js	add.js	<loaded>	@document.addEventListenerclick
 itempics.test.js	analysis.js	<loaded>
-itempics.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	get sel	keepFocus	metaGet	metaPut	renderBusy	set	set editing	set flt	set sel	set view	setEditing	setSel	setView	storeFailure	texSwatches	tx	txFail	txs	window.fetch
+itempics.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	busyStart	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	get editing	get sel	keepFocus	metaGet	metaPut	renderBusy	set	set editing	set flt	set sel	set view	setEditing	setSel	setView	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 itempics.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmGapNote	asmPileKind	asmWtWants
 itempics.test.js	asm-gl.js	<loaded>
 itempics.test.js	asm-keys.js	<loaded>
@@ -8925,7 +8926,7 @@ itemsheet.test.js	add-save.js	<loaded>
 itemsheet.test.js	add-sheet.js	<loaded>	get
 itemsheet.test.js	add.js	<loaded>	@document.addEventListenerclick
 itemsheet.test.js	analysis.js	<loaded>
-itemsheet.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	del	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	imgOf	keepFocus	metaGet	metaPut	put	set	set editing	set flt	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
+itemsheet.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	del	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	get	get editing	imgOf	keepFocus	metaGet	metaPut	put	set	set editing	set flt	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 itemsheet.test.js	asm-color.js	<loaded>	asmCmKind	asmCmPref	asmCmRoute	asmGapNote	asmPileKind
 itemsheet.test.js	asm-gl.js	<loaded>
 itemsheet.test.js	asm-keys.js	<loaded>
@@ -9215,7 +9216,7 @@ kit.test.js	add-save.js	<loaded>	cardReady	get	save	saveCard	savedTitle
 kit.test.js	add-sheet.js	<loaded>	addManual	get	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	renderAddFor	setAddFor
 kit.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	errToHand	get	multiMsg	renderAdd	wbNote
 kit.test.js	analysis.js	<loaded>
-kit.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbGone	dbLive	dbMark	dbOpen	dbRetry	del	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	get queue	keepFocus	metaGet	metaPut	put	putRaw	set	setEditing	setSel	setView	storeErr	storeFailText	storeFailure	storeFull	texSwatches	tx	txFail	txs	window.fetch
+kit.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	S	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbGone	dbLive	dbMark	dbOpen	dbRetry	del	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get	get editing	get queue	keepFocus	metaGet	metaPut	put	putRaw	set	setEditing	setSel	setView	storeErr	storeFailText	storeFailure	storeFull	texSwatches	tx	txFail	txs	window.fetch
 kit.test.js	asm-color.js	<loaded>	asmCmBtnCol	asmCmKind	asmCmPref	asmCmRoute	asmGapNote	asmPileKind	asmWtWants
 kit.test.js	asm-gl.js	<loaded>
 kit.test.js	asm-keys.js	<loaded>
@@ -14570,7 +14571,7 @@ run.js: renders the outfit without errors	checklist.js	<loaded>
 run.js: renders the outfit without errors	colpick.js	<loaded>
 run.js: renders the outfit without errors	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	LUM	accentOf	acctBase	applyCustom	camoPat	careLimit	colBase	colName	colOf	colourNameRe	dE00	dayClimate	dayFields	di	get	hasInviteHash	hasVest	hexRgb	inRotation	isCargo	isHandPick	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keyDate	keySettings	keySplit	leatherWord	lum	lumCol	matSeason	metalWord	mix	nameHtml	nextStamp	nm	nowMs	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	rgbLab	seasonFit	sentence	set	set items	setWardrobe	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	strapBand	styleWord	subHashes	syncUrl	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
 run.js: renders the outfit without errors	cost.js	<loaded>
-run.js: renders the outfit without errors	days.js	<loaded>	idsOf	saveDay
+run.js: renders the outfit without errors	days.js	<loaded>	idsOf	releaseLocks	saveDay
 run.js: renders the outfit without errors	daysoff.js	<loaded>	refreshHolidays
 run.js: renders the outfit without errors	detect.js	<loaded>	@	camoLook	lookOf	ownSett	settToTag	usableSett
 run.js: renders the outfit without errors	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figStripeLift	figWay	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
@@ -20982,7 +20983,7 @@ wardswipe.test.js	add-save.js	<loaded>
 wardswipe.test.js	add-sheet.js	<loaded>	get
 wardswipe.test.js	add.js	<loaded>
 wardswipe.test.js	analysis.js	<loaded>
-wardswipe.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	get flt	keepFocus	metaGet	metaPut	set	set editing	set flt	setEditing	setFlt	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
+wardswipe.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	get	get editing	get flt	keepFocus	metaGet	metaPut	set	set editing	set flt	setEditing	setFlt	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 wardswipe.test.js	asm-color.js	<loaded>	asmGapNote
 wardswipe.test.js	asm-gl.js	<loaded>
 wardswipe.test.js	asm-keys.js	<loaded>
