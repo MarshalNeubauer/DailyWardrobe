@@ -15,7 +15,7 @@ module.exports=async({ok,chromium,url})=>{
       const fig=mk(g=>{g.translate(W/2,H/2);g.rotate(2*Math.PI/180);g.fillStyle='#6c6a72';for(let y=-20;y<=20;y++)for(let x=-14;x<=14;x++)g.fillRect(x*30-7,y*24-6,14,12)});
       const plain=mk(()=>{});
       const shirt=(pattern,texture,id)=>({id,type:'shirt',primaryColor:'white',pattern,texture}),A=shirt('dobby',fig,'crA'),T=await HOOK.asmCrTile1(A),N=await HOOK.asmCrTile1(shirt('dobby',plain,'crN')),NA=await HOOK.asmCrTile1(shirt('dobby',plain,'crN2'),true);
-      const lin=h=>hexRgb(h).map(v=>ASM_LIN[v]),base=lin(colOf(A)),n=T?T.TW*T.TH:0;let mx=0,mn=9,seam=0;
+      const lin=h=>HOOK.hexRgb(h).map(v=>HOOK.ASM_LIN[v]),base=lin(HOOK.colOf(A)),n=T?T.TW*T.TH:0;let mx=0,mn=9,seam=0;
       for(let k=0;k<n;k++){const v=T.t[3*k+1];if(v>mx)mx=v;if(v<mn)mn=v}
       // no seam: the step from the last column to the first (and row) is no larger than the largest step inside the tile
       let inner=0;if(T){const at=(x,y)=>T.t[3*(((y+T.TH)%T.TH)*T.TW+((x+T.TW)%T.TW))+1];for(let y=0;y<T.TH;y++)for(let x=0;x<T.TW-1;x++)inner=Math.max(inner,Math.abs(at(x+1,y)-at(x,y)));

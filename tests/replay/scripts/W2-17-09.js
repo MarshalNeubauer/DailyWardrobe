@@ -11,7 +11,7 @@ V.run(async () => {
   let t = ''; for (let i = 0; i < 120; i++) { await V.sleep(1000); t = await ph.page.evaluate(() => document.querySelector('#shop-sheet').innerText); if (/possible purchases compared/.test(t)) break }
   const occ = t.slice(t.indexOf('\nOccasions'));
   const funeral = (occ.match(/Funeral[\s\S]*?(?=\nNo jacket or tie|$)/) || [''])[0];
-  const suits = await ph.page.evaluate(() => items.filter(i => i.type === 'suit').map(i => i.name + ' (' + colName(i.primaryColor) + ', ' + i.pattern + ')'));
+  const suits = await ph.page.evaluate(() => HOOK.items.filter(i => i.type === 'suit').map(i => i.name + ' (' + HOOK.colName(i.primaryColor) + ', ' + i.pattern + ')'));
   const noDarkSuit = /No black, charcoal or navy suit for a funeral/.test(funeral);
   const metalsTwice = /different metals/.test(occ) && /metals differ/.test(occ);
   const second = (t.match(/[^\n]*\n(A second [^\n]*)/) || [null, null, null]);

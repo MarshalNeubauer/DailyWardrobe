@@ -23,16 +23,16 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await ctx.route('https://store.test/**',r=>r.abort('failed'));
   const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await p.goto(url);await p.waitForFunction(()=>window.appReady);
-  const photos=()=>p.evaluate(()=>queue.filter(q=>q.photo&&!q.busy).length);
-  const settle=n=>p.waitForFunction(n=>queue.filter(q=>q.photo&&!q.busy).length>=n||document.querySelector('#paste-status').textContent.length>0&&!/Fetching/.test(document.querySelector('#paste-status').textContent),n,{timeout:8000}).catch(()=>{});
+  const photos=()=>p.evaluate(()=>HOOK.queue.filter(q=>q.photo&&!q.busy).length);
+  const settle=n=>p.waitForFunction(n=>HOOK.queue.filter(q=>q.photo&&!q.busy).length>=n||document.querySelector('#paste-status').textContent.length>0&&!/Fetching/.test(document.querySelector('#paste-status').textContent),n,{timeout:8000}).catch(()=>{});
   const status=()=>p.textContent('#paste-status');
 
   // pasting an image (Ctrl+V) on another screen switches to Add and queues it
-  await p.evaluate(()=>show('today'));
+  await p.evaluate(()=>HOOK.show('today'));
   await p.evaluate(b64=>{const bin=Uint8Array.from(atob(b64),c=>c.charCodeAt(0)),dt=new DataTransfer();dt.items.add(new File([bin],'shot.png',{type:'image/png'}));
     document.body.dispatchEvent(new ClipboardEvent('paste',{clipboardData:dt,bubbles:true,cancelable:true}))},PNG.toString('base64'));
   await settle(1);
-  ok(!(await p.evaluate(()=>$('#add').hidden))&&(await photos())===1,'a pasted image opens Add and is queued with its photo');
+  ok(!(await p.evaluate(()=>HOOK.$('#add').hidden))&&(await photos())===1,'a pasted image opens Add and is queued with its photo');
   ok(await p.isVisible('#photo-url'),'the Add screen has a box for pasting a photo or link');
 
   // a link to an image on a site that allows downloads is fetched directly (no worker needed)
@@ -80,13 +80,13 @@ module.exports=async({ok,chromium,url,ROOT})=>{
   await settle(6);
   ok((await photos())===6,'a photo dropped on the app is queued');
   // pasting text into another field is left alone
-  await p.evaluate(()=>{openSettings('weather');const i=document.querySelector('#cfg-city')||document.querySelector('#settings-modal input[type=text]');const dt=new DataTransfer();dt.setData('text/plain','https://cors.test/x.png');
-    window.__def=!i.dispatchEvent(new ClipboardEvent('paste',{clipboardData:dt,bubbles:true,cancelable:true}));closeSettings()});
+  await p.evaluate(()=>{HOOK.openSettings('weather');const i=document.querySelector('#cfg-city')||document.querySelector('#settings-modal input[type=text]');const dt=new DataTransfer();dt.setData('text/plain','https://cors.test/x.png');
+    window.__def=!i.dispatchEvent(new ClipboardEvent('paste',{clipboardData:dt,bubbles:true,cancelable:true}));HOOK.closeSettings()});
   ok(!(await p.evaluate(()=>window.__def)),'pasting a link into another text field is not hijacked');
   // a queued pasted photo saves like an uploaded one
-  const n0=await p.evaluate(()=>items.length);
-  await p.evaluate(async()=>{const i=queue.findIndex(q=>q.photo&&!q.busy);setq(i,'type','tie');await save(i)   /* (an unread photo asks for its type first: add.js needType) */});
-  ok((await p.evaluate(()=>items.length))===n0+1&&(await p.evaluate(()=>!!items[items.length-1].photo)),'a pasted photo saves to the wardrobe with its photo');
+  const n0=await p.evaluate(()=>HOOK.items.length);
+  await p.evaluate(async()=>{const i=HOOK.queue.findIndex(q=>q.photo&&!q.busy);HOOK.setq(i,'type','tie');await HOOK.save(i)   /* (an unread photo asks for its type first: add.js needType) */});
+  ok((await p.evaluate(()=>HOOK.items.length))===n0+1&&(await p.evaluate(()=>!!HOOK.items[HOOK.items.length-1].photo)),'a pasted photo saves to the wardrobe with its photo');
   ok(errs.length===0,'no page errors ('+errs.join('; ')+')');
 
   // worker /fetch guards

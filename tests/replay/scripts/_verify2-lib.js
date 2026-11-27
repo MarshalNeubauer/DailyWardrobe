@@ -77,7 +77,8 @@ async function oldImport(ph, rows) {
 async function reopenNew(ph, url) {
   for (let i = 0; i < 4; i++) {
     await ph.reopen(url); await ph.ready(); await sleep(3500); await checkUrl(ph);
-    const pr = await ph.page.evaluate(() => typeof PLAN_RULES !== 'undefined' ? PLAN_RULES : null);
+    // the page may still be the 14 Nov app, which has no HOOK: there PLAN_RULES is its global (READS_KEPT in tests/bridge.test.js)
+    const pr = await ph.page.evaluate(() => window.HOOK ? ('PLAN_RULES' in HOOK ? HOOK.PLAN_RULES : null) : typeof PLAN_RULES !== 'undefined' ? PLAN_RULES : null);
     if (pr >= 15) return i + 1;   // 15 on aa24910; later builds bump it (20 on dw-v416), the 14 Nov app has less
   }
   throw new Error('today\'s app never took over');

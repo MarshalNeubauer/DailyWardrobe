@@ -24,60 +24,60 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));   // (WebKit's cut-off version check of sw.js is left out by tests/webkit.js)
     await p.goto(url);if(o.connect!==false)await p.evaluate(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','secret')},HOST);
     await p.reload();await p.waitForFunction(()=>window.appReady);o.p=p;o.errs=errs;return o};
-  const sync=d=>d.p.evaluate(()=>{clearTimeout(syncTimer);return syncNow()});
-  const stored=(d,store,k)=>d.p.evaluate(([s,k])=>txs(s,'readonly',x=>x.get(k)),[store,k]);
+  const sync=d=>d.p.evaluate(()=>{clearTimeout(HOOK.syncTimer);return HOOK.syncNow()});
+  const stored=(d,store,k)=>d.p.evaluate(([s,k])=>HOOK.txs(s,'readonly',x=>x.get(k)),[store,k]);
   try{
     const A=await device(),B=await device();
     await sync(A);await sync(B);
     // ---- CR-5-01: B marks a coming day formal (no record of it before: no field stamps); A, not having heard of it, locks that day (the
     // week's lock on a day with no record: lockOnly, base 0, no field stamps, a newer stamp). The merge keeps B's change, the older copy
-    const D=await A.p.evaluate(()=>{const T=todayDate();return isoKey(new Date(T.getFullYear(),T.getMonth(),T.getDate()+30))});
-    await B.p.evaluate(async d=>{await saveDay({date:d,formal:true},true)},D);
+    const D=await A.p.evaluate(()=>{const T=HOOK.todayDate();return HOOK.isoKey(new Date(T.getFullYear(),T.getMonth(),T.getDate()+30))});
+    await B.p.evaluate(async d=>{await HOOK.saveDay({date:d,formal:true},true)},D);
     await new Promise(r=>setTimeout(r,20));
-    await A.p.evaluate(async d=>{await saveDay({date:d,lock:{top:'s1',bot:'s1'},lockOnly:1,base:0},true,true)},D);
-    const a0=await A.p.evaluate(d=>({lockOnly:dayRecs[d].lockOnly,fs:!!dayRecs[d].fs,formal:!!dayRecs[d].formal}),D),b0=await B.p.evaluate(d=>({fs:!!dayRecs[d].fs,formal:!!dayRecs[d].formal}),D);
+    await A.p.evaluate(async d=>{await HOOK.saveDay({date:d,lock:{top:'s1',bot:'s1'},lockOnly:1,base:0},true,true)},D);
+    const a0=await A.p.evaluate(d=>({lockOnly:HOOK.dayRecs[d].lockOnly,fs:!!HOOK.dayRecs[d].fs,formal:!!HOOK.dayRecs[d].formal}),D),b0=await B.p.evaluate(d=>({fs:!!HOOK.dayRecs[d].fs,formal:!!HOOK.dayRecs[d].formal}),D);
     ok(a0.lockOnly===1&&!a0.fs&&!a0.formal&&b0.formal&&!b0.fs,`the case: B's formal day and A's newer lock of it, neither with field stamps (${JSON.stringify({a0,b0})})`);
     await sync(B);await sync(A);
-    const a1=await A.p.evaluate(d=>({formal:!!(dayRecs[d]&&dayRecs[d].formal),lockOnly:!!(dayRecs[d]&&dayRecs[d].lockOnly)}),D),a1s=await stored(A,'days',D);
+    const a1=await A.p.evaluate(d=>({formal:!!(HOOK.dayRecs[d]&&HOOK.dayRecs[d].formal),lockOnly:!!(HOOK.dayRecs[d]&&HOOK.dayRecs[d].lockOnly)}),D),a1s=await stored(A,'days',D);
     ok(a1.formal&&!a1.lockOnly&&a1s&&a1s.formal&&!a1s.lockOnly,`CR-5-01: the phone that locked the day takes the other phone's formal day, on screen and in storage (${JSON.stringify({mem:a1,stored:a1s&&{formal:!!a1s.formal,lockOnly:!!a1s.lockOnly}})})`);
     await sync(A);await sync(B);
     const srv=(await (await worker.fetch(new Request(HOST+'sync?lite=1',{headers:{'x-app-token':'secret'}}),env)).json()).days.find(d=>d.date===D);
-    const b1=await B.p.evaluate(d=>!!(dayRecs[d]&&dayRecs[d].formal),D);
-    ok(srv&&srv.formal&&b1&&(await A.p.evaluate(d=>!!dayRecs[d].formal,D)),'and the two phones and the backup agree on it afterwards');
+    const b1=await B.p.evaluate(d=>!!(HOOK.dayRecs[d]&&HOOK.dayRecs[d].formal),D);
+    ok(srv&&srv.formal&&b1&&(await A.p.evaluate(d=>!!HOOK.dayRecs[d].formal,D)),'and the two phones and the backup agree on it afterwards');
     // ---- an edit made while a sync is under way: B renames a piece; A takes it out of rotation after its sync has read its own copy and
     // while it waits for the backup. Both changes stay, on A at once and on B after the next syncs
-    const id=await A.p.evaluate(async()=>{const it={id:'jkt-1',type:'suit',primaryColor:'navy',pattern:'solid',added:nowMs()};await put(it);items.push(it);return it.id});
+    const id=await A.p.evaluate(async()=>{const it={id:'jkt-1',type:'suit',primaryColor:'navy',pattern:'solid',added:HOOK.nowMs()};await HOOK.put(it);HOOK.items.push(it);return it.id});
     await sync(A);await sync(B);
-    await B.p.evaluate(async id=>{const it=items.find(i=>i.id===id);it.name='Navy one';await put(it)},id);await sync(B);
+    await B.p.evaluate(async id=>{const it=HOOK.items.find(i=>i.id===id);it.name='Navy one';await HOOK.put(it)},id);await sync(B);
     A.hold={};A.hold.p=new Promise(r=>A.hold.go=r);
-    const run=A.p.evaluate(()=>{clearTimeout(syncTimer);return syncNow()});
+    const run=A.p.evaluate(()=>{clearTimeout(HOOK.syncTimer);return HOOK.syncNow()});
     for(let k=0;k<100&&!A.hold.waiting;k++)await new Promise(r=>setTimeout(r,50));
-    await A.p.evaluate(async id=>{const it=items.find(i=>i.id===id);it.paused=true;await put(it);clearTimeout(syncTimer)},id);
+    await A.p.evaluate(async id=>{const it=HOOK.items.find(i=>i.id===id);it.paused=true;await HOOK.put(it);clearTimeout(HOOK.syncTimer)},id);
     A.hold.go();A.hold=null;await run;
     const e1=await stored(A,'items',id);
     ok(!!A.hold===false&&e1&&e1.name==='Navy one'&&e1.paused===true,`an edit made during a sync is merged with what the sync brought, field by field: both the other phone's rename and this one's change stay (${JSON.stringify(e1&&{name:e1.name,paused:e1.paused})})`);
     await sync(A);await sync(B);
-    const e2=await B.p.evaluate(id=>{const i=items.find(x=>x.id===id);return i&&{name:i.name,paused:i.paused}},id);
+    const e2=await B.p.evaluate(id=>{const i=HOOK.items.find(x=>x.id===id);return i&&{name:i.name,paused:i.paused}},id);
     ok(e2&&e2.name==='Navy one'&&e2.paused===true,`and the other phone gets both after the next syncs (${JSON.stringify(e2)})`);
     // ---- CR-5-09 (Round C): two phones changing different settings at once. B sets Dark shirts and backs up; A changes Laundry days after
     // its sync has read its own copy and while it waits for the backup. The settings are written as the merge with what is stored, setting by
     // setting: A keeps both at once, in storage and in memory (by stamps alone A's newer copy was kept whole and B's setting not written)
-    await B.p.evaluate(async()=>{settings.darkShirts='often';await saveUserSettings();clearTimeout(syncTimer)});await sync(B);
+    await B.p.evaluate(async()=>{HOOK.settings.darkShirts='often';await HOOK.saveUserSettings();clearTimeout(HOOK.syncTimer)});await sync(B);
     A.hold={};A.hold.p=new Promise(r=>A.hold.go=r);
-    const srun=A.p.evaluate(()=>{clearTimeout(syncTimer);return syncNow()});
+    const srun=A.p.evaluate(()=>{clearTimeout(HOOK.syncTimer);return HOOK.syncNow()});
     for(let k=0;k<100&&!A.hold.waiting;k++)await new Promise(r=>setTimeout(r,50));
-    await A.p.evaluate(async()=>{settings.laundryDays=3;await saveUserSettings();clearTimeout(syncTimer)});
+    await A.p.evaluate(async()=>{HOOK.settings.laundryDays=3;await HOOK.saveUserSettings();clearTimeout(HOOK.syncTimer)});
     A.hold.go();A.hold=null;await srun;
-    const s1=await A.p.evaluate(async()=>{const s=await metaGet('settings');return {stored:[s.laundryDays,s.darkShirts],mem:[settings.laundryDays,settings.darkShirts]}});
+    const s1=await A.p.evaluate(async()=>{const s=await HOOK.metaGet('settings');return {stored:[s.laundryDays,s.darkShirts],mem:[HOOK.settings.laundryDays,HOOK.settings.darkShirts]}});
     ok(JSON.stringify(s1)==='{"stored":[3,"often"],"mem":[3,"often"]}',`CR-5-09: a setting changed during a sync and the other phone's setting both stay, stored and on screen (${JSON.stringify(s1)})`);
     await sync(A);await sync(B);
-    const s2=await B.p.evaluate(async()=>{const s=await metaGet('settings');return {stored:[s.laundryDays,s.darkShirts],mem:[settings.laundryDays,settings.darkShirts]}});
+    const s2=await B.p.evaluate(async()=>{const s=await HOOK.metaGet('settings');return {stored:[s.laundryDays,s.darkShirts],mem:[HOOK.settings.laundryDays,HOOK.settings.darkShirts]}});
     ok(JSON.stringify(s2)==='{"stored":[3,"often"],"mem":[3,"often"]}',`and the other phone gets both after the next syncs (${JSON.stringify(s2)})`);
     // the same with nothing changed during the sync: each phone's setting reaches the other, and the settings settle (no endless uploads)
-    await A.p.evaluate(async()=>{settings.laundryDays=2;await saveUserSettings();clearTimeout(syncTimer)});
-    await B.p.evaluate(async()=>{settings.darkShirts='never';await saveUserSettings();clearTimeout(syncTimer)});
+    await A.p.evaluate(async()=>{HOOK.settings.laundryDays=2;await HOOK.saveUserSettings();clearTimeout(HOOK.syncTimer)});
+    await B.p.evaluate(async()=>{HOOK.settings.darkShirts='never';await HOOK.saveUserSettings();clearTimeout(HOOK.syncTimer)});
     await sync(A);await sync(B);await sync(A);
-    const s3=await Promise.all([A,B].map(d=>d.p.evaluate(async()=>{const s=await metaGet('settings');return [s.laundryDays,s.darkShirts,s.updated]})));
+    const s3=await Promise.all([A,B].map(d=>d.p.evaluate(async()=>{const s=await HOOK.metaGet('settings');return [s.laundryDays,s.darkShirts,s.updated]})));
     const rev=async()=>(await (await worker.fetch(new Request(HOST+'sync?lite=1',{headers:{'x-app-token':'secret'}}),env)).json()).rev;
     const r0=await rev();await sync(A);await sync(B);const r1=await rev();
     ok(s3[0][0]===2&&s3[0][1]==='never'&&JSON.stringify(s3[0])===JSON.stringify(s3[1])&&r0===r1,`two phones changing different settings, one after the other: both keep both, the same copy, and further syncs save nothing (${JSON.stringify({s3,r0,r1})})`);
@@ -86,33 +86,33 @@ module.exports=async({ok,chromium,url,ROOT})=>{
     A.slow=150;A.most=0;
     const ov=await A.p.evaluate(async()=>{const f0=window.fetch;let n=0,most=0,runs=0;   // (each run starts with one GET ?lite=1; its requests are what can overlap)
       window.fetch=async(u,o)=>{if(!/\/sync(\?|$)/.test(String(u)))return f0(u,o);if(/[?&]lite=1/.test(String(u))&&!(o&&o.method&&o.method!=='GET'))runs++;n++;most=Math.max(most,n);try{return await f0(u,o)}finally{n--}};
-      try{const r=await Promise.all([1,2,3,4,5].map(()=>syncNow()));return {r,most,runs,syncing:HOOK.syncing}}finally{window.fetch=f0}});
+      try{const r=await Promise.all([1,2,3,4,5].map(()=>HOOK.syncNow()));return {r,most,runs,syncing:HOOK.syncing}}finally{window.fetch=f0}});
     A.slow=0;
     ok(ov.most===1&&ov.runs===2&&A.most===1&&ov.r.every(x=>x===true)&&!ov.syncing,`CR-5-04: five syncs asked for at once run one at a time, two runs in all, every caller told it went through (${JSON.stringify({...ov,getsAtOnce:A.most})})`);
     // ---- CR-5-06: a phone whose clock is an hour behind the server's: its last backup's time is the corrected one, as the server's times
     // it is compared with (syncWiped held its backups after a wipe)
     const C=await device({ahead:3600e3});await sync(C);
-    const c=await C.p.evaluate(()=>({last:+localStorage.getItem('last_sync')||0,now:Date.now(),skew:clockSkew}));
+    const c=await C.p.evaluate(()=>({last:+localStorage.getItem('last_sync')||0,now:Date.now(),skew:HOOK.clockSkew}));
     ok(Math.abs(c.skew-3600e3)<60000&&Math.abs(c.last-(c.now+3600e3))<60000,`CR-5-06: last_sync is stamped by the corrected clock (${Math.round((c.last-c.now)/6e4)} min from the phone's own, the gap ${Math.round(c.skew/6e4)} min)`);
     // ---- CR-5-15 (Round C): the other backup times by the corrected clock too: when the phone joined the account (kit.js compares it with
     // days' stamps), a change waiting (sync_wait) and a tester's 15 minutes (syncDue)
-    const t15=await C.p.evaluate(()=>{const was=acct;clearTimeout(syncTimer);HOOK.syncDue=0;localStorage.removeItem('sync_wait');localStorage.removeItem('sync_join');localStorage.removeItem('sync_mark');
-      HOOK.syncJoinMark(localStorage.getItem('app_token'));HOOK.acct={...acct,me:{role:'tester'}};
-      try{const tester=isTester();scheduleSync();return {tester,now:Date.now(),fixed:nowMs(),join:HOOK.syncJoinAt(),wait:+localStorage.getItem('sync_wait'),due:HOOK.syncDue}}finally{HOOK.acct=was;clearTimeout(syncTimer);HOOK.syncDue=0}});
+    const t15=await C.p.evaluate(()=>{const was=HOOK.acct;clearTimeout(HOOK.syncTimer);HOOK.syncDue=0;localStorage.removeItem('sync_wait');localStorage.removeItem('sync_join');localStorage.removeItem('sync_mark');
+      HOOK.syncJoinMark(localStorage.getItem('app_token'));HOOK.acct={...HOOK.acct,me:{role:'tester'}};
+      try{const tester=HOOK.isTester();HOOK.scheduleSync();return {tester,now:Date.now(),fixed:HOOK.nowMs(),join:HOOK.syncJoinAt(),wait:+localStorage.getItem('sync_wait'),due:HOOK.syncDue}}finally{HOOK.acct=was;clearTimeout(HOOK.syncTimer);HOOK.syncDue=0}});
     const near=v=>Math.abs(v-t15.fixed)<60000;
     ok(t15.tester&&near(t15.join)&&near(t15.wait)&&near(t15.due)&&t15.fixed-t15.now>3000e3,`CR-5-15: sync_join, sync_wait and syncDue by the corrected clock (minutes from it: ${['join','wait','due'].map(k=>Math.round((t15[k]-t15.fixed)/6e4)).join(', ')}; the phone's own clock ${Math.round((t15.now-t15.fixed)/6e4)})`);
     // ---- CR-5-03: Restore file, on a phone without a connection: a piece deleted after the file was saved stays deleted (a restore
     // merges), and the message names it
     const E=await device({connect:false});
-    await E.p.evaluate(async()=>{for(const [id,type,c,name] of [['r1','tie','burgundy','Burgundy tie'],['r2','tie','navy','Navy tie'],['r3','shirt','white','White shirt']]){const it={id,type,primaryColor:c,pattern:'solid',name,added:nowMs()};await put(it);items.push(it)}});
-    await E.p.evaluate(()=>openSettings('backup'));
+    await E.p.evaluate(async()=>{for(const [id,type,c,name] of [['r1','tie','burgundy','Burgundy tie'],['r2','tie','navy','Navy tie'],['r3','shirt','white','White shirt']]){const it={id,type,primaryColor:c,pattern:'solid',name,added:HOOK.nowMs()};await HOOK.put(it);HOOK.items.push(it)}});
+    await E.p.evaluate(()=>HOOK.openSettings('backup'));
     const [dl]=await Promise.all([E.p.waitForEvent('download'),E.p.click('#sp-backup button[data-act="backupSaveTap"]')]);
     const file=path.join(require('os').tmpdir(),'dw-syncwrite-'+process.pid+'.json');await dl.saveAs(file);
-    await E.p.evaluate(async()=>{closeSettings();await del('r1');HOOK.items=items.filter(i=>i.id!=='r1')});
-    await E.p.evaluate(()=>openSettings('backup'));
+    await E.p.evaluate(async()=>{HOOK.closeSettings();await HOOK.del('r1');HOOK.items=HOOK.items.filter(i=>i.id!=='r1')});
+    await E.p.evaluate(()=>HOOK.openSettings('backup'));
     await E.p.setInputFiles('#sp-backup input[type=file]',file);
     await E.p.waitForFunction(()=>/Restored/.test(document.querySelector('#toast').textContent),null,{timeout:8000}).catch(()=>{});
-    const t=await E.p.evaluate(()=>({toast:document.querySelector('#toast').textContent,n:items.length}));try{fs.unlinkSync(file)}catch{}
+    const t=await E.p.evaluate(()=>({toast:document.querySelector('#toast').textContent,n:HOOK.items.length}));try{fs.unlinkSync(file)}catch{}
     ok(t.n===2&&/Restored\. Your wardrobe now has 2 items\./.test(t.toast)&&/1 piece in the file stayed deleted/.test(t.toast)&&/“Burgundy tie”/.test(t.toast),`CR-5-03: Restore file says which piece in the file stayed deleted (${t.toast})`);
     ok([A,B,C,E].every(d=>!d.errs.length),'no page errors ('+[A,B,C,E].flatMap(d=>d.errs).join('; ')+')');
   }finally{await browser.close()}

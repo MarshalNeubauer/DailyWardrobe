@@ -21,11 +21,11 @@ module.exports=async({ok,chromium,url,settle})=>{
       const J=c=>c.toDataURL('image/jpeg',.9);
       return {plain:J(cv(ci,3)),paper:J(cv(ci,3,paper)),photo:J(cv(pi,1)),warmPhoto:J(cv(pi,1,warm))}});
     const file=(name,u)=>({name,mimeType:'image/jpeg',buffer:Buffer.from(u.split(',')[1],'base64')});
-    let e=await p.evaluate(async F=>{const c=async u=>closeRead(await HOOK.urlCanvas(u)).ref,g=async u=>wbRead(await HOOK.urlCanvas(u)).gains;const w=await g(F.warmPhoto),n=await g(F.photo);
+    let e=await p.evaluate(async F=>{const c=async u=>HOOK.closeRead(await HOOK.urlCanvas(u)).ref,g=async u=>HOOK.wbRead(await HOOK.urlCanvas(u)).gains;const w=await g(F.warmPhoto),n=await g(F.photo);
       return {plain:await c(F.plain),paper:await c(F.paper),warm:w&&+(w.b/w.r).toFixed(3),cool:n?+(n.b/n.r).toFixed(3):null}},F);
     ok(!e.plain&&e.paper&&e.warm>=PAPER_WARM_T&&!(e.cool>=PAPER_WARM_T),`the fixtures: paper found only with the band; the warm photo reads warm, the plain one doesn't (${JSON.stringify(e)})`);
     await p.evaluate(F=>{HOOK.rememberRole({role:'owner'});HOOK.items=[{id:'m1',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:F.photo,texture:F.plain,added:1,name:'Mink suit'},
-      {id:'k1',type:'shoes',primaryColor:'black',leather:'calf',photo:F.photo,added:2}];HOOK.flt='all';HOOK.editing=null;show('wardrobe');openItem('m1')},F);await settle(p,400);
+      {id:'k1',type:'shoes',primaryColor:'black',leather:'calf',photo:F.photo,added:2}];HOOK.flt='all';HOOK.editing=null;HOOK.show('wardrobe');HOOK.openItem('m1')},F);await settle(p,400);
     // ---- the hint: "True color in 3 steps", one button with three small drawings
     e=await p.evaluate(()=>{const h=document.querySelector('#item-view .wbstcard'),b=h&&h.querySelector('.wbpic'),r=b&&b.getBoundingClientRect(),cr=h&&h.getBoundingClientRect();
       return {tag:h&&h.tagName,text:h&&[...h.querySelectorAll('.eb,.more,.li,.arr')].map(x=>x.textContent.replace(/\s+/g,' ').trim()).join(' '),hh:cr&&Math.round(cr.height),pics:h&&h.querySelectorAll('.wbpic').length,cam:!!(h&&h.querySelector('.cam svg')),tap:!!(h&&h.querySelector('.tap')),
@@ -39,23 +39,23 @@ module.exports=async({ok,chromium,url,settle})=>{
     await p.click('#kitsheet .kit-body .linkbtn');await settle(p,300);await p.waitForSelector('#kitsheet.on');
     ok(await p.evaluate(()=>document.querySelector('#kit-title').textContent==='A good close-up'),'the tip\'s "Tips for a good close-up" opens the guide');
     await p.click('#kitsheet .kit-x');await settle(p,200);
-    ok(await p.evaluate(()=>{openItem('k1');const none=!document.querySelector('#item-view .wbstcard');openItem('m1');return none}),'no hint for an item without a close-up (shoes)');
+    ok(await p.evaluate(()=>{HOOK.openItem('k1');const none=!document.querySelector('#item-view .wbstcard');HOOK.openItem('m1');return none}),'no hint for an item without a close-up (shoes)');
     await settle(p,300);
     // ---- after Replace close-up
-    const replace=async(name,u,sel='#item-view .phtools label.pt-closeup input')=>{const h=await p.$(sel);await p.evaluate(()=>{const l=document.querySelector('#ivwb');if(l)l.dataset.old='1';phEdit.paper=null});   // (the old line is marked, not removed: Retake's field is inside it, and a field off the page reaches no data-act handler)
+    const replace=async(name,u,sel='#item-view .phtools label.pt-closeup input')=>{const h=await p.$(sel);await p.evaluate(()=>{const l=document.querySelector('#ivwb');if(l)l.dataset.old='1';HOOK.phEdit.paper=null});   // (the old line is marked, not removed: Retake's field is inside it, and a field off the page reaches no data-act handler)
       await h.setInputFiles(file(name,u));
-      await p.waitForFunction(()=>{const it=items.find(x=>x.id==='m1');return it.texture&&phEdit.paper===texSig(it.texture)&&!!document.querySelector('#ivwb:not([data-old])')})};
+      await p.waitForFunction(()=>{const it=HOOK.items.find(x=>x.id==='m1');return it.texture&&HOOK.phEdit.paper===HOOK.texSig(it.texture)&&!!document.querySelector('#ivwb:not([data-old])')})};
     const line=()=>p.evaluate(()=>{const l=document.querySelector('#ivwb');return {cls:l.className,text:l.textContent,retake:!!l.querySelector('label.wbretake input[type=file]'),under:!!l.closest('#ivct')&&!!l.nextElementSibling&&l.nextElementSibling.classList.contains('wbsteps')}});
     await replace('paper.jpg',F.paper);e=await line();
     ok(/\bok\b/.test(e.cls)&&/White paper found/.test(e.text)&&/Colors set from it\./.test(e.text)&&!e.retake&&e.under,'a close-up with paper: "White paper found · Colors set from it." at the top of the Color & texture card, over the 3 steps');
     await replace('plain.jpg',F.plain);e=await line();
     ok(/\bno\b/.test(e.cls)&&/^!No white paperColors may be off\./.test(e.text)&&e.retake,`no paper: "No white paper · Colors may be off." with Retake close-up (${e.text})`);
-    await p.evaluate(F=>{const it=items.find(x=>x.id==='m1');it.photo=F.warmPhoto;delete it.photoSm;renderWardrobe()},F);await settle(p,600);   // (the redraw that follows replaces the field: a file set on the old one, no longer on the page, reaches no data-act handler)
+    await p.evaluate(F=>{const it=HOOK.items.find(x=>x.id==='m1');it.photo=F.warmPhoto;delete it.photoSm;HOOK.renderWardrobe()},F);await settle(p,600);   // (the redraw that follows replaces the field: a file set on the old one, no longer on the page, reaches no data-act handler)
     await replace('plain2.jpg',F.plain);e=await line();
     ok(/No white paper, and the light looks warm/.test(e.text)&&/Colors may come out yellower than the cloth\./.test(e.text)&&e.retake,'no paper and a warm photo: the warm wording, with Retake close-up');
     await replace('retake.jpg',F.paper,'#ivwb input[type=file]');e=await line();
     ok(/White paper found/.test(e.text),'Retake close-up from the line takes a new close-up (paper found)');
-    ok(await p.evaluate(()=>!items[0].paperRef&&!('paper' in items[0])),'nothing new is stored on the item');
+    ok(await p.evaluate(()=>!HOOK.items[0].paperRef&&!('paper' in HOOK.items[0])),'nothing new is stored on the item');
     await p.evaluate(()=>{const b=[...document.querySelectorAll('#toast.on button')].find(x=>x.textContent==='Undo');b.click()});await settle(p,300);
     ok(await p.evaluate(()=>!document.querySelector('#ivwb')),'the toast’s Undo (an older close-up) hides the line');
     // ---- 390 px, both themes

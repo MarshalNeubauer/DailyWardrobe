@@ -616,6 +616,15 @@ const READS_KEPT={
   'tools/fill-material.js':['itemFields'],   // S6t2: not the page's: the string handed to Function declares itemFields (core.js's text) and returns it
   /* S6t3: its old phone runs 26cd8b1, 7a28f96 and c4a549b (RP.old), which have no HOOK; today's phone reads them through HOOK */
   'tests/replay/scripts/CR-6-12.js':['items','syncNow','syncRun'],
+  /* S6t4: phone P runs the 15 Nov c4a549b app (no HOOK) and Q today's: sync() and rules() read HOOK when the page has one, else
+     these globals; P's Add steps and setLaundry run on the old app alone */
+  'tests/replay/scripts/W1-4-01.js':['PLAN_RULES','items','metaGet','openSettings','queue','settings','syncNow','syncRun','syncing'],
+  /* S6t4: oldAddCards runs on the 14 Nov 7a28f96 app (no HOOK); reopenNew reads PLAN_RULES bare only while the page is still that app */
+  'tests/replay/scripts/_verify2-lib.js':['PLAN_RULES','items','queue','settings'],
+  /* S6t4: the 14 Nov import's result is read on that app (7a28f96, no HOOK), before the update */
+  'tests/replay/scripts/W1-2-01.js':['items'],
+  /* S6t4: origin/main's draw.js run in a scope of its own (new Function): the two names are that source's own declarations, not the page's */
+  'tests/garmentdraw.test.js':['itemThumb','swatchSVG'],
 };
 /* the names a test also uses on an older build, which has no HOOK (T2 phase 3): they stay globals there, so --to-hook leaves them */
 const OLD_BUILD=new Set(['syncing','kitEdited','asmCmMf','asmCmCodeSig','asmCmSig','asmCmSrcSig']);
