@@ -33,7 +33,8 @@ async function runPart(part,{ok,engines,url,settle}){
   const order=withSrc.map(srcOf);
   ok(order.indexOf('back.js')===order.indexOf('app.js')+1&&order.indexOf('act.js')===order.indexOf('back.js')+1&&order.indexOf('locale.js')>order.indexOf('act.js')&&order.indexOf('locale.js')<order.indexOf('settings.js')&&isMod(withSrc[order.indexOf('back.js')])&&isMod(withSrc[order.indexOf('locale.js')])&&!modTags.some(t=>/^merge\.js$/.test(srcOf(t)))&&modTags.some(t=>/^srgb\.js$/.test(srcOf(t))),
     'back.js and locale.js are modules with a tag each, where they always were in the list (back.js between app.js and act.js, locale.js before settings.js); merge.js, which the server imports, is not a module (srgb.js is one since C3, with asm-worker.js a module worker)');
-  ok(/<script type="module">startUp\(\)<\/script>\s*<\/body>/.test(html)&&inline.filter(t=>/module/.test(t)).length===1,'startUp() is the page\'s last script, an inline module: it runs after every deferred script');
+  // (all or nothing, A1: the entry imports every page file, then calls startUp(); tests/retry.test.js checks its list and what it stops)
+  ok(/<script type="module">[^<]*if\(self\.DW_MERGE\)\{window\.dwEntry=1;startUp\(\)\}<\/script>\s*<\/body>/.test(html)&&inline.filter(t=>/module/.test(t)).length===1,'startUp() is called by the page\'s last script, an inline module (the entry): it runs after every deferred script');
   const headTags=[...head.matchAll(/<script\b([^>]*)>/g)].map(m=>m[1]);
   ok(headTags.length===3&&headTags.every(t=>t.trim()==='')&&/localStorage\.getItem\("theme"\)/.test(head)&&/--tscale/.test(head)&&/start-fail/.test(head),
     'the head\'s three scripts (the saved theme, the text size, the start-up catcher) are plain inline scripts: they run before the first paint');
@@ -197,6 +198,11 @@ async function survey(eng,browser,{ok,url,C,page,imports,ord,files,cases}){
       for(let k=0;k<3;k++)try{const r=await route.fetch({timeout:30000});const body=await r.text();await route.fulfill({response:r,body:body+`\n;(globalThis.__ran||(globalThis.__ran=[])).push(${JSON.stringify(f)});\n`});return}catch(e){}
       ctx.unmarked.add(f);await route.continue().catch(()=>{})})}
     if(fail)await ctx.route(u=>u.href.startsWith(origin)&&u.pathname==='/'+fail,route=>route.fulfill({status:404,contentType:'text/plain',body:''}));
+    // the gate off (all or nothing, A1): the page's entry imports every page file, so any 404 now stops start-up (tests/retry.test.js);
+    // this survey keeps checking what each file's 404 takes down with the entry as it was (startUp() alone), as long as the per-feature
+    // code it measures is there (A2 shrinks the survey)
+    await ctx.route(u=>u.href.startsWith(origin)&&(u.pathname==='/index.html'||u.pathname==='/'),async route=>{const r=await route.fetch();const body=(await r.text()).replace(/<script type="module">[^<]*if\(self\.DW_MERGE\)\{window\.dwEntry=1;startUp\(\)\}<\/script>/,'<script type="module">window.dwEntry=1;startUp()</script>');
+      await route.fulfill({response:r,body})});
     if(swap)await ctx.route(u=>u.href.startsWith(origin)&&u.pathname==='/'+swap.f,route=>route.fulfill({status:200,contentType:'text/javascript',body:swap.body+`\n;(globalThis.__ran||(globalThis.__ran=[])).push(${JSON.stringify(swap.f)});\n`}));
     await ctx.addInitScript(()=>{self.ASM_CM_SIZE=512});await ctx.clock.setFixedTime(DAY);return ctx};
   // the seeded wardrobe, the masters' keys and the server address, once: every case starts from this stored state
@@ -323,7 +329,7 @@ async function run(eng,browser,{ok,url,settle}){
   // refuse one never see it (on Linux from the second load on; on Windows the test server's 404 for `./` failed sw.js's install)
   const open=async(opt={},init)=>{const ctx=await browser.newContext({viewport:{width:402,height:874},hasTouch:true,isMobile:eng==='Chromium',serviceWorkers:'block',...opt});
     await ctx.route(u=>!u.href.startsWith(origin)&&/^https?:/.test(u.href),route=>route.fulfill({status:503,headers:{'content-type':'application/json','access-control-allow-origin':'*'},body:'{"error":"server"}'}));
-    await ctx.addInitScript(()=>{try{localStorage.setItem('tour_seen','1')}catch(e){}});if(init)await ctx.addInitScript(init);
+    await ctx.addInitScript(()=>{window.DW_RETRY_NOW=true;try{localStorage.setItem('tour_seen','1')}catch(e){}});if(init)await ctx.addInitScript(init);   // (DW_RETRY_NOW: the start-up catcher's one reload comes at once)
     const c={ctx,held:'',hold:null,let:()=>{},refuse:null,errs:[]};
     // one script waits for the test (held), or is answered with something else (refuse: {name: {status, body}})
     await ctx.route(u=>u.href.startsWith(origin)&&/\.js$/.test(u.pathname),async route=>{const name=new URL(route.request().url()).pathname.slice(1);
@@ -399,9 +405,10 @@ async function run(eng,browser,{ok,url,settle}){
   // a script that doesn't parse (what a failed import is to a module graph), early in the list: start-up can't finish
   k=await fail({'core.js':{body:'const broken=;'}},()=>!!document.querySelector('#start-fail'),12000);
   ok(k&&/couldn’t start/.test(k.text)&&k.btn,T+`core.js doesn't parse: start-up can't get anywhere, and the same card says so a few seconds after the page has loaded (${k?'shown':'not shown'})`);
-  // a late script missing: the app starts without that feature, and no card
-  k=await fail({'about.js':{status:404}},()=>window.appReady);await wait(5200);k=await card();
-  ok(!k&&await shown(c)==='today'&&await c.p.evaluate(()=>window.appReady&&HOOK.items.length===3&&document.querySelector('#today').children.length>0),T+'about.js can\'t be loaded: the app still starts on Today with its wardrobe, and no start-up card covers it');
+  // a late script missing: all or nothing (A1, the owner's decision of 2026-11-28): the entry imports it too, so the app doesn't start
+  // and the card says so (after the catcher's one reload: tests/retry.test.js), the stored wardrobe untouched
+  k=await fail({'about.js':{status:404}},()=>!!document.querySelector('#start-fail'),12000);
+  ok(k&&/The app couldn’t start\./.test(k.text)&&k.btn&&await c.p.evaluate(()=>!window.appReady&&!window.startBusy)&&await stored()==='ml-shirt,ml-suit,ml-tie',T+`about.js can't be loaded: all or nothing, start-up never runs and the start-up card says so, the stored wardrobe untouched (${k?'shown':'not shown'})`);
   // act.js missing: settings.js and start.js (required) import acts since the restructure S5d and S5e, so the graph doesn't link and the start-up card shows
   // (the owner's choice (c), 2026-11-25: act.js counts as required; before, Today was drawn down to its month box)
   k=await fail({'act.js':{status:404}},()=>!!document.querySelector('#start-fail'),12000);

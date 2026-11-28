@@ -8,7 +8,7 @@
    A request sent with cache:'no-store' is left to the network (about.js checks for a newer sw.js that way).
    Cross-origin requests (the AI worker, weather) are never cached. Caches named dw-keep-* hold the app's own data
    (the sharp tagging copies, tag-request.js) and survive updates. */
-const CACHE='dw-v555';
+const CACHE='dw-v556';
 const ASSETS=['./','index.html','styles.css','merge.js','bus.js','core.js','planner.js','analysis.js','analysis-worker.js','detect.js','srgb.js','photo-keys.js','mannequin.js','mq/vest.js','mq/suit.js','mq/suit-open.js','mq/shirt-tie.js','mq/shirt-open.js','draw.js','app.js','days.js','back.js','act.js','add.js','add-ids.js','fields.js','look-base.js','add-paste.js','add-card.js','add-more.js','add-sheet.js','add-save.js','add-keep.js','item-photo.js','item-view.js','itemsheet.js','history.js','missed.js','locks.js','pickscore.js','scorecard.js','today-plan.js','today.js','today-photofold.js','today-picture.js','today-gestures.js','month.js','photos.js','locale.js','settings.js','daysoff.js','weather.js','toast.js','who.js','theme.js','start.js','nav.js','ui.js','safety.js','dress.js','tag-request.js','migrate.js','measure.js','tagging.js','own-lists.js','pattern-read.js','asm-keys.js','assemble.js','asm-color.js','asm-watch.js','asm-pocket.js','asm-kinds.js','asm-ocp.js','asm-look.js','asm-cm-job.js','asm-today.js','asm-cm-page.js','watch/suit.png','watch/vest.png','watch/shirt-tie.png','watch/shirt-open.png','watch/leather.jpg','asm-gl.js','asm-worker.js','stats.js','care.js','cost.js','fav.js','wardrobe.js','colpick.js','checklist.js','look.js','pack.js','shop.js','sync-status.js','sync.js','sync-photos.js','snapshots.js','backupfile.js','account.js','remind.js','setup.js','kit.js','calendar.js','calparse.js','cal-worker.js','about.js','sw.js','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png'];
 // cache:'no-cache' revalidates each file with the server (ETag / Last-Modified): an unchanged file comes back as a small 304 instead of
 // being downloaded in full on every release ('reload' fetched all of them, about 1 MB, and twice on a first visit) (audit 2026-11-13)
@@ -19,7 +19,22 @@ sw.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAl
 sw.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE&&!k.startsWith('dw-keep-')).map(k=>caches.delete(k)))).then(()=>sw.clients.claim()))});
 sw.addEventListener('message',e=>{const d=e.data||{};
   if(d.type==='skipWaiting')sw.skipWaiting();
-  else if(d.type==='version'&&e.ports&&e.ports[0])e.ports[0].postMessage({version:+CACHE.replace(/\D+/g,'')||null})});
+  else if(d.type==='version'&&e.ports&&e.ports[0])e.ports[0].postMessage({version:+CACHE.replace(/\D+/g,'')||null});
+  else if(d.type==='refresh'&&e.ports&&e.ports[0]){const port=e.ports[0];e.waitUntil(refresh().then(r=>port.postMessage(r),()=>port.postMessage({ok:false})))}});
+/* {type:'refresh'} (index.html's start-up catcher, after a page file failed: all or nothing, A1, 2026-11-28): is a newer version
+   published? -> {newer:true}, and the page takes it (registration.update, skipWaiting). Else this version's files again, past every
+   cache (cache:'reload'), into CACHE+'-r'; only when every one arrived are they copied over this version's cache, so a cache stored
+   with a mix during a deploy is mended, and offline (or a file still missing) the cache stays as it was -> {ok}. A release that changes
+   a file bumps CACHE (tests/assets.test.js), so the network's files under the same CACHE are this version's. */
+const verOf=s=>+String(s).replace(/\D+/g,'')||0;
+async function refresh(){
+  let latest=null;try{const r=await fetch('sw.js?check='+Date.now(),{cache:'no-store'});const m=r.ok&&/const CACHE='([^']+)'/.exec(await r.text());if(m)latest=m[1]}catch{}
+  if(latest&&verOf(latest)>verOf(CACHE))return {newer:true};
+  const tmp=CACHE+'-r';
+  try{const c=await caches.open(tmp);await c.addAll(ASSETS.map(u=>new Request(u,{cache:'reload'})));
+    const main=await caches.open(CACHE);for(const q of await c.keys()){const r=await c.match(q);if(r)await main.put(q,r)}
+    await caches.delete(tmp);return {ok:true}}
+  catch{await caches.delete(tmp).catch(()=>{});return {ok:false}}}
 sw.addEventListener('fetch',e=>{
   const req=e.request,url=new URL(req.url);
   if(req.method!=='GET'||url.origin!==location.origin||req.cache==='no-store')return;   // let the browser handle it

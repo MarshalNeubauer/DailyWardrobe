@@ -95,6 +95,8 @@ export interface Sockets {
   'lock-upcoming': typeof import('../locks.js').lockUpcoming;
   /** a toast (toast.js toast), for app.js, which loads before it (the restructure S6f) (toast.js) */
   'toast': typeof import('../toast.js').toast;
+  /** a file that failed once the app is running: the toast with Reload (toast.js loadFailed; all or nothing, A1), for assemble.js, a painting-worker file, which imports only the painter's (toast.js) */
+  'load-failed': typeof import('../toast.js').loadFailed;
   /** a plain notice (ui.js tell), for app.js, which loads before it (the restructure S6f) (ui.js) */
   'tell': typeof import('../ui.js').tell;
   /** whether a piece's pattern can be read, for Painted plain (readable; the painter may not import the Add group) (pattern-read.js) */

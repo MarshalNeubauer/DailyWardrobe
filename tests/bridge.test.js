@@ -430,6 +430,7 @@ const GLOBALS={
   startUp:'index.html: its last script calls it; the start-up catcher looks for window.startUp',
   appReady:'start.js sets it when start-up is done: index.html\'s start-up catcher and the tests wait for it',
   startBusy:'start.js sets it while start-up runs: index.html\'s start-up catcher waits for it',
+  dwLoad:'index.html\'s start-up catcher puts it on window (refresh, reload; all or nothing, A1): toast.js loadFailed fetches the app\'s files afresh and reloads through it',
   // the painter's drawings (mannequin.js and its pose files put them on self; draw.js reads the two functions): files the painting worker
   // and lab/gl-bench.html load too
   outfitMannequinSvg:'mannequin.js puts it on self: draw.js draws the figure with it',

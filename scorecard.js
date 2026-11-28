@@ -17,6 +17,7 @@ import {canPick,pickItem,slotLabel} from './history.js';
 import {swatchSVG} from './draw.js';
 import {acts} from './act.js';
 import {ask,served} from './bus.js';
+import {loadFailed} from './toast.js';
 import {boxFold,boxUnfold} from './ui.js';
 let scoreOpen=false;
 const dialTone=v=>v>=80?'good':v>=60?'ok':'low';
@@ -46,7 +47,7 @@ function rankWorker(){if(rankW!==null)return rankW||null;
   try{rankW=new Worker('analysis-worker.js',{type:'module'})}catch(e){rankW=false;return null}
   rankW.onmessage=e=>{const d=e.data||{},w=rankWait.get(d.rank);if(!w)return;rankWait.delete(d.rank);if(d.res)w.done(d.res);else{console.warn('rank: '+d.error);w.done(null)}};
   // a worker that fails: the asks still waiting are worked out here instead, and the next ones too
-  rankW.onerror=e=>{if(!(e instanceof ErrorEvent)&&served('err-note'))ask('err-note',new Error('The background check (analysis-worker.js) didn\u2019t start: it or a file it imports didn\u2019t load'));   // (a load failure is a plain Event the page's error listener never hears: noted here, as main's classic worker's was)
+  rankW.onerror=e=>{if(!(e instanceof ErrorEvent)){if(served('err-note'))ask('err-note',new Error('The background check (analysis-worker.js) didn\u2019t start: it or a file it imports didn\u2019t load'));loadFailed()}   // (a load failure is a plain Event the page's error listener never hears: noted here, as main's classic worker's was)
   rankW=false;const left=[...rankWait.values()];rankWait.clear();for(const w of left)setTimeout(()=>{try{w.done(rankLooks(w.P,w.o))}catch(e){w.done(null)}},30)};
   return rankW}
 function rankFor(o){if(!o||!hasOutfit(o))return null;if(window.TEST_PLAN)return TEST_PLAN.rank(o);const k=outfitKey(o);

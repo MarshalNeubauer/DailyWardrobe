@@ -35,8 +35,12 @@ function startFailed(e){console.warn(e);
     setTimeout(()=>toast('Something went wrong while the app was starting. Your wardrobe is safe on this phone: nothing was deleted. Close the app fully and open it again; if this keeps happening, tell us in Settings → About → Feedback.',15000),0)}
   setPagesOn(true);setPageWant(null);setWanted();   // (a failed start-up stays on Today, where its message is)
   try{show('today')}catch(e2){console.warn(e2);if(startRead)need('after-scripts',()=>ask('err-note',e2,'Start-up: Today'));startPlain()}
-  window.appReady=true;need('after-scripts',()=>ask('storage-down',e));
+  window.appReady=true;retryDone();need('after-scripts',()=>ask('storage-down',e));
   if(startRead)need('after-scripts',()=>{try{ask('safety-start')}catch(x){console.warn(x)}})}   // (Add's unsaved cards come back, the error report goes)
+/* the start-up catcher's retry (index.html, all or nothing, A1): once the app is ready its stamp goes, so a later failed start gets its own
+   one reload, and so does the address's ?dwretry= mark (the hash, an invitation's, stays; so does the history entry's state) */
+function retryDone(){try{sessionStorage.removeItem('dw_retry')}catch{}
+  try{if(/[?&]dwretry=/.test(location.search)){const u=new URL(location.href);u.searchParams.delete('dwretry');history.replaceState(history.state,'',u.pathname+u.search+u.hash)}}catch{}}
 /* Today couldn't be drawn: a plain card says so, with Try again */
 function startPlain(){const t=$('#today');if(!t)return;for(const s of PAGES){const el=$('#'+s);if(el)el.hidden=s!=='today'}
   t.innerHTML='<div class="mbox"><p><b>Today couldn’t be shown.</b></p><p class="shelp">Your wardrobe is safe on this phone: nothing was deleted.</p><div class="sactions"><button type="button" data-act="reloadTap">Try again</button></div></div>'}
@@ -64,7 +68,7 @@ function startChecks(){const P=slotsOf('start-checks');Promise.resolve(P.checkPl
   need('when-pulled',()=>P.kitSampleMigrate?.())}
 /* after Today is drawn: the setup, the weather and holidays, the kept photos (then appReady) and the photo fix-ups, the safety checks */
 function startJobs(){const P=slotsOf('start-jobs');need('after-scripts',()=>P.setupStart?.());ask('weather-load');need('after-scripts',()=>P.refreshHolidays?.());   // (without setup.js, weather.js or daysoff.js start-up goes on: the restructure S6h)
-  need('renders-load').then(()=>/** @type {any} */(need('asm-live')?P.asmLoad?.():0)).then(()=>{need('after-dom',()=>{window.appReady=true});if(need('asm-live'))need('after-scripts',()=>P.asmSync?.());if(Object.keys(need('renders')).length&&!$('#today').hidden)refreshToday();
+  need('renders-load').then(()=>/** @type {any} */(need('asm-live')?P.asmLoad?.():0)).then(()=>{need('after-dom',()=>{window.appReady=true;retryDone()});if(need('asm-live'))need('after-scripts',()=>P.asmSync?.());if(Object.keys(need('renders')).length&&!$('#today').hidden)refreshToday();
     need('item-backdrops-fix').then(n=>{if(n&&!$('#today').hidden)refreshToday()});
     need('when-pulled',()=>need('tex-swatches').then(n=>{if(n&&!$('#today').hidden)refreshToday()}));
     need('when-pulled',()=>runHooksSeq('after-pull-fixups'));   // (migrate.js's recolor, close-ups, photos and backdrops, then item-photo.js's small photos: load order, one after another)

@@ -13,18 +13,47 @@
    get to say "something went wrong, your wardrobe is safe" (startFailed). This plain script, which needs no other, hears a script that
    didn't load and every error nobody caught before the app is ready; if Today is still empty some seconds later, or startUp is
    missing once the scripts have run, it says so itself in Today's place, with Try again, and notes it for the error report
-   (localStorage err_log, safety.js's list). Nothing is deleted or written to the wardrobe. A start-up that does come overwrites it. */(function(){var w=window,why=[],timer=0,WAIT=4000,waited=0;
-function card(){timer=0;var t=document.getElementById("today");if(!t||w.appReady||t.firstChild||document.getElementById("nostore"))return;
+   (localStorage err_log, safety.js's list). Nothing is deleted or written to the wardrobe. A start-up that does come overwrites it.
+   All or nothing (A1, the owner's decision of 2026-11-28): the page's last script, the entry, imports every page file, so when any one
+   can't be loaded, doesn't parse or link, or throws as it runs, the entry never runs and window.dwEntry is missing once the page is
+   parsed (DOMContentLoaded: every module has run or failed by then; merge.js, the one classic script, counts by its DW_MERGE). The first
+   time, the app's files are fetched afresh (with sw.js in control its {type:'refresh'}: this version's files again, or a newer version
+   published meanwhile, taken at once, the owner's O2; with none, each file past the browser's cache) and the page reloads once, about
+   1.5 s after the failure. sessionStorage dw_retry holds when (one automatic reload per tab every 2 minutes; where sessionStorage can't
+   be written the address carries ?dwretry=, which no module's address has); start.js clears both once the app is ready. A failure
+   within those 2 minutes shows the card at once; its Try again refreshes and reloads the same way, never by itself. Errors after the
+   entry ran keep the 4 s rule. window.dwLoad is for a file that fails later (a worker, the calendar's lazy import: toast.js loadFailed):
+   refresh() in the background, reload() for its Reload. */(function(){var w=window,why=[],timer=0,WAIT=4000,waited=0,K="dw_retry",GAP=120000,going=false;
+function note(m){try{var L=JSON.parse(localStorage.getItem("err_log")||"[]");if(!Array.isArray(L))L=[];L.push({t:Date.now(),m:(m+why.join("; ")).slice(0,200),at:"",v:"",w:"today"});localStorage.setItem("err_log",JSON.stringify(L.slice(-20)))}catch(e){}}
+function card(){timer=0;var t=document.getElementById("today");if(!t||w.appReady||going||t.firstChild||document.getElementById("nostore"))return;
   if(w.startBusy&&waited<14){waited++;soon(WAIT);return}   /* start-up is reading the stored wardrobe (start.js): a slow start is not a failed one; a minute at most */
   var d=document.createElement("div");d.className="mbox";d.id="start-fail";d.setAttribute("role","alert");
   d.innerHTML='<p><b>The app couldn’t start.</b></p><p class="shelp">Your wardrobe is safe on this phone: nothing was deleted. Check your connection, then try again.</p><div class="sactions"><button type="button">Try again</button></div>';
-  d.querySelector("button").addEventListener("click",function(){location.reload()});t.hidden=false;t.appendChild(d);
-  try{var L=JSON.parse(localStorage.getItem("err_log")||"[]");if(!Array.isArray(L))L=[];L.push({t:Date.now(),m:("Start-up: the app didn’t start: "+why.join("; ")).slice(0,200),at:"",v:"",w:"today"});localStorage.setItem("err_log",JSON.stringify(L.slice(-20)))}catch(e){}}
-function soon(ms){if(!timer&&!w.appReady)timer=setTimeout(card,ms)}
+  d.querySelector("button").addEventListener("click",function(){go("",0)});t.hidden=false;t.appendChild(d);note("Start-up: the app didn’t start: ")}
+function soon(ms){if(!timer&&!w.appReady&&!going)timer=setTimeout(card,ms)}
 function heard(m){if(w.appReady)return;if(why.length<4)why.push(String(m).slice(0,80));if(document.readyState==="complete")soon(WAIT)}
+/* the app's files afresh -> "fresh", "kept" (the cache as it was: offline, or a file still missing), "files" (no service worker: each
+   past the browser's cache), "newer" (found and downloading), "taken" (take: the newer version controls the page now), "late" (10 s) */
+function refresh(take){return new Promise(function(done){var S=navigator.serviceWorker,c=S&&S.controller,over=false;function end(r){if(!over){over=true;done(r)}}
+  setTimeout(function(){end("late")},10000);
+  if(c)try{var ch=new MessageChannel();ch.port1.onmessage=function(e){var d=e.data||{};if(!d.newer)return end(d.ok?"fresh":"kept");
+      S.getRegistration().then(function(g){if(!g)return end("kept");return g.update().then(function(){if(!take)return end("newer");var n=g.waiting||g.installing;if(!n)return end("kept");
+        S.addEventListener("controllerchange",function(){end("taken")},{once:true});function step(){if(n.state==="installed")n.postMessage({type:"skipWaiting"});else if(n.state==="redundant")end("kept")}
+        n.addEventListener("statechange",step);step()})}).catch(function(){end("kept")})};
+    c.postMessage({type:"refresh"},[ch.port2])}catch(e){end("kept")}
+  else{var L=["./",location.href.split("#")[0],"asm-worker.js","analysis-worker.js","cal-worker.js","calparse.js"];[].forEach.call(document.querySelectorAll("script[src]"),function(s){L.push(s.src)});
+    Promise.all(L.map(function(u){return fetch(u,{cache:"reload"}).then(function(){},function(){})})).then(function(){end("files")})}})}
+/* refresh (taking a newer version), then load the page again (at the marked address, when given), not sooner than `after` ms from now */
+function go(url,after){if(going)return;going=true;var t0=Date.now();
+  refresh(true).then(function(r){setTimeout(function(){if(url)location.replace(url);else location.reload()},r==="taken"||w.DW_RETRY_NOW?0:Math.max(0,after-(Date.now()-t0)))})}
+function stamp(){var s=0;try{s=+sessionStorage.getItem(K)||0}catch(e){}var m=/[?&]dwretry=(\d+)/.exec(location.search);return Math.max(s,m?+m[1]:0)}
+function retry(){var now=Date.now(),url="";try{sessionStorage.setItem(K,String(now));if(sessionStorage.getItem(K)!==String(now))throw 0}catch(e){try{var u=new URL(location.href);u.searchParams.set("dwretry",String(now));url=u.href}catch(e2){}}
+  note("Start-up: reloaded once: ");go(url,1500)}
+w.dwLoad={refresh:function(){return refresh(false)},reload:function(){go("",0)}};
 addEventListener("error",function(ev){var t=ev.target;if(t&&t!==w){if(t.tagName==="SCRIPT"&&t.src)heard("not loaded: "+t.src.split("/").pop().split("?")[0])}else heard(ev.message||"error")},true);
 addEventListener("unhandledrejection",function(ev){var r=ev.reason;heard(r&&r.message||r||"rejection")});
-document.addEventListener("DOMContentLoaded",function(){if(typeof w.startUp!=="function"){if(!why.length)why.push("no startUp");soon(0)}});
+document.addEventListener("DOMContentLoaded",function(){if(w.dwEntry&&w.DW_MERGE)return;if(!why.length)why.push(typeof w.startUp!=="function"?"no startUp":"the entry didn't run");
+  if(Math.abs(Date.now()-stamp())<GAP)soon(0);else retry()});
 addEventListener("load",function(){if(why.length)soon(WAIT)})})()</script>
 <title>Daily Wardrobe</title>
 <link rel="stylesheet" href="styles.css">
@@ -272,5 +301,5 @@ addEventListener("load",function(){if(why.length)soon(WAIT)})})()</script>
 <script type="module" src="calendar.js"></script>
 <script type="module" src="remind.js"></script>
 <script type="module" src="about.js"></script>
-<script type="module">startUp()</script>
+<script type="module">/* the entry (all or nothing, A1): every page file, so start-up runs only when each one has loaded and run; any one failing stops this module before it runs, and the head's catcher, finding no dwEntry, fetches the files afresh and reloads once */import './bus.js';import './core.js';import './planner.js';import './analysis.js';import './detect.js';import './srgb.js';import './who.js';import './photo-keys.js';import './tag-request.js';import './app.js';import './back.js';import './act.js';import './days.js';import './today-plan.js';import './locks.js';import './toast.js';import './ui.js';import './measure.js';import './add-ids.js';import './pattern-read.js';import './look-base.js';import './pickscore.js';import './asm-keys.js';import './assemble.js';import './asm-watch.js';import './asm-pocket.js';import './asm-color.js';import './asm-gl.js';import './asm-kinds.js';import './mannequin.js';import './mq/vest.js';import './mq/suit.js';import './mq/suit-open.js';import './mq/shirt-tie.js';import './mq/shirt-open.js';import './draw.js';import './asm-ocp.js';import './asm-look.js';import './asm-cm-job.js';import './asm-today.js';import './asm-cm-page.js';import './nav.js';import './fields.js';import './checklist.js';import './photos.js';import './month.js';import './missed.js';import './history.js';import './scorecard.js';import './today-photofold.js';import './today-picture.js';import './today.js';import './today-gestures.js';import './locale.js';import './settings.js';import './daysoff.js';import './weather.js';import './theme.js';import './start.js';import './safety.js';import './dress.js';import './stats.js';import './fav.js';import './pack.js';import './migrate.js';import './item-photo.js';import './itemsheet.js';import './add-keep.js';import './own-lists.js';import './colpick.js';import './add-more.js';import './add-save.js';import './tagging.js';import './add-card.js';import './add-sheet.js';import './add.js';import './look.js';import './item-view.js';import './wardrobe.js';import './add-paste.js';import './care.js';import './cost.js';import './shop.js';import './sync.js';import './sync-status.js';import './sync-photos.js';import './snapshots.js';import './backupfile.js';import './account.js';import './kit.js';import './setup.js';import './calendar.js';import './remind.js';import './about.js';if(self.DW_MERGE){window.dwEntry=1;startUp()}</script>
 </body></html>

@@ -25,7 +25,15 @@ function toastOff(e){if(e.contains(document.activeElement)&&e.querySelector('but
   e.classList.remove('on','act');setTimeout(()=>{if(!e.classList.contains('on'))e.textContent=''},250)}
 /* a toast with a button (Undo) taken away at once (start.js show(): leaving Add takes its "Saved … Undo" with it) */
 function toastDrop(){undoOff();const e=$('#toast');if(!e||!e.classList.contains('act'))return;clearTimeout(toastTimer);e.classList.remove('on','act');e.textContent=''}
+/* a file that fails once the app is running (a worker that can't load, the calendar's lazy parser; all or nothing, A1, the owner's O1 of
+   2026-11-28): the feature keeps its own fallback, the app's files are fetched afresh in the background (index.html's start-up catcher,
+   window.dwLoad), and a toast offers Reload, once per page; Reload keeps Add's cards (add-keep.js, as Update does) and loads the app
+   again, a newer version if one is published */
+let loadTold=false;
+function loadFailed(){if(loadTold)return;loadTold=true;const L=window.dwLoad;try{if(L)L.refresh()}catch{}
+  toast('Something didn’t load.',TOAST_ACT_MS,{label:'Reload',fn:()=>{Promise.resolve().then(()=>ask('add-keep')).catch(()=>{}).then(()=>{if(L)L.reload();else location.reload()})}})}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,TOAST_ACT_MS,toast,toastDrop};
-export {TOAST_ACT_MS,toast,toastDrop};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,TOAST_ACT_MS,toast,toastDrop,get loadTold(){return loadTold},set loadTold(v){loadTold=v}};
+export {TOAST_ACT_MS,loadFailed,toast,toastDrop};
 serve('toast',toast);   // the restructure S6f: app.js, which loads before this file, says what it set aside
+serve('load-failed',loadFailed);   // assemble.js, a painting-worker file, which can't import this one

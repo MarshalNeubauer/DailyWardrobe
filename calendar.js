@@ -19,7 +19,7 @@ import {$,DAY_NAMES,dayRecs,isConnected,isWorkday,isoKey,isoToDate,key,occOf,off
 import {closeSettings,openSettings,refreshToday,saveUserSettings,settingsSummaries,todayDirty} from './settings.js';
 import {setOccasion,whenPulled} from './history.js';
 import {afterScripts,announce} from './app.js';
-import {toast} from './toast.js';
+import {loadFailed,toast} from './toast.js';
 import {homeDay} from './month.js';
 import {acts} from './act.js';
 import {askConfirm,netErr} from './ui.js';
@@ -109,7 +109,7 @@ function calWorker(){if(calW!==null)return calW;
   try{const w=new Worker('cal-worker.js',{type:'module'}),wait=new Map();let n=0;
     const fail=()=>{for(const f of wait.values())f({failed:true});wait.clear();calW=false;try{w.terminate()}catch{}};
     w.onmessage=e=>{const f=wait.get(e.data&&e.data.id);if(f){wait.delete(e.data.id);f(e.data)}};
-    w.onerror=e=>{if(e&&e.preventDefault)e.preventDefault();fail()};
+    w.onerror=e=>{if(e&&e.preventDefault)e.preventDefault();if(!(e instanceof ErrorEvent))loadFailed();fail()};   // (a load failure is a plain Event)
     calW={ask:(m,tr)=>new Promise(ok=>{const id=++n;wait.set(id,ok);try{w.postMessage({...m,id},tr||[])}catch{wait.delete(id);ok({failed:true})}}),
       post:(m,tr)=>{try{w.postMessage(m,tr||[])}catch{}}}}
   catch{calW=false}
@@ -118,7 +118,7 @@ const calAsk=(m,tr)=>{const w=calWorker();return w?w.ask(m,tr):Promise.resolve({
 /* the window the events are read for: today on this phone (the server took its own clock in the person's zone) and 60 days */
 const calWin=()=>({from:isoKey(todayDate()),days:60,tz:calTz()});
 /* no Worker: the same parser on the page (nothing is kept, so the next read downloads the feed again) */
-async function calHere(buf,win){const P=await import('./calparse.js'),to=P.isoAdd(win.from,win.days);
+async function calHere(buf,win){const P=await import('./calparse.js').catch(e=>{loadFailed();throw e}),to=P.isoAdd(win.from,win.days);
   return {from:win.from,to,events:P.calEvents(new TextDecoder().decode(buf),win.tz,win.from,to),whole:true}}
 async function calFeed(url){const w=(localStorage.getItem('worker_url')||'').trim(),tok=(localStorage.getItem('app_token')||'').trim();
   if(!w||!tok||!isConnected())throw new Error('Reading a calendar needs a connection: Connect in ⚙ Settings first.');
@@ -286,7 +286,7 @@ function calUndoTap(el){calUndoSeen(el.dataset.id)}
 function calReviewTap(){openSettings('calendar')}
 function calPackTap(){askFor('pack-open')}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-globalThis.HOOK={__proto__:globalThis.HOOK||null,CAL_GUIDES,CAL_X,get calBusy(){return calBusy},calGuide,calNew,calPlan,renderCalUI,calSummary};
+globalThis.HOOK={__proto__:globalThis.HOOK||null,CAL_GUIDES,CAL_X,get calBusy(){return calBusy},calGuide,calHere,calNew,calPlan,renderCalUI,calSummary};
 export {calBusy,CAL_X,calPlan,calNew,calSummary,renderCalUI,calBanner,CAL_GUIDES,calGuide};
 acts({calConnectTap,calReadTap,calOffTap,calGuideTap,calKeepTap,calDismissTap,calUndoTap,calReviewTap,calPackTap});
 /* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
