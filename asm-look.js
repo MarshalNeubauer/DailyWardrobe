@@ -9,13 +9,14 @@ import {comboKey,comboSig,fnv64,keepRender,listAt,picsDrawn,renders,workerBase,w
 import {ASM_CMV,ASM_CM_KINDS} from './asm-keys.js';
 import {ASM_BARV,ASM_CLOSEUP_MM,ASM_HB_AMP,ASM_HB_BREAK,ASM_HB_FLECK,ASM_HB_FLOAT,ASM_HB_FLOATL,ASM_HB_GRAIN,ASM_HB_MM,ASM_HB_MOTTLE,ASM_HB_PBRK,ASM_HB_RIB,ASM_HB_SNAP,ASM_HB_SOFT,ASM_HB_THIN,ASM_HB_TR,ASM_HB_YARN,ASM_LIN,ASM_LINE_PX,ASM_METAL,ASM_MICRO,ASM_MICRO_KINDS,ASM_ON,ASM_PX_MM,ASM_RETRY_MS,ASM_SHIRT_MM,ASM_STRIPE,ASM_STRIPE_PX,ASM_SUITV,ASM_TEX_MIN_MM,ASM_TIEV,ASM_TIE_FIG_MAX,ASM_TIE_TEX_MAX,ASM_TR_CAP,ASM_TWEED,ASM_TWILL,ASM_VER,asmData,asmGetting,asmHbCw,asmImg,asmImgOf,asmLinen,asmMicroGrid,asmRetryAt,asmRun,asmStripeCount,asmSuitTexMemo,asmTieMemo,asmTried} from './assemble.js';
 import {TIE_DARK_L,TIE_DARK_X,TIE_TEX_K,fabricDef} from './draw.js';
-import {ask,served} from './bus.js';
+import {asmNkBaseOf} from './asm-color.js';
+import {asmCmOutKey,asmCmStamp,asmJob,asmKindOf} from './asm-cm-job.js';
 // (pxmm: the shirt masters are framed wider; measured: the tie 116 px wide at 2048 against 174 on the suit master, the open collar's
 // shirt about 5% wider again)
 const asmCmKey=(kind,name)=>asmKey('cm'+ASM_CMV+'/'+kind+'/'+name);
 /* Settings → Outfit pictures → "Drawing only" (photos.js picsDrawn): nothing is painted or downloaded for Today (asmEnsure, asmAhead, asmSync,
    renderAsmUI); the lower-level calls (asmCmLook, asmCmGet, asmJob) don't ask */
-const asmDrawn=()=>typeof picsDrawn==='function'&&picsDrawn();
+const asmDrawn=()=>picsDrawn();
 const asmBarRgb=i=>{const c=i&&i.primaryColor;if(ASM_METAL[c])return ASM_METAL[c];const h=String(colOf(i)).replace('#','');return [0,2,4].map(k=>parseInt(h.slice(k,k+2),16)||128)};
 const asmBarSig=i=>'b'+ASM_BARV+asmBarRgb(i).join('.');
 /* ---- keys ---- */
@@ -29,7 +30,7 @@ let asmCmListed=null;
 const asmCmSeen=k=>{if(!asmCmListed){try{asmCmListed=new Set(JSON.parse(localStorage.getItem('asm_cm_listed')||'[]'))}catch{asmCmListed=new Set()}}return asmCmListed.has(k)};
 const asmCmHeld=k=>{const m=asmCmKey(k,'master');return !!(renders[m]||(asmList?asmList.has(m):asmCmSeen(m)))};
 /* (2026-11-16) a new garment's master (asm-kinds.js) is used only when it and its base master are there: until then the day shows the drawing */
-const asmCmUse=o=>{if(!ASM_ON||!served('asm-cm-kind'))return null;const k=ask('asm-kind-of',o);return k&&asmCmHeld(k)&&asmCmHeld(ask('asm-nk-base-of',k))?k:null};
+const asmCmUse=o=>{if(!ASM_ON)return null;const k=asmKindOf(o);return k&&asmCmHeld(k)&&asmCmHeld(asmNkBaseOf(k))?k:null};
 const asmCmAny=()=>Object.keys(ASM_CM_KINDS).some(asmCmHeld);
 /* the worker's list of the photos it keeps (GET /render?list=1: keys only, a few KB): which looks have a picture there (uploaded
    by the PC builder until it was removed, 2026-11-16) and which colour-coded masters are there. It is photos.js's one shared list (workerList: one request for the outfit photos
@@ -136,13 +137,13 @@ const asmTieSig=i=>{const s=usableSett(i),c=i.texture||'';return fnv64(['t'+ASM_
    in blocks of up to two seconds, which on the page froze swipes and scrolling; it runs in a Web Worker (asm-worker.js, which loads
    this file and swaps in its own asmData and asmJpeg), and on the page only where no worker can (no OffscreenCanvas). ---- */
 /* the outfit's picture as a JPEG data URL, or null when it can't be painted (yet): no colour-coded master for it */
-let asmPhoto=async function asmPhoto(o,front){const job=await ask('asm-job',o);if(!job)return null;const r=await asmRun(job,front);return r&&r.url||null};
+let asmPhoto=async function asmPhoto(o,front){const job=await asmJob(o);if(!job)return null;const r=await asmRun(job,front);return r&&r.url||null};
 /* ---- on Today: the assembled picture stands in for the outfit's photo ---- */
 /* assembled pictures are kept on the device (meta 'asm:out:<key>', the newest ASM_KEEP); a look's key carries everything it is painted
    from (asm-color.js asmCmOutKey), so a changed garment, master or painter is a new key */
 let asmOut={};
-const asmOutKey=o=>asmCmUse(o)?ask('asm-cm-out-key',o):'';
-const asmStamp=o=>asmCmUse(o)?ask('asm-cm-stamp',o):0;
+const asmOutKey=o=>asmCmUse(o)?asmCmOutKey(o):'';
+const asmStamp=o=>asmCmUse(o)?asmCmStamp(o):0;
 const asmWants=o=>!!asmCmUse(o);
 /* a photo made for this very outfit after its master (Settings: Regenerate) wins (the owner's choice): it is shown, and nothing is
    painted for the outfit */

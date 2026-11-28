@@ -1,6 +1,6 @@
 /* Daily Wardrobe: the new garments' colour-coded masters (2026-11-16, the owner approved the casual garments from the trace mockup,
-   C:\code\audit-2026-11-13\new-types-trace\new-types-mockup.html). Loaded after asm-color.js and asm-gl.js on the page and in
-   asm-worker.js.
+   C:\code\audit-2026-11-13\new-types-trace\new-types-mockup.html). asm-color.js imports it, so it runs before asm-color.js on the
+   page and in asm-worker.js (A8).
 
    Each casual top (core.js CASUAL_TOPS) has its own master traced from the open-collar shirt master (a T-shirt, a polo with its drawn knit
    collar, a henley, a crewneck sweater, a sweatshirt, a hoodie, a quarter-zip), and each casual jacket (CASUAL_JACKETS) one traced from the
@@ -20,11 +20,9 @@
    Jeans (trousers kind 'jeans') on a master that shows trousers (shirt-open, shirt-tie and the seven tops) are painted on a faded copy of
    that master (record 'master-jeans': only the master's trousers pixels differ, lifted at the thigh fronts and knees, the mockup's
    jeansfade.py): only those looks' keys take 'jf' + the record's date, and only once the manifest lists it. */
-import {serve} from './bus.js';
-import {ASM_CM_KINDS} from './asm-keys.js';
+/* (A8, 2026-11-28: the table writes that put these kinds into ASM_CM_KINDS, ASM_CM_BTN and ASM_GL_KINDS are in asm-color.js, beside
+   ASM_CM_BTN, which imports this file; so this file reads nothing of asm-color.js at load) */
 import {ASM_LIN} from './assemble.js';
-import {ASM_CM_BTN} from './asm-color.js';
-import {ASM_GL_KINDS} from './asm-gl.js';
 const ASM_NKV=1;
 /* the new kinds: their base master, lapels (the jacket masters), the shirt's or top's drawn buttons ([x, y, radius] at 2048, from each
    trace's report.json; the jackets keep the open shirt's), and the cloth family: jersey (T-shirt, polo, henley), fleece (sweatshirt,
@@ -59,15 +57,6 @@ const asmNkStitchMm=i=>{const K=ASM_NK_KNIT,m=String(i&&i.material||'').toLowerC
    top, the V's point tucked into the stitch below */
 function asmNkLeg(u,v){let h=0;for(const dv of [-1,0,1])for(const s of [-1,1]){const cx=.5+s*.24,cy=.5,dx=u-cx,dy=v+dv-cy,a=s*.38,
     x=dx*Math.cos(a)-dy*Math.sin(a),y=dx*Math.sin(a)+dy*Math.cos(a),r=(x/.19)**2+(y/.7)**2;if(r<1)h=Math.max(h,Math.pow(1-r,.6))}return h}
-/* (at load: it reads asm-keys.js's, asm-color.js's and asm-gl.js's tables, which it imports) */
-/* the kinds into the painter's tables, invisibly to its fingerprint (runs on the page and in the worker) */
-(()=>{const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
-  for(const [k,v] of Object.entries(ASM_NK)){const B=ASM_CM_KINDS[v.base];
-    if(!own(ASM_CM_KINDS,k))Object.defineProperty(ASM_CM_KINDS,k,{value:{...B,zones:[...B.zones],lapels:v.lapels!=null?v.lapels:B.lapels},enumerable:false});
-    if(v.btn&&!own(ASM_CM_BTN,k))Object.defineProperty(ASM_CM_BTN,k,{value:v.btn,enumerable:false});
-    if(typeof ASM_GL_KINDS!=='undefined')ASM_GL_KINDS.add(k)}})();
-/* sockets (bus.js; the restructure S6p, 2026-11-27): a new garment's base master (asm-color.js asmNkBaseOf, which loads before this file) */
-serve('asm-nk-base',asmNkBase);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,ASM_JF_BASES,ASM_NK_KNIT,asmNkLin,ASM_NK,asmNkBase};
 export {ASM_NK,ASM_NK_KNIT,asmNkBase,ASM_JF_BASES,asmNkLin,asmNkRnd,asmNkStitchMm,asmNkLeg,ASM_NK_HEATHER,ASM_NK_STRIPE,ASM_NK_MAT,ASM_NKV};

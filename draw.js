@@ -1,11 +1,13 @@
 /* Daily Wardrobe: SVG drawings (procedural fabrics, accessories, thumbnails, glue for the torso figure) */
-import {emit,ask,served} from './bus.js';
+import {emit} from './bus.js';
 import {CAMO_V,COLORS,FABRIC,HANDPICK_TYPES,METAL_TONES,OCP_CAMO,OCP_V,STRAP_BANDS,TEXTURE_TYPES,TYPES,accentOf,blouseTapes,camoImage,clipMetal,colOf,hexRgb,isCargo,labHex,linkFace,lum,mix,nm,ocpImage,patBase,rgbLab,shoeStyle,sockPatterned,sockToe,strapBand,thirdOf,trouserKind,watchOpts} from './core.js';
 import {CAMO_TR,CHECK_PATS,STRIPE_PATS,usableSett} from './detect.js';
 import {linSrgb,srgbLin8} from './srgb.js';
 import {ASM_CM_KINDS} from './asm-keys.js';
 import {ASM_PX_MM} from './assemble.js';
 import {asmSuitWeave} from './asm-look.js';
+import {ASM_CU,ASM_WT,asmCmKind} from './asm-color.js';
+import {asmCmRoute,asmCuTile,asmCuWants,asmWorstedTile,asmWtWants} from './asm-cm-job.js';
 
 /* a herringbone stripe's plain band, read from Claude's one-repeat bitmap: columns the same all the way down (all 1: a shiny satin
    line; all 0: plain ground) are not twill. Its share of the repeat, and whether it shines; null for plain herringbone. */
@@ -837,7 +839,7 @@ const OCP_RANK_SVG={'2lt':'M30,18 h40 v64 h-40 Z','1lt':'M30,18 h40 v64 h-40 Z',
   // stem; ocp-blouse\tools\leaf.py)
   maj:'M47.6 94 L46.8 66 L45.8 70.9 L44.3 71.7 L42.7 72.6 L41 73.3 L39.6 73.1 L38.6 71.9 L38 70.2 L37.5 68.4 L36.3 67.9 L34.6 68.1 L32.5 68.5 L30 69.1 L27.1 69.7 L24 70.2 L21 70.2 L19 69.3 L18.4 67.4 L19.2 64.7 L20.7 62 L22.4 59.4 L24 57.2 L25.2 55.3 L24.6 54.1 L22.5 53.1 L19.9 52 L16.9 50.6 L13.5 49 L10.3 47 L8 44.7 L7.5 42.4 L9.2 40.4 L12.4 39 L16.1 38 L19.6 37.2 L22.7 36.7 L25.4 36.2 L27.3 35.7 L26.4 33.5 L25.3 31 L24.1 28.1 L22.8 24.8 L21.8 21.3 L21.7 18.2 L22.8 16.2 L25.3 15.9 L28.6 16.8 L31.9 18.4 L34.9 20.1 L37.5 21.7 L39.7 23 L41 22.6 L41.7 20.1 L42.6 17.1 L43.6 13.7 L45 10 L46.7 6.5 L48.9 4.4 L51.1 4.4 L53.3 6.5 L55 10 L56.4 13.7 L57.4 17.1 L58.3 20.1 L59 22.6 L60.3 23 L62.5 21.7 L65.1 20.1 L68.1 18.4 L71.4 16.8 L74.7 15.9 L77.2 16.2 L78.3 18.2 L78.2 21.3 L77.2 24.8 L75.9 28.1 L74.7 31 L73.6 33.5 L72.7 35.7 L74.6 36.2 L77.3 36.7 L80.4 37.2 L83.9 38 L87.6 39 L90.8 40.4 L92.5 42.4 L92 44.7 L89.7 47 L86.5 49 L83.1 50.6 L80.1 52 L77.5 53.1 L75.4 54.1 L74.8 55.3 L76 57.2 L77.6 59.4 L79.3 62 L80.8 64.7 L81.6 67.4 L81 69.3 L79 70.2 L76 70.2 L72.9 69.7 L70 69.1 L67.5 68.5 L65.4 68.1 L63.7 67.9 L62.5 68.4 L62 70.2 L61.4 71.9 L60.4 73.1 L59 73.3 L57.3 72.6 L55.7 71.7 L54.2 70.9 L53.2 66 L52.4 94Z'};
 OCP_RANK_SVG.ltcol=OCP_RANK_SVG.maj;
-function blouseMarks(i,P){const S=CASUAL_D,c=colOf(i),se=typeof usableSett==='function'?usableSett(i):null,g0=se&&se.camo?se.camo.cols[0]:c,e=mix(g0,'#000',.42),inside=mix(g0,'#000',.5),B=BLOUSE_TAPES,
+function blouseMarks(i,P){const S=CASUAL_D,c=colOf(i),se=usableSett(i),g0=se&&se.camo?se.camo.cols[0]:c,e=mix(g0,'#000',.42),inside=mix(g0,'#000',.5),B=BLOUSE_TAPES,
     both=d=>d+' '+casMir(d),ln=(d,w=.4,op=1,col=e)=>`<path d="${d}" fill="none" stroke="${col}" stroke-opacity="${op}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`,
     cloth=(d,f='f')=>`<path d="${d}" fill="url(#${P}${f})" stroke="${e}" stroke-width=".4" stroke-linejoin="round"/>`,
     stitch=(d,op=.55)=>`<path d="${d}" fill="none" stroke="${mix(g0,'#000',.3)}" stroke-opacity="${op}" stroke-width=".22" stroke-dasharray=".55 .45"/>`,
@@ -1192,7 +1194,7 @@ function figStripeLift(i){const s=i&&usableSett(i),sp=i&&i.patternSpec&&i.patter
    a tie has no master, so it is the waistcoat mannequin with the tie's place in the shirt; an outfit with no master (no shirt, or no
    trousers or belt without a jacket) takes the pose its pieces would have: a jacket with or without a tie, else the shirt masters, whose
    missing trousers and belt are a plain dark grey and a dark brown, and a missing shirt a plain off-white */
-const figKind=o=>{let k=served('asm-cm-kind')?ask('asm-cm-kind',o):null;
+const figKind=o=>{let k=asmCmKind(o);
   if(!k)k=o.top?(o.tie?(o.vest?'vest':'suit'):'suit-open'):(o.tie?'shirt-tie':'shirt-open');
   return k==='vest-open'?'vest':k};
 const FIG_NO_SHIRT={color:'#F2F0EB'};
@@ -1235,12 +1237,12 @@ const figLum=i=>{const h=String(colOf(i)).replace('#','');return figY(...[0,2,4]
 function figLiftK(y){const L=FIG_LIFT;if(!(y<FIG_DARK))return 1;if(y<=L[0][0])return L[0][1];
   for(let j=1;j<L.length;j++)if(y<=L[j][0]){const [a,ka]=L[j-1],[b,kb]=L[j];return ka+(kb-ka)*(y-a)/(b-a)}return 1}
 /* which fill a jacket's or trousers' cloth gets: drawn (as before), lift (the drawn tile, lifted), block (asmCuTile), hb (H2), wt (B2) */
-function figWay(i,z){if(!i||!served('asm-cm-route'))return {way:'drawn',k:1};
-  const how=ask('asm-cm-route',i,z).how,s=usableSett(i),b=patBase(i.pattern)||'solid';
+function figWay(i,z){if(!i)return {way:'drawn',k:1};
+  const how=asmCmRoute(i,z).how,s=usableSett(i),b=patBase(i.pattern)||'solid';
   if(how==='bands'||how==='tile'||(s&&(s.bands||s.motif||s.figure))||STRIPE_PATS.includes(b)||CHECK_PATS.includes(b))return {way:'drawn',k:1,how};
   const k=figLiftK(figLum(i)),own=/^(data|blob):/.test(String(i.texture||''));
-  if(own&&ask('asm-cu-wants',i,how))return {way:asmSuitWeave(i)==='herringbone'?'hb':'block',k,how};
-  if(k>1&&ask('asm-wt-wants',i,z)&&!ask('asm-cu-wants',i,'twill'))return {way:'wt',k,how};
+  if(own&&asmCuWants(i,how))return {way:asmSuitWeave(i)==='herringbone'?'hb':'block',k,how};
+  if(k>1&&asmWtWants(i,z)&&!asmCuWants(i,'twill'))return {way:'wt',k,how};
   return {way:k>1?'lift':'drawn',k,how}}
 /* the drawn tile with every colour lifted k times in linear light (black and white stay) */
 const figLiftHex=(p,k)=>p.replace(/((?:fill|stroke|stop-color)=")#([0-9a-fA-F]{6})"/g,(m,a,h)=>a+'#'+[0,2,4].map(q=>Math.round(figGam(Math.min(1,figLin(parseInt(h.slice(q,q+2),16))*k))).toString(16).padStart(2,'0')).join('')+'"');
@@ -1248,7 +1250,7 @@ function figLifted(i,role,k){const f=figFabric(i,role);return {def:(id,rot)=>fig
 /* the device pixels of one viewBox unit on Today's figure (the Duo upright's is 688 css px, not 390), in quarters */
 function figScale(){const st=typeof document!=='undefined'&&document.getElementById('stage'),w=(st&&st.clientWidth)||Math.min(self.innerWidth||390,688);
   return Math.round(Math.min(688,Math.max(200,w))/390*Math.min(3,Math.max(1,self.devicePixelRatio||1))*4)/4}
-const figCuKey=(i,way,k,kp,sc)=>JSON.stringify([i.id,colOf(i),i.shade||0,(i.texture||'').length,(i.texture||'').slice(-12),served('asm-cu-v')?ask('asm-cu-v'):0,way==='wt'?[ask('asm-wt-v'),i.secondaryColor||'']:0,way,+k.toFixed(3),kp,sc,FIG_CUV]);
+const figCuKey=(i,way,k,kp,sc)=>JSON.stringify([i.id,colOf(i),i.shade||0,(i.texture||'').length,(i.texture||'').slice(-12),ASM_CU.v,way==='wt'?[ASM_WT.v,i.secondaryColor||'']:0,way,+k.toFixed(3),kp,sc,FIG_CUV]);
 /* a tile's mean held at k x its colour */
 function figNorm(T,k){const n=T.TW*T.TH,c=T.c,t=new Float32Array(T.t);let s=0;for(let j=0;j<n;j++)s+=figY(t[3*j],t[3*j+1],t[3*j+2]);
   const f=figY(c[0],c[1],c[2])*k/(s/n||1e-6);for(let j=0;j<3*n;j++)t[j]*=f;return {...T,t,c:new Float32Array([c[0]*k,c[1]*k,c[2]*k])}}
@@ -1272,12 +1274,12 @@ function figTileUrl(T,N,slv){const S=T.TW,f=S/N,c=T.c,cv=document.createElement(
       for(let xx=Math.floor(x0);xx<Math.ceil(x1);xx++){const wx=Math.min(x1,xx+1)-Math.max(x0,xx);if(wx<=0)continue;const j=3*((yy%S)*S+xx%S),ww=wx*wy;s[0]+=ww*T.t[j];s[1]+=ww*T.t[j+1];s[2]+=ww*T.t[j+2];w+=ww}}
     for(let q=0;q<3;q++){let v=s[q]/w;if(slv!=null)v=c[q]+slv*(v-c[q]);d.data[4*(y*N+x)+q]=figGam(Math.max(0,Math.min(1,v)))}d.data[4*(y*N+x)+3]=255}
   g.putImageData(d,0,0);return cv.toDataURL('image/jpeg',.9)}
-async function figCuMake(i,way,k,kp,sc){let T=way==='wt'?ask('asm-worsted-tile',i):await ask('asm-cu-tile',i);if(!T||!T.t)return null;
+async function figCuMake(i,way,k,kp,sc){let T=way==='wt'?asmWorstedTile(i):await asmCuTile(i);if(!T||!T.t)return null;
   T=way==='hb'?figHbTile(T,k):k!==1?figNorm(T,k):T;
   const W=T.mm*ASM_PX_MM*kp*390/2048,N=Math.max(16,Math.min(T.TW,Math.round(W*sc)));
   return {W,N,way,k,url:figTileUrl(T,N),sleeveUrl:T.slv?figTileUrl(T,N,T.slv):null}}
 /* the block for an item, if made; else it is made when the page is idle (Today's figure is then drawn again, figCuDone) */
-function figCuGet(i,way,k,kind){if(typeof document==='undefined')return null;const kp=((typeof ASM_CM_KINDS!=='undefined'&&ASM_CM_KINDS[kind])||{}).pxmm||1,sc=figScale(),key=figCuKey(i,way,k,kp,sc);
+function figCuGet(i,way,k,kind){if(typeof document==='undefined')return null;const kp=(ASM_CM_KINDS[kind]||{}).pxmm||1,sc=figScale(),key=figCuKey(i,way,k,kp,sc);
   let e=FIG_CU.get(key);if(e)return e.blk;
   e={blk:null};FIG_CU.set(key,e);if(FIG_CU.size>24)FIG_CU.delete(FIG_CU.keys().next().value);
   const idle=self.requestIdleCallback||(f=>setTimeout(f,60));

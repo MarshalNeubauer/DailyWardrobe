@@ -1,6 +1,6 @@
 /* Daily Wardrobe: pattern detection from item photos (main thread: needs canvas) */
 import {serve} from './bus.js';
-import {CAMO_V,COLORS,CUSTOM_PAT,OCP_CAMO,OCP_V,accentOf,accentsOf,camoPat,colOf,dE00,hexRgb,isOcp,labHex,lum,patBase,primaryCol,rgbLab,thirdOf} from './core.js';   // (the restructure S6f: lab/gl-bench.html hands a blob's import of core.js the blob it already ran)
+import {CAMO_V,COLORS,CUSTOM_PAT,FABRIC,OCP_CAMO,OCP_V,accentOf,accentsOf,camoPat,colOf,dE00,hexRgb,isOcp,labHex,lum,patBase,primaryCol,rgbLab,thirdOf} from './core.js';   // (the restructure S6f: lab/gl-bench.html hands a blob's import of core.js the blob it already ran)
 /* Pattern detection from the item photo.
    - stripes:     1-D band sequence + angle            (stripe, pinstripe, chalk stripe)
    - checks:      two perpendicular band sequences      (check, gingham, tattersall, windowpane, glen check)
@@ -19,6 +19,17 @@ const texPat=(t,p)=>t==='shirt'&&TEXTURE_PATS.includes(patBase(p)||'');
 /* a tie tagged woven or tonal check: read by Claude only (pattern-read.js claudeOnly), and it keeps whatever Claude finds: small figures (motif),
    stripes or checks (bands), or the weave itself (tex: a tonal tie's raised grid, drawn a little lighter or darker than the ground) */
 const TIE_WEAVES=['woven','tonal-check'],tieWeave=(t,p)=>t==='tie'&&TIE_WEAVES.includes(patBase(p)||'');
+/* which patterns can be read (moved from pattern-read.js with their text unchanged, A8 2026-11-28: the painter's asmCmRoute imports
+   readable, and the painting job's files may not import the Add group) */
+const SETT_PATS={tie:[...STRIPE_PATS,...CHECK_PATS,'tonal-check','other',...MOTIF_PATS],shirt:[...STRIPE_PATS,...CHECK_PATS,'other',...TEXTURE_PATS],suit:[...STRIPE_PATS,...CHECK_PATS],blazer:[...STRIPE_PATS,...CHECK_PATS],pants:[...STRIPE_PATS,...CHECK_PATS]};
+const settable=(type,pat,weave)=>{const p=patBase(pat)||'solid';return p!=='solid'&&((SETT_PATS[type]||[]).includes(p)||!!(weave&&weave.layout&&FABRIC.includes(type)))};
+const motifPat=p=>MOTIF_PATS.includes(patBase(p)||'');
+/* patterns only Claude's reading can draw (the band reader would turn them into stripes) */
+/* a tie tagged woven or tonal check (2026-11-13): never read before, so painted plain; the owner's charcoal & grey woven tie is a grid of
+   tiny light dots, which Claude reads as a motif (the tie painter draws motifs and bands; a pure weave, layout texture, stays plain) */
+const claudeOnly=(t,p)=>motifPat(p)||texPat(t,p)||tieWeave(t,p)||camoPat(p);   // (a camouflage: Claude's reading, else its colours clustered from the pixels, camoFromPixels; never the band reader)
+/* a card's pattern can be read: a band pattern, a weave Claude described, or a pattern only Claude can read (a motif, a shirt's weave) */
+/** @param {*} t @param {*} p @param {*} w */ const readable=(t,p,w)=>settable(t,p,w)||claudeOnly(t,p);
 const ownSett=i=>{const s=i&&i.sett,p=patBase(i&&i.pattern)||'';if(!s||(MOTIF_PATS.includes(p)&&!s.motif))return null;if(s.camo||camoPat(i.pattern))return s.camo&&camoPat(i.pattern)?s:null;/* a camouflage reading only on a camouflage, and nothing else on one */return tieWeave(i.type,i.pattern)?s:texPat(i.type,i.pattern)?(s.tex||s.motif?s:null):(s.tex?null:s)};   // a weave pattern takes a texture or a figure (motif) reading
 /* the item's own reading; without one, its own pattern's look (an owner pattern added through "+ New pattern or texture" with Claude's
    drawing recipe, settings.custom.patterns[].look), on any kind of item: so the drawings, the swatches and the painted pictures all
@@ -458,5 +469,5 @@ function settFromCanvas(c,box,opt){if(box){const b={x:box.x/1000*c.width,y:box.y
   return analyzeSett(c,c.width*.05,c.height*.05,c.width*.9,c.height*.9,opt)}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,camoTag,settToTag,settFromCanvas,tieWeave,detectPattern,texPat,STRIPE_PATS,settSig,usableSett};
-export {STRIPE_PATS,CHECK_PATS,DETECT_PATS,MOTIF_PATS,TEXTURE_PATS,texPat,tieWeave,usableSett,CAMO_TR,camoTag,settToTag,settSig,detectPattern,detectQueued,settFromCanvas};
+export {STRIPE_PATS,CHECK_PATS,DETECT_PATS,MOTIF_PATS,TEXTURE_PATS,texPat,tieWeave,settable,motifPat,claudeOnly,readable,usableSett,CAMO_TR,camoTag,settToTag,settSig,detectPattern,detectQueued,settFromCanvas};
 serve('sett-sig',settSig);serve('usable-sett',usableSett);serve('stripe-pats',()=>STRIPE_PATS);serve('check-pats',()=>CHECK_PATS);   // the restructure S6f: photo-keys.js's picture keys (a data file, below this one in the layers)

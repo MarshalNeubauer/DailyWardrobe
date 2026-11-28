@@ -15,7 +15,8 @@ import {asmNkBase} from './asm-kinds.js';
 import {asmCmUse,asmFullWins,asmGet,asmList,asmListAt,asmListGet,asmLookId,asmOutKey,asmPhoto,asmStamp,setAsmOut} from './asm-look.js';
 import {asmCmAssets,asmCmBaseJob,asmCmBgGet,asmCmGaps,asmCmMf,asmCmMfKey,asmJfWants,asmKindOf,setAsmCmMf} from './asm-cm-job.js';
 import {asmFor,asmGetPre,asmKeepOut,asmShow} from './asm-today.js';
-import {ask,serve} from './bus.js';
+import {rereadSett} from './pattern-read.js';
+import {ask} from './bus.js';
 /* bring the kind's master, masks and parts onto the device (true when all are here); the background too, when the worker has one */
 /** @param {*} kind */ async function asmCmGet(kind){if(!asmCmAssets(kind).length)return false;await asmCmMfGet();const keys=asmCmAssets(kind);if(!await asmGet(keys[0],true))return false;   // (keys after the manifest: it says whether the master has solved positions)
   await asmCmBgGet();return (await Promise.all(keys.slice(1).map(k=>asmGet(k)))).every(Boolean)}   // (CR-8-06: the PC builder's shared setup and 2048 copy, which nothing uploads since 2026-11-16, are no longer asked for)
@@ -82,7 +83,7 @@ function asmGapUI(){const b=$('#cm-box');if(!b)return;let g=$('#cm-gaps');if(!g)
     `<div class="slabel">Painted plain (${gaps.length})</div><ul class="cmgaps">${gaps.map(x=>`<li><span class="${titleCls(x.i)}">${esc(sentence(itemTitle(x.i)))}</span>: <small class="mut">${esc(x.r.why)}</small></li>`).join('')}</ul>`+
     (asmGapRun?`<p class="mut"><small>Reading ${asmGapRun.done+1} of ${asmGapRun.n}…</small></p>`:rd.length?`<div class="btns"><button type="button" id="cm-readall" data-act="asmReadAllTap"${isConnected()?'':` disabled class="needconn" title="${NEED_CONN}"`}>Read ${rd.length} pattern${rd.length===1?'':'s'}</button></div><div class="snote">Claude reads each one from its photo and close-up (one call each).</div>`:'')}
 async function asmReadGaps(){const list=asmCmGaps().filter(x=>x.r.gap==='reading').map(x=>x.i);if(!list.length||asmGapRun)return;asmGapRun={n:list.length,done:0};asmGapUI();
-  try{for(const it of list){await ask('pattern-reread',it.id);asmGapRun.done++;asmGapUI()}}finally{asmGapRun=null;asmGapUI()}
+  try{for(const it of list){await rereadSett(it.id);asmGapRun.done++;asmGapUI()}}finally{asmGapRun=null;asmGapUI()}
   setAsmOut({});asmTried.clear();ask('refresh-today')}
 function asmCmSet(v){try{if(v==='off')localStorage.setItem(ASM_CM,'0');else localStorage.removeItem(ASM_CM)}catch{}setAsmOut({});asmTried.clear();ask('refresh-today')}
 /* Settings' Painted plain: "Read N patterns" (act.js; on the page only: the painting worker has no act.js) */
@@ -92,8 +93,6 @@ if(typeof acts==='function')acts({asmGlPick:el=>asmGlSet(el.value)});
 /* the records a look needs on this device: the base master's too (asmCmJob builds the cloth on it) and the faded master for jeans */
 async function asmNkGet(o,k){const b=asmNkBase(k);if(b!==k&&!await asmCmGet(b))return false;if(!await asmCmGet(k))return false;
   const jf=asmJfWants(o,k);if(jf&&!renders[jf.key])await asmGet(jf.key,true);return true}
-/* sockets (bus.js; the restructure S6p, 2026-11-27): what asm-today.js (today-no-picture) asks of this optional file */
-serve('asm-cm-mf-get',asmCmMfGet);serve('asm-cm-get',asmCmGet);serve('asm-cm-ensure',asmCmEnsure);serve('asm-cm-warm',asmCmWarm);serve('asm-cm-ui',asmCmUI);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,asmCmSet,asmReadGaps,asmCmEnsure,asmCmGet,asmCmMfGet,asmCmUI,asmCmWarm,asmNkGet};
 export {asmCmGet,asmCmMfGet,asmCmWarm,asmCmEnsure,asmCmUI,asmReadGaps,asmCmSet,asmNkGet};

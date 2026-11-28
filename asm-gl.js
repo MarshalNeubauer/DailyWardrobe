@@ -33,7 +33,6 @@
    The master-only arrays (shares, light, contact shadows, rim, sleeve cells, the kept zones' colours) are packed once per master on the
    CPU (asmGlPack) and uploaded as textures (asmGlUpload); each look sets a few uniforms, draws one full-screen triangle and reads the
    picture back. A lost context (webglcontextlost) paints on the CPU and tries the graphics chip again after ASM_GL_RETRY_MS. */
-import {serve} from './bus.js';
 import {linSrgb8} from './srgb.js';
 import {ASM_CM_KINDS} from './asm-keys.js';
 import {ASM_FLOW,ASM_LIN,ASM_PX_MM,ASM_SIZE,ASM_TUBE_K,asmBarDraw,asmData,asmJpeg,asmLinenTile,asmTq,asmTqn,asmTqr,asmTweedTile} from './assemble.js';
@@ -675,8 +674,8 @@ function asmGlStatus(){const el=document.getElementById('gl-status');if(!el)retu
 function asmGlSet(v){try{if(v==='off')localStorage.setItem(ASM_GL,'0');else localStorage.removeItem(ASM_GL)}catch{}asmGlStatus()}
 /* a picture came back from the painter (asmRun): remember which way it was made, for the line above */
 function asmGlNote(r){if(!r||!('gl' in r))return;asmGlLast={gl:!!r.gl,ms:r.ms!=null?r.ms:null};asmGlStatus()}
-/* sockets (bus.js; the restructure S6p, 2026-11-27): what assemble.js (today-no-picture) asks of this optional file on the page (asm-color.js's asmCmBuild imports asmGlTry since N6, 2026-11-28: the two import each other, and neither reads the other at load); setAsmGlState for lab/gl-bench-run.js */
-serve('asm-gl-free',asmGlFree);serve('asm-gl-note',asmGlNote);serve('asm-gl-on-page',asmGlOnPage);serve('asm-gl-state',()=>asmGlState);serve('asm-gl-page',(...a)=>asmGlPage(...a));
+/* (assemble.js imports asmGlFree, asmGlNote, asmGlOnPage, asmGlPage and asmGlState, A8 2026-11-28; asm-color.js's asmCmBuild imports
+   asmGlTry since N6: the files import each other, and none reads another at load); setAsmGlState for lab/gl-bench-run.js */
 const setAsmGlState=v=>{asmGlState=v};
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,asmGlBytes,asmGlCuffs,asmGlInit,asmGlReset,get asmGlRetry(){return asmGlRetry},set asmGlRetry(v){asmGlRetry=v},asmGlSet,get asmGlPage(){return asmGlPage},set asmGlPage(v){asmGlPage=v},get asmGlPaint(){return asmGlPaint},set asmGlPaint(v){asmGlPaint=v},asmGlFree,asmGlNote,asmGlOnPage,asmGlProbe,get asmGlState(){return asmGlState},set asmGlState(v){asmGlState=v},asmGlUI,asmGlWhy};

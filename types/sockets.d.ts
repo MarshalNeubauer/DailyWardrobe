@@ -99,10 +99,6 @@ export interface Sockets {
   'load-failed': typeof import('../toast.js').loadFailed;
   /** a plain notice (ui.js tell), for app.js, which loads before it (the restructure S6f) (ui.js) */
   'tell': typeof import('../ui.js').tell;
-  /** whether a piece's pattern can be read, for Painted plain (readable; the painter may not import the Add group) (pattern-read.js) */
-  'pattern-readable': typeof import('../pattern-read.js').readable;
-  /** Read N patterns: a piece's pattern read again (rereadSett) (pattern-read.js) */
-  'pattern-reread': typeof import('../pattern-read.js').rereadSett;
   /** whether the Look beta is on (lookOn), for what a tag request names (core.js tagTypesNow; the restructure S6f) (look-base.js) */
   'look-on': typeof import('../look-base.js').lookOn;
   /** the words when the belt has to stay (BELT_STUCK) (pickscore.js) */
@@ -135,74 +131,22 @@ export interface Sockets {
   'suggest-clean': typeof import('../pickscore.js').suggestClean;
   /** a suit's own pants follow its jacket (suitPants) (pickscore.js) */
   'suit-pants': typeof import('../pickscore.js').suitPants;
-  /** where the pocket square sits, for the drawn mannequin (asmPocketQuad) (asm-pocket.js) */
-  'asm-pocket-quad': typeof import('../asm-pocket.js').asmPocketQuad;
-  /** one picture painted on the page, where no worker can (asmBuild; the restructure S6p, 2026-11-27: moved into asm-color.js, which assemble.js, today-no-picture, may not import) (asm-color.js) */
-  'asm-build': typeof import('../asm-color.js').asmBuild;
-  /** whether the masters are being warmed, so the worker is not let go (asmCmWarming, for asmIdle) (asm-color.js) */
-  'asm-cm-warming': () => typeof import('../asm-color.js').asmCmWarming;
-  /** the color-coded master a look takes, or null (asmCmKind): the mannequin drawn, the picture asked for (asm-color.js) */
-  'asm-cm-kind': typeof import('../asm-color.js').asmCmKind;
-  /** a new garment's base master (asmNkBaseOf) (asm-color.js) */
-  'asm-nk-base-of': typeof import('../asm-color.js').asmNkBaseOf;
-  /** the painter's own button color, for the drawn mannequin (asmCmBtnCol) (asm-color.js) */
-  'asm-cm-btn-col': typeof import('../asm-color.js').asmCmBtnCol;
   /** the close-up block's version (ASM_CU.v), in the mannequin's and the swatch's cloth keys (asm-color.js) */
   'asm-cu-v': () => typeof import('../asm-color.js').ASM_CU['v'];
-  /** the worsted tile's version (ASM_WT.v), in the mannequin's cloth key (asm-color.js) */
-  'asm-wt-v': () => typeof import('../asm-color.js').ASM_WT['v'];
   /** the herringbone shirt's lift and row (ASM_HB_COL_LIFT, ASM_HB_SHIRT_Y), in the swatch's key (asm-color.js) */
   'asm-hb-lift': () => [number, number];
-  /** the page's graphics state let go with the worker (asmGlFree) (asm-gl.js) */
-  'asm-gl-free': typeof import('../asm-gl.js').asmGlFree;
-  /** which painter painted a picture, for Settings' line (asmGlNote) (asm-gl.js) */
-  'asm-gl-note': typeof import('../asm-gl.js').asmGlNote;
-  /** whether a covered look is drawn on the page's chip (asmGlOnPage) (asm-gl.js) */
-  'asm-gl-on-page': typeof import('../asm-gl.js').asmGlOnPage;
-  /** the page's graphics state (asmGlState), for asmRunPage (asm-gl.js) */
-  'asm-gl-state': () => any;
-  /** the page's draw of a covered look (asmGlPage) (asm-gl.js) */
-  'asm-gl-page': typeof import('../asm-gl.js').asmGlPage;
-  /** a new garment's base master (asmNkBase; asm-kinds.js loads after asm-color.js) (asm-kinds.js) */
-  'asm-nk-base': typeof import('../asm-kinds.js').asmNkBase;
-  /** the uniform blouse's tapes and rank painted on the finished picture (asmOcpPaint) (asm-ocp.js) */
-  'asm-ocp-paint': typeof import('../asm-ocp.js').asmOcpPaint;
-  /** everything a look's painting needs, as plain data, or null (asmJob) (asm-cm-job.js) */
-  'asm-job': typeof import('../asm-cm-job.js').asmJob;
-  /** a look's master kind, the new garments' included (asmKindOf) (asm-cm-job.js) */
-  'asm-kind-of': typeof import('../asm-cm-job.js').asmKindOf;
-  /** a look's picture key (asmCmOutKey) (asm-cm-job.js) */
-  'asm-cm-out-key': typeof import('../asm-cm-job.js').asmCmOutKey;
-  /** the newest record date a look is painted from (asmCmStamp) (asm-cm-job.js) */
-  'asm-cm-stamp': typeof import('../asm-cm-job.js').asmCmStamp;
-  /** the masters' background brought onto the device (asmCmBgGet) (asm-cm-job.js) */
-  'asm-cm-bg-get': typeof import('../asm-cm-job.js').asmCmBgGet;
   /** how the painter lays a piece's cloth (asmCmRoute) (asm-cm-job.js) */
   'asm-cm-route': typeof import('../asm-cm-job.js').asmCmRoute;
   /** whether the painter takes the close-up block (asmCuWants) (asm-cm-job.js) */
   'asm-cu-wants': typeof import('../asm-cm-job.js').asmCuWants;
-  /** whether the painter takes the worsted tile (asmWtWants) (asm-cm-job.js) */
-  'asm-wt-wants': typeof import('../asm-cm-job.js').asmWtWants;
   /** the close-up block (asmCuTile) (asm-cm-job.js) */
   'asm-cu-tile': typeof import('../asm-cm-job.js').asmCuTile;
-  /** the worsted tile (asmWorstedTile) (asm-cm-job.js) */
-  'asm-worsted-tile': typeof import('../asm-cm-job.js').asmWorstedTile;
   /** a shirt's painted cloth tile, for its swatch (asmCmTile) (asm-cm-job.js) */
   'asm-cm-tile': typeof import('../asm-cm-job.js').asmCmTile;
   /** whether a shirt is painted as herringbone (asmHbShirt) (asm-cm-job.js) */
   'asm-hb-shirt': typeof import('../asm-cm-job.js').asmHbShirt;
   /** the item sheet's "Outfit pictures: …" line (asmGapNote) (asm-cm-job.js) */
   'asm-gap-note': typeof import('../asm-cm-job.js').asmGapNote;
-  /** the masters' manifest (asmCmMfGet) (asm-cm-page.js) */
-  'asm-cm-mf-get': typeof import('../asm-cm-page.js').asmCmMfGet;
-  /** a master's records brought onto the device (asmCmGet) (asm-cm-page.js) */
-  'asm-cm-get': typeof import('../asm-cm-page.js').asmCmGet;
-  /** a look's picture painted, kept and shown (asmCmEnsure) (asm-cm-page.js) */
-  'asm-cm-ensure': typeof import('../asm-cm-page.js').asmCmEnsure;
-  /** the coming looks' masters set up ahead (asmCmWarm) (asm-cm-page.js) */
-  'asm-cm-warm': typeof import('../asm-cm-page.js').asmCmWarm;
-  /** Settings' Pictures ahead and Painted plain rows (asmCmUI) (asm-cm-page.js) */
-  'asm-cm-ui': typeof import('../asm-cm-page.js').asmCmUI;
   /** whether the painter is on (asmLive) (photos.js) */
   'asm-live': typeof import('../photos.js').asmLive;
   /** the one-time gray backdrops of item pictures (fixItemBackdrops) (photos.js) */

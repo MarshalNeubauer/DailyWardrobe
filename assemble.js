@@ -7,6 +7,8 @@
 // and the atlas-painting trial were deleted; a look with no colour-coded master shows its own photo or the drawing.)
 import {ask} from './bus.js';
 import {srgbLin8} from './srgb.js';
+import {asmBuild,asmCmWarming} from './asm-color.js';
+import {asmGlFree,asmGlNote,asmGlOnPage,asmGlPage,asmGlState} from './asm-gl.js';
 const ASM_VER=3;   // in every key (asmKey): the colour-coded masters' keys too, so it never changes
 const ASM_SIZE=2048;   // a phone paints at 2048 (a larger ASM_CM_SIZE, as some tests set, paints larger and scales to this)
 /* ASM_ON: are assembled pictures in use? Off, Today shows each outfit's own photo or drawing and nothing is fetched or painted */
@@ -389,7 +391,7 @@ function asmWorker(){if(asmW!==null)return asmW;asmW=false;
 /* the worker can't run (it failed to load, or the browser has no OffscreenCanvas): what is waiting is built on the page */
 function asmWorkerDown(){const st=asmW;asmW=false;if(st)clearTimeout(st.timer);if(st&&st.w)try{st.w.terminate()}catch{}
   // (a step of asmRunPage's is not a picture: it fails, and asmRunPage paints the look on the page as without a worker)
-  const left=[...(st&&st.busy?[st.busy]:[]),...asmQ.splice(0)];for(const t of left){if(t.step)t.no(new Error('the painting worker stopped'));else ask('asm-build',t.job).then(t.ok,t.no)}}
+  const left=[...(st&&st.busy?[st.busy]:[]),...asmQ.splice(0)];for(const t of left){if(t.step)t.no(new Error('the painting worker stopped'));else asmBuild(t.job).then(t.ok,t.no)}}
 let asmSeq=0;
 function asmPump(){const st=asmW;if(!st||!st.ok||st.busy||!asmQ.length)return;clearTimeout(asmIdleT);const t=asmQ.shift();st.busy=t;st.timer=setTimeout(()=>asmStuck(st,t),ASM_RUN_MS);
   st.w.postMessage({id:t.id,job:t.job,...t.step},t.tr||[]);t.tr=null}
@@ -403,10 +405,10 @@ function asmPost(job,front,step,tr){return new Promise((ok,no)=>{const t={id:++a
    repaint, all off the page). The page's own graphics state (asmRunPage's) goes with it (asm-gl.js asmGlFree). Hidden, it is tried
    again every second until it is idle */
 let ASM_IDLE_MS=150e3,asmIdleT=0,asmPageN=0;
-function asmIdle(){const st=asmW;return !!st&&!!st.w&&!st.busy&&!asmQ.length&&!st.saving&&!asmAheadOn&&!asmPageN&&!ask('asm-cm-warming')}
+function asmIdle(){const st=asmW;return !!st&&!!st.w&&!st.busy&&!asmQ.length&&!st.saving&&!asmAheadOn&&!asmPageN&&!asmCmWarming}
 function asmIdleArm(){clearTimeout(asmIdleT);const st=asmW;if(!st||!st.w)return;asmIdleT=setTimeout(asmIdleEnd,document.hidden?0:ASM_IDLE_MS)}
 function asmIdleEnd(){const st=asmW;if(!st||!st.w)return;if(!asmIdle()){if(document.hidden)asmIdleT=setTimeout(asmIdleEnd,1000);return}
-  clearTimeout(st.timer);try{st.w.terminate()}catch{}asmW=null;ask('asm-gl-free')}
+  clearTimeout(st.timer);try{st.w.terminate()}catch{}asmW=null;asmGlFree()}
 if(typeof document!=='undefined')document.addEventListener('visibilitychange',()=>{if(document.hidden)asmIdleArm()});
 /* (2026-11-14 audit) a picture the worker hasn't answered in ASM_RUN_MS (a hung or crashed worker): it fails, the worker is replaced and
    the line goes on; before, nothing came back and every later picture waited behind it until the app was restarted */
@@ -415,11 +417,11 @@ function asmStuck(st,t){if(asmW!==st||st.busy!==t)return;console.warn('assembly 
   asmW=null;t.no(new Error('the picture took too long'));asmWorker()}
 /* is the picture work off the page (or still finding out)? the build-ahead runs only then */
 const asmOffPage=()=>{const st=asmWorker();return !!st&&st.ok!==false};
-function asmRun(job,front){const st=asmWorker();if(!st)return ask('asm-build',job);clearTimeout(asmIdleT);
+function asmRun(job,front){const st=asmWorker();if(!st)return asmBuild(job);clearTimeout(asmIdleT);
   // (2026-11-14) a worker without WebGL2 (an iPhone before iOS 17 has OffscreenCanvas but no WebGL in a worker): a look the graphics chip
   // covers is drawn on the page's own (asm-gl.js asmGlOnPage), with every CPU part in the worker (asmRunPage); everything else goes to the worker
-  const note=r=>{ask('asm-gl-note',r);return r};
-  if(ask('asm-gl-on-page',job,st))return asmRunPage(job,front).then(note);
+  const note=r=>{asmGlNote(r);return r};
+  if(asmGlOnPage(job,st))return asmRunPage(job,front).then(note);
   return asmPost(job,front).then(note)}
 /* (CR-8-02, 2026-11-17) a covered look where the worker has no WebGL2: the worker sets the master up and packs its textures, the page
    draws, the worker finishes the picture (asm-gl.js asmGlPrepOff, asmGlPage, asmGlFinOff); the page never works a setup out nor paints
@@ -428,12 +430,12 @@ function asmRun(job,front){const st=asmWorker();if(!st)return ask('asm-build',jo
    worker */
 let asmPageChain=Promise.resolve();
 function asmRunPage(job,front){const run=async()=>{asmPageN++;
-    try{for(let i=0;i<2;i++){const G=ask('asm-gl-state'),have=G&&!G.gl.isContextLost()&&i===0?{key:G.key,gk:G.gk}:{};
+    try{for(let i=0;i<2;i++){const G=asmGlState,have=G&&!G.gl.isContextLost()&&i===0?{key:G.key,gk:G.gk}:{};
         const prep=await asmPost(job,front,{glPrep:have});if(!prep||prep.why)break;
-        const fin=await ask('asm-gl-page',job,prep);if(!fin)break;if(fin.again)continue;
+        const fin=await asmGlPage(job,prep);if(!fin)break;if(fin.again)continue;
         return await asmPost(job,true,{glFin:fin},[fin.o.buffer])}
       return await asmPost({...job,gl:false},true)}   // (the worker has no WebGL2: its CPU)
-    catch(e){if(asmW===false)return ask('asm-build',job);throw e}
+    catch(e){if(asmW===false)return asmBuild(job);throw e}
     finally{asmPageN--;asmIdleArm()}};
   const p=asmPageChain.then(run,run);asmPageChain=p.catch(()=>{});return p}
 const ASM_KEEP=150,asmBusy=new Set(),asmTried=new Set();   // 150: the next 60 days' looks (about 43 workdays) and the days before

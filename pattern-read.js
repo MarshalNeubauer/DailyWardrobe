@@ -1,9 +1,9 @@
 /* Daily Wardrobe: photo tagging, pattern readings (split from tagging.js, Round B CR-2-17): the full pattern (sett) from the pixels, Claude's
    reading (POST /pattern) coloured from the pixels, motifs, a dress shirt's weave texture and camouflage. */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {emit,serve,askFor,runHooks} from './bus.js';
-import {CAMO_TR,CHECK_PATS,MOTIF_PATS,STRIPE_PATS,TEXTURE_PATS,settFromCanvas,texPat,tieWeave} from './detect.js';
-import {FABRIC,PATS_BY,camoPat,dE00,hexRgb,inviteOver,items,labHex,patBase,patName,rgbLab,settingsOpen,esc} from './core.js';
+import {emit,askFor,runHooks} from './bus.js';
+import {CAMO_TR,STRIPE_PATS,claudeOnly,motifPat,readable,settFromCanvas,settable} from './detect.js';
+import {PATS_BY,camoPat,dE00,hexRgb,inviteOver,items,labHex,patBase,patName,rgbLab,settingsOpen,esc} from './core.js';
 import {BLUR_SHARP,applyMeasured,applyWb,closeRead,measureCard,sharpness,wbRead} from './measure.js';
 import {linSrgb8,srgbLin8} from './srgb.js';
 import {cardAt,cardIx,imgOf,put,queue} from './app.js';
@@ -20,8 +20,7 @@ function measureAndApply(q){measureCard(q);missedPattern(q);return applyMeasured
    area that is all patterned cloth), else from the close-up, else from Claude's own reading (weave.colours). Claude's
    weave also gives the direction (for a close-up, whose angle says nothing), the repeats across the item (the drawing's
    scale on the figure) and a description for the photo generator. ---- */
-const SETT_PATS={tie:[...STRIPE_PATS,...CHECK_PATS,'tonal-check','other',...MOTIF_PATS],shirt:[...STRIPE_PATS,...CHECK_PATS,'other',...TEXTURE_PATS],suit:[...STRIPE_PATS,...CHECK_PATS],blazer:[...STRIPE_PATS,...CHECK_PATS],pants:[...STRIPE_PATS,...CHECK_PATS]};
-const settable=(type,pat,weave)=>{const p=patBase(pat)||'solid';return p!=='solid'&&((SETT_PATS[type]||[]).includes(p)||!!(weave&&weave.layout&&FABRIC.includes(type)))};
+/* (SETT_PATS and settable are detect.js's, A8: the painter reads readable) */
 const DIR_ANG={'upper-left to lower-right':-45,'lower-left to upper-right':45,vertical:0,horizontal:90};
 const WEAVE_W={hairline:.02,narrow:.05,medium:.12,wide:.25};
 function settFromWeave(w){const c=(w&&w.colours||[]).filter(x=>/^#[0-9a-f]{6}$/i.test(x.hex));if(c.length<2)return null;const tot=c.reduce((s,x)=>s+(WEAVE_W[x.width]||.12),0);
@@ -57,13 +56,7 @@ function settFromRaw({full,box,tex,weave,wb,type}){let s=null,c=null;
   if(s&&weave){if(weave.repeatsAcross&&!(type==='tie'&&/photo/.test(s.src)))s.tr=weave.repeatsAcross;   // a tie's box spans most of its width: its own count beats Claude's estimate (a jacket's box is only part of it)
     if(s.src==='closeup'&&DIR_ANG[weave.direction]!=null)s.a=DIR_ANG[weave.direction]}   // a close-up's angle says nothing
   return s}
-const motifPat=p=>MOTIF_PATS.includes(patBase(p)||'');
-/* patterns only Claude's reading can draw (the band reader would turn them into stripes) */
-/* a tie tagged woven or tonal check (2026-11-13): never read before, so painted plain; the owner's charcoal & grey woven tie is a grid of
-   tiny light dots, which Claude reads as a motif (the tie painter draws motifs and bands; a pure weave, layout texture, stays plain) */
-const claudeOnly=(t,p)=>motifPat(p)||texPat(t,p)||tieWeave(t,p)||camoPat(p);   // (a camouflage: Claude's reading, else its colours clustered from the pixels, camoFromPixels; never the band reader)
-/* a card's pattern can be read: a band pattern, a weave Claude described, or a pattern only Claude can read (a motif, a shirt's weave) */
-/** @param {*} t @param {*} p @param {*} w */ const readable=(t,p,w)=>settable(t,p,w)||claudeOnly(t,p);
+/* (motifPat, claudeOnly and readable are detect.js's, with settable, A8: asm-cm-job.js asmCmRoute imports readable) */
 /* Claude's reading drawn with the photo's colours: bands (stripes, checks, plaids) or a motif (small figures on a grid) */
 /* an answer of a shape it can't draw (2026-11-16: across without bands threw, and the Add card's Confirm stayed off) gives null: the
    pixel reader takes over, as when Claude sent nothing */
@@ -281,7 +274,6 @@ function texFromSpec(spec,{tex}){const t=spec&&spec.texture;if(!t||!t.grid||t.gr
 /* the Add card's "Use the pattern from the photo" / "Use the simple pattern" (act.js; the card by its id: add-save.js cardIx) */
 function settTap(el){toggleSett(cardIx(el))}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
-serve('pattern-readable',readable);serve('pattern-reread',rereadSett);   // (the restructure S6p: the painter, asm-cm-job.js asmCmRoute and asm-cm-page.js Read N patterns, may not import this file)
 globalThis.HOOK={__proto__:globalThis.HOOK||null,camoFromPixels,claudePattern,motifFromSpec,motifPat,settCheck,settFrom,specSett,texContrast,texFromSpec,readable,claudeOnly,missedPattern,readPatternWithClaude,readSett,rereadSett,settFromSpec,settSummary,settable};
 export {settable,motifPat,claudeOnly,readable,specSett,settSummary,TEX_WORDS,settFrom,readSett,settCheck,missedPattern,settNote,rereadSett,claudePattern,settFromSpec,readPatternWithClaude,camoFromPixels,motifFromSpec,texContrast,texFromSpec,measureAndApply};
 acts({settTap});

@@ -17,7 +17,6 @@
    - the cloth: the square's colour, its border along the top edge (the contrast edge folded to show), dots, a stripe, a check or a small
      figure in its second and third colours, a faint slub for white linen and woven squares
    Nothing of core.js may be read at load time (the picture worker has none): asmPocketJob works the colours out on the page. */
-import {serve} from './bus.js';
 import {linSrgb8,srgbLin8} from './srgb.js';
 import {asmData,asmJpeg} from './assemble.js';
 const ASM_POCKETV=2;   // 2: folded cloth (a rolled, slightly uneven crease, two layers at the ends, relaxed creases, corner tucks, silk sheen / weave)
@@ -99,9 +98,6 @@ function asmPocketDo(px,S,J){const Q=asmPocketQuad(J.kind);if(!Q)return;const f=
       const c=cloth(bx-b0[0],v,vv);
       for(let q=0;q<3;q++){const base=c[q]*k*shade*weave,lit=base+(Math.min(1,k*1.05)-base)*sheen;out[q]=out[q]*(1-cov)+Math.min(1,lit)*cov}}
     for(let q=0;q<3;q++)px[i+q]=gam(out[q])}}
-/* sockets (bus.js; the restructure S6p, 2026-11-27): the pocket square's quad for the drawn mannequin (mannequin.js, which lives without this
-   file; asm-color.js imports asmPocketPaint since N6, 2026-11-28) */
-serve('asm-pocket-quad',asmPocketQuad);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,asmPocketDo,asmPocketQuad};
 export {asmPocketQuad,asmPocketPaint,asmPocketDo,ASM_POCKETV};

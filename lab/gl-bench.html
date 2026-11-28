@@ -93,7 +93,9 @@ var GLB_WORKER_SRC='',GLB_APP_VERSION=null;
   // (the restructure S6p, 2026-11-27: the painter's files hand nothing to globalThis; a look's job is worked out in asm-look.js and asm-cm-job.js,
   //  which read photo-keys.js's kept pictures and draw.js, which reads asm-keys.js and assemble.js; the worker's files talk through bus.js)
   var PAGE=['../srgb.js','../merge.js','../bus.js','../core.js','../detect.js','../photo-keys.js','../asm-keys.js','../assemble.js','../asm-watch.js','../asm-pocket.js','../asm-color.js','../asm-gl.js','../asm-kinds.js','../draw.js','../asm-ocp.js','../asm-look.js','../asm-cm-job.js','gl-bench-run.js','gl-bench.js'];
-  var WORKER=['../srgb.js','../bus.js','../asm-keys.js','../assemble.js','../asm-color.js','../asm-gl.js','gl-bench-run.js'];
+  // (A8, 2026-11-28: asm-color.js writes asm-kinds.js's and asm-ocp.js's kinds into the tables at load, and reads asm-gl.js's ASM_GL_KINDS:
+  //  in the one script those three come before it, in the order the modules run)
+  var WORKER=['../srgb.js','../bus.js','../asm-keys.js','../assemble.js','../asm-gl.js','../asm-kinds.js','../asm-ocp.js','../asm-color.js','gl-bench-run.js'];
   try{
     var src={};
     await Promise.all(PAGE.map(async function(u){var r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(u+': HTTP '+r.status);src[u]=await r.text()}));

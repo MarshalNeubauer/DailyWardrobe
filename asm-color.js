@@ -19,13 +19,15 @@
    A phone paints at 2048; a larger ASM_CM_SIZE (up to the masters' 2880, as some tests set) paints larger and scales to 2048.
    (Settings' switch to turn this off on a phone, localStorage asm_cm = '0', was removed 2026-11-13.) */
 /* ASM_CMV, ASM_CM_KINDS and asmCmKey are in asm-keys.js (the restructure S4, 2026-11-26), which assemble.js reads too */
-import {ask,serve,served} from './bus.js';
+import {serve} from './bus.js';
 import {linSrgb,linSrgb8,srgbLin} from './srgb.js';
 import {ASM_CMV,ASM_CM_KINDS} from './asm-keys.js';
 import {ASM_CREASE_DEG,ASM_FLOW,ASM_FORE_K,ASM_LIN,ASM_PX_MM,ASM_SIZE,ASM_SLEEVE_FLOW,asmBarDraw,asmBodyFlow,asmData,asmFlowAt,asmImg,asmJpeg,asmLinenTile,asmPolyAt,asmSleeveFlow,asmSleeveSegs,asmTubeAt,asmTubePart,asmTubeRaw,asmTubeTabs,asmTweedTile} from './assemble.js';
 import {asmWatchPaint} from './asm-watch.js';
 import {asmPocketPaint} from './asm-pocket.js';
-import {asmGlTry} from './asm-gl.js';
+import {ASM_GL_KINDS,asmGlTry} from './asm-gl.js';
+import {ASM_NK,asmNkBase} from './asm-kinds.js';
+import {ASM_OCP_KINDS,asmOcpPaint} from './asm-ocp.js';
 const ASM_CM='asm_cm';   // localStorage: '0' = this phone puts pictures together the earlier way
 const asmCmPref=()=>{try{return localStorage.getItem(ASM_CM)!=='0'}catch{return true}};
 try{localStorage.removeItem(ASM_CM)}catch{}   // (its Settings switch is gone, 2026-11-13: a phone that had it off paints again; asmCmSet stays for the tests)
@@ -34,7 +36,7 @@ try{localStorage.removeItem(ASM_CM)}catch{}   // (its Settings switch is gone, 2
   if(o.top)return o.tie?(o.vest?'vest':'suit'):(o.vest?'vest-open':'suit-open');
   if(!o.bot||!o.belt)return null;   // the shirt masters show the trousers and the belt
   return o.tie?'shirt-tie':'shirt-open'}
-/** @param {*} k */ const asmNkBaseOf=k=>served('asm-nk-base')?ask('asm-nk-base',k):k;
+/** @param {*} k */ const asmNkBaseOf=k=>asmNkBase(k);
 /* the cloth of each garment, as it goes into the picture's key: a new colour, reading or drawing makes a new picture */
 const ASM_CM_PAINTV=9;   // 2: jackets and trousers without a stripe or check reading are their colour; 3: a plain twill jacket has its ribs (asmTwillTex); 4: woven shirts at full swing, measured repeat, 3x3 points; 5: the sleeves reach the jacket's outer edge (ASM_CM_RIM); 6: the cloth look (#304, rolled back: its pictures are still on the worker under p6); 7: the cloth look and lighting as chosen (ASM_CM_LOOK, ASM_CM_LIGHT); 8: the same on trousers, the shirt's buttons drawn (ASM_CM_BTN), the tie's sheen dialled back (the owner: too glossy), the half-hidden button drawn as a button, no purple skin edge (the button smudge); 9: (2026-11-14 audit) the tie sheen, hand edge and trousers lighting shipped under 8 without a bump: repainted; since then the painter's code is hashed into every key (asmCmCodeSig), so a forgotten bump can't leave old pictures
 /* the cloth look (the owner's choice, 2026-11-13, after several rounds of mockups against an OpenAI picture of his black suit, which the
@@ -892,18 +894,30 @@ const asmCmDiskKey=job=>job.cm+'|v'+ASM_CMV+'|'+asmCmSrcSig()+'|z'+ASM_CM_PACKV+
 /* (a phone) warming: the masters the coming looks use, downloaded and set up in the background, one at a time; not on a connection that
    asks to save data or a slow one; once a session per master */
 const asmCmWarmed=new Set();let asmCmWarming=false;
-/* build one picture from a job (in either thread; asm-worker.js imports it, and assemble.js asks for it on the page: 'asm-build') -> {url (a JPEG data URL), gl, ms}; a warming job (setupOnly) only sets its master up */
+/* build one picture from a job (in either thread; asm-worker.js imports it, and so does assemble.js, for the page where no worker can) -> {url (a JPEG data URL), gl, ms}; a warming job (setupOnly) only sets its master up */
 async function asmBuild(job){
   if(job.cm&&job.setupOnly){const hit=await asmCmSetup(job);if(job.diskCache!==false&&typeof indexedDB!=='undefined'&&!await asmCmDiskGet(asmCmDiskKey(job))){const x=await asmCmPack(hit.P);if(x)await asmCmDiskPut(asmCmDiskKey(job),x,job.cm+'|')}return {setup:true}}   // (warming, asm-color.js asmCmWarm)
   if(!job||!job.cm)return {};return asmBuildAfter(await asmCmBuild(job),job)}
 /* the day's watch and pocket square, painted on the finished picture (asm-watch.js, asm-pocket.js; also after the page's draw, asm-gl.js asmGlFinOff) */
 async function asmBuildAfter(r,job){if(job.watch)r=await asmWatchPaint(r,job.watch);
-  if(job.ocpDecal&&served('asm-ocp-paint'))r=await ask('asm-ocp-paint',r,job.ocpDecal);   // the uniform blouse's tapes and rank (asm-ocp.js)
+  if(job.ocpDecal)r=await asmOcpPaint(r,job.ocpDecal);   // the uniform blouse's tapes and rank (asm-ocp.js)
   return job.pocket?asmPocketPaint(r,job.pocket):r}
-/* the painter's sockets (bus.js; the restructure S6p, 2026-11-27): what assemble.js, asm-look.js and asm-today.js, draw.js (today-no-picture)
-   and the mannequin ask of this optional file, which they may not import; in the worker nobody asks (asm-worker.js imports asmBuild) */
-serve('asm-build',asmBuild);serve('asm-cm-warming',()=>asmCmWarming);serve('asm-cm-kind',asmCmKind);serve('asm-nk-base-of',asmNkBaseOf);serve('asm-cm-btn-col',asmCmBtnCol);
-serve('asm-cu-v',()=>ASM_CU.v);serve('asm-wt-v',()=>ASM_WT.v);serve('asm-hb-lift',()=>[ASM_HB_COL_LIFT,ASM_HB_SHIRT_Y]);
+/* the new garments' and the uniform blouse's kinds into the painter's tables, invisibly to its fingerprint (non-enumerable; asm-gl.js's
+   ASM_GL_KINDS is not fingerprinted): at load, on the page and in the worker, from asm-kinds.js's ASM_NK and asm-ocp.js's ASM_OCP_KINDS,
+   which ran before this file (it imports them). Moved here from those two files with their text unchanged but the dead typeof guard (A8,
+   2026-11-28): there they read this file's ASM_CM_BTN at load, so this file could not import them */
+(()=>{const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
+  for(const [k,v] of Object.entries(ASM_NK)){const B=ASM_CM_KINDS[v.base];
+    if(!own(ASM_CM_KINDS,k))Object.defineProperty(ASM_CM_KINDS,k,{value:{...B,zones:[...B.zones],lapels:v.lapels!=null?v.lapels:B.lapels},enumerable:false});
+    if(v.btn&&!own(ASM_CM_BTN,k))Object.defineProperty(ASM_CM_BTN,k,{value:v.btn,enumerable:false});
+    ASM_GL_KINDS.add(k)}})();
+(()=>{const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
+  for(const [k,v] of Object.entries(ASM_OCP_KINDS)){const B=ASM_CM_KINDS[v.base];
+    if(!own(ASM_NK,k))Object.defineProperty(ASM_NK,k,{value:v,enumerable:false});
+    if(!own(ASM_CM_KINDS,k))Object.defineProperty(ASM_CM_KINDS,k,{value:{...B,zones:[...B.zones],lapels:v.lapels},enumerable:false});
+    ASM_GL_KINDS.add(k)}})();
+/* the painter's sockets (bus.js; the restructure S6p, 2026-11-27): what today-picture.js asks of the painter (the painter's own files import) */
+serve('asm-cu-v',()=>ASM_CU.v);serve('asm-hb-lift',()=>[ASM_HB_COL_LIFT,ASM_HB_SHIRT_Y]);
 /* setters (an imported binding is read-only): asm-worker.js counts the setup's saves (asmCmPack, asmCmDiskPut), lab/gl-bench-run.js holds
    one setup (asmCmMem), asm-cm-page.js's warming (asmCmWarming) */
 const setAsmCmPack=f=>{asmCmPack=f},setAsmCmDiskPut=f=>{asmCmDiskPut=f},setAsmCmMem=v=>{asmCmMem=v},setAsmCmWarming=v=>{asmCmWarming=v};

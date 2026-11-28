@@ -7,19 +7,9 @@
 // CR-8-03 one ordinary error on the graphics chip keeps the context (that look on the CPU); the same error again releases it properly;
 // CR-8-04 the mannequin's shirt buttons are the painter's (asmCmBtnCol); CR-8-05 Today's herringbone swatch ids never repeat.
 // Real app files, the real asm-worker.js, the suit master's fixtures at 512 (tests/fixtures/cm/suit), no network.
-const fs=require('fs'),path=require('path'),vm=require('vm');
-const {appSrc}=require('./appsrc');
+const fs=require('fs'),path=require('path');
 module.exports=async({ok,chromium,url,ROOT})=>{
-  // ---- CR-8-04 without asm-color.js (the mannequin's own rule, as in a page that hasn't loaded the painter) ----
-  {const ctx={self:{},console};ctx.self=ctx;vm.createContext(ctx);
-    for(const f of ['srgb.js','bus.js','mq/shirt-open.js','mannequin.js'])vm.runInContext(appSrc(ROOT,f),ctx);
-    const L=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)},G=v=>Math.round(255*(v<=.0031308?12.92*v:1.055*Math.pow(v,1/2.4)-.055));
-    const PEARL=[.86,.84,.80],MIX=.55,rule=lin=>PEARL.map((v,q)=>L(255*(G(v)/255*(1-MIX)+G(lin[q])/255*MIX)));   // (the painter's asmCmBtnCol, in display values)
-    let worst=0;for(const shirt of ['#ffffff','#cfe0f2','#f2d3da','#3b4a63']){const svg=ctx.outfitMannequinSvg({kind:'shirt-open',shirtColor:shirt,bot:{color:'#555'},shirt:{color:shirt}});
-      const m=/<g class="fig-shirtbtn">(?:<circle[^>]*\/>)(<circle[^>]*fill="(#[0-9a-f]{6})"\/>)/i.exec(svg),drawn=m&&m[2];
-      const want=rule([1,3,5].map(k=>L(parseInt(shirt.slice(k,k+2),16)))).map(G);
-      worst=Math.max(worst,drawn?Math.max(...[1,3,5].map((k,q)=>Math.abs(parseInt(drawn.slice(k,k+2),16)-want[q]))):99)}
-    ok(worst<=1,`CR-8-04: without the painter loaded, the mannequin's buttons follow the painter's rule (largest difference ${worst} levels; it was 12)`)}
+  // (CR-8-04 without asm-color.js went with A8, 2026-11-28: every page file loads, and mannequin.js imports asmCmBtnCol; the page's check is below)
   const browser=await chromium.launch();
   try{
     const ctx=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'});

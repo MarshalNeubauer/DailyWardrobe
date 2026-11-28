@@ -1,6 +1,6 @@
 /* Daily Wardrobe: the OCP uniform blouse's colour-coded master and the OCP cloth on painted pictures (2026-11-17, the owner's uniform
-   blouse; mockups, builds and the master's tools in C:\code\audit-2026-11-13\ocp-blouse\). Loaded after asm-kinds.js on the page and in
-   asm-worker.js.
+   blouse; mockups, builds and the master's tools in C:\code\audit-2026-11-13\ocp-blouse\). asm-color.js imports it, so it runs before asm-color.js
+   on the page and in asm-worker.js (A8).
 
    (2026-11-20, option A) The master is made from the owner's own photo of himself in his blouse (ocp-blouse\tools\build_photo.py, no
    image generation), in his own hands-on-hips pose, cropped at the neck, on the open-collar shirt master's zones: the blouse as
@@ -21,12 +21,10 @@
      adds the rank and puts OCP pants in the OCP cloth (on any master that shows pants)
    - the keys: a blouse look's carries its kind, 'nk' + asmNkSig, the items (T-shirt, pants, belt) and the rank (asmOcpSig); OCP pants'
      sett signatures carry OCP_V (detect.js ocpSett): bump core.js OCP_V whenever the OCP cloth changes */
-import {serve} from './bus.js';
+/* (A8, 2026-11-28: the table writes that put the blouse's kind into ASM_NK, ASM_CM_KINDS and ASM_GL_KINDS are in asm-color.js, which
+   imports this file for them and for asmOcpPaint) */
 import {linSrgb8,srgbLin8} from './srgb.js';
-import {ASM_CM_KINDS} from './asm-keys.js';
 import {asmData,asmJpeg} from './assemble.js';
-import {ASM_GL_KINDS} from './asm-gl.js';
-import {ASM_NK} from './asm-kinds.js';
 const ASM_OCP_KINDS={blouse:{base:'shirt-open',lapels:0,cloth:'jersey'}};
 /* the outfit the base job is built from: a blouse look's without the blouse (the open-shirt master's items), any other as it is */
 const asmOcpBase=(o,k)=>ASM_OCP_KINDS[k]&&o?{...o,top:null}:o;
@@ -61,12 +59,4 @@ const ASM_OCP_BOX={tab:[1050,529,161,166],rank:[1090,559,80,80]},ASM_OCP_INK='#5
       const u=Math.min(MW-1,Math.max(0,Math.floor(((x+.5)/f-b.x)/b.w*MW))),v=Math.min(MH-1,Math.max(0,Math.floor(((y+.5)/f-b.y)/b.h*MH))),a=m.data[4*(v*MW+u)+3]/255;if(a<=0)continue;
       const i=4*(y*S+x),sh=Math.min(1.25,Math.max(.5,Y(i)/Math.max(1e-4,mean)));for(let q=0;q<3;q++){const cur=L(px[i+q]);px[i+q]=G(cur*(1-a)+ink[q]*sh*a)}}}
   if(img)res.url=await asmJpeg(img);return res}
-/* (below the bridge: it reads asm-color.js's and asm-gl.js's tables at load, and throws without them) */
-(()=>{const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
-  for(const [k,v] of Object.entries(ASM_OCP_KINDS)){const B=ASM_CM_KINDS[v.base];
-    if(!own(ASM_NK,k))Object.defineProperty(ASM_NK,k,{value:v,enumerable:false});
-    if(!own(ASM_CM_KINDS,k))Object.defineProperty(ASM_CM_KINDS,k,{value:{...B,zones:[...B.zones],lapels:v.lapels},enumerable:false});
-    if(typeof ASM_GL_KINDS!=='undefined')ASM_GL_KINDS.add(k)}})();
-/* sockets (bus.js; the restructure S6p, 2026-11-27): the uniform blouse's tapes and rank painted on the finished picture (asm-color.js asmBuildAfter: the painter lives without this file) */
-serve('asm-ocp-paint',asmOcpPaint);
 export {asmOcpBase,asmOcpPaint,asmOcpMemo,ASM_OCP_TEX,ASM_OCP_RIP,ASM_OCP_CLOTH,ASM_OCP_KINDS,ASM_OCP_DECV,ASM_OCP_MASTER_RANK,ASM_OCP_BOX,ASM_OCP_INK};

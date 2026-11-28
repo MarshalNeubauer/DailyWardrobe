@@ -1,21 +1,24 @@
 /* Daily Wardrobe: Today's painted pictures on the page (the restructure S6p, 2026-11-27: moved out of assemble.js with their text
    unchanged): a look's job (asmJob), the pictures kept on the device and on the server (asmFor, asmGet, asmLoad, asmKeepOut), Today's
    hook (asmEnsure, asmShow), building ahead (asmAhead), the start-up sync (asmSync) and Settings' Outfit pictures part (renderAsmUI).
-   It reads the app's state (app.js, today-plan.js) besides asm-look.js; the color-coded painter (asm-color.js and its page files) is
-   optional, so what this file asks of it goes through bus.js sockets. */
+   It reads the app's state (app.js, today-plan.js) besides asm-look.js, and imports the color-coded painter (asm-color.js and its page
+   files, A8); Today's redraw and a day's plan (settings.js, month.js: screens) it asks through bus.js sockets. */
 import {$,REC_PHOTO,isWorkday,key,todayDate} from './core.js';
 import {comboSig,renders,workerBase} from './photo-keys.js';
 import {metaPut,sel,txs} from './app.js';
 import {planFor} from './today-plan.js';
 import {ASM_AHEAD,ASM_AHEAD_N,ASM_AHEAD_WAIT,ASM_KEEP,ASM_ON,ASM_OUT_RANGE,ASM_PRE_RE,ASM_RETRY_MS,asmAheadOn,asmIdleArm,asmImgOf,asmOffPage,asmPreGetting,asmPreNo,asmRetryAt,asmTried,asmUrls,setAsmAheadOn} from './assemble.js';
 import {asmCmAny,asmCmHeld,asmCmKey,asmCmUse,asmDrawn,asmFresh,asmFullWins,asmListAt,asmListGet,asmLookId,asmOut,asmOutKey,asmPreSigOk,asmStale,asmWants,setAsmOut} from './asm-look.js';
-import {ask,served,register} from './bus.js';
+import {asmNkBaseOf} from './asm-color.js';
+import {asmCmBgGet,asmKindOf} from './asm-cm-job.js';
+import {asmCmEnsure,asmCmGet,asmCmMfGet,asmCmUI,asmCmWarm} from './asm-cm-page.js';
+import {ask,register} from './bus.js';
 /* look for the outfit's colour-coded master on the worker, once a session: in the worker's list (one small request), else by downloading it */
-const asmCmLook=async o=>{if(!ASM_ON||!served('asm-cm-kind'))return;const k=ask('asm-kind-of',o);if(!k)return;
-  await ask('asm-cm-mf-get');   // the masters' manifest first: it may outdate a photo held here, and its dates are in the look's key
-  for(const m of new Set([ask('asm-nk-base-of',k),k]))if(!renders[asmCmKey(m,'master')]){const L=await asmListGet();if(!(L&&L.has(asmCmKey(m,'master')))&&!asmTried.has(asmCmKey(m,'master')))await ask('asm-cm-get',m)}
+const asmCmLook=async o=>{if(!ASM_ON)return;const k=asmKindOf(o);if(!k)return;
+  await asmCmMfGet();   // the masters' manifest first: it may outdate a photo held here, and its dates are in the look's key
+  for(const m of new Set([asmNkBaseOf(k),k]))if(!renders[asmCmKey(m,'master')]){const L=await asmListGet();if(!(L&&L.has(asmCmKey(m,'master')))&&!asmTried.has(asmCmKey(m,'master')))await asmCmGet(m)}
   // the background (asm-color.js), once a session: its date is in every look's key, so a phone needs it to find the worker's pictures
-  if(asmCmHeld(k))await ask('asm-cm-bg-get')};
+  if(asmCmHeld(k))await asmCmBgGet()};
 function asmFor(o){if(!asmWants(o)||asmFullWins(o))return null;
   const k=asmOutKey(o),a=asmOut[k];if(a&&!a.lid&&asmCmUse(o)){a.lid=asmLookId(o);metaPut('asm:out:'+k,a).catch(()=>{})}   // (a picture kept before it carried its outfit: marked as it is met, so it can stand in after the next change)
   return a&&asmFresh(o,a)?{img:asmImgOf(k,a),model:'assembled',t:a.t,sig:comboSig(o)}:null}
@@ -43,7 +46,7 @@ async function asmBlobUp(){for(const [k,a] of Object.entries(asmOut)){if(!a||a.b
 /* bring what this outfit needs onto the device, paint its picture, keep it and show it (asm-color.js asmCmEnsure: the worker's
    picture first). Not for an outfit whose own photo wins (asmFullWins): asmFor gives null for it, and taking that as "not made yet"
    painted it and redrew Today again and again after a Regenerate, which kept the phone busy and cut off every swipe and scroll */
-/** @param {*} o @param {*} [ahead] */ async function asmEnsure(o,ahead){if(asmDrawn())return;await asmCmLook(o);if(!asmCmUse(o))return;if(!ahead)asmAheadSoon();return ask('asm-cm-ensure',o,ahead)}
+/** @param {*} o @param {*} [ahead] */ async function asmEnsure(o,ahead){if(asmDrawn())return;await asmCmLook(o);if(!asmCmUse(o))return;if(!ahead)asmAheadSoon();return asmCmEnsure(o,ahead)}
 /* the day on screen's picture is ready: Today is redrawn, but not under a finger (a redraw removes what the touch started on and the
    swipe or scroll stops); then it waits for the finger to lift */
 let asmTouch=0,asmLate=false;
@@ -71,7 +74,7 @@ let asmAhead=async function asmAhead(){if(!ASM_ON||document.hidden||asmDrawn()||
       await Promise.all(Array.from({length:ASM_AHEAD_N},async()=>{while(i<built.length&&!stop())await asmEnsure(built[i++],true)}));
       rest.sort((a,b)=>String(asmCmUse(a)||'').localeCompare(String(asmCmUse(b)||'')));   // (a stable sort: nearest first within a master)
       for(const o of rest){if(stop())break;await asmEnsure(o,true)}
-      if(!stop())await ask('asm-cm-warm',rest)}   // (2026-11-14) then the masters of the coming looks nobody built, set up ahead
+      if(!stop())await asmCmWarm(rest)}   // (2026-11-14) then the masters of the coming looks nobody built, set up ahead
     while(asmAheadAgain)}
   catch(e){console.warn('building ahead stopped',e)}finally{setAsmAheadOn(false);asmIdleArm()}};
 /* asmState: what the last look at the worker found (cm: colour-coded masters are there) */
@@ -80,7 +83,7 @@ let asmState={checked:false,cm:false},asmSyncing=null;
    look under way and then asks afresh for what was missing or failed before */
 function asmSync(force){if(!ASM_ON||asmDrawn()||!workerBase())return Promise.resolve(asmState);if(asmSyncing)return force?asmSyncing.then(()=>asmSync(true)):asmSyncing;
   asmSyncing=(async()=>{
-    try{if(force){asmTried.clear();asmRetryAt.clear();asmPreNo.clear();await asmListGet(true);await ask('asm-cm-mf-get',true)}else await asmListGet();
+    try{if(force){asmTried.clear();asmRetryAt.clear();asmPreNo.clear();await asmListGet(true);await asmCmMfGet(true)}else await asmListGet();
       asmState={checked:true,cm:asmCmAny()}}
     catch(e){console.warn('assembled pictures: could not check the worker',e)}
     asmSyncing=null;
@@ -91,7 +94,7 @@ function asmSync(force){if(!ASM_ON||asmDrawn()||!workerBase())return Promise.res
 /* Settings → Outfit pictures → Advanced: the colour-coded masters' rows (asm-color.js asmCmUI) */
 /* (with "Drawing only" the group is hidden, and with it the whole Advanced fold (styles.css #adv-photos:has(#asm-group[hidden])): Pictures
    ahead, Painted plain and the graphics-chip switch are about the painter; and asmCmStatus would read the worker's list) */
-function renderAsmUI(){const on=ASM_ON&&!asmDrawn(),grp=$('#asm-group');if(grp)grp.hidden=!on;if(on)ask('asm-cm-ui')}
+function renderAsmUI(){const on=ASM_ON&&!asmDrawn(),grp=$('#asm-group');if(grp)grp.hidden=!on;if(on)asmCmUI()}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get asmAhead(){return asmAhead},set asmAhead(v){asmAhead=v},get asmAheadSoon(){return asmAheadSoon},set asmAheadSoon(v){asmAheadSoon=v},asmBlobUp,asmCmLook,get asmSyncing(){return asmSyncing},asmEnsure,asmFor,asmGetPre,asmLoad,asmShow,asmShown,asmSync,renderAsmUI};
 export {asmCmLook,asmFor,asmShown,asmGetPre,asmLoad,asmKeepOut,asmBlobUp,asmEnsure,asmShow,asmSync,renderAsmUI,asmSyncing,asmAheadSoon,asmAhead};
