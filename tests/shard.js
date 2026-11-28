@@ -2,7 +2,8 @@
 //   node tests/run.js --shard i/N        (or TEST_SHARD=i/N) runs shard i of N (1-based) of every test
 //   node tests/shard.js --plan N [W]     prints the shards: their tests and estimated times, and checks that every test is in exactly one
 //   node tests/shard.js --summary <dir> <N> [W]   (the workflow's last job) reads each shard's log and times from <dir>, prints one
-//                                        summary (every failure with its shard) and writes <dir>/shard-times.json; exit 1 if any failed
+//                                        summary (every failure with its shard, "## FAILED" on top when any failed) and writes
+//                                        <dir>/shard-times.json and <dir>/verdict.json ({ok, passes, failed, flaky, failures}); exit 1 if any failed
 //   node tests/shard.js --needs-webkit i/N [W]   prints "true" when shard i runs a WebKit half (it then installs WebKit)
 // Shards are balanced by the per-test seconds in tests/shard-times.json (from a cloud run: `npm run test:cloud -- --save-times`);
 // a test not in it counts as the median. W of the N shards (the last ones) take the WebKit halves (' · WebKit'), so only those
@@ -71,6 +72,7 @@ function summary(dir,n){const out=[],all={passes:0,failures:0,flaky:0},times={},
     for(const f of r.failed)fails.push({shard:i,...f});for(const f of r.flakyNames)flaky.push(`${f} (shard ${i})`);
     rows.push(`| ${i} | ${r.done?r.passes:'–'} | ${r.done?r.failures:'–'} | ${r.flaky||''} | ${secs!=null?Math.round(secs)+' s':'–'} |`)}
   const ok=!bad&&!all.failures;
+  if(!ok)out.push('## FAILED','');
   out.push(ok?`### All ${all.passes} checks passed`+(all.flaky?` (${all.flaky} flaky, passed on retry)`:''):`### ${all.failures+bad} failed`+` · ${all.passes} passed`+(all.flaky?` · ${all.flaky} flaky`:''));
   out.push('',`${all.passes} passed, ${all.failures} failed`+(all.flaky?`, ${all.flaky} flaky (passed on retry)`:'')+` in ${n} shards`);
   if(fails.length){out.push('','#### Failures','```');for(const f of fails){out.push(`shard ${f.shard} · ${f.test}`);for(const l of f.lines.slice(0,20))out.push('  '+l);if(f.lines.length>20)out.push(`  … ${f.lines.length-20} more`)}out.push('```')}
@@ -78,7 +80,10 @@ function summary(dir,n){const out=[],all={passes:0,failures:0,flaky:0},times={},
   out.push('','| shard | passed | failed | flaky | tests took |','|---|---|---|---|---|',...rows);
   const rounded=Object.fromEntries(Object.entries(times).sort(([a],[b])=>a<b?-1:a>b?1:0).map(([k,v])=>[k,Math.round(v*10)/10]));
   fs.writeFileSync(path.join(dir,'shard-times.json'),JSON.stringify(rounded,null,1)+'\n');
-  return {ok,text:out.join('\n'),all}}
+  // the verdict tools/cloud-tests.js reads (a branch's run ends as successful on GitHub whatever it found: full-tests.yml STRICT)
+  const verdict={ok,passes:all.passes,failed:all.failures+bad,flaky:all.flaky,failures:fails.map(f=>({shard:f.shard,test:f.test}))};
+  fs.writeFileSync(path.join(dir,'verdict.json'),JSON.stringify(verdict,null,1)+'\n');
+  return {ok,text:out.join('\n'),all,verdict}}
 
 module.exports={ALONE,plan,parse,verify,readLog,summary,readTimes,wkShards,TIMES_FILE,WK_HALF,JOBS};
 

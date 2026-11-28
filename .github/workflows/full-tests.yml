@@ -4,8 +4,14 @@ name: Full test run
 # change can affect, so this is the safety net for what a selection missed), and on demand for any branch:
 #   npm run test:cloud            (tools/cloud-tests.js: starts it on the current branch, waits, prints the failures)
 #   gh workflow run full-tests.yml --ref <branch>      or GitHub > Actions > Full test run > Run workflow
-# It deploys nothing, changes nothing and is never a pull request check. A failed run makes GitHub email the repository's owner; the
-# failures, each with its shard, are in the run's summary, and the logs are kept 14 days (`test-log`, and each shard's `shard-<i>`).
+# It deploys nothing, changes nothing and is never a pull request check. The failures, each with its shard, are in the run's summary,
+# and the logs are kept 14 days (`test-log`, and each shard's `shard-<i>`).
+# Which runs fail on GitHub (and so email the person who started them): only STRICT ones, the nightly (event schedule) and a run whose
+# tested ref is main (`--ref main`, or main's workflow with ref=main). A run on any other ref (an agent's half-finished branch, started
+# with the owner's token) always ends as successful: its shards and summary jobs continue on error, and the verdict job puts the real
+# result in its own name ("verdict: FAILED, N failed"), an error annotation, "## FAILED" on top of the summary and the `test-summary`
+# artifact's verdict.json, which tools/cloud-tests.js reads for its exit code. The same condition is written three times below
+# (env STRICT and the two continue-on-error lines: a job's continue-on-error can't read env); tests/shard.test.js checks they agree.
 on:
   schedule:
     - cron: '0 1 * * *'   # 01:00 UTC = 04:00 in Kuwait, after the day's merges and before the morning
@@ -30,10 +36,13 @@ env:
   # tests/shard-times.json. Change SHARDS together with the matrix below
   SHARDS: 10
   SHARD_WEBKIT: 3
+  # 'true' on the nightly and on a run testing main: those fail (and email) as before; 'false' on every other ref (see the top)
+  STRICT: ${{ github.event_name == 'schedule' || (inputs.ref || github.ref_name) == 'main' }}
 jobs:
   shard:
     name: shard ${{ matrix.shard }}
     runs-on: ubuntu-latest
+    continue-on-error: ${{ !(github.event_name == 'schedule' || (inputs.ref || github.ref_name) == 'main') }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -122,6 +131,10 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    continue-on-error: ${{ !(github.event_name == 'schedule' || (inputs.ref || github.ref_name) == 'main') }}
+    outputs:
+      ok: ${{ steps.sum.outputs.ok }}
+      failed: ${{ steps.sum.outputs.failed }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -132,14 +145,31 @@ jobs:
         with:
           pattern: shard-*
           path: ${{ runner.temp }}/shards
+      # the verdict goes to verdict.json and the job's outputs; the step fails only on a STRICT run (the nightly, main)
       - name: One summary
+        id: sum
         run: |
           set +e
+          mkdir -p "$RUNNER_TEMP/shards"
           node tests/shard.js --summary "$RUNNER_TEMP/shards" "$SHARDS" > "$RUNNER_TEMP/summary.md"; code=$?
+          V="$RUNNER_TEMP/shards/verdict.json"
+          if [ $code -ne 0 ] || [ ! -f "$V" ]; then ok=false; else ok=true; fi
+          if [ ! -f "$V" ]; then
+            echo '{"ok":false,"failed":1,"failures":[{"shard":0,"test":"(the summary did not run)"}]}' > "$V"
+            { echo '## FAILED'; echo; echo '(the summary did not run)'; echo; cat "$RUNNER_TEMP/summary.md"; } > "$RUNNER_TEMP/s2.md"; mv "$RUNNER_TEMP/s2.md" "$RUNNER_TEMP/summary.md"
+          fi
+          failed=$(node -p "require(process.argv[1]).failed" "$V" 2>/dev/null || echo '?')
+          echo "ok=$ok" >> "$GITHUB_OUTPUT"; echo "failed=$failed" >> "$GITHUB_OUTPUT"
+          if [ "$ok" != true ] && [ "$STRICT" != true ]; then
+            # the first line stays "## FAILED"; the note goes under it
+            note="This run is not on main, so GitHub shows it as successful and sends no failure email (full-tests.yml STRICT): its real result is FAILED."
+            { head -n 1 "$RUNNER_TEMP/summary.md"; echo; echo "$note"; tail -n +2 "$RUNNER_TEMP/summary.md"; } > "$RUNNER_TEMP/s2.md"; mv "$RUNNER_TEMP/s2.md" "$RUNNER_TEMP/summary.md"
+          fi
           cat "$RUNNER_TEMP/summary.md" | tee -a "$GITHUB_STEP_SUMMARY"
-          mkdir -p "$RUNNER_TEMP/keep"; cp "$RUNNER_TEMP/summary.md" "$RUNNER_TEMP/shards/shard-times.json" "$RUNNER_TEMP/keep/"
+          mkdir -p "$RUNNER_TEMP/keep"; cp "$RUNNER_TEMP/summary.md" "$V" "$RUNNER_TEMP/keep/"; cp "$RUNNER_TEMP/shards/shard-times.json" "$RUNNER_TEMP/keep/" 2>/dev/null
           for i in $(seq 1 "$SHARDS"); do echo "===== shard $i/$SHARDS ====="; cat "$RUNNER_TEMP/shards/shard-$i/tests.log" 2>/dev/null || echo '(no log)'; done > "$RUNNER_TEMP/tests.log"
-          exit $code
+          if [ "$ok" != true ] && [ "$STRICT" = true ]; then exit 1; fi
+          exit 0
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -152,3 +182,22 @@ jobs:
           name: test-log
           path: ${{ runner.temp }}/tests.log
           retention-days: 14
+
+  # the run's real result where the run page shows it: in this job's name and an error annotation (the run's own name is fixed when it
+  # is queued, before any test ran, so it can't say FAILED); on a STRICT run a failure fails this job too
+  verdict:
+    name: ${{ needs.summary.outputs.ok == 'true' && 'verdict passed' || format('verdict FAILED, {0} failed', needs.summary.outputs.failed || '?') }}
+    needs: summary
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: The verdict
+        env:
+          OK: ${{ needs.summary.outputs.ok }}
+          FAILED: ${{ needs.summary.outputs.failed }}
+        run: |
+          if [ "$OK" = true ]; then echo 'passed'; exit 0; fi
+          echo "::error title=Full tests FAILED::${FAILED:-?} failed: see the summary"
+          { echo '## FAILED'; echo; echo "${FAILED:-?} failed (STRICT=$STRICT): the failures are in the summary job's summary."; } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$STRICT" = true ]; then exit 1; fi
