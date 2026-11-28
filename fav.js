@@ -14,6 +14,7 @@ import {TYPES,dayRecs,di,inRotation,isHandPick,itemTitle,items,key,keyDate,nm,se
 import {favItemSet,favKey,favLookKey,favLookOf,favLooks,isFavItem} from './planner.js';
 import {planFor} from './today-plan.js';
 import {sel} from './app.js';
+import {swatchSVG} from './draw.js';
 const FAV_HEART='<svg class="favic" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.3C1 8.4 3 5 6.4 5c2.1 0 3.6 1.2 4.4 2.5h2.4C14 6.2 15.5 5 17.6 5 21 5 23 8.4 21.6 11.7 19.5 16.4 12 21 12 21z"/></svg>';
 const FAV_HEART0='<svg class="favic" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" d="M12 20s-7-4.3-9-8.7C1.7 8.3 3.5 6 6.4 6c2 0 3.4 1.2 4.2 2.5h2.8C14.2 7.2 15.6 6 17.6 6c2.9 0 4.7 2.3 3.4 5.3C19 15.7 12 20 12 20z"/></svg>';
 const FAV_UNDO_MS=5000;   // (toast.js keeps a toast with Undo up at least TOAST_ACT_MS)
@@ -38,7 +39,7 @@ async function favToggleLook(){const o=planFor()[key(sel)],l=favLookFrom(o);if(!
 /** @param {*} o */ function favStrip(o){if(!o||o.frozen)return '';const n=di(sel),ok=i=>i&&inRotation(i,n);
   const L=favLooks().filter(l=>{const p=favPieces(l);return ok(p.sh)&&(!l.j||ok(p.j))&&(!l.tie||ok(p.tie))});if(!L.length)return '';
   const cur=favLookOf(o),last=favLastWorn(),card=l=>{const p=favPieces(l),k=favLookKey(l),on=!!cur&&favLookKey(cur)===k,lw=last[k];
-    return `<button type="button" class="favlook${on?' cur':''}" data-act="favWearTap" data-k="${esc(k)}" aria-label="Wear this favorite look${dayWord()==='today'?' today':''}: ${esc(favLookName(l))}${on?', wearing':''}"><span class="favsw" aria-hidden="true">${[p.j,p.sh,p.tie].filter(Boolean).map(i=>`<i>${ask('swatch-svg',i,true)||''}</i>`).join('')}</span><span class="favnm">${esc(sentence(favLookName(l)))}<small>${on?'Wearing':lw?'Last worn '+statDate(lw):'Not worn yet'}</small></span></button>`};
+    return `<button type="button" class="favlook${on?' cur':''}" data-act="favWearTap" data-k="${esc(k)}" aria-label="Wear this favorite look${dayWord()==='today'?' today':''}: ${esc(favLookName(l))}${on?', wearing':''}"><span class="favsw" aria-hidden="true">${[p.j,p.sh,p.tie].filter(Boolean).map(i=>`<i>${swatchSVG(i,true)||''}</i>`).join('')}</span><span class="favnm">${esc(sentence(favLookName(l)))}<small>${on?'Wearing':lw?'Last worn '+statDate(lw):'Not worn yet'}</small></span></button>`};
   return `<div class="favpick" role="group" aria-labelledby="favpick-h"><b id="favpick-h" class="favpick-h">${FAV_HEART}Favorite looks</b><div class="favstrip">${L.map(card).join('')}</div></div>`}
 /* when each favorite look was last worn (days not marked "Didn't", before today): {key: Date} */
 function favLastWorn(){const out={},T=todayDate(),K=new Set(favLooks().map(favLookKey));if(!K.size)return out;
@@ -68,7 +69,7 @@ const FAV_RESTED=10;
   for(const [k,o] of S.plan){const f=favLookOf(o);if(f&&!next[favLookKey(f)])next[favLookKey(f)]=keyDate(k)}
   const pieces=F?items.filter(i=>F.has(i.id)):[];for(const r of S.rows)if(F&&F.has(r.i.id)){pw[r.i.id]=r.worn;pn[r.i.id]=r.next}
   const tile=(v,t)=>`<div class="st-tile"><b>${v}</b><small>${t}</small></div>`;
-  const lookRow=l=>{const p=favPieces(l),k=favLookKey(l),w=wornN[k]||0;return `<div class="st-row favrow"><span class="favsw" aria-hidden="true">${[p.j,p.sh,p.tie].filter(Boolean).map(i=>`<i>${ask('swatch-svg',i,true)||''}</i>`).join('')}</span><div class="st-main"><span class="st-nm">${esc(sentence(favLookName(l)))}</span><small class="mut">${w?`Worn ${w}×`:'Not worn yet'} · ${next[k]?'next planned '+statDate(next[k]):'not planned in the next months'}</small></div></div>`};
+  const lookRow=l=>{const p=favPieces(l),k=favLookKey(l),w=wornN[k]||0;return `<div class="st-row favrow"><span class="favsw" aria-hidden="true">${[p.j,p.sh,p.tie].filter(Boolean).map(i=>`<i>${swatchSVG(i,true)||''}</i>`).join('')}</span><div class="st-main"><span class="st-nm">${esc(sentence(favLookName(l)))}</span><small class="mut">${w?`Worn ${w}×`:'Not worn yet'} · ${next[k]?'next planned '+statDate(next[k]):'not planned in the next months'}</small></div></div>`};
   const pieceRow=i=>`<div class="st-row favrow">${statPic(i)}<div class="st-main"><span class="st-nm">${TYPES[i.type]||'Item'}: <span class="${titleCls(i)}">${esc(statName(i))}</span></span><small class="mut">Rests a fifth less · ${pw[i.id]?`worn ${pw[i.id]}×`:'not worn yet'}${pn[i.id]?' · next '+statDate(pn[i.id]):''}</small></div></div>`;
   return `<section class="card st-card st-fav" id="st-fav"><h3>${FAV_HEART}Your favorites</h3>
   <div class="st-tiles">${tile(L.length,L.length===1?'look':'looks')}${tile(pieces.length,pieces.length===1?'piece':'pieces')}${tile(month,'favorite looks worn this month')}</div>
@@ -82,7 +83,7 @@ function favWearTap(el){wearFav(el.dataset.k)}
 function favItemTap(el){favToggleItem(el.dataset.id)}
 function favChipTap(){favWard=true;runHooks('wardrobe-changed')}
 /* the socket Insights asks for its favorites card (bus.js; stats.js no longer names this file) */
-import {serve,ask,runHooks,register} from './bus.js';
+import {serve,runHooks,register} from './bus.js';
 import {saveUserSettings} from './settings.js';
 import {renderToday} from './today.js';
 import {toast} from './toast.js';

@@ -43,7 +43,6 @@
                                     throws doesn't stop the others; once all have run, the first error is thrown on, as emit does
      runHooksSeq(name, ...args)     the same, one after another: each answer is awaited before the next hook is called, and the
                                     first that throws or rejects stops the rest (a .then chain); a Promise of the answers
-     registered(feature)            whether that feature registered (its file loaded)
      slotsOf(name)                  a moment's named slots (N2, 2026-11-27): each registered feature's hook for name answers an object of
                                     its parts ({calBanner}), and slotsOf joins them into one ({} when nobody registered); core calls each
                                     slot where main called that part (P.calBanner?.(day)), so the order and the layout stay as they were,
@@ -81,8 +80,6 @@ function runHooks(name,...args){const out=[];let err,bad=false;
   if(bad)throw err;return out}
 /** @template {keyof Hooks} K @param {K} name @param {import('./types/sockets.js').Args<Hooks[K]>} args @returns {Promise<Awaited<ReturnType<Hooks[K]>>[]>} */
 async function runHooksSeq(name,...args){const out=[];for(const [,h] of [...HOOKS]){const fn=h[name];if(typeof fn==='function')out.push(await fn(...args))}return out}
-/** @param {string} feature */
-function registered(feature){return HOOKS.some(x=>x[0]===feature)}
 /** @template {keyof import('./types/sockets.js').Slots} K @param {K} name @returns {Partial<import('./types/sockets.js').Slots[K]>} */
 function slotsOf(name){const P={};for(const a of runHooks(/** @type {any} */(name)))if(a&&typeof a==='object')Object.assign(P,a);return /** @type {any} */(P)}
 /** @param {keyof Hooks} name */
@@ -90,4 +87,4 @@ function hooked(name){return HOOKS.some(x=>typeof x[1][name]==='function')}
 /* the settings' stamps, never a setting (merge.js's SET_META, the same table): core.js cleanSettings and takeSettings skip them, also when
    merge.js didn't load (the restructure S6h, 2026-11-27: its 404 failed start-up and the stored settings weren't applied) */
 const SET_META=['updated','ks','kh','kse','khe'];
-export {on,heard,emit,serve,ask,askFor,served,need,needFn,register,runHooks,runHooksSeq,registered,slotsOf,hooked,SET_META};
+export {on,heard,emit,serve,ask,askFor,served,need,needFn,register,runHooks,runHooksSeq,slotsOf,hooked,SET_META};

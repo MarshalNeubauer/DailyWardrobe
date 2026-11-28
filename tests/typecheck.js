@@ -21,12 +21,12 @@
 // globalThis from inside a function (`self.outfitMannequinSvg = …`), by the test runner (TEST_PLAN, ASM_TEST_OFF) or by a test or
 // tool. It is generated from the files (--update); the check fails while the committed copy differs.
 //
-// tests/typecheck-baseline.json: each file's error count, per scope. It may only go down:
-//   node tests/typecheck.js                 a file over its count fails (a file not listed counts 0); a file under it is named
-//   node tests/typecheck.js --update        write globals.d.ts and the counts afresh; refused when the total would rise (a split
-//                                           that moves errors into a new file keeps the total, so it is taken)
+// tests/typecheck-baseline.json: each file's error count, per scope. Since the notice board made clean (N7, 2026-11-28) the count is
+// held at 0 (REQUIRED): any type error fails, whatever the baseline says, and no baseline above 0 is written or taken:
+//   node tests/typecheck.js                 any error fails (each file over its count is named); a baseline above 0 fails too
+//   node tests/typecheck.js --update        write globals.d.ts and the counts afresh; refused while there is any error
 //   node tests/typecheck.js --changed       the pre-push check: nothing when the branch changed no script, else the check, and the
-//                                           baseline's total must not be above origin/main's
+//                                           baseline's total must be 0
 //   node tests/typecheck.js --list [file]   every error (or one file's), then the count per error code
 // Without TypeScript installed (a checkout from before it was added: run `npm install`) it says so and passes.
 const fs=require('fs'),path=require('path'),{execFileSync}=require('child_process');
@@ -130,6 +130,12 @@ function check(ts,root=ROOT){
 }
 
 const total=c=>Object.values(c||{}).reduce((a,s)=>a+Object.values(s).reduce((x,y)=>x+y,0),0);
+/* the policy (N7): the count is held at REQUIRED (0). → what is wrong with n errors now and a baseline of `baseTotal`, one line each */
+const REQUIRED=0;
+function policy(n,baseTotal){const out=[];
+  if(n>REQUIRED)out.push(`${n} type error${n===1?'':'s'}: the check requires ${REQUIRED} (\`node tests/typecheck.js --list\`); fix them, the baseline can't be raised`);
+  if(baseTotal!=null&&baseTotal>REQUIRED)out.push(`the baseline allows ${baseTotal}: it must stay at ${REQUIRED}`);
+  return out}
 /* the ratchet: what is over, what is under, against a baseline {scope: {file: n}} */
 function compare(now,base){
   const over=[],under=[];
@@ -149,7 +155,7 @@ function main(argv){
     if(!files.some(f=>/\.(js|d\.ts)$/.test(f)||f===BASE||f==='tsconfig.json'||f==='package.json'||f==='index.html'))return 0;
     let mainBase=null;try{mainBase=JSON.parse(git('show','origin/main:'+BASE)||'null')}catch(e){}
     const mine=readBase();
-    if(mainBase&&mine&&total(mine)>total(mainBase.files)){console.log(`typecheck: the baseline's total rose from ${total(mainBase.files)} (origin/main) to ${total(mine)}: it may only go down. Fix the new errors instead.`);return 1}
+    if(mine&&policy(0,total(mine)).length){console.log(`typecheck: the baseline's total is ${total(mine)} (origin/main's ${mainBase?total(mainBase.files):'?'}): it must stay at ${REQUIRED}. Fix the errors instead.`);return 1}
   }
   const t0=Date.now(),r=check(ts),ms=Date.now()-t0,n=total(r.counts);
   if(argv[0]==='--list'){const only=argv[1];for(const d of r.diags)if(!only||d.file===only)console.log(d.scope.padEnd(9)+d.text);
@@ -157,20 +163,21 @@ function main(argv){
     console.log(Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([c,k])=>`TS${c} ${k}`).join(', '));return 0}
   const base=readBase();
   if(argv.includes('--update')){
-    if(base&&n>total(base)){console.log(`typecheck: ${n} errors, above the baseline's ${total(base)}: not updated. The count may only go down; fix the new ones (\`node tests/typecheck.js --list\`).`);return 1}
+    if(policy(n).length){console.log(`typecheck: ${n} errors: not updated. The count is held at ${REQUIRED}; fix them (\`node tests/typecheck.js --list\`).`);return 1}
     fs.mkdirSync(path.join(ROOT,path.dirname(DTS)),{recursive:true});fs.writeFileSync(path.join(ROOT,DTS),r.dts);
-    fs.writeFileSync(path.join(ROOT,BASE),JSON.stringify({note:'Type errors per file and scope (tests/typecheck.js). May only go down: fix errors, then `node tests/typecheck.js --update`.',total:n,files:sorted(r.counts)},null,1)+'\n');
+    fs.writeFileSync(path.join(ROOT,BASE),JSON.stringify({note:'Type errors per file and scope (tests/typecheck.js). Held at 0: any type error fails, and --update refuses to write one.',total:n,files:sorted(r.counts)},null,1)+'\n');
     console.log(`typecheck: baseline written, ${n} errors (${ms} ms)`+(base?`, was ${total(base)}`:''));return 0}
   let fail=0;
   const committed=fs.existsSync(path.join(ROOT,DTS))?rd(DTS):'';
   if(committed.replace(/\r\n/g,'\n')!==r.dts){console.log(`typecheck: ${DTS} is not what the scripts give (a name put on window was added or went): run \`node tests/typecheck.js --update\` and commit it.`);fail=1}
   if(!base){console.log(`typecheck: no ${BASE}: run \`node tests/typecheck.js --update\`.`);return 1}
   const {over,under}=compare(r.counts,base);
-  if(over.length){console.log('typecheck: more type errors than the baseline allows:\n  '+over.join('\n  ')+'\nSee them with `node tests/typecheck.js --list <file>`; fix the new ones (the baseline may only go down).');fail=1}
-  if(under.length)console.log('typecheck: fewer errors than the baseline (good): run `node tests/typecheck.js --update` and commit it to lock that in:\n  '+under.join('\n  '));
-  console.log(`typecheck: ${n} errors, baseline ${total(base)} (${ms} ms)`);
+  if(over.length){console.log('typecheck: more type errors than the baseline allows:\n  '+over.join('\n  ')+'\nSee them with `node tests/typecheck.js --list <file>`; fix the new ones.');fail=1}
+  const pol=policy(n,total(base));if(pol.length){console.log('typecheck: '+pol.join('; '));fail=1}
+  else if(under.length)console.log('typecheck: fewer errors than the baseline: run `node tests/typecheck.js --update` and commit it:\n  '+under.join('\n  '));
+  console.log(`typecheck: ${n} errors, ${REQUIRED} required (${ms} ms)`);
   return fail;
 }
 
 if(require.main===module)process.exitCode=main(process.argv.slice(2));
-module.exports={main,compare,total,scopes,check};
+module.exports={main,compare,total,policy,REQUIRED,scopes,check};

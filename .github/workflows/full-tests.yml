@@ -29,7 +29,7 @@ env:
   # how many runners, and how many of them (the last ones) take the WebKit halves (only those install WebKit); the split is balanced by
   # tests/shard-times.json. Change SHARDS together with the matrix below
   SHARDS: 10
-  SHARD_WEBKIT: 2
+  SHARD_WEBKIT: 3
 jobs:
   shard:
     name: shard ${{ matrix.shard }}

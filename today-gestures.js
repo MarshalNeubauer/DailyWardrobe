@@ -16,7 +16,7 @@ import {noMotion} from './ui.js';
 const fly={n:0,t:null,wait:false,from:0};
 function flyGo(){clearTimeout(fly.t);fly.t=null;fly.wait=false;const n=fly.n;fly.n=0;if(n)stepDay(Math.sign(n),fly.from,Math.abs(n));todayFree()}
 /* a layer over Today: Settings, the piece picker, What to buy, or anything that makes main inert (a sheet, a question) */
-const todayCovered=()=>!!((typeof settingsOpen==='function'&&settingsOpen())||picker||askFor('shop-open')||document.querySelector('main[inert]'));
+const todayCovered=()=>!!(settingsOpen()||picker||askFor('shop-open')||document.querySelector('main[inert]'));
 /* a finger is on Today (a swipe under way, a month cell held or moved) or a swipe's fly-out is still to be drawn: a sync's redraw waits
    (sync.js syncRedraw, syncLater; CR-4-11), as drawing Today removes the element the touch started on and the gesture stops */
 let todayTouch=()=>false;
