@@ -163,8 +163,6 @@ export interface Sockets {
   'asm-gl-page': typeof import('../asm-gl.js').asmGlPage;
   /** a new garment's base master (asmNkBase; asm-kinds.js loads after asm-color.js) (asm-kinds.js) */
   'asm-nk-base': typeof import('../asm-kinds.js').asmNkBase;
-  /** a piece's swatch on the favorites (swatchSVG; fav.js, a logic file, may not import the painter) (draw.js) */
-  'swatch-svg': typeof import('../draw.js').swatchSVG;
   /** the uniform blouse's tapes and rank painted on the finished picture (asmOcpPaint) (asm-ocp.js) */
   'asm-ocp-paint': typeof import('../asm-ocp.js').asmOcpPaint;
   /** everything a look's painting needs, as plain data, or null (asmJob) (asm-cm-job.js) */

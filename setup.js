@@ -15,8 +15,8 @@ const SETUP_BASE=['welcome','week','wear','weather','connect','done'];
 let SETUP_STEPS=SETUP_BASE.slice();
 /* without weather.js the Weather step is left out, and the setup goes on without it (the restructure S6h, the owner's choice of 2026-11-27) */
 const setupWx=()=>served('wx-unit');
-const setupStepsNow=()=>{const s=typeof homeNeeded==='function'&&homeNeeded()?['welcome','home',...SETUP_BASE.slice(1)]:SETUP_BASE.slice();return setupWx()?s:s.filter(k=>k!=='weather')};
-const SETUP_TITLES={welcome:'Welcome',get home(){return typeof homeAndroid==='function'&&homeAndroid()?'Install the app':'Home Screen'},week:'Your week',wear:'What you wear',weather:'Weather',connect:'Connection',done:'All set'};
+const setupStepsNow=()=>{const s=homeNeeded()?['welcome','home',...SETUP_BASE.slice(1)]:SETUP_BASE.slice();return setupWx()?s:s.filter(k=>k!=='weather')};
+const SETUP_TITLES={welcome:'Welcome',get home(){return homeAndroid()?'Install the app':'Home Screen'},week:'Your week',wear:'What you wear',weather:'Weather',connect:'Connection',done:'All set'};
 /* the flow's state: at = the step shown (-1 = closed); first = it opened by itself on a new install (not "Run setup again") */
 let setup={at:-1,first:false,vestSet:false,q:'',cities:null,cityMsg:'',msg:'',busy:false,watch:null};
 let setupNo=false;   // the app was already driven somewhere before start-up looked: the setup doesn't open by itself
@@ -194,7 +194,7 @@ ${setup.msg?`<p class="su-help su-err" role="alert">${esc(setup.msg)}</p>`:''}
 ${items.length?'':`<p class="su-help">Today shows your first outfit once you have ${must}${opt?', plus pants if you wear a blazer rather than a suit':''}.</p>${askFor('kit-start-row',true)??''}`}`;
 }
 /* connected at the Connection step in Safari on an iPhone: the Home Screen app needs the link too (kit.js homeCopy) */
-const setupHomeLink=()=>setup.joined&&typeof homeIOS==='function'&&homeIOS()&&homeNeeded()&&askFor('home-tester')?`<p class="su-help">For the app on your Home Screen: copy your invitation link here and paste it at its Connection step.</p>${askFor('home-copy-btn')??''}`:'';
+const setupHomeLink=()=>setup.joined&&homeIOS()&&homeNeeded()&&askFor('home-tester')?`<p class="su-help">For the app on your Home Screen: copy your invitation link here and paste it at its Connection step.</p>${askFor('home-copy-btn')??''}`:'';
 /* "Try a sample wardrobe" on the last step loads it, and the setup finishes (holidays, the vest) once it is stored (kit.js kitSampleDone;
    audit 2026-11-15); finished first, a kill before the sample was stored left the setup done and no sample (re-audit 2026-11-15) */
 /** @param {*} e */ function setupSample(e){setupTapGuard(e);askFor('kit-sample-load')}

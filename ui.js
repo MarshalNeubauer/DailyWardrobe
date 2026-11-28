@@ -135,12 +135,12 @@ function sheetSwipe(v,o){if(!v||v.dataset.swipe)return;v.dataset.swipe='1';let s
     if(ts>st.lt){st.vy=(y-st.ly)/(ts-st.lt);st.ly=y;st.lt=ts}   // the speed from when each move happened (e.timeStamp), not when it was handled: on a busy phone a flick handled late read as a slow pull
     st.d=Math.max(0,dy);put(st.d);return true};
   const slide=d=>{const b=bd(),op=b&&b.style.opacity?+b.style.opacity:1;held(false);put(0);o.close(d);
-    if(typeof noMotion==='function'&&noMotion())return;v.classList.add('cpgoing');if(b)b.classList.add('cpgoing');
+    if(noMotion())return;v.classList.add('cpgoing');if(b)b.classList.add('cpgoing');
     const a=v.animate([{transform:`translateY(${d}px)`},{transform:'translateY(102%)'}],{duration:200,easing:'ease-out'});if(b)b.animate([{opacity:op},{opacity:0}],{duration:200});
     a.finished.catch(()=>{}).then(()=>{v.classList.remove('cpgoing');if(b)b.classList.remove('cpgoing')})};
   const end=()=>{if(!st)return;const {on,d,vy}=st;st=null;if(!on)return;if(o.drag)o.drag(false);
     if(d>v.offsetHeight*.25||(vy>.5&&d>30)){if(o.slide){slide(d);return}held(false);o.close(d);put(0);return}
-    held(false);put(0);if(typeof noMotion==='function'&&noMotion())return;
+    held(false);put(0);if(noMotion())return;
     if(o.spring)v.animate([{transform:`translateY(${d}px)`},{transform:'none'}],{duration:220,easing:'cubic-bezier(.2,.8,.2,1)'});
     const b=o.fadeBack&&bd();if(b)b.animate([{opacity:dim(d)},{opacity:1}],{duration:220})};
   v.addEventListener('touchstart',e=>{const t=e.touches[0];st=e.touches.length>1||!can(e.target,!!e.target.closest(o.head))?null:begin(t.clientX,t.clientY,e.timeStamp)},{passive:true});

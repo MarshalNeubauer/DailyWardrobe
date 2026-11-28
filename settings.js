@@ -34,7 +34,7 @@ function setCatOpen(key,open,instant){const el=$('#sc-'+key);if(!el)return;el.cl
 function pausedUntil(t){const d=new Date(t),n=new Date();let at='';try{at=d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}catch{}
   return d.toDateString()===n.toDateString()?(at||'later today'):'tomorrow'}
 function backupSummary(w){if(!w)return 'Not backed up yet: needs a connection';
-  if(typeof inviteOver==='function'&&inviteOver())return 'Not backed up: your invitation has ended';
+  if(inviteOver())return 'Not backed up: your invitation has ended';
   const last=+localStorage.getItem('last_sync')||0,st=localStorage.getItem('sync_status')||'',when=t=>{const d=new Date(t),days=Math.round((todayDate().getTime()-new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime())/864e5);
     return days<=0?'today':days===1?'yesterday':d.toLocaleDateString(undefined,{month:'short',day:'numeric'})};
   // (2026-11-15, the audit: "Backed up today" while the day's saves were used up and none of the new items was on the server)
@@ -90,7 +90,7 @@ function scheduleWear(days,S){const j=wearsJacket(),t=wearsTie();
   // over that page's entry and hands it back on closing, so the page's Back still works after (CR-7-04: Settings took the entry, and the
   // next Back left the app)
   setLock(true);if(!already)setOver=subUnder?'sub':'';backPush('set');
-  if(typeof layerOpen==='function')layerOpen($('#settings-modal'));   // the page behind is inert, the focus moves in (ui.js)
+  layerOpen($('#settings-modal'));   // the page behind is inert, the focus moves in (ui.js)
 }
 /* while Settings is up the page behind it can't scroll (html.set-lock): on an iPhone a scroll in Settings near its top or bottom was handed
    to Today underneath, and Settings stood still under the finger until that scroll ended; also notes the last touch for toggleCat */
@@ -112,7 +112,7 @@ function closeSettings(){const was=settingsOpen();
   const over=setOver;setOver='';
   if(was&&over){const k=backKind();if(k==='set'||!k&&subShown())backPush(over)}else backDrop('set');
   setLock(false);
-  if(was&&typeof layerClose==='function')layerClose($('#settings-modal'));
+  if(was)layerClose($('#settings-modal'));
   if(todayStale){todayStale=false;need('today-home');need('today-draw')}   // (Today on the home day follows a workday taken away)
   // the Wardrobe or stats page a sync changed while Settings was open is drawn again if it is the page under Settings (nav.js show)
   const v=viewStale;viewStale=null;emit('settings-closed',v)
@@ -206,7 +206,7 @@ function picsPick(el){setPictures(el.value)}
    change made there was saved over the stored settings: every other setting went back to its default (found 2026-11-23). */
 let setWant=false;
 function setWanted(){const w=setWant;setWant=false;return w}
-function setOpenTap(){if(typeof pagesOn==='undefined'||!pagesOn){setWant=true;return}openSettings()}
+function setOpenTap(){if(!pagesOn){setWant=true;return}openSettings()}
 function setBackdropTap(){closeSettings()}
 function setDoneTap(){saveSettings()}
 function catTap(el){toggleCat(el.dataset.cat)}

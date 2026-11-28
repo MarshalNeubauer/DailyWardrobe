@@ -1,5 +1,5 @@
 /* Daily Wardrobe: SVG drawings (procedural fabrics, accessories, thumbnails, glue for the torso figure) */
-import {emit,serve,ask,served} from './bus.js';
+import {emit,ask,served} from './bus.js';
 import {CAMO_V,COLORS,FABRIC,HANDPICK_TYPES,METAL_TONES,OCP_CAMO,OCP_V,STRAP_BANDS,TEXTURE_TYPES,TYPES,accentOf,blouseTapes,camoImage,clipMetal,colOf,hexRgb,isCargo,labHex,linkFace,lum,mix,nm,ocpImage,patBase,rgbLab,shoeStyle,sockPatterned,sockToe,strapBand,thirdOf,trouserKind,watchOpts} from './core.js';
 import {CAMO_TR,CHECK_PATS,STRIPE_PATS,usableSett} from './detect.js';
 import {linSrgb,srgbLin8} from './srgb.js';
@@ -1341,8 +1341,6 @@ const cbNap=(id,fine)=>{let s=fine?7:3,h='';const r=()=>(s=(s*16807)%2147483647)
     back+front+'</g>';
 }
 
-/* sockets (bus.js; the restructure S6p, 2026-11-27): a piece's swatch for the favorites (fav.js, a logic file, may not import the painter) */
-serve('swatch-svg',swatchSVG);
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,BLAZER_D,CB_SOLE_DARK,COAT_D,FIG_CU,FIG_NO_SHIRT,RAIN_D,SHOE_CB,SOCK_D,SUIT_D,TEX_TILES,camoTileUrl,figBg,get figBgMemo(){return figBgMemo},set figBgMemo(v){figBgMemo=v},figCuKey,figFabric,figHbTile,figKind,figLiftK,figLum,figNorm,figStripeLift,figWay,figY,get swN(){return swN},set swN(v){swN=v},get thumbN(){return thumbN},set thumbN(v){thumbN=v},itemThumb,OCP_RANK_SVG,TIE_DARK_X,TIE_TEX_K,fabricDef,figureSvg,swatchSVG,texPlainBand,texTileSmooth,texTileUrl,texTones};
 export {texPlainBand,TIE_TEX_K,TIE_DARK_L,TIE_DARK_X,texTones,TEX_TILES,texTileUrl,texTileSmooth,camoTileUrl,fabricDef,SOCK_D,swatchSVG,SUIT_D,BLAZER_D,RAIN_D,OCP_RANK_SVG,COAT_D,itemThumb,figFabric,figBg,figStripeLift,figKind,FIG_NO_SHIRT,figureSvg,FIG_CU,figY,figLum,figLiftK,figWay,figCuKey,figNorm,figHbTile,SHOE_CB,CB_SOLE_DARK,swN,thumbN,figBgMemo};

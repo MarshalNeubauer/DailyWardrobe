@@ -21,7 +21,7 @@ async function fetchPhoto(link){
   try{const r=await fetch(url.href,{mode:'cors',credentials:'omit'});
     if(r.ok){const b=await r.blob();if(/^image\//.test(b.type))return b}}catch(e){/* blocked by the site (no CORS): use the worker */}
   const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token');
-  if(!w||!tok||(typeof inviteOver==='function'&&inviteOver()))throw new Error('That site doesn’t let the app download the photo directly. Connect in ⚙ Settings so the server can fetch it, or save the photo and add it from your device.');
+  if(!w||!tok||inviteOver())throw new Error('That site doesn’t let the app download the photo directly. Connect in ⚙ Settings so the server can fetch it, or save the photo and add it from your device.');
   let r;try{r=await fetch(new URL('fetch',w.replace(/\/*$/,'/')).href+'?url='+encodeURIComponent(url.href),{headers:{'x-app-token':tok}})}
   catch{throw new Error('Couldn’t reach the server to fetch the photo.')}
   if(!r.ok){let m='';try{m=(await r.json()).error}catch{}
@@ -48,7 +48,7 @@ async function pasteFromClipboard(){
 }
 const clipImages=dt=>[...(dt&&dt.items||[])].filter(x=>x.kind==='file'&&x.type.startsWith('image/')).map(x=>x.getAsFile()).filter(Boolean);
 /* Ctrl+V / ⌘V: a copied image anywhere in the app goes to Add; a pasted link goes in when the Add screen is open */
-const pasteUp=()=>typeof pagesOn!=='undefined'&&pagesOn;   // start-up has drawn Today (start.js): before that a paste or a drop is passed over (openAdd and the stored wardrobe aren't there yet)
+const pasteUp=()=>pagesOn;   // start-up has drawn Today (start.js): before that a paste or a drop is passed over (openAdd and the stored wardrobe aren't there yet)
 document.addEventListener('paste',e=>{if(!pasteUp())return;
   const imgs=clipImages(e.clipboardData),tgt=/** @type {HTMLInputElement} */(e.target),inBox=tgt&&tgt.id==='photo-url';
   const typing=tgt&&/^(INPUT|TEXTAREA|SELECT)$/.test(tgt.tagName)&&!inBox;

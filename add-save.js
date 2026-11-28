@@ -42,7 +42,7 @@ async function save(k){const q=cardOf(k);if(!q||q.saving||cardReading(q))return 
   q.saving=1;const b=$('#qconf-'+queue.indexOf(q));if(b)b.disabled=true;
   if(!saveAllOn)await addKeep();   // the card as it is now (a kill right after Confirm brought back How many one lower: the last + waited for the timer)
   try{return await saveCard(q)}catch(e){console.warn('save failed',e);askFor('err-note',e,'Confirm on Add ('+q.type+')');
-    if(typeof storeFailure==='function'&&storeFailure(e))askFor('save-failed',e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000);return false}
+    if(storeFailure(e))askFor('save-failed',e);else toast('Couldn’t save: '+String(e&&e.message||e).replace(/\.$/,'')+'. Try again.',7000);return false}
   finally{delete q.saving;if(queue.includes(q)&&$('#add')&&!$('#add').hidden)emit('card-changed')}}
 async function saveCard(q){
   if(!q||cardReading(q))return false;

@@ -15,6 +15,7 @@ import {toast} from './toast.js';
 import {lookOn} from './look-base.js';
 import {acts} from './act.js';
 import {openColForm,openPatForm} from './colpick.js';
+import {addKeep} from './add-keep.js';
 
 /* ---- tagging again once the close-up is in: both photos and the measurement go to the tagger; fields the owner has set by
    hand stay, the rest take the new answer, and the card says what changed ---- */
@@ -37,8 +38,8 @@ function takeMaterial(q,ai){const m=ai&&ai.material,l=matsFor(q.type);delete q.m
 const REFINE_FAIL='Tagging again from the close-up didn’t work; the first tags stay.';
 async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)return;
   try{measureCard(q)}catch(e){console.warn('close-up not measured',e);askFor('err-note',e,'Close-up measuring')}   // (a phone out of picture memory: read anyway, unmeasured)
-  if(!q.tagImg||!localStorage.getItem('worker_url')){readAbort(q);emit('card-changed');askFor('add-keep');return}
-  const me=readBegin(q,'refine');q.refining=1;emit('card-changed');askFor('add-keep');   // the close-up kept at once, as a reading under way (add-keep.js keeps it as cut off: refineCut)
+  if(!q.tagImg||!localStorage.getItem('worker_url')){readAbort(q);emit('card-changed');addKeep();return}
+  const me=readBegin(q,'refine');q.refining=1;emit('card-changed');addKeep();   // the close-up kept at once, as a reading under way (add-keep.js keeps it as cut off: refineCut)
   /* whatever happens from here, the card is drawn again when the reading ends (2026-11-16, a tester: a step that threw after the flag was
      cleared left Confirm switched off until something else redrew the card, so it took "Bought, on the way" to save) */
   // forType: Claude's colours are fitted to the card's own type, not to the type Claude guessed from the close-up (CR-2-04: a burgundy
@@ -46,10 +47,10 @@ async function refineFromCloseup(i){const q=queue[i];if(!q||!q.raw||!q.raw.tex)r
   let ai=null,hint=null;const out={};try{hint=measHint(q.meas);ai=await ask(q.tagImg,{closeup:await closeTagImg(q),measured:hint,wb:!!(q.wb&&!q.wbOff),forType:q.type,out,...(me.ac?{signal:me.ac.signal}:{})})}catch(e){console.warn('close-up reading failed',e);askFor('err-note',e,'Close-up reading')}
   if(!readEnd(q,'refine',me))return;   // a newer close-up, Skip or Remove took over: this answer is not used, and the flag is theirs
   const k=queue.indexOf(q);q.refining=0;
-  try{refineApply(q,ai,hint,k,out.err)}catch(e){console.warn('close-up answer not applied',e);askFor('err-note',e,'Close-up answer not applied ('+q.type+')');q.refineNote=REFINE_FAIL;if(queue.includes(q)){emit('card-changed');askFor('add-keep')}}}
+  try{refineApply(q,ai,hint,k,out.err)}catch(e){console.warn('close-up answer not applied',e);askFor('err-note',e,'Close-up answer not applied ('+q.type+')');q.refineNote=REFINE_FAIL;if(queue.includes(q)){emit('card-changed');addKeep()}}}
 function refineApply(q,ai,hint,k,err){
   // the card is already filled in: its own wording, not the first tag's "Photo tagging failed: … Fill in the details below." (CR-2-07)
-  if(!ai||!ai.type){q.refineNote=err&&err.why?`Tagging again from the close-up didn’t work: ${oneStop(err.why)}. The first tags stay.`:REFINE_FAIL;if(k>=0){emit('card-changed');askFor('add-keep')}return}
+  if(!ai||!ai.type){q.refineNote=err&&err.why?`Tagging again from the close-up didn’t work: ${oneStop(err.why)}. The first tags stay.`:REFINE_FAIL;if(k>=0){emit('card-changed');addKeep()}return}
   const f=aiFields(ai),changes=[],prev={};delete q.refineType;delete q.refineKept;
   // a close-up shows cloth, not what the item is: a new type is offered, never taken (a shirt became a suit); the colours and pattern
   // are read for the card's own type
@@ -64,7 +65,7 @@ function refineApply(q,ai,hint,k,err){
   takeExtras(q,ai,!!hint);measureAndApply(q);q.model=ai.model||q.model;
   q.refineUndo=changes.length?prev:null;   // Undo puts the first tags back
   q.refineNote=changes.length?'Updated from the close-up: '+changes.join(', ')+'.':'The close-up confirmed the tags.';if(k>=0)emit('card-changed');
-  askFor('add-keep');   // kept at once (add-keep.js): a kill in the next moment lost the paid reading
+  addKeep();   // kept at once (add-keep.js): a kill in the next moment lost the paid reading
   readPatternWithClaude(q)}
 /* Claude's new colour against the close-up's measurement: the measured colour is clearly nearer the colour the card has (a white shirt
    whose close-up measured cream was turned navy) */

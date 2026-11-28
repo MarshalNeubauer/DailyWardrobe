@@ -37,6 +37,7 @@ import {savedTitle} from './add-save.js';
 import {addKeep,addRevive} from './add-keep.js';
 import {multiMsg,renderAdd} from './add.js';
 import {WARD_MAX,wardSaveFields} from './fields.js';
+import {openItem} from './item-view.js';
 import {goToday,recordRun} from './today.js';
 on('sample-asked',kitSampleLoad);
 backOn('kit',()=>{if(kit)kitClose(true)});
@@ -180,7 +181,7 @@ const KIT_NO_COPY=['id','added','updated','paused','order','arrives','away','cle
 /** @param {*} id */ async function kitDuplicate(id){const it=items.find(x=>x.id===id);if(!it)return;const c=JSON.parse(JSON.stringify(it));for(const k of KIT_NO_COPY)delete c[k];
   c.id=crypto.randomUUID();c.added=nowMs();await put(c);items.push(c);planDirty();todayDirty();
   if($('#wardrobe')&&!$('#wardrobe').hidden)runHooks('wardrobe-changed');
-  askFor('item-show',c.id);toast('Duplicated. Change anything that differs, like its name.',3500)}
+  openItem(c.id);toast('Duplicated. Change anything that differs, like its name.',3500)}
 
 /* ---- import from a spreadsheet ----
    A CSV file (Excel, Numbers and Google Sheets all save one) or rows pasted straight from the spreadsheet (tab-separated). The first row

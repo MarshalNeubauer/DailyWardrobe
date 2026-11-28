@@ -4,7 +4,8 @@
 // listed announcer or listener that no longer does it, a listener with nobody announcing, or an announcement nobody hears.
 // The typed registry (types/sockets.d.ts, N1, 2026-11-27): it fails on a socket the files use that it doesn't declare, a declared one
 // nobody asks, an index signature, a need of a name outside Needs, a hook outside Hooks, and a copy that tools/sockets-dts.js wouldn't
-// write; the hooks (register, runHooks, runHooksSeq, registered, slotsOf, hooked) are checked as bus.js runs them.
+// write; the hooks (register, runHooks, runHooksSeq, slotsOf, hooked) are checked as bus.js runs them. Every name bus.js exports is
+// imported by a page file (N7, 2026-11-28: `registered`, which nothing asked, went).
 // The hooks (the notice board made clean, N2, 2026-11-27): HOOKS lists each moment with the files that run it and the features that register
 // for it, in load order; it fails on a moment used but not listed, a runner or a feature that changed, a feature that registers twice, under
 // another name than its file's, or anywhere but as its file's last statement.
@@ -137,7 +138,6 @@ const SOCKETS={
   'ph-edit':{serve:'item-photo.js',ask:['photos.js'],what:"the photo editor's state (phEdit): a crop under way holds the Wardrobe's redraw"},
   'horizon-keys':{serve:'analysis.js',ask:['stats.js'],what:"the workdays Insights and What to buy measure (horizonKeys)"},
   'dress-why-unused':{serve:'dress.js',ask:['stats.js'],what:"why shoes are never worn, without jackets (dressWhyUnused)"},
-  'swatch-svg':{serve:'draw.js',ask:['fav.js'],what:'a piece\'s swatch on the favorites (swatchSVG; fav.js, a logic file, may not import the painter)'},
   // the restructure S6c (2026-11-27, STEP6 rule 3): an optional file's call into another group it doesn't need, or into a file of its own
   // group that loads after it
   'sync-soon':{serve:'sync.js',ask:['app.js','days.js','locks.js','missed.js','history.js','add-save.js','pack.js','wardrobe.js','kit.js'],what:'a backup soon, after a change (scheduleSync; the restructure S6c: sync.js loads after its callers)'},
@@ -186,7 +186,7 @@ const SOCKETS={
   'limit-note':{serve:'account.js',ask:['pattern-read.js'],what:'today\'s limit on readings said (limitNote)'},
   'wipe-device':{serve:'about.js',ask:['account.js'],what:'this phone cleared (wipeDevice)'},
   'about-note':{serve:'about.js',ask:['account.js'],what:'the key of About\'s one-time note (ABOUT_NOTE)'},
-  'add-keep':{serve:'add-keep.js',ask:['pattern-read.js','tagging.js','about.js'],what:'the Add cards kept now (addKeep)'},
+  'add-keep':{serve:'add-keep.js',ask:['pattern-read.js','about.js'],what:'the Add cards kept now (addKeep)'},
   'add-keep-soon':{serve:'add-keep.js',ask:['cost.js'],what:'the Add cards kept soon (addKeepSoon)'},
   'dress-new-item':{serve:'dress.js',ask:['add-save.js','shop.js','kit.js'],what:'the dress code looked at again after a new item (dressNewItem)'},
   'care-band-soon':{serve:'care.js',ask:['today-picture.js'],what:'the cleaning banner\'s cut follows the swatches (careBandSoon)'},
@@ -198,7 +198,7 @@ const SOCKETS={
   'fav-mark':{serve:'fav.js',ask:['history.js','wardrobe.js'],what:'a favorite\'s heart on its tile (favMark)'},
   'fav-chip':{serve:'fav.js',ask:['itemsheet.js'],what:'the Wardrobe\'s Favorites chip (favChip)'},
   'fav-off':{serve:'fav.js',ask:['itemsheet.js'],what:'the Favorites chip let go (favOff)'},
-  'item-show':{serve:'item-view.js',ask:['cost.js','kit.js'],what:'a piece opened in the item sheet (openItem)'},
+  'item-show':{serve:'item-view.js',ask:['cost.js'],what:'a piece opened in the item sheet (openItem)'},
   'zoomed':{serve:'today-picture.js',ask:['today-gestures.js'],what:'the picture\'s zoom, or null'},
   'shop-open':{serve:'shop.js',ask:['today-gestures.js'],what:'whether What to buy is open (shopOpen)'},
   'today-busy':{serve:'today-gestures.js',ask:['sync.js'],what:'whether a finger is on Today (todayBusy)'},
@@ -298,17 +298,17 @@ const HOOKS={
 
 module.exports=async({ok,ROOT})=>{
   /* bus.js itself, run as a script with its export blanked */
-  const ctx=vm.createContext({});vm.runInContext(appSrc(ROOT,'bus.js')+';this.B={on,emit,heard,serve,ask,served,need,needFn,register,runHooks,runHooksSeq,registered,slotsOf,hooked}',ctx);
-  const {on,emit,heard,serve,ask,served,need,needFn,register,runHooks,runHooksSeq,registered}=ctx.B,log=[];
+  const ctx=vm.createContext({});vm.runInContext(appSrc(ROOT,'bus.js')+';this.B={on,emit,heard,serve,ask,served,need,needFn,register,runHooks,runHooksSeq,slotsOf,hooked}',ctx);
+  const {on,emit,heard,serve,ask,served,need,needFn,register,runHooks,runHooksSeq,hooked}=ctx.B,log=[];
   /* the hooks (N1; owner decision D1: a feature that didn't load registered nothing and is absent, nothing throws) */
   {const got=[];
-    ok(Array.isArray(runHooks('nobody',1))&&!runHooks('nobody').length&&!registered('weather'),'runHooks for a moment nobody registered for calls nothing and answers [] (a missing feature is just absent)');
+    ok(Array.isArray(runHooks('nobody',1))&&!runHooks('nobody').length&&!hooked('today-parts'),'runHooks for a moment nobody registered for calls nothing and answers [] (a missing feature is just absent)');
     register('weather',{'today-parts':(P,o)=>{got.push('w');P.wx=o;return 'w'}});register('care',{'settings-draw':()=>got.push('c-draw')});
     register('cal',{'today-parts':P=>{got.push('c');P.cal=1;return 'c'}});
     const P={},ans=runHooks('today-parts',P,'o1');
     ok(ans.join()==='w,c'&&got.join()==='w,c'&&P.wx==='o1'&&P.cal===1,'runHooks calls each registered feature\'s hook in load order with the arguments, skips a feature without that hook, and gives back their answers');
     register('weather',{'settings-draw':()=>got.push('w-draw')});got.length=0;runHooks('settings-draw');
-    ok(got.join()==='w-draw,c-draw'&&registered('weather')&&registered('care')&&!registered('kit'),'registering again adds hooks at the feature\'s first place (load order), and registered says which features registered');
+    ok(got.join()==='w-draw,c-draw','registering again adds hooks at the feature\'s first place (load order)');
     register('weather',{'today-parts':()=>'w2'});ok(runHooks('today-parts',{}).join()==='w2,c','registering a hook again replaces that feature\'s hook');
     const hb=new Error('hb');got.length=0;register('kit',{'sync-send':()=>{got.push('k');throw hb}});register('fav',{'sync-send':()=>got.push('f')});let hg=null;try{runHooks('sync-send',{})}catch(e){hg=e}
     ok(hg===hb&&got.join()==='k,f','a hook that throws does not stop the others, and the first error is thrown on once all have run (as emit)');
@@ -317,7 +317,7 @@ module.exports=async({ok,ROOT})=>{
     ok(seq.join()==='1,2'&&got.join()==='k1,f1','runHooksSeq awaits each hook before the next, in load order, and answers their results');
     const sb=new Error('sb');got.length=0;register('cal',{'after-pull-fixups':()=>{throw sb}});let sg=null;try{await runHooksSeq('after-pull-fixups')}catch(e){sg=e}
     ok(sg===sb&&!got.length,'runHooksSeq stops at the first hook that throws: the later ones never run (a .then chain)');
-    const {slotsOf,hooked}=ctx.B,f1=()=>1,f2=()=>2;ok(JSON.stringify(slotsOf('nobody'))==='{}'&&!hooked('nobody'),'slotsOf for a moment nobody fills gives {} (each part absent), and hooked says no');
+    const {slotsOf}=ctx.B,f1=()=>1,f2=()=>2;ok(JSON.stringify(slotsOf('nobody'))==='{}'&&!hooked('nobody'),'slotsOf for a moment nobody fills gives {} (each part absent), and hooked says no');
     register('weather',{'page-shown':()=>({wxA:f1})});register('kit',{'page-shown':()=>({kitB:f2}),'synced':()=>{}});
     const SL=slotsOf('page-shown');ok(SL.wxA===f1&&SL.kitB===f2&&Object.keys(SL).join()==='wxA,kitB'&&hooked('page-shown')&&hooked('synced')&&!hooked('today-fold'),'slotsOf joins each feature\'s parts into one object, and hooked says whether any feature has a hook for the moment');
     ok(JSON.stringify(slotsOf('synced'))==='{}','a hook that answers no object fills no part')}
@@ -419,6 +419,10 @@ module.exports=async({ok,ROOT})=>{
   // (offline, a deep link gets each file from the root's copy, so a module imported by another can run a second time: harmless only for
   // a file that keeps nothing on the page; see RESTRUCTURE-PLAN.md, step 5)
   const bus=fs.readFileSync(path.join(ROOT,'bus.js'),'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+  {const ex=(bus.match(/^export \{([^}]*)\};/m)||['',''])[1].split(',').map(s=>s.trim()).filter(Boolean);
+    const imported=new Set(page.flatMap(f=>[...fs.readFileSync(path.join(ROOT,f),'utf8').matchAll(/^import \{([^}]*)\} from '\.\/bus\.js';/gm)].flatMap(m=>m[1].split(',').map(s=>s.trim().split(/\s+as\s+/)[0]))));
+    const idle=ex.filter(n=>!imported.has(n));
+    ok(ex.length>10&&!idle.length,`every name bus.js exports is imported by a page file (${ex.length})${idle.length?': not '+idle.join(', '):''}`)}
   ok(!/\b(?:globalThis|window|self|document|localStorage|addEventListener)\b|^\s*import\b/m.test(bus),'bus.js keeps nothing on the page and imports nothing (a second copy of it, as an offline deep link makes, is harmless)');
   const sw=fs.readFileSync(path.join(ROOT,'sw.js'),'utf8');
   ok(/'bus\.js'/.test(sw),'bus.js is in sw.js ASSETS (offline)');
