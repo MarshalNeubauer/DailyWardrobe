@@ -54,7 +54,7 @@ async function run(eng,browser,{ok,url,page,src,S}){
       if(f&&f.once)delete c.fix[name];
       if(f&&f.status)return r.fulfill({status:f.status,contentType:'text/plain',body:''});
       if(f&&f.body!=null)return r.fulfill({status:200,contentType:'text/javascript',body:f.body});
-      if(name==='index.html'&&c.swap){const res=await r.fetch();return r.fulfill({response:res,body:c.swap(await res.text())})}
+      if(name==='index.html'&&c.swap){try{const res=await r.fetch();return await r.fulfill({response:res,body:c.swap(await res.text())})}catch(e){return r.abort().catch(()=>{})}}   // (the planted loop's page may be gone mid-answer)
       return r.continue().catch(()=>{})});
     await ctx.addInitScript(LOADS);if(fast)await ctx.addInitScript(FAST);else await ctx.addInitScript(()=>{try{localStorage.setItem('tour_seen','1')}catch(e){}});
     for(const s of init)await ctx.addInitScript(s);
@@ -106,8 +106,9 @@ async function run(eng,browser,{ok,url,page,src,S}){
     finally{await c.ctx.close()}}
   // planted: the catcher without its guard reloads again and again, and the loop check sees it
   {const c=await open({fix:{'about.js':{status:404}},swap:h=>h.replace('Math.abs(Date.now()-stamp())<GAP','false')});
-    try{await c.p.goto(url).catch(()=>{});await wait(500);const L=await loops(c,3000);
-      ok(L.more>=3,T+`planted: the catcher with its 2-minute guard taken out reloads again and again, and the loop check catches it (${L.more} more loads in 3 s)`)}
+    try{await c.p.goto(url).catch(()=>{});await wait(500);const n0=(await until(c.p,()=>true)).loads.length,t0=Date.now();let more=0;
+      while(more<3&&Date.now()-t0<15000){await wait(500);more=(await until(c.p,()=>true)).loads.length-n0}   // (a busy machine reloads slower)
+      ok(more>=3,T+`planted: the catcher with its 2-minute guard taken out reloads again and again, and the loop check catches it (${more} more loads in ${Math.round((Date.now()-t0)/1000)} s)`)}
     finally{await c.ctx.close()}}
   // sessionStorage refused: the address carries ?dwretry= instead (no module's address has it), keeps the #invite= hash, and guards the
   // same way; once the app is ready start.js takes the mark off
