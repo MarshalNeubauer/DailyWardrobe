@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	908fd4ddb83b106622b0
+# tested	2863559b45679bc70506
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	settings-category	swVersionOf
 a11y.test.js	account.js	<loaded>	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI	settings-summary
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -478,7 +478,7 @@ acts.test.js	photos.js	<any>	<loaded>	aAn	asmLive	fetchItemPic	fetchRemoteRender
 acts.test.js	pickscore.js	<any>	<loaded>
 acts.test.js	planner.js	<any>	<loaded>	dCol	favLookOf	favRead	jacketGroup	lockStale	pairSeen	shirtGroup	spokenCol	tieGroup
 acts.test.js	remind.js	<any>	<loaded>	remindAny	remindCan	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	renderRemindUI	settings-summary
-acts.test.js	safety.js	<any>	<loaded>	@addEventListenererror	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errList	errMsg	errNoise	errNote	errSoon	errTell	errWhere	pruneTagImgs	safetyStart
+acts.test.js	safety.js	<any>	<loaded>	@addEventListenererror	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errTell	errWhere	pruneTagImgs	safetyStart
 acts.test.js	scorecard.js	<any>	<loaded>	cardLabel	dialHtml	dialTone	dialsFor	ordinal	outfitKey	rankFor	rankLine	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
 acts.test.js	settings.js	<any>	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	dayTap	openSettings	picsPick	picsSwitched	refreshToday	renderPicturesUI	renderSettingsExtras	saveUserSettings	scheduleWear	setCatOpen	setLock	setPictures	setSetSeen	setWanted	settingsSummaries	todayDirty	toggleDay	weekFirst
 acts.test.js	setup.js	<any>	<loaded>	page-shown	setupAuto	setupDress	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	start-jobs	today-parts	tzCountry
@@ -3004,7 +3004,6 @@ backgesture-item.test.js	tests/backgesture-parts.js	<any>
 backgesture-item.test.js	tests/fixedplan.js	<any>
 backgesture-item.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-item.test.js	tests/fixtures/suit-mink.jpg	<loaded>
-backgesture-item.test.js	tests/webkit.js	<any>
 backgesture-item.test.js	theme.js	<loaded>	applyTheme
 backgesture-item.test.js	toast.js	<loaded>	toast	undoHere
 backgesture-item.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -3107,7 +3106,6 @@ backgesture-over.test.js	tests/backgesture-parts.js	<any>
 backgesture-over.test.js	tests/fixedplan.js	<any>
 backgesture-over.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-over.test.js	tests/fixtures/suit-mink.jpg	<loaded>
-backgesture-over.test.js	tests/webkit.js	<any>
 backgesture-over.test.js	theme.js	<loaded>	applyTheme
 backgesture-over.test.js	toast.js	<loaded>	toastDrop	undoOff
 backgesture-over.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -3491,6 +3489,7 @@ bridge.test.js	tests/combatboot.test.js	<any>
 bridge.test.js	tests/connkeep.test.js	<any>
 bridge.test.js	tests/connrole.test.js	<any>
 bridge.test.js	tests/costwear.test.js	<any>
+bridge.test.js	tests/csp.test.js	<any>
 bridge.test.js	tests/daysoff.test.js	<any>
 bridge.test.js	tests/deploy.test.js	<any>
 bridge.test.js	tests/deps.test.js	<any>
@@ -6163,6 +6162,186 @@ costwear.test.js	worker/people.js	<loaded>	countWrites	sameText	sha256Hex	spend	
 costwear.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
 costwear.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	getRender	itemWrong	recCheck
 costwear.test.js	worker/render.js	<loaded>	hubOf
+csp.test.js	about.js	<any>	<loaded>	aboutAdopt	aboutConn	aboutEsc	aboutLatest	aboutLive	aboutReadVersion	aboutReg	aboutSay	aboutShow	aboutStart	appVersion	checkForUpdate	fbSendTap	fbWhen	fbWithErrs	loadFeedback	renderAbout	sendFeedback	settings-category	swVersionOf	updCheckTap
+csp.test.js	account.js	<any>	<loaded>	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI	settings-summary
+csp.test.js	act.js	<any>	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
+csp.test.js	add-card.js	<any>	<loaded>	addCkCount	addCkSecs	busyCard	cardSafe	ckLeftLine	ckLr	confBtn	formCard	matExtras	matGuessOf	matNewOf	matOn	photoPair	shadeRow	tagSwInner	unreadNote
+csp.test.js	add-ids.js	<any>	<loaded>	cardReading	needType	qh	tagFailNote
+csp.test.js	add-keep.js	<any>	<loaded>	addCardRec	addKeep	addKeepSoon	addKeepable	addRestore	addWatch	start-safety
+csp.test.js	add-more.js	<any>	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
+csp.test.js	add-paste.js	<any>	<loaded>
+csp.test.js	add-save.js	<any>	<loaded>	cardReady	savedTitle
+csp.test.js	add-sheet.js	<any>	<loaded>	@servenpsid	npsLeave	page-shown	renderAddFor	setAddFor
+csp.test.js	add.js	<any>	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addPhotosPick	addShowCard	cardPics	renderAdd	wbNote
+csp.test.js	analysis-worker.js	<any>
+csp.test.js	analysis.js	<any>	<loaded>
+csp.test.js	app.js	<any>	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	aiLabel	announce	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	fixupRedraw	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	keepFocus	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	renderBusy	setEditing	setSel	setView	shrink	sockTag	texSwatches	tx	txFail	txs	window.fetch
+csp.test.js	apple-touch-icon.png	<loaded>
+csp.test.js	asm-cm-job.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmGaps	asmCmGeoKeys	asmCmJob	asmCmKindOf	asmCmLightKeys	asmCmMat	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmRev	asmCmRoute	asmCmSig	asmCmStamp	asmCmTieTag	asmCmTrSc	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapNote	asmHbShirt	asmJfWants	asmJob	asmKindOf	asmLookTag	asmNkJob	asmOcpJob	asmOcpSig	asmPocketJob	asmPocketSig	asmWatchJob	asmWatchPaints	asmWtTag	asmWtWants
+csp.test.js	asm-cm-page.js	<any>	<loaded>	asmCmEnsure	asmCmGet	asmCmMfGet	asmCmMfGet1	asmCmStatus	asmCmUI	asmCmWarm	asmGapUI	asmNkGet
+csp.test.js	asm-color.js	<any>	<loaded>	asmBuild	asmBuildAfter	asmCmBlur	asmCmBuild	asmCmButtons	asmCmCodeText	asmCmDb	asmCmDiskGet	asmCmDiskKey	asmCmDiskPut	asmCmFinPrep	asmCmFinish	asmCmFoldW	asmCmHandEdge	asmCmHash	asmCmItems	asmCmKind	asmCmLightPrep	asmCmMp	asmCmPack	asmCmPref	asmCmPrep	asmCmPrepCode	asmCmRefit	asmCmSetup	asmCmSrcSig	asmCmUnpack	asmH32	asmNkBaseOf	asmPileKind	asmTieSheenK	setAsmCmWarming
+csp.test.js	asm-gl.js	<any>	<loaded>	asmGlAtlas	asmGlContext	asmGlCuffs	asmGlDraw	asmGlEncode	asmGlF	asmGlFrag	asmGlGeoPack	asmGlHashGlsl	asmGlInit	asmGlNote	asmGlOnPage	asmGlPack	asmGlPaint	asmGlPref	asmGlProgram	asmGlRead	asmGlRenderer	asmGlSame	asmGlStatus	asmGlTail	asmGlTex	asmGlTry	asmGlUI	asmGlUniforms	asmGlUpload	asmGlUploadGeo	asmGlUploadSteps	asmGlUse	asmGlVar	asmGlWhy
+csp.test.js	asm-keys.js	<any>	<loaded>
+csp.test.js	asm-kinds.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmNkBase
+csp.test.js	asm-look.js	<any>	<loaded>	asmBarRgb	asmBarSig	asmCmAny	asmCmHeld	asmCmKey	asmCmSeen	asmCmUse	asmDrawn	asmFresh	asmFullWins	asmGet	asmGetOnce	asmKey	asmListGet	asmLookId	asmMicroKind	asmOutKey	asmPhoto	asmStale	asmStamp	asmSuitBands	asmSuitTwill	asmSuitWeave	asmWants	setAsmOut
+csp.test.js	asm-ocp.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmOcpBase
+csp.test.js	asm-pocket.js	<any>	<loaded>	asmPocketDo	asmPocketPaint	asmPocketQuad
+csp.test.js	asm-today.js	<any>	<loaded>	asmAhead	asmAheadDays	asmAheadSoon	asmBlobUp	asmCmLook	asmEnsure	asmFor	asmKeepOut	asmLoad	asmShow	asmShown	asmSync	asmTouchWatch	asmTrim	renderAsmUI	settings-rows	start-jobs
+csp.test.js	asm-watch.js	<any>	<loaded>
+csp.test.js	asm-worker.js	<any>
+csp.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmAreas	asmBarDraw	asmBodyFlow	asmData	asmIdleArm	asmImg	asmImgOf	asmJpeg	asmOffPage	asmPost	asmPump	asmRun	asmSleeveFlow	asmSleeveSegs	asmTq	asmTqn	asmTqr	asmTubePart	asmTubeRaw	asmTubeTabs	asmWorker	setAsmAheadOn
+csp.test.js	back.js	<any>	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backHold	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSync	backTop	backWanted	histDrop	histPush	inviteInUrl
+csp.test.js	backupfile.js	<any>	<loaded>
+csp.test.js	bus.js	<any>	<loaded>	ask	emit	hooked	need	needFn	on	register	runHooks	runHooksSeq	serve	served	slotsOf
+csp.test.js	cal-worker.js	<any>
+csp.test.js	calendar.js	<any>	<loaded>	@whenPulled	calAsk	calAuto	calBanner	calConnect	calConnectTap	calDateTxt	calDay	calFeed	calFound	calKept	calKind	calLink	calMask	calNew	calPlan	calRead	calRow	calSeen	calStatus	calSummary	calSync	calTz	calWin	calWorker	calWrite	renderCalUI	settings-summary	today-parts
+csp.test.js	calparse.js	<any>
+csp.test.js	care.js	<any>	<loaded>	careBadge	careBandFit	careBandSoon	careCard	careCounts	careDayState	careFrame	careLists	careName	careNote	careState	careSum	careTop	careWornLine	item-sheet-parts	laundryDays	renderCare	renderCareUI	settings-category	settings-draw	today-parts	wardrobe-tile
+csp.test.js	checklist.js	<any>	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
+csp.test.js	colpick.js	<any>	<loaded>	@backOver	@window.addEventListenerkeydown	EP	closeColPick	colAskHtml	colBackdropTap	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colPickDraw	colRows	colShows	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpTyping	cpViews	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick
+csp.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	accentsOf	acctBase	acctCall	acctEsc	applyCustom	askPersist	avgText	calendar	camoPat	careLimit	careTimes	careWashed	careWord	cleanDay	cleanRecord	cleanSettings	cleanState	clipMetal	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dE00	dayClimate	dayFields	desc	di	dressOut	esc	fitCol	get settings	handPickSlot	hasInviteHash	hasPat	hasVest	hexRgb	holidays	homeAndroid	homeIOS	homeNeeded	inRotation	inviteOver	iosDevice	iosInSafari	isCargo	isConnected	isHandPick	isOcp	isWorkday	isoKey	isoToDate	itemFields	itemName	itemSeason	itemTitle	key	keyDate	keySettings	keySplit	labOf	leatherWord	listAnd	lum	lumCol	matSeason	matTypeOne	matTypeWord	matsFor	mergeSettings	mergeState	metalWord	mix	nameHtml	nameIso	nextStamp	nm	noBidi	normCol	normColFor	normPat	now	nowMs	occOf	offDays	offName	ownMats	paperCloth	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	recClean	recCol	recFree	rgbHex	rgbLab	seasonFit	sentence	setClimate	setClockSkew	setDate	setDay	setDays	setFields	setList	setStr	setWardrobe	setWeather	settingsOpen	shadeName	shoeStyle	shortCol	shortDate	shortDesc	sockPatterned	sockToe	sockToeKey	stampSettings	strapBand	styleWord	subHashes	syncMark	syncUrl	tagTypesNow	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	watchOpts	watchText	wearsJacket	wearsTie	yearDate
+csp.test.js	cost.js	<any>	<loaded>	add-card-sections	cpwBlock	cpwCur	cpwCurOk	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed	insights-cards	item-sheet-parts	settings-draw
+csp.test.js	days.js	<any>	<loaded>	idsOf	lockIds	notAhead	releaseLocks	saveDay
+csp.test.js	daysoff.js	<any>	<loaded>	countryName	countryPick	daysOffListen	fetchHolidays	holPast	holYears	isoDate	nagerKeep	refreshHolidays	renderDaysOffUI	renderFormalUI	setHolidayCountry	settings-draw	settings-summary	start-jobs
+csp.test.js	detect.js	<any>	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
+csp.test.js	draw.js	<any>	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	pocketDef	pocketEdge	pocketMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
+csp.test.js	dress.js	<any>	<loaded>	add-card-sections	dressOn	dressSynced	legacyVest	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks	synced
+csp.test.js	fav.js	<any>	<loaded>	@servefavward	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favStrip	favWhy	insights-cards	item-sheet-parts	today-parts
+csp.test.js	fields.js	<any>	<loaded>	fldRow	matRow	notesRow	optLab
+csp.test.js	history.js	<any>	<loaded>	canPick	checkPlanRules	closePicker	combatAway	dayActions	dayChanged	dropLearn	handGroup	openPicker	pickPic	planRulesCheck	planRulesLs	planRulesNote	pluralWord	recordDays	renderReplanUI	replanCount	resetCard	setTodayPullWait	settings-rows	slotLabel	start-checks	whenPulled
+csp.test.js	icon-192.png	<loaded>
+csp.test.js	icon-512.png	<loaded>
+csp.test.js	index.html	<any>	<loaded>
+csp.test.js	item-photo.js	<any>	<loaded>	paperHint	photoTools	ptIcon	setPhEdit	smallPhotos
+csp.test.js	item-view.js	<any>	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	@{constb$ivbody}>@document.addEventListenerkeydown	closeItem	itemCloseTap	itemFocusBack	itemShown	ivSwipe	openItem	page-shown	renderItem	sheetSlides	synced	wardList
+csp.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}	@{constel$wardrobe}>@document.addEventListenerkeydown	E	itemBody	ivCareSum	ivDetailSum	ivSummary	page-shown	renderWardrobe
+csp.test.js	kit.js	<any>	<loaded>	@addEventListenerkeydown	@servekithomeclose	@servekitquiet	get body	homeAbout	homeLabel	item-sheet-parts	kitBd	kitBs	kitBsAway	kitClose	kitDraw	kitEl	kitFixOldImports	kitHasSample	kitHist	kitImportOpen	kitImportSwipe	kitInert	kitLastImp	kitLastRow	kitOpen	kitSampleBanner	kitSampleMigrate	kitSampleNote	kitScorePic	kitSends	kitSentStamp	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit	kitWears	safariRemind	start-checks	start-safety	sync-send	today-parts	tourAgain	tourOpen	wardrobe-tile
+csp.test.js	locale.js	<any>	<loaded>	appLocale
+csp.test.js	locks.js	<any>	<loaded>	lockPast	lockSpan	lockUpcoming
+csp.test.js	look-base.js	<any>	<loaded>	lookCu	lookHasPat	lookOn
+csp.test.js	look.js	<any>	<loaded>	add-card-sections	renderLookSetting
+csp.test.js	manifest.webmanifest	<loaded>
+csp.test.js	mannequin.js	<any>	<loaded>	@{}	@{}>esc	@{}>hex	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
+csp.test.js	measure.js	<any>	<loaded>	aiSignals	applyMeasured	applyWb	measureCard	paperSteps	wbGains	wbRead
+csp.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	dayWins	fieldStamp	fsOk	fsPack	mergeDay	mergeItem	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
+csp.test.js	migrate.js	<any>	<loaded>	fixBlackBackdrops	recolourSpecSetts	remakeAfterPull	upgradeCloseups	upgradePhotos
+csp.test.js	missed.js	<any>	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
+csp.test.js	month.js	<any>	<loaded>	dayMarks	dayOnly	dayWord	homeDay	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	nextWorkday	piecesLine	piecesParts	planOn	recentWork	setMonthOpen	shirtWords	shortRest	shortTop	stackSVG	tieWord	wardShort
+csp.test.js	mq/shirt-open.js	<any>	<loaded>
+csp.test.js	mq/shirt-tie.js	<any>	<loaded>
+csp.test.js	mq/suit-open.js	<any>	<loaded>
+csp.test.js	mq/suit.js	<any>	<loaded>
+csp.test.js	mq/vest.js	<any>	<loaded>
+csp.test.js	nav.js	<any>	<loaded>	@onsettingsclosed	openAdd	pageBack	pageIn	setPagesOn	show	showWanted	subBack	subOpen
+csp.test.js	own-lists.js	<any>	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
+csp.test.js	pack.js	<any>	<loaded>	openPack	packCount	packDate	packDays	packDaysTxt	packDefault	packLate	packLight	packList	packLive	packLockState	packMark	packMarkKey	packN	packName	packProgress	packRead	packShow	packText	packTrip	packUses	packWeekStart	packWornIds	page-shown	renderPack
+csp.test.js	pattern-read.js	<any>	<loaded>	claudeOnly	measureAndApply	missedPattern	motifPat	readSett	readable	settCheck	settNote	settable
+csp.test.js	photo-keys.js	<any>	<loaded>	@serverenders	comboKey	comboSig	fnv64	jsq	keepRender	listPaused	loadRenders	lookSig	picsDrawn	shirtPatterned	shirtTextured	srcOk	workerBase	workerList
+csp.test.js	photos.js	<any>	<loaded>	aAn	asmLive	fetchItemPic	fetchRemoteRender	figureLabel	fixItemBackdrops	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	missingItemPics	picCol	prefetchRenders	remoteHold	remoteList	renderFor	renderItemPicUI	schedulePrefetch	settings-rows	shareLocalPics	wardPic
+csp.test.js	pickscore.js	<any>	<loaded>	bootsOff	fitOf	fitTag	handPool	keepHand	keepOff	pickRec	pickScores	pickSim	pickSub	pocketOn	slotPool	suitPants
+csp.test.js	planner.js	<any>	<loaded>	accFams	accMetal	aheadShirt	aheadTie	beltFit	blackOnBlack	chooseAccessories	chooseClothes	chooseJacket	chooseLeather	clipAllowed	clothesHard	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	dCol	dJacket	dLin	dPiece	dStretch	dWhen	darkJkt	darkMode	darkShirt	darkUnderLight	dayPools	dialFreshness	dialHarmony	dialInterest	dialLook	dialOccasion	dialSum	dialTexture	dialVariety	fam	favItemSet	favLookOf	favLooks	favPair	favRead	finish	formalTie	formalTop	frozenOutfit	groupsNear	idsAhead	intChr	intHx	intLabs	isCamo	isFavItem	jacketGroup	leatherGroup	lockStale	lookLeather	lookRepeat	metalOf	metalSame	metalsWhy	nearCost	oneColor	outfit	outfitNotes	outfitScore	pairRepeat	pairScore	pairSeen	pantsAsJacket	patInfo	patsHard	patsOf	patternScore	pcol	planLook	planSim	planStart	pocketScore	psEcho	psSameTie	psTargets	psWhite	rateOutfit	shirtGroup	shirtJacketHard	shirtLook	shirtRepeat	shirtScore	shoeClash	shoeCtx	shoeFormality	shoeScore	shoeSuits	sockBold	sockDayScore	sockEcho	sockFormalDay	sockMatFit	sockScore	spokenCol	surfOf	takeOff	tieAsShirt	tieFlat	tieGroup	tieLook	tieLum	tieRepeat	tieScore	tieShirtHard	topGw	uniformSplit	wardStart	watchFit	withColRun
+csp.test.js	remind.js	<any>	<loaded>	remindAny	remindCan	remindCareOn	remindOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go	remindSub	remindSwTap	remindSwitch	renderRemindUI	settings-summary
+csp.test.js	safety.js	<any>	<loaded>	@addEventListenererror	@addEventListenerkeydown	@forconstkofpointerupclickaddEventListenerk	db.then.dbDown	errList	errMsg	errNoise	errNote	errReport	errReporting	errSend	errSoon	errTell	errWhere	guardUnsaved	pruneTagImgs	safetyStart
+csp.test.js	scorecard.js	<any>	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	scoreTap	swapsHtml	toggleScore	weekOf	weekVariety	weeksHtml	whyText	wxLine
+csp.test.js	settings.js	<any>	<loaded>	@constsetChan{try}	@onpageback	@onpageshowing	@onsubopening	backupSummary	catTap	closeSettings	openSettings	refreshToday	renderPicturesUI	renderSettingsExtras	saveSettings	saveUserSettings	scheduleWear	setCatOpen	setDoneTap	setLock	setOpenTap	setSetSeen	setWanted	settingsSummaries	showCost	todayDirty	toggleCat	weekFirst
+csp.test.js	setup.js	<any>	<loaded>	page-shown	setupAuto	setupBefore	setupCityOpen	setupClose	setupConnected	setupDays	setupDraw	setupDress	setupEl	setupGo	setupGoDouble	setupHtml	setupInert	setupKeep	setupNeeds	setupNextTap	setupOpen	setupResume	setupSave	setupShown	setupStart	setupStep	setupStepsNow	setupToday	setupWx	setupYield	start-jobs	today-parts	wardrobe-tile
+csp.test.js	shop.js	<any>	<loaded>	@db.then	@db.thenmetaGetshop.then	@document.addEventListenerkeydown	analyzeWardrobe	closeShop	insights-cards	openShop	page-shown	renderShop	shopBusyText	shopButton	shopCat	shopFindIn	shopFresh	shopGate	shopHid	shopKeep	shopLeft	shopPlanned	shopRec	shopRecs	shopSig	shopSwipe
+csp.test.js	snapshots.js	<any>	<loaded>	loadSnapshots	settings-category	snapCount	snapDay	snapLabel	snapsRead
+csp.test.js	srgb.js	<any>	<loaded>	linSrgb	linSrgb8	srgbLin	srgbLin8
+csp.test.js	start.js	<any>	<loaded>	addBackTap	applyStored	loadStored	onSyncedData	startChecks	startJobs	startUp	tabTap	wardAddTap
+csp.test.js	stats.js	<any>	<loaded>	@afterScripts	page-shown	statPic	statsMonths	statsPlan	statsPlanned	statsShow	wornDays
+csp.test.js	styles.css	#add	#add #queue .card	#add #queue .card>label select,#item-view .card>label select,#nps-q .card>label select,.colbtn,:is(#item-view,#add) .wfld,.morein>label select	#add #queue .ckfoot .btns .pri	#add #queue .qcard	#add #queue .qcard.ckcard	#add #queue .qcard>.qx	#add .addfor	#add .addlong	#add .addlong .aic	#add .addmore	#add .addpick	#add .addpick .btn	#add .addpick .btn small	#add .addpick .btn span	#add .drop-hint	#add .nps-bar	#add .nps-x	#add .paste-box	#add .paste-box .btn	#add .paste-box input	#busy	#busy.on	#care-in .care-card	#care-in .care-card h3	#col-backdrop	#col-backdrop.on	#col-sheet	#col-sheet .cnown.cnslim	#col-sheet .cpask.cpaskhint	#col-sheet .cpaskhint .cpasktx b,#col-sheet .cpaskhint .cpasktx small	#col-sheet .cpcmp figure	#col-sheet .cpnewl	#col-sheet .cpownh	#col-sheet.on	#col-sheet.on,#rd-sheet.on	#item-backdrop	#item-backdrop.closing	#item-backdrop.on,#item-backdrop.closing	#item-view	#item-view .card.ivsec	#item-view .cropwrap .btns .pri,#add #queue .card .btns .pri,#add .nps-bar .pri	#item-view .ivct .ivrd	#item-view .ivct .wbstcard	#item-view .ivct .wbsteps	#item-view.closing	#item-view.on,#item-view.closing	#kit-backdrop	#kit-backdrop.on	#kitsheet	#kitsheet .btns	#kitsheet .kit-x	#kitsheet .vfile	#kitsheet button.pri	#kitsheet button:not(.linkbtn),#kitsheet label.btn	#kitsheet button[disabled]	#kitsheet.kbs	#kitsheet.kbs .kit-head	#kitsheet.kbs.going	#kitsheet.kbs.on	#kitsheet.on	#mannequin-container	#mbox .mhead	#mbox .mswipe	#mbox.mfast .mpanel,#mbox.mfast .mpanel-in,.mbox.bfast .mpanel,.mbox.bfast .mpanel-in	#mbox.mshut .chev,.mbox.bshut .chev	#modal-backdrop	#modal-backdrop,#settings-modal	#mpanel-in .mc[data-mv]	#multi-status	#multi-status:empty	#nps-backdrop,#shop-backdrop	#nps-backdrop.on,#shop-backdrop.on	#nps-sheet	#nps-sheet .nps-head .aic	#nps-sheet .nps-ht h2	#nps-sheet .nps-ht small	#nps-sheet,#shop-sheet	#pack .pk-card	#pack .pk-card h3	#pack .pk-card h4	#pack .pk-out	#pack .pk-wear	#pack :where(select,input[type=date])	#paste-status:empty	#photos-conn	#photos-conn:empty	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-backdrop.on	#pick-sheet	#pick-sheet .btns	#pick-sheet p	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#pick-sheet.on	#sbox .month-link	#sbox:not(.open) #spanel .mpanel-in	#settings-modal	#settings-modal .cal-btns .cal-ok	#settings-modal .cal-btns .cal-ok,#settings-modal .cal-btns .cal-no	#settings-modal .cpwset .cpwin input[type="text"]	#settings-modal .days	#settings-modal .dtog	#settings-modal .dtog.on	#settings-modal .dtog::after	#settings-modal .fchips:empty	#settings-modal .hlist	#settings-modal .mbox:is(.instant,.bfast) .mpanel-in	#settings-modal .mpanel-in	#settings-modal .mpanel-in::after	#settings-modal .mpanel-in::before	#settings-modal .occadd	#settings-modal .occadd button	#settings-modal .occadd input[type=date],#settings-modal .occadd select	#settings-modal .offadd	#settings-modal .offadd button	#settings-modal .offadd input	#settings-modal .offadd input[type=date]	#settings-modal .offadd input[type=text]	#settings-modal .scat	#settings-modal .scat-head	#settings-modal .scat-head .mltxt b,.slink .mltxt b	#settings-modal .scat-head .mltxt small,.slink .mltxt small	#settings-modal .sgroup:has(>.days)	#settings-modal .srow	#settings-modal .srow select	#settings-modal button.adv-head	#settings-modal button.dress-sw	#settings-modal label.btn	#settings-modal,#setup,#kitsheet	#setup	#setup .su-day	#setup .su-day.on	#setup .su-skip	#setup button	#setup button.pri,.ask-btns button.pri	#setup.on	#shop-sheet	#shop-sheet .btns	#shop-sheet button:where(:not(.pick-x,.shop-toprow,.shop-rechead))	#shop-sheet p	#shop-sheet.on	#spanel .mpanel-in	#stats .shopbtn	#stats .st-wait	#toast	#toast,body.iv-on #toast	#toast.on	#toast:not(.on)	#today	#today .plegend	#today .plegend span	#today .row	#today .row .dot	#today .row>.mut:first-child	#today .wxretry	#undo-fab	#ward-add	#ward-add svg	#wardrobe	#wardrobe .chip	#wardrobe .chip.on	#wardrobe .chip::after	#wardrobe .chips	#wardrobe .gi	#wardrobe .gi img.ph,#wardrobe .gi .giopen .thumb	#wardrobe .grid	#wardrobe .wclear	#wardrobe .wsearch input	#wardrobe .wsort	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	#wardrobe:not([hidden])~#ward-add	*	.about-confirm	.about-fold summary	.about-fold summary::after	.about-note	.about-text	.acct-box .acct-h	.addlong .chev	.addlong-t	.addlong-t b	.addlong-t small	.addpick	.addpick .btn	.addpick .btn small	.addrow	.addrow .chev	.addrow small	.addrow span:first-child	.adv	.adv-head .chev	.adv-in	.adv-in>.sgroup:first-child	.adv-t	.adv-t small	.adv.open .adv-head .chev	.adv.open .adv-in	.aic	.b-good	.b-low,.b-bad	.b-ok	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.btn	.btns	.c-good	.c-low,.c-bad	.c-ok	.cal-banner	.cal-banner .linkbtn	.cal-btns	.cal-conn	.cal-conn .mut	.cal-ev	.cal-ev b	.cal-ev small	.cal-form input[type=url]	.cal-guides button	.cal-howh	.cal-list	.cal-priv	.cal-row	.cal-to	.cap	.card label	.care-acts	.care-acts button	.care-card>.care-row:first-of-type	.care-card>.shelp+.care-row	.care-foot	.care-foot .linkbtn	.care-main	.care-main small	.care-nm	.care-row	.caretag	.chip	.chip.on	.chips	.ck-good	.ck-opt,.ck-todo	.ck-warn	.ckadds	.ckai	.ckb	.ckb .wbst,.ckb .wbstcard	.ckb .wbsteps	.ckb>label	.ckb>label select,.ckb>label>input[type=text]	.ckcheap	.ckchev	.ckchip	.ckcn	.ckfoot	.ckfoot .btns	.ckhd	.ckhd b	.ckhd small	.ckhelp	.ckintro .pair	.ckleft	.ckm	.ckm b	.ckm svg	.ckprog	.ckreadadd .rdcost	.cks	.cks.open>.ckb	.cks.open>.ckh .ckchev	.ckt	.ckt b	.ckt small	.cktrack	.cktrack i	.colbtn	.conn-off-note:empty	.conn-tick	.cpask	.cpasktx	.cpasktx b	.cpasktx small	.cpbar	.cpbar button	.cpbig	.cpcmp	.cpcmp figcaption	.cpcmp figure	.cpdraw,.cpdraw svg	.cpfig .cpdraw	.cpfig .ph.thumb	.cpgrab	.cpgrid	.cph	.cphelp	.cpnm	.cpnow	.cpph	.cpsw	.cptile	.cptile.sel	.cptop	.cpw-h	.cpwbought input	.cpwf	.cpwf label	.cpwin	.cpwin input[type="text"]	.cpwset	.cpwset input[type="number"]	.cpwsym	.custadd	.custadd button	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.day h2 .wx.haspill	.day h2 .wx.haspill .wxc	.day h2 .wx.haspill:has(.wpgrp)	.daygrid	.daygrid .side	.daygrid .stage	.days	.dial	.dial .darc	.dial .dtrack	.dial small	.dial svg	.dial text	.dial.d-good	.dial.d-low,.dial.d-bad	.dialrow	.dot	.dot svg	.dot,.shop-rechead .rec-img .thumb,.shop-toprow .rec-img .thumb,.st-pic,.pick-pic	.dress-row	.dress-row:first-child	.dress-sw i	.dress-sw i::after	.dress-sw.on i	.dress-sw.on i::after	.dress-txt	.dress-txt b	.dress-txt small	.drop-hint	.dtog	.dtog.on	.favhint	.favic	.favsw2	.favsw2::after	.favtog	.favtog-t	.favtog>.favic	.fb-item	.fb-item p	.fb-item small	.fb-list	.fchips	.fedge	.fedge-on	.fedge>i	.fedge>i::before	.fig	.fig .cband	.fig .cband .cdots	.fig .cband .cdots em	.fig .cband .cdots i	.fig .cband .cdots i.on	.fig .cband .crow	.fig .cband .ctxt	.fig .cband .ctxt b	.fig .cband path	.fig .cband svg	.fig .cframe	.fig .swstack	.fig .swstack .ovsw	.fig .swstack .ovsw svg,.fig .swstack .ovsw img	.fig.cb	.fig.cb.care-last,.fig.cb.care-over	.fig.photo	.fig.photo img	.fig>svg	.firstrun	.firstrun h3	.fit.best,.fit.good	.fit.best,.fit.good,.cpd	.fit.ok	.foldbar	.foldbar .fchev	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gi	.gi,.card	.gimeta	.gimeta .gtype	.gimeta b	.giopen	.grid	.hbtns	.hgear	.hlist	.hlist:empty	.hrow	.hrow .hd	.hrow .hn	.hrow input	.hrow.wk	.hrow.wk .hd,.hrow.wk .hn	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.ivbar	.ivbar .ivdone	.ivbar .ivnav	.ivbar,.nps-bar,.su-bar,.kit-bar	.ivbody	.ivcare .btns button	.ivcare .carecount	.ivcare .carecount.due	.ivchev	.ivck .cks .ivcare	.ivck .cks .ivcare h3	.ivcl,.ivcr	.ivcols	.ivdel	.ivdel button	.ivdup	.ivdup button	.ivdup+.ivdel	.ivhead	.ivhead .pcount	.ivhead::before	.ivin	.ivpill	.ivpill.good	.ivpill.warn	.ivpills	.ivrd	.ivrd .ivrdbtn	.ivrot .rotbtn	.ivsec .btns	.ivsec .shelp	.ivsec h3	.ivsum	.ivsumph	.ivsumph .ph.thumb	.ivsumph svg	.ivsumt	.ivt	.ivt .gtype	.ivt h2	.kit-banner .btns button,#pick-next	.kit-bar	.kit-bar .pri	.kit-body	.kit-body p	.kit-grab	.kit-head	.kit-head h2	.kit-head small	.kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar	.kit-hic	.kit-ht	.kit-paste	.kit-paste textarea	.kit-pic	.kit-pic svg	.kit-prog	.kit-start	.kit-tip	.kp-card	.kp-good	.kp-num	.kp-s	.kp-t	.kp-t2	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mbox.blift .bli	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mbox.open .chev	.mbox.open .mpanel	.mbox.open .mpanel-in	.mc	.mc .dn	.mc.rest	.mc.today	.mc.worn	.mdow	.mgrid	.mhead	.mhead h3	.mli	.mli .stack	.mli small	.mlstrip	.mlstrip,.pstrip	.mltxt	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.nps-bar	.nps-body	.nps-grab	.nps-grab,.shop-grab,.kit-grab	.nps-head	.nps-ht	.offadd input[type=date]	.pack-link	.pair	.pair .tagsw .ph.thumb	.pair .tagsw .ph.thumb svg	.pair figcaption	.pair figcaption b	.pair figure	.pair img.ph,.rv .pair img.ph	.paste-box	.paste-box .btn	.paste-box input	.pchip	.pchip svg	.pchip.vest	.phead	.phead .pback	.phead .pcount	.phead h2	.pick-grid	.pick-head	.pick-head b	.pick-it	.pick-it .fit	.pick-it.cur	.pick-nm	.pick-pic	.pick-pic .ph.thumb,.st-pic .ph.thumb	.pick-pic svg	.pick-x	.pk-caps	.pk-count	.pk-dates,.pk-caps	.pk-day	.pk-day:last-child	.pk-dn	.pk-f	.pk-group .pk-line:last-of-type	.pk-h	.pk-help	.pk-line	.pk-nm	.pk-nm small	.pk-note	.pk-stack	.pk-sw	.pk-sw svg	.pk-tick	.pk-tick input	.pk-travel .pk-help	.pk-what	.pk-what b	.pk-what small	.pri	.pstrip	.psub	.rdcost	.rec-img .thumb	.row	.row .mut	.row .mut.none	.row .swap	.row .swap::after	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.rv .thumb	.rv img.ph	.sactions	.sactions:empty	.sbody	.scat-h	.score	.score .srank	.score .srules	.score .ssec	.score .ssec b	.score .swhy	.score .swx	.score.open:not(.instant) .sdb i	.score.open:not(.instant) .sli,.score.open:not(.instant) .sfixbtn	.sdb	.sdb i	.sdh	.sdh b	.sdl	.sdl small	.setup-again	.sfixbtn	.sfixbtn .dot	.sfixbtn .dot>*	.sfixbtn .sfixnm	.sfixbtn b	.sfixbtn b small	.sfoot	.sform	.sform input[type=date]	.sform input[type=text],.sform select	.sform>span	.sgh	.sgh.sgh-first	.sgroup	.sgroup+.srow,.srow:first-child	.sgroup:first-child	.shead	.shead .sdone	.shead h2	.shelp	.shelp:empty	.shop-busy	.shop-busy .st-bar	.shop-busy .st-bar i	.shop-cat	.shop-cat h3	.shop-chev	.shop-foot	.shop-g	.shop-g i	.shop-grab	.shop-lead	.shop-mix	.shop-n	.shop-occ	.shop-occ small,.shop-occ ul	.shop-rec	.shop-rechead	.shop-rechead .rec-img .thumb,.shop-toprow .rec-img .thumb	.shop-rechead .rec-txt	.shop-rechead .rec-txt b	.shop-tag	.shop-tag.gap,.shop-tag.variety	.shop-top	.shop-top li	.shop-top-head	.shop-top-head b	.shop-topnm	.shop-topnm b	.shop-toprow	.shop-toprow .rec-img .thumb	.shop-v	.shop-v.covered	.shop-v.worth	.shopbtn-c	.shopbtn-t	.shopbtn-t b	.shopbtn-t small	.sic	.sicw	.side>.mbox:last-child	.side>.score,.side>.mbox,.side>.dayact,.side>p	.slabel	.slide	.slink	.slink .chev	.slinks	.slinks .slink	.spin	.srl	.srl li	.srl li::before	.srow	.srow select	.srow.stack	.srow.stack input	.srules.ok	.ssec+.sdl	.sswaps	.sswaps .ssec	.st-bar	.st-bar i	.st-pic	.st-pic svg	.stack	.stack.rest	.stage	.stage .firstrun	.su-bar	.su-bar .pri	.su-body	.su-days	.su-group	.su-group:first-child	.su-head	.su-help	.su-in	.su-label	.su-lead	.su-prog	.su-prog i	.su-prog i.on	.su-ttl	.su-ttl h2	.su-ttl small	.sweeks	.sweeks .wn	.sweeks li	.sweeks li.cur	.sweeks li:first-child	.sweeks li>span:last-child	.sweeks small	.swhy::before	.swsplit	.thumb	.thumb svg	.vfile	.vh	.warn	.wbpic i	.wbpic::after	.wbpic::before	.wbstcard .arr	.wbstcard .cam	.wbstcard .eb	.wbstcard .hd	.wbstcard .li	.wbstcard .more	.wbstcard .n	.wbstcard .n b	.wbstcard .ol	.wbstcard .tap	.wbstcard .wbpic.nobox::before,.wbstcard .wbpic.noring i	.wbsteps	.wfind	.wpfav	.wpfav::after	.wpgrp	.wpgrp .wpill	.wpgrp,.lwfav,.favpick,.favmark,.favtog,.favchip,.st-fav	.wpill	.wpill.yes	.wpill::after	.wsearch	.wsicon	.wslide	.wxc.wxlk	.wxl	::placeholder	:focus-visible	:is(#item-view,#add) .ckadds .btn	:is(#item-view,#add) .ckh	:is(#item-view,#add) .cklr	:is(#item-view,#add) .wbstcard	:is(#item-view,#add) .wbstcard .wbpic	:is(#item-view,.wbsteps,#cu-sheet) .wbpic	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#stats) .shopbtn	:is(input:not([type=range],[type=color],[type=checkbox],[type=radio],[type=file],[type=hidden],[type=button],[type=submit]),select,textarea)	:root	:where(#today) .mbox	:where(#today) .mbox.open .mpanel-in	:where(#today) .mltxt b	:where(#today) .mltxt small	:where(#today) .month-link	:where(#today) .mpanel-in	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text]):is(select)	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text],input[type=url],input[type=date],input[type=number])	<loaded>	[hidden]	body	body.busy-on #toast	body.iv-on #toast,body.iv-on #busy	body:not(.iv-on):has(main:not([inert]) #wardrobe:not([hidden])) #toast	button	button,.btn,select,input	button:focus-visible,select:focus-visible,input:focus-visible	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	html.set-lock,html.set-lock body	label:has(>.vfile)	main	main[inert] #wardrobe~#undo-fab,body.iv-on #wardrobe~#undo-fab	main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add	nav	nav button	nav button.on	nav.tab-none::before	nav::before	select,input[type="text"],input[type="range"]
+csp.test.js	sw.js	<any>
+csp.test.js	sync-photos.js	<any>	<loaded>	isPh	phBatch	phIn	phMap	phOut	phStrings
+csp.test.js	sync-status.js	<any>	<loaded>	@onbackupchanged	settings-open	showSyncStatus
+csp.test.js	sync.js	<any>	<loaded>	@connRestored.then	adoptBackupSettings	afterPull	applyMerged	backedUpWords	clockFix	clockLearn	clockTell	clockText	connection-saved	localState	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	setSyncStatus	settings-rows	settings-saved	syncJoinAt	syncJoinMark	syncLaterRun	syncLite	syncNeedsPull	syncNow	syncNowTap	syncOnce	syncPaused	syncRedraw	syncSaved	syncSettingsRedraw	syncTap	syncWaiting	synced
+csp.test.js	tag-request.js	<any>	<loaded>	aiFields	customForTag	describeEstimate	insights-cards	ownMatsForTag	readEstimate	tagExtras	tagFixes	visTok
+csp.test.js	tagging.js	<any>	<loaded>	confTxt	tagNotes	takeExtras	takeMaterial
+csp.test.js	tests/fixtures/cm/shirt-open/mask-background.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-open/mask-belt.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-open/mask-buckle.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-open/mask-dark.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-open/mask-shirt.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-open/mask-skin.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-open/mask-trousers.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-open/mask-watch.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-open/master.jpg	<any>
+csp.test.js	tests/fixtures/cm/shirt-open/part-sleeveL.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-open/part-sleeveR.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-tie/mask-background.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-tie/mask-belt.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-tie/mask-buckle.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-tie/mask-dark.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-tie/mask-shirt.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-tie/mask-skin.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-tie/mask-tie.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-tie/mask-trousers.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-tie/mask-watch.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-tie/master.jpg	<any>
+csp.test.js	tests/fixtures/cm/shirt-tie/part-sleeveL.png	<any>
+csp.test.js	tests/fixtures/cm/shirt-tie/part-sleeveR.png	<any>
+csp.test.js	tests/fixtures/cm/suit-open/mask-background.png	<any>
+csp.test.js	tests/fixtures/cm/suit-open/mask-dark.png	<any>
+csp.test.js	tests/fixtures/cm/suit-open/mask-jacket.png	<any>
+csp.test.js	tests/fixtures/cm/suit-open/mask-shirt.png	<any>
+csp.test.js	tests/fixtures/cm/suit-open/mask-skin.png	<any>
+csp.test.js	tests/fixtures/cm/suit-open/mask-watch.png	<any>
+csp.test.js	tests/fixtures/cm/suit-open/master.jpg	<any>
+csp.test.js	tests/fixtures/cm/suit-open/part-lapelL.png	<any>
+csp.test.js	tests/fixtures/cm/suit-open/part-lapelR.png	<any>
+csp.test.js	tests/fixtures/cm/suit-open/part-sleeveL.png	<any>
+csp.test.js	tests/fixtures/cm/suit-open/part-sleeveR.png	<any>
+csp.test.js	tests/fixtures/cm/suit/mask-background.png	<any>
+csp.test.js	tests/fixtures/cm/suit/mask-dark.png	<any>
+csp.test.js	tests/fixtures/cm/suit/mask-jacket.png	<any>
+csp.test.js	tests/fixtures/cm/suit/mask-shirt.png	<any>
+csp.test.js	tests/fixtures/cm/suit/mask-skin.png	<any>
+csp.test.js	tests/fixtures/cm/suit/mask-tie.png	<any>
+csp.test.js	tests/fixtures/cm/suit/mask-watch.png	<any>
+csp.test.js	tests/fixtures/cm/suit/master.jpg	<any>
+csp.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
+csp.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
+csp.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
+csp.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
+csp.test.js	tests/fixtures/cm/vest/mask-background.png	<any>
+csp.test.js	tests/fixtures/cm/vest/mask-dark.png	<any>
+csp.test.js	tests/fixtures/cm/vest/mask-jacket.png	<any>
+csp.test.js	tests/fixtures/cm/vest/mask-shirt.png	<any>
+csp.test.js	tests/fixtures/cm/vest/mask-skin.png	<any>
+csp.test.js	tests/fixtures/cm/vest/mask-tie.png	<any>
+csp.test.js	tests/fixtures/cm/vest/mask-waistcoat.png	<any>
+csp.test.js	tests/fixtures/cm/vest/mask-watch.png	<any>
+csp.test.js	tests/fixtures/cm/vest/master.jpg	<any>
+csp.test.js	tests/fixtures/cm/vest/part-lapelL.png	<any>
+csp.test.js	tests/fixtures/cm/vest/part-lapelR.png	<any>
+csp.test.js	tests/fixtures/cm/vest/part-sleeveL.png	<any>
+csp.test.js	tests/fixtures/cm/vest/part-sleeveR.png	<any>
+csp.test.js	theme.js	<any>	<loaded>	applyTheme
+csp.test.js	toast.js	<any>	<loaded>	toast	toastDrop	toastOff	undoOff
+csp.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	todayBusy	todayFree
+csp.test.js	today-photofold.js	<any>	<loaded>
+csp.test.js	today-picture.js	<any>	<loaded>	@$today.addEventListenerclick	@servezoomed	@{constel$todayinPice}	@{constel$todayinPice}>@el.addEventListenertouchend	@{constel$todayinPice}>@el.addEventListenertouchstart	@{constel$todayinPice}>inPic	applyZoom	ovlCloseup	ovlCuSuit	ovlCuWants	ovlGrain	ovlHbShirt	ovlItem	ovlPiece	ovlSuitOld	ovlSuitPng	ovlSvg	ovlWeave	swApply	today-parts	zoomTarget
+csp.test.js	today-plan.js	<any>	<loaded>	@serveplansnap	hasOutfit	planDirty	planFor	planMonth	planSig	planSnapSoon	planSnapUse	planStartDay	planTrim	snapOut	strHash
+csp.test.js	today.js	<any>	<loaded>	belowBox	figLoad	figureStage	goToday	goneNote	keepHome	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slots	swatchStack	todaySay	todayTabTap	vestRow	wornBar	wornPill	wxFit	wxMissing	wxPreload
+csp.test.js	ui.js	<any>	<loaded>	@window.addEventListenerkeydown	addGate	advClose	advTap	advToggle	boxFold	boxStop	boxUnfold	closeupBtn	connSummary	cuTouch	foldEdge	layerClose	layerInert	layerOpen	layerUp	monthBelow	needConn	noMotion	pageScroll	renderConnUI	revealNeed	settings-draw	settings-open	settings-summary	sheetSwipe	uiEsc
+csp.test.js	wardrobe.js	<any>	<loaded>	@whenPulled	giNote	giTag	ivOn	matMigrate	matOnItem	matRenameTo	sockLegacy	sockToeMigrate	start-safety	synced	wardBack	wardBar	wardCount	wardFieldsTop	wardFlt	wardFresh	wardGrid	wardKeep	wardNorm	wardOrder	wardPendingRestore	wardPendingSoon	wardSort	wardSynced	wardView
+csp.test.js	watch/leather.jpg	<loaded>
+csp.test.js	watch/shirt-open.png	<loaded>
+csp.test.js	watch/shirt-tie.png	<loaded>
+csp.test.js	watch/suit.png	<loaded>
+csp.test.js	watch/vest.png	<loaded>
+csp.test.js	weather.js	<any>	<loaded>	cityEnglish	cityKey	cityLang	cityList	cityPick	findCity	loadClimate	loadWeather	locCC	renderWxLoc	setLocation	settings-draw	settings-summary	temp	today-parts	unit	unitCC	wxChip	wxIcon
+csp.test.js	who.js	<any>	<loaded>	@serveacctme	acctRole	applyRole	isTester	rememberRole
+csp.test.js	worker.js	<loaded>	corsFor	fetch	serve
+csp.test.js	worker/backup.js	<loaded>	arrOf	clampStamps	dropFuture	dropParts	fsOver	isParted	isPhoto	keepSnapshots	kseOver	kvMeta	listSnapshots	liteSig	loadSync	lockStale	mergeLite	nextRevs	nextSaved	now	over	phCollect	putStored	readText	sampleOnly	saveLock	splitPhotos	storedVersion	syncLiteGet	syncLitePost	syncLiteSave	syncVersion	writeBudget
+csp.test.js	worker/calendar.js	<loaded>	calHead	calLead	calTicket	calUrl	handleCalFeed
+csp.test.js	worker/links.js	<loaded>	publicHost	readCapped
+csp.test.js	worker/people.js	<loaded>	countWrites	handleFeedback	handleInvites	handleMe	hubLog	logAdd	logItems	ownerOnly	sameText	sha256Hex	smallBody	spend	spendEach	spendUpTo	usedOf	utcDay	whoIs
+csp.test.js	worker/photostore.js	<loaded>	handleSync	isPv	loadAny	putPhotos	pvMeta	pvText	readPv	refsIn	refsOf	storePhotos
+csp.test.js	worker/records.js	<loaded>	colOk	dayWrong	freeOk	getRender	itemWrong	recCheck	renderId
+csp.test.js	worker/remind.js	<loaded>	handlePush	pushReady
+csp.test.js	worker/render.js	<loaded>	RenderHub	fetch	hubOf	logHub	logOp	serial	sget	sput
+csp.test.js	worker/tag.js	<loaded>	accOpts	claudeCall	cleanCustom	cleanMaterial	cleanOwnMaterials	cleanTag	colorText	correctionsText	customText	knownOf	knownTypes	knowsCoat	knowsCombat	knowsSock	lightText	matTypes	materialExtra	materialRules	materialSchema	measuredText	multiPrompt	orNull	ownMaterialsText	promptFor	promptOf	tagKinds	tagPatterns	tagRules	tagSchema	tagTypes	tagWithClaude	wbOf
 daysoff.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	settings-category	swVersionOf
 daysoff.test.js	account.js	<loaded>	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI	settings-summary
 daysoff.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -10888,7 +11067,6 @@ modload.test.js	tests/fixtures/cm/vest/part-sleeveL.png	<any>
 modload.test.js	tests/fixtures/cm/vest/part-sleeveR.png	<any>
 modload.test.js	tests/load-contract.json	<any>
 modload.test.js	tests/modload-parts.js	<any>
-modload.test.js	tests/webkit.js	<any>
 modload.test.js	theme.js	<any>	<loaded>	applyTheme	cycleTheme	themeTap
 modload.test.js	toast.js	<any>	<loaded>	toast	toastOff
 modload.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	todayBusy	todayCovered
@@ -11051,6 +11229,7 @@ modtools.test.js	tests/combatboot.test.js	<any>
 modtools.test.js	tests/connkeep.test.js	<any>
 modtools.test.js	tests/connrole.test.js	<any>
 modtools.test.js	tests/costwear.test.js	<any>
+modtools.test.js	tests/csp.test.js	<any>
 modtools.test.js	tests/daysoff.test.js	<any>
 modtools.test.js	tests/deploy.test.js	<any>
 modtools.test.js	tests/deps.json	<any>
@@ -15867,6 +16046,7 @@ safeport.test.js	tests/combatboot.test.js	<any>
 safeport.test.js	tests/connkeep.test.js	<any>
 safeport.test.js	tests/connrole.test.js	<any>
 safeport.test.js	tests/costwear.test.js	<any>
+safeport.test.js	tests/csp.test.js	<any>
 safeport.test.js	tests/daysoff.test.js	<any>
 safeport.test.js	tests/deploy.test.js	<any>
 safeport.test.js	tests/deps.test.js	<any>

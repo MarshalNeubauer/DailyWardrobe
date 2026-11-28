@@ -18,7 +18,8 @@ const FILE=n=>({name:n,mimeType:'image/jpeg',buffer:Buffer.from('not a real pict
 // replaceTexture (item-photo.js) is called inside its module, so it runs for real on the item page's close-up: a real picture, and the test reads which item took it
 const REAL=n=>({name:n,mimeType:'image/jpeg',buffer:require('fs').readFileSync(require('path').join(__dirname,'fixtures','blazer-windowpane-closeup.jpg'))});
 async function open(browser,eng,url,settle,o={}){
-  const ctx=await browser.newContext(o.desk?{viewport:{width:900,height:900}}:{viewport:{width:390,height:844},hasTouch:true,isMobile:eng==='Chromium',locale:'en-US',timezoneId:'Asia/Kuwait'});
+  // (bypassCSP: the page is handed an inline module below, which index.html's security policy refuses)
+  const ctx=await browser.newContext({bypassCSP:true,...(o.desk?{viewport:{width:900,height:900}}:{viewport:{width:390,height:844},hasTouch:true,isMobile:eng==='Chromium',locale:'en-US',timezoneId:'Asia/Kuwait'})});
   const S={reads:0,push:[],invites:[{id:'inv1',name:'Sam',used:{},caps:{}}],n:1};
   await ctx.route(HOST+'**',async r=>{const q=r.request(),u=new URL(q.url()),m=q.method(),send=(j,status=200)=>r.fulfill({status,headers:J,body:JSON.stringify(j)});
     if(m==='OPTIONS')return r.fulfill({status:204,headers:{...J,'access-control-allow-headers':'*','access-control-allow-methods':'*'}});

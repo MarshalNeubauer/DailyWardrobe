@@ -34,8 +34,8 @@ async function run(eng,browser,parts,{ok,url,WARDROBES,settle}){
       const ci=await load('tests/fixtures/suit-mink-closeup.png'),pi=await load('tests/fixtures/suit-mink.jpg');
       const cv=(im,k)=>{const c=document.createElement('canvas');c.width=im.naturalWidth*k;c.height=im.naturalHeight*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.9)};
       HOOK.rememberRole({role:'owner'});HOOK.settings.custom={colors:[],patterns:[]};HOOK.applyCustom(HOOK.settings.custom);
-      const w=(0,eval)(W);HOOK.items=[...w.realistic.map(i=>({...i})),{id:'m1',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:cv(pi,1),texture:cv(ci,3),added:1,name:'Mink suit'}];
-      HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.setupDone=1;HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};HOOK.flt='all';HOOK.editing=null;HOOK.show('today')},WARDROBES);
+      const w=W;HOOK.items=[...w.realistic.map(i=>({...i})),{id:'m1',type:'suit',primaryColor:'deeptaupe',pattern:'solid',photo:cv(pi,1),texture:cv(ci,3),added:1,name:'Mink suit'}];
+      HOOK.settings.workdays=[0,1,2,3,4];HOOK.settings.setupDone=1;HOOK.TODAY_OVERRIDE='2026-11-15T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,16);HOOK.view={y:2026,m:10};HOOK.flt='all';HOOK.editing=null;HOOK.show('today')},require('vm').runInNewContext(WARDROBES));   // (made here: index.html's security policy refuses eval in the page)
     await settle(p,300)};
   await seed();
   const back=async()=>{await p.evaluate(()=>history.back());await p.waitForTimeout(120);await settle(p,350)};
