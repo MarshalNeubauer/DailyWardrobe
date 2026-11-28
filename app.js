@@ -240,7 +240,7 @@ async function ask(c,extra){
     const res=await fetch(workerUrl,{
       method:'POST',
       headers:{'Content-Type':'application/json','x-app-token':localStorage.getItem('app_token')||''},   // (the code goes in the header only: the worker hasn't read a body appToken since 2026-11-12)
-      body:JSON.stringify({image:dataUrl,...need('tag-extras',ex)}),
+      body:JSON.stringify({image:dataUrl,...askFor('tag-extras',ex)}),
       ...(signal?{signal}:{})
     });
     if(!res.ok){let e='',j={};try{j=await res.json();e=j.detail||j.error||''}catch{}

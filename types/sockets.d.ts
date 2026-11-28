@@ -534,7 +534,6 @@ export interface Needs {
   'pics-drawn': Sockets['pics-drawn'];
   'renders-load': Sockets['renders-load'];
   'renders': Sockets['renders'];
-  'tag-extras': Sockets['tag-extras'];
   'announce': Sockets['announce'];
   'conn-keep': Sockets['conn-keep'];
   'meta-get': Sockets['meta-get'];
@@ -556,8 +555,6 @@ export interface Needs {
   'plan-dirty': Sockets['plan-dirty'];
   'plan-snap': Sockets['plan-snap'];
   'plan-snap-use': Sockets['plan-snap-use'];
-  'unlock-clash': Sockets['unlock-clash'];
-  'lock-upcoming': Sockets['lock-upcoming'];
   'toast': Sockets['toast'];
   'tell': Sockets['tell'];
   'belt-stuck': Sockets['belt-stuck'];
@@ -584,7 +581,6 @@ export interface Needs {
   'pic-shut': Sockets['pic-shut'];
   'pic-snap': Sockets['pic-snap'];
   'pic-stop': Sockets['pic-stop'];
-  'ovl-piece': Sockets['ovl-piece'];
   'today-draw': Sockets['today-draw'];
   'today-home': Sockets['today-home'];
   'wx-preload': Sockets['wx-preload'];
@@ -597,20 +593,7 @@ export interface Needs {
   'show-cost': Sockets['show-cost'];
   'settings-save-user': Sockets['settings-save-user'];
   'today-dirty': Sockets['today-dirty'];
-  'err-note': Sockets['err-note'];
   'tag-fail-text': Sockets['tag-fail-text'];
-  'storage-down': Sockets['storage-down'];
-  'safety-start': Sockets['safety-start'];
-  'check-arrivals': Sockets['check-arrivals'];
-  'nps-id': Sockets['nps-id'];
-  'nps-inert': Sockets['nps-inert'];
-  'nps-asking': Sockets['nps-asking'];
-  'nps-cancel': Sockets['nps-cancel'];
-  'add-draw': Sockets['add-draw'];
-  'fav-pieces': Sockets['fav-pieces'];
-  'fav-undo-ms': Sockets['fav-undo-ms'];
-  'ph-edit': Sockets['ph-edit'];
-  'after-pull': Sockets['after-pull'];
 }
 
 /** the lifecycle moments: bus.js register(feature, {name: fn}) and runHooks(name, ...args) */

@@ -131,7 +131,7 @@ function saveSettings(){
   catch(e){console.warn('connection not saved',e);setTimeout(()=>toast('Couldn’t save the server address: this browser’s storage is full or blocked.',5000),0)}
   need('conn-keep');   // the database's copy of the connection follows (app.js)
   closeSettings();
-  try{need('add-draw')}catch(e){console.warn('Add page not drawn',e)}
+  try{ask('add-draw')}catch(e){console.warn('Add page not drawn',e)}   // (N5, D1: without add.js nothing is drawn)
   runHooks('connection-saved');   // a backup now (sync.js syncNow)
 }
 

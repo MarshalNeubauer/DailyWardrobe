@@ -2,7 +2,7 @@
    subOpen, openAdd, pagesOn) is nav.js's since the restructure S3f (2026-11-26); this file keeps the tabs' and Add's handlers, so a tap
    on a tab during loading counts from where it always did (this file's place in the list)
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14.) */
-import {ask,need,needFn,slotsOf,runHooksSeq} from './bus.js';
+import {ask,need,slotsOf,runHooksSeq} from './bus.js';
 import {backOn} from './back.js';
 import {PAGES,openAdd,pageBack,setPageWant,setPagesOn,show,showWanted,subBack} from './nav.js';
 import {$,applyCustom,cleanDay,cleanRecord,key,setWardrobe,settings,settingsOpen,takeSettings,todayDate} from './core.js';
@@ -31,12 +31,12 @@ function startFailed(e){console.warn(e);
     setWardrobe({items:(startRead.r||[]).map(x=>one(cleanRecord,x)).filter(Boolean)});
     setWardrobe({days:Object.fromEntries((startRead.d||[]).map(x=>one(cleanDay,x)).filter(Boolean).map(x=>[x.date,x]))})}
   if(!startRead)setWardrobe({items:[]});
-  else{need('after-scripts',()=>need('err-note',e,'Start-up'));
+  else{need('after-scripts',()=>ask('err-note',e,'Start-up'));
     setTimeout(()=>toast('Something went wrong while the app was starting. Your wardrobe is safe on this phone: nothing was deleted. Close the app fully and open it again; if this keeps happening, tell us in Settings → About → Feedback.',15000),0)}
   setPagesOn(true);setPageWant(null);setWanted();   // (a failed start-up stays on Today, where its message is)
-  try{show('today')}catch(e2){console.warn(e2);if(startRead)need('after-scripts',()=>need('err-note',e2,'Start-up: Today'));startPlain()}
-  window.appReady=true;need('after-scripts',()=>need('storage-down',e));
-  if(startRead)need('after-scripts',()=>{try{need('safety-start')}catch(x){console.warn(x)}})}   // (Add's unsaved cards come back, the error report goes)
+  try{show('today')}catch(e2){console.warn(e2);if(startRead)need('after-scripts',()=>ask('err-note',e2,'Start-up: Today'));startPlain()}
+  window.appReady=true;need('after-scripts',()=>ask('storage-down',e));
+  if(startRead)need('after-scripts',()=>{try{ask('safety-start')}catch(x){console.warn(x)}})}   // (Add's unsaved cards come back, the error report goes)
 /* Today couldn't be drawn: a plain card says so, with Try again */
 function startPlain(){const t=$('#today');if(!t)return;for(const s of PAGES){const el=$('#'+s);if(el)el.hidden=s!=='today'}
   t.innerHTML='<div class="mbox"><p><b>Today couldn’t be shown.</b></p><p class="shelp">Your wardrobe is safe on this phone: nothing was deleted.</p><div class="sactions"><button type="button" data-act="reloadTap">Try again</button></div></div>'}
@@ -58,7 +58,7 @@ function applyStored(r,d,st,sn){startRead={r,d};const kept=need('stored-clean',r
   if(key(need('sel-day'))===key(todayDate())){const h=need('home-day');need('sel-set',new Date(h));need('view-set',{y:h.getFullYear(),m:h.getMonth()})}
   need('plan-snap-use',sn)}
 /* started before Today is first drawn: the plan rules check and the one-time fix-ups of old records */
-function startChecks(){const P=slotsOf('start-checks');Promise.resolve(P.checkPlanRules?.()).then(()=>need('when-pulled',needFn('check-arrivals'))).then(()=>{if(!$('#today').hidden)refreshToday()});
+function startChecks(){const P=slotsOf('start-checks');Promise.resolve(P.checkPlanRules?.()).then(()=>need('when-pulled',()=>ask('check-arrivals'))).then(()=>{if(!$('#today').hidden)refreshToday()});
   need('after-scripts',()=>P.migrateVests?.());need('when-pulled',()=>P.dropLearn?.());
   need('when-pulled',()=>need('after-scripts',()=>{if(P.kitFixOldImports)P.kitFixOldImports().then(n=>{if(n&&!$('#today').hidden)refreshToday()})}));
   need('when-pulled',()=>P.kitSampleMigrate?.())}
@@ -68,7 +68,7 @@ function startJobs(){const P=slotsOf('start-jobs');need('after-scripts',()=>P.se
     need('item-backdrops-fix').then(n=>{if(n&&!$('#today').hidden)refreshToday()});
     need('when-pulled',()=>need('tex-swatches').then(n=>{if(n&&!$('#today').hidden)refreshToday()}));
     need('when-pulled',()=>runHooksSeq('after-pull-fixups'));   // (migrate.js's recolor, close-ups, photos and backdrops, then item-photo.js's small photos: load order, one after another)
-    need('after-scripts',()=>need('safety-start'))})}
+    need('after-scripts',()=>ask('safety-start'))})}
 
 /* (Today opens on the home day once the settings are read: today, or the next workday when today is a weekend or a day off; it opened on the
    calendar day, an empty "Saturday isn't a workday" page, while the Today tab went to Sunday's outfit (audit 2026-11-14))
