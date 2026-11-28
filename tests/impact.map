@@ -1,5 +1,4 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	531f503a76e118ebc54c
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	settings-category	swVersionOf
 a11y.test.js	account.js	<loaded>	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI	settings-summary
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -17727,6 +17726,8 @@ shard.test.js	tests/masterspeed.test.js	<any>
 shard.test.js	tests/materials.test.js	<any>
 shard.test.js	tests/measure.test.js	<any>
 shard.test.js	tests/mergeshared.test.js	<any>
+shard.test.js	tests/modload-404a.test.js	<any>
+shard.test.js	tests/modload-404b.test.js	<any>
 shard.test.js	tests/modload.test.js	<any>
 shard.test.js	tests/modtools.test.js	<any>
 shard.test.js	tests/month.test.js	<any>
@@ -17775,6 +17776,7 @@ shard.test.js	tests/scoredials.test.js	<any>
 shard.test.js	tests/scorefix.test.js	<any>
 shard.test.js	tests/server-limits.test.js	<any>
 shard.test.js	tests/serverchecks.test.js	<any>
+shard.test.js	tests/setmeta.test.js	<any>
 shard.test.js	tests/sett.test.js	<any>
 shard.test.js	tests/settag.test.js	<any>
 shard.test.js	tests/settingsin.test.js	<any>
@@ -17833,6 +17835,7 @@ shard.test.js	tests/wardrobetap.test.js	<any>
 shard.test.js	tests/wardswipe.test.js	<any>
 shard.test.js	tests/watchmatch.test.js	<any>
 shard.test.js	tests/weather.test.js	<any>
+shard.test.js	tests/webkit.js	<any>
 shard.test.js	tests/weeklock.test.js	<any>
 shard.test.js	tests/weeklockdays.test.js	<any>
 shard.test.js	tests/workerfix.test.js	<any>
