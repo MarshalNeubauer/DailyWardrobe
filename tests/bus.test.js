@@ -27,7 +27,7 @@ const TOPICS={
 };
 
 /* name -> {serve: files that serve it (one), ask: files that ask for it (in load order), what: what it does}. A socket is how a
-   required (or today-no-picture) file calls into an optional one without importing it (tests/load-contract.json) */
+   file calls into one it doesn't import (a lower layer calling up, or tests/load-contract.json's `optional`); A3-A10 turn most into imports */
 const SOCKETS={
   'add-draw':{serve:'add.js',ask:['nav.js','settings.js'],what:'Add is shown: it is drawn (renderAdd)'},
   'setup-needs':{serve:'setup.js',ask:['month.js','stats.js'],what:'what the wardrobe still needs before a day can be dressed (setupNeeds), for Insights'},

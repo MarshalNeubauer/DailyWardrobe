@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	faba040c95c97898cb58
+# tested	08042b57b18352167228
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	settings-category	swVersionOf
 a11y.test.js	account.js	<loaded>	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI	settings-summary
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -3542,9 +3542,6 @@ bridge.test.js	tests/masterspeed.test.js	<any>
 bridge.test.js	tests/materials.test.js	<any>
 bridge.test.js	tests/measure.test.js	<any>
 bridge.test.js	tests/mergeshared.test.js	<any>
-bridge.test.js	tests/modload-404a.test.js	<any>
-bridge.test.js	tests/modload-404b.test.js	<any>
-bridge.test.js	tests/modload-parts.js	<any>
 bridge.test.js	tests/modload.test.js	<any>
 bridge.test.js	tests/modscope.js	<any>
 bridge.test.js	tests/modtools.test.js	<any>
@@ -3882,6 +3879,7 @@ bus.test.js	sync.js	<any>
 bus.test.js	tag-request.js	<any>
 bus.test.js	tagging.js	<any>
 bus.test.js	tests/appsrc.js	<any>
+bus.test.js	tests/webkit.js	<any>
 bus.test.js	theme.js	<any>
 bus.test.js	toast.js	<any>
 bus.test.js	today-gestures.js	<any>
@@ -6317,6 +6315,7 @@ csp.test.js	tests/fixtures/cm/vest/part-lapelL.png	<any>
 csp.test.js	tests/fixtures/cm/vest/part-lapelR.png	<any>
 csp.test.js	tests/fixtures/cm/vest/part-sleeveL.png	<any>
 csp.test.js	tests/fixtures/cm/vest/part-sleeveR.png	<any>
+csp.test.js	tests/webkit.js	<any>
 csp.test.js	theme.js	<any>	<loaded>	applyTheme
 csp.test.js	toast.js	<any>	<loaded>	toast	toastDrop	toastOff	undoOff
 csp.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>@el.addEventListenerpointerdown	@{constel$today}>@el.addEventListenertouchstart	@{constel$today}>end	@{constel$today}>slide	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	@{constroot$today}>@root.addEventListenerpointerdown	@{constroot$today}>@root.addEventListenertouchend	@{constroot$today}>@root.addEventListenertouchstart	@{constroot$today}>cancelHold	todayBusy	todayFree
@@ -10598,327 +10597,6 @@ mergeshared.test.js	tests/appsrc.js	<any>
 mergeshared.test.js	tests/modscope.js	<any>
 mergeshared.test.js	tests/scriptlist.js	<any>
 mergeshared.test.js	worker/backup.js	<any>	<loaded>	mergeLite	now	sampleOnly
-modload-404a.test.js	about.js	<any>	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
-modload-404a.test.js	account.js	<any>	<loaded>	acctStart	loadAccount	renderAccountUI
-modload-404a.test.js	act.js	<any>	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
-modload-404a.test.js	add-card.js	<any>	<loaded>
-modload-404a.test.js	add-ids.js	<any>	<loaded>
-modload-404a.test.js	add-keep.js	<any>	<loaded>	addKeep	addRestore	start-safety
-modload-404a.test.js	add-more.js	<any>	<loaded>	checkArrivals
-modload-404a.test.js	add-paste.js	<any>	<loaded>
-modload-404a.test.js	add-save.js	<any>	<loaded>
-modload-404a.test.js	add-sheet.js	<any>	<loaded>	@servenpsid	page-shown
-modload-404a.test.js	add.js	<any>	<loaded>
-modload-404a.test.js	analysis-worker.js	<any>
-modload-404a.test.js	analysis.js	<any>	<loaded>
-modload-404a.test.js	app.js	<any>	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	fixupRedraw	focusWatch	keepFocus	metaGet	metaPut	put	setEditing	setSel	setView	storeFailure	texSwatches	tx	txFail	txs	window.fetch
-modload-404a.test.js	asm-cm-job.js	<any>	<loaded>	asmCmAssets	asmCmBgGet	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmGaps	asmCmGeoKeys	asmCmJob	asmCmKindOf	asmCmLightKeys	asmCmMat	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmRev	asmCmRoute	asmCmSig	asmCmStamp	asmCmTieTag	asmCmTrSc	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmHbShirt	asmJfWants	asmJob	asmKindOf	asmLookTag	asmNkJob	asmOcpJob	asmOcpSig	asmPocketJob	asmPocketSig	asmWatchJob	asmWatchPaints	asmWtTag	asmWtWants
-modload-404a.test.js	asm-cm-page.js	<any>	<loaded>	asmCmEnsure	asmCmGet	asmCmMfGet	asmCmMfGet1	asmCmStatus	asmCmUI	asmGapUI	asmNkGet
-modload-404a.test.js	asm-color.js	<any>	<loaded>	asmCmCodeText	asmCmHash	asmCmItems	asmCmKind	asmCmPref	asmNkBaseOf	asmPileKind	asmTieSheenK
-modload-404a.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlUI
-modload-404a.test.js	asm-keys.js	<any>	<loaded>
-modload-404a.test.js	asm-kinds.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmNkBase
-modload-404a.test.js	asm-look.js	<any>	<loaded>	asmBarRgb	asmBarSig	asmCmAny	asmCmHeld	asmCmKey	asmCmSeen	asmCmUse	asmDrawn	asmFresh	asmFullWins	asmGet	asmGetOnce	asmKey	asmListGet	asmLookId	asmMicroKind	asmOutKey	asmPhoto	asmStale	asmStamp	asmSuitBands	asmSuitTwill	asmSuitWeave	asmWants	setAsmOut
-modload-404a.test.js	asm-ocp.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmOcpBase
-modload-404a.test.js	asm-pocket.js	<any>	<loaded>	asmPocketQuad
-modload-404a.test.js	asm-today.js	<any>	<loaded>	asmAhead	asmAheadDays	asmAheadSoon	asmBlobUp	asmCmLook	asmEnsure	asmFor	asmKeepOut	asmLoad	asmShow	asmShown	asmSync	asmTouchWatch	asmTrim	renderAsmUI	settings-rows	start-jobs
-modload-404a.test.js	asm-watch.js	<any>	<loaded>
-modload-404a.test.js	asm-worker.js	<any>
-modload-404a.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmIdleArm	asmImgOf	asmOffPage	asmPost	asmPump	asmRun	asmWorker	setAsmAheadOn
-modload-404a.test.js	back.js	<any>	<loaded>	backApp	backDrop	backLand	backOn	backOver
-modload-404a.test.js	backupfile.js	<any>	<loaded>
-modload-404a.test.js	bus.js	<any>	<loaded>	ask	emit	need	needFn	on	register	runHooks	runHooksSeq	serve	served	slotsOf
-modload-404a.test.js	calendar.js	<any>	<loaded>	@whenPulled	calAuto	calBanner	calLink	today-parts
-modload-404a.test.js	care.js	<any>	<loaded>	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careNote	careTop	today-parts
-modload-404a.test.js	checklist.js	<any>	<loaded>
-modload-404a.test.js	colpick.js	<any>	<loaded>
-modload-404a.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	LUM	accentOf	acctBase	acctCall	acctEsc	applyCustom	askPersist	camoPat	careLimit	cleanDay	cleanRecord	cleanSettings	cleanState	clipMetal	colBase	colName	colOf	colourNameRe	dE00	dayClimate	dayFields	di	dressOut	esc	get settings	hasInviteHash	hasVest	hexRgb	homeAndroid	homeIOS	homeNeeded	inRotation	inviteOver	isCargo	isConnected	isHandPick	isOcp	isWorkday	isoKey	itemFields	itemName	itemSeason	itemTitle	key	keyDate	keySettings	keySplit	leatherWord	lum	lumCol	matSeason	mergeSettings	mergeState	metalWord	mix	nameHtml	nextStamp	nm	normCol	now	nowMs	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	recClean	recCol	recFree	rgbHex	rgbLab	seasonFit	sentence	setDays	setList	setWardrobe	settingsOpen	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	stampSettings	strapBand	styleWord	subHashes	syncMark	syncUrl	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
-modload-404a.test.js	cost.js	<any>	<loaded>
-modload-404a.test.js	days.js	<any>	<loaded>	idsOf	lockIds	releaseLocks	saveDay
-modload-404a.test.js	daysoff.js	<any>	<loaded>	refreshHolidays	start-jobs
-modload-404a.test.js	detect.js	<any>	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
-modload-404a.test.js	draw.js	<any>	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pocketDef	pocketEdge	sockPat	swatchSVG
-modload-404a.test.js	dress.js	<any>	<loaded>	dressSynced	legacyVest	migrateVests	start-checks	synced
-modload-404a.test.js	fav.js	<any>	<loaded>	favLookFrom	favPillSeg	favWhy	today-parts
-modload-404a.test.js	fields.js	<any>	<loaded>
-modload-404a.test.js	history.js	<any>	<loaded>	canPick	checkPlanRules	dayActions	dropLearn	planRulesCheck	planRulesLs	planRulesNote	recordDays	resetCard	setTodayPullWait	settings-rows	slotLabel	start-checks	whenPulled
-modload-404a.test.js	index.html	<any>	<loaded>
-modload-404a.test.js	item-photo.js	<any>	<loaded>	smallPhotos
-modload-404a.test.js	item-view.js	<any>	<loaded>	@serveitemopen	@{constb$ivbody}	itemShown	page-shown	renderItem	synced
-modload-404a.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}	page-shown
-modload-404a.test.js	kit.js	<any>	<loaded>	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSends	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit	safariRemind	start-checks	start-safety	sync-send	today-parts
-modload-404a.test.js	locale.js	<any>	<loaded>	appLocale
-modload-404a.test.js	locks.js	<any>	<loaded>	lockPast	lockSpan	lockUpcoming
-modload-404a.test.js	look-base.js	<any>	<loaded>
-modload-404a.test.js	look.js	<any>	<loaded>
-modload-404a.test.js	mannequin.js	<any>	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
-modload-404a.test.js	measure.js	<any>	<loaded>
-modload-404a.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
-modload-404a.test.js	migrate.js	<any>	<loaded>	fixBlackBackdrops	recolourSpecSetts	remakeAfterPull	upgradeCloseups	upgradePhotos
-modload-404a.test.js	missed.js	<any>	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-modload-404a.test.js	month.js	<any>	<loaded>	dayMarks	dayOnly	dayWord	homeDay	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	piecesLine	piecesParts	planOn	recentWork	shirtWords	shortRest	shortTop	stackSVG	tieWord	wardShort
-modload-404a.test.js	mq/shirt-open.js	<any>	<loaded>
-modload-404a.test.js	mq/shirt-tie.js	<any>	<loaded>
-modload-404a.test.js	mq/suit-open.js	<any>	<loaded>
-modload-404a.test.js	mq/suit.js	<any>	<loaded>
-modload-404a.test.js	mq/vest.js	<any>	<loaded>
-modload-404a.test.js	nav.js	<any>	<loaded>	@onsettingsclosed	pageIn	setPageWant	setPagesOn	show	showWanted
-modload-404a.test.js	own-lists.js	<any>	<loaded>
-modload-404a.test.js	pack.js	<any>	<loaded>	packShow	page-shown
-modload-404a.test.js	pattern-read.js	<any>	<loaded>	claudeOnly	motifPat	readable	settable
-modload-404a.test.js	photo-keys.js	<any>	<loaded>	@serverenders	comboKey	comboSig	fnv64	keepRender	listPaused	loadRenders	lookSig	picsDrawn	shirtPatterned	shirtTextured	srcOk	workerBase	workerList
-modload-404a.test.js	photos.js	<any>	<loaded>	aAn	asmLive	fetchItemPic	fetchRemoteRender	figureLabel	fixItemBackdrops	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	picCol	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	settings-rows	shareLocalPics
-modload-404a.test.js	pickscore.js	<any>	<loaded>
-modload-404a.test.js	planner.js	<any>	<loaded>	accFams	accMetal	aheadShirt	aheadTie	beltFit	blackOnBlack	chooseAccessories	chooseClothes	chooseJacket	chooseLeather	clipAllowed	clothesHard	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	dCol	dJacket	dLin	dPiece	dStretch	dWhen	darkJkt	darkShirt	darkUnderLight	dayPools	dialFreshness	dialHarmony	dialInterest	dialLook	dialOccasion	dialSum	dialTexture	dialVariety	fam	favItemSet	favLookOf	favLooks	favPair	favRead	finish	formalTie	formalTop	frozenOutfit	groupsNear	idsAhead	intChr	intHx	intLabs	isCamo	jacketGroup	leatherGroup	lockStale	lookLeather	lookRepeat	metalOf	metalSame	metalsWhy	nearCost	oneColor	outfit	outfitNotes	outfitScore	pairRepeat	pairScore	pairSeen	pantsAsJacket	patInfo	patsHard	patsOf	patternScore	pcol	planLook	planSim	planStart	pocketScore	psEcho	psSameTie	psTargets	psWhite	rankLooks	rateOutfit	shirtGroup	shirtJacketHard	shirtLook	shirtRepeat	shirtScore	shoeClash	shoeCtx	shoeFormality	shoeScore	shoeSuits	sockBold	sockDayScore	sockEcho	sockFormalDay	sockMatFit	sockScore	spokenCol	surfOf	takeOff	tieAsShirt	tieFlat	tieGroup	tieLook	tieLum	tieRepeat	tieScore	tieShirtHard	topGw	uniformSplit	wardStart	watchFit	withColRun
-modload-404a.test.js	remind.js	<any>	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
-modload-404a.test.js	safety.js	<any>	<loaded>	@addEventListenererror	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errTell	errWhere	pruneTagImgs	safetyStart	storageDown
-modload-404a.test.js	scorecard.js	<any>	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-modload-404a.test.js	settings.js	<any>	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	saveUserSettings	setLock	setSetSeen	setWanted	weekFirst
-modload-404a.test.js	setup.js	<any>	<loaded>	page-shown	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	start-jobs	today-parts
-modload-404a.test.js	shop.js	<any>	<loaded>	@db.then	@db.thenmetaGetshop.then	page-shown
-modload-404a.test.js	snapshots.js	<any>	<loaded>
-modload-404a.test.js	srgb.js	<any>	<loaded>	srgbLin	srgbLin8
-modload-404a.test.js	start.js	<any>	<loaded>	applyStored	loadStored	onSyncedData	retryDone	startChecks	startFailed	startJobs	startPlain	startUp
-modload-404a.test.js	stats.js	<any>	<loaded>	@afterScripts	page-shown	statsMonths	statsPlan	statsPlanned	wornDays
-modload-404a.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#mannequin-container	#mbox .mhead	#mbox .mswipe	#modal-backdrop	#modal-backdrop,#settings-modal	#mpanel-in .mc[data-mv]	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#sbox .month-link	#sbox:not(.open) #spanel .mpanel-in	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#spanel .mpanel-in	#toast	#toast button	#toast button::after	#toast,body.iv-on #toast	#toast.act	#toast.on	#toast:not(.on)	#today	#today .plegend	#today .plegend span	#today .row	#today .row .dot	#today .row>.mut:first-child	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.b-good	.b-low,.b-bad	.b-ok	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.c-good	.c-low,.c-bad	.c-ok	.cap	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.day h2 .wx.haspill	.day h2 .wx.haspill .wxc	.day h2 .wx.haspill:has(.wpgrp)	.dial	.dial .darc	.dial .dtrack	.dial small	.dial svg	.dial text	.dial.d-good	.dial.d-low,.dial.d-bad	.dialrow	.dot	.dot svg	.dot,.shop-rechead .rec-img .thumb,.shop-toprow .rec-img .thumb,.st-pic,.pick-pic	.favic	.fig	.fig .cband	.fig .cband .cdots	.fig .cband .cdots em	.fig .cband .cdots i	.fig .cband .cdots i.on	.fig .cband .crow	.fig .cband .ctxt	.fig .cband .ctxt b	.fig .cband path	.fig .cband svg	.fig .cframe	.fig .swstack	.fig .swstack .ovsw	.fig .swstack .ovsw svg,.fig .swstack .ovsw img	.fig.cb	.fig.cb.care-last,.fig.cb.care-over	.fig.photo	.fig.photo img	.fig>svg	.firstrun	.firstrun h3	.foldbar	.foldbar .fchev	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mc	.mc .dn	.mc.rest	.mc.today	.mc.worn	.mdow	.mgrid	.mhead	.mhead h3	.mli	.mli .stack	.mli small	.mlstrip	.mlstrip,.pstrip	.mltxt	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pchip	.pchip svg	.pchip.vest	.pri	.pstrip	.row	.row .mut	.row .swap	.row .swap::after	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sactions	.score	.score .srank	.score .srules	.score .ssec	.score .ssec b	.score .swhy	.score .swx	.sdb	.sdb i	.sdh	.sdh b	.sdl	.sdl small	.sfixbtn	.sfixbtn .dot	.sfixbtn .dot>*	.sfixbtn .sfixnm	.sfixbtn b	.sfixbtn b small	.shelp	.side>.mbox:last-child	.side>.score,.side>.mbox,.side>.dayact,.side>p	.slide	.srl	.srl li	.srl li::before	.srules.ok	.ssec+.sdl	.sswaps	.sswaps .ssec	.stack	.stack.rest	.stage	.stage .firstrun	.sweeks	.sweeks .wn	.sweeks li	.sweeks li.cur	.sweeks li:first-child	.sweeks li>span:last-child	.sweeks small	.swhy::before	.thumb	.thumb svg	.vh	.wpfav	.wpfav::after	.wpgrp	.wpgrp .wpill	.wpgrp,.lwfav,.favpick,.favmark,.favtog,.favchip,.st-fav	.wpill	.wpill.yes	.wpill::after	.wxc.wxlk	.wxl	:root	:where(#today) .mbox	:where(#today) .mltxt b	:where(#today) .mltxt small	:where(#today) .month-link	:where(#today) .mpanel-in	<loaded>	[hidden]	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
-modload-404a.test.js	sync-photos.js	<any>	<loaded>
-modload-404a.test.js	sync-status.js	<any>	<loaded>	@onbackupchanged	showSyncStatus
-modload-404a.test.js	sync.js	<any>	<loaded>	@connRestored.then	adoptBackupSettings	afterPull	applyMerged	clockLearn	localState	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	setSyncStatus	settings-rows	settings-saved	syncJoinAt	syncJoinMark	syncNeedsPull	syncNetText	syncNow	syncOnce	syncPaused	syncRedraw	syncSaved	syncSettingsRedraw	syncWaiting	synced
-modload-404a.test.js	tag-request.js	<any>	<loaded>
-modload-404a.test.js	tagging.js	<any>	<loaded>
-modload-404a.test.js	tests/fixtures/cm/shirt-open/mask-background.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-open/mask-belt.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-open/mask-buckle.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-open/mask-dark.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-open/mask-shirt.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-open/mask-skin.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-open/mask-trousers.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-open/mask-watch.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-open/master.jpg	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-open/part-sleeveL.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-open/part-sleeveR.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-tie/mask-background.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-tie/mask-belt.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-tie/mask-buckle.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-tie/mask-dark.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-tie/mask-shirt.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-tie/mask-skin.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-tie/mask-tie.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-tie/mask-trousers.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-tie/mask-watch.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-tie/master.jpg	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-tie/part-sleeveL.png	<any>
-modload-404a.test.js	tests/fixtures/cm/shirt-tie/part-sleeveR.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit-open/mask-background.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit-open/mask-dark.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit-open/mask-jacket.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit-open/mask-shirt.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit-open/mask-skin.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit-open/mask-watch.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit-open/master.jpg	<any>
-modload-404a.test.js	tests/fixtures/cm/suit-open/part-lapelL.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit-open/part-lapelR.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit-open/part-sleeveL.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit-open/part-sleeveR.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit/mask-background.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit/mask-dark.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit/mask-jacket.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit/mask-shirt.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit/mask-skin.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit/mask-tie.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit/mask-watch.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit/master.jpg	<any>
-modload-404a.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
-modload-404a.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
-modload-404a.test.js	tests/fixtures/cm/vest/mask-background.png	<any>
-modload-404a.test.js	tests/fixtures/cm/vest/mask-dark.png	<any>
-modload-404a.test.js	tests/fixtures/cm/vest/mask-jacket.png	<any>
-modload-404a.test.js	tests/fixtures/cm/vest/mask-shirt.png	<any>
-modload-404a.test.js	tests/fixtures/cm/vest/mask-skin.png	<any>
-modload-404a.test.js	tests/fixtures/cm/vest/mask-tie.png	<any>
-modload-404a.test.js	tests/fixtures/cm/vest/mask-waistcoat.png	<any>
-modload-404a.test.js	tests/fixtures/cm/vest/mask-watch.png	<any>
-modload-404a.test.js	tests/fixtures/cm/vest/master.jpg	<any>
-modload-404a.test.js	tests/fixtures/cm/vest/part-lapelL.png	<any>
-modload-404a.test.js	tests/fixtures/cm/vest/part-lapelR.png	<any>
-modload-404a.test.js	tests/fixtures/cm/vest/part-sleeveL.png	<any>
-modload-404a.test.js	tests/fixtures/cm/vest/part-sleeveR.png	<any>
-modload-404a.test.js	tests/load-contract.json	<any>
-modload-404a.test.js	tests/modload-parts.js	<any>
-modload-404a.test.js	tests/webkit.js	<any>
-modload-404a.test.js	theme.js	<any>	<loaded>	applyTheme
-modload-404a.test.js	toast.js	<any>	<loaded>	loadFailed	toast
-modload-404a.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>todayTouch	@{constroot$today}	todayBusy
-modload-404a.test.js	today-photofold.js	<any>	<loaded>
-modload-404a.test.js	today-picture.js	<any>	<loaded>	@{constel$todayinPice}	applyZoom	ovlCloseup	ovlCuSuit	ovlCuWants	ovlGrain	ovlHbShirt	ovlItem	ovlPiece	ovlSuitOld	ovlSuitPng	ovlSvg	ovlWeave	swApply	today-parts	zoomTarget
-modload-404a.test.js	today-plan.js	<any>	<loaded>	@serveplansnap	hasOutfit	planDirty	planFor	planMonth	planSig	planSnapSoon	planSnapUse	planStartDay	planTrim	snapOut	strHash
-modload-404a.test.js	today.js	<any>	<loaded>	belowBox	figLoad	figureStage	goneNote	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slots	swatchStack	todaySay	vestRow	wornBar	wornPill	wxFit	wxPreload
-modload-404a.test.js	ui.js	<any>	<loaded>	layerInert	layerUp	netErr
-modload-404a.test.js	wardrobe.js	<any>	<loaded>	@whenPulled	matMigrate	matRenameTo	sockLegacy	sockToeMigrate	start-safety	synced	wardPendingRestore	wardPendingSoon	wardSynced
-modload-404a.test.js	weather.js	<any>	<loaded>	loadWeather	today-parts
-modload-404a.test.js	who.js	<any>	<loaded>	acctRole	applyRole	rememberRole
-modload-404b.test.js	about.js	<any>	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
-modload-404b.test.js	account.js	<any>	<loaded>	acctStart	loadAccount	renderAccountUI
-modload-404b.test.js	act.js	<any>	<loaded>	actAttr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
-modload-404b.test.js	add-card.js	<any>	<loaded>
-modload-404b.test.js	add-ids.js	<any>	<loaded>
-modload-404b.test.js	add-keep.js	<any>	<loaded>	addKeep	addRestore	start-safety
-modload-404b.test.js	add-more.js	<any>	<loaded>	checkArrivals
-modload-404b.test.js	add-paste.js	<any>	<loaded>
-modload-404b.test.js	add-save.js	<any>	<loaded>
-modload-404b.test.js	add-sheet.js	<any>	<loaded>	@servenpsid	page-shown
-modload-404b.test.js	add.js	<any>	<loaded>
-modload-404b.test.js	analysis-worker.js	<any>
-modload-404b.test.js	analysis.js	<any>	<loaded>
-modload-404b.test.js	app.js	<any>	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	atomic	busyLabelFor	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	fixupRedraw	focusWatch	keepFocus	metaGet	metaPut	put	setEditing	setSel	setView	storeFailure	texSwatches	tx	txFail	txs	window.fetch
-modload-404b.test.js	asm-cm-job.js	<any>	<loaded>	asmCmAssets	asmCmBgGet	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmGaps	asmCmGeoKeys	asmCmJob	asmCmKindOf	asmCmLightKeys	asmCmMat	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmRev	asmCmRoute	asmCmSig	asmCmStamp	asmCmTieTag	asmCmTrSc	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmHbShirt	asmJfWants	asmJob	asmKindOf	asmLookTag	asmNkJob	asmOcpJob	asmOcpSig	asmPocketJob	asmPocketSig	asmWatchJob	asmWatchPaints	asmWtTag	asmWtWants
-modload-404b.test.js	asm-cm-page.js	<any>	<loaded>	asmCmEnsure	asmCmGet	asmCmMfGet	asmCmMfGet1	asmCmStatus	asmCmUI	asmGapUI	asmNkGet
-modload-404b.test.js	asm-color.js	<any>	<loaded>	asmCmCodeText	asmCmHash	asmCmItems	asmCmKind	asmCmPref	asmNkBaseOf	asmPileKind	asmTieSheenK
-modload-404b.test.js	asm-gl.js	<any>	<loaded>	asmGlNote	asmGlOnPage	asmGlPref	asmGlStatus	asmGlUI
-modload-404b.test.js	asm-keys.js	<any>	<loaded>
-modload-404b.test.js	asm-kinds.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmNkBase
-modload-404b.test.js	asm-look.js	<any>	<loaded>	asmBarRgb	asmBarSig	asmCmAny	asmCmHeld	asmCmKey	asmCmSeen	asmCmUse	asmDrawn	asmFresh	asmFullWins	asmGet	asmGetOnce	asmKey	asmListGet	asmLookId	asmMicroKind	asmOutKey	asmPhoto	asmStale	asmStamp	asmSuitBands	asmSuitTwill	asmSuitWeave	asmWants	setAsmOut
-modload-404b.test.js	asm-ocp.js	<any>	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own	asmOcpBase
-modload-404b.test.js	asm-pocket.js	<any>	<loaded>	asmPocketQuad
-modload-404b.test.js	asm-today.js	<any>	<loaded>	asmAhead	asmAheadDays	asmAheadSoon	asmCmLook	asmEnsure	asmFor	asmKeepOut	asmLoad	asmShow	asmShown	asmSync	asmTouchWatch	asmTrim	renderAsmUI	settings-rows	start-jobs
-modload-404b.test.js	asm-watch.js	<any>	<loaded>
-modload-404b.test.js	asm-worker.js	<any>
-modload-404b.test.js	assemble.js	<any>	<loaded>	@	ASM_OUT_RANGE	asmIdleArm	asmImgOf	asmOffPage	asmPost	asmPump	asmRun	asmWorker	setAsmAheadOn
-modload-404b.test.js	back.js	<any>	<loaded>	backApp	backDrop	backLand	backOn	backOver
-modload-404b.test.js	backupfile.js	<any>	<loaded>
-modload-404b.test.js	bus.js	<any>	<loaded>	ask	emit	need	needFn	on	register	runHooks	runHooksSeq	serve	served	slotsOf
-modload-404b.test.js	calendar.js	<any>	<loaded>	@whenPulled	calAuto	calBanner	calLink	today-parts
-modload-404b.test.js	care.js	<any>	<loaded>	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careNote	careTop	today-parts
-modload-404b.test.js	checklist.js	<any>	<loaded>
-modload-404b.test.js	colpick.js	<any>	<loaded>
-modload-404b.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	LUM	accentOf	acctBase	acctCall	acctEsc	applyCustom	askPersist	camoPat	careLimit	cleanDay	cleanRecord	cleanSettings	cleanState	clipMetal	colBase	colName	colOf	colourNameRe	dE00	dayClimate	dayFields	di	dressOut	esc	get settings	hasInviteHash	hasVest	hexRgb	homeAndroid	homeIOS	homeNeeded	inRotation	inviteOver	isCargo	isConnected	isHandPick	isOcp	isWorkday	isoKey	itemFields	itemName	itemSeason	itemTitle	key	keyDate	keySettings	keySplit	leatherWord	lum	lumCol	matSeason	mergeSettings	mergeState	metalWord	mix	nameHtml	nextStamp	nm	normCol	now	nowMs	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	recClean	recCol	recFree	rgbHex	rgbLab	seasonFit	sentence	setDays	setList	setWardrobe	settingsOpen	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	stampSettings	strapBand	styleWord	subHashes	syncMark	syncUrl	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
-modload-404b.test.js	cost.js	<any>	<loaded>
-modload-404b.test.js	days.js	<any>	<loaded>	idsOf	lockIds	releaseLocks	saveDay
-modload-404b.test.js	daysoff.js	<any>	<loaded>	refreshHolidays	start-jobs
-modload-404b.test.js	detect.js	<any>	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
-modload-404b.test.js	draw.js	<any>	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pocketDef	pocketEdge	sockPat	swatchSVG
-modload-404b.test.js	dress.js	<any>	<loaded>	dressSynced	legacyVest	migrateVests	start-checks	synced
-modload-404b.test.js	fav.js	<any>	<loaded>	favLookFrom	favPillSeg	favWhy	today-parts
-modload-404b.test.js	fields.js	<any>	<loaded>
-modload-404b.test.js	history.js	<any>	<loaded>	canPick	checkPlanRules	dayActions	dropLearn	planRulesCheck	planRulesLs	planRulesNote	recordDays	resetCard	setTodayPullWait	settings-rows	slotLabel	start-checks	whenPulled
-modload-404b.test.js	index.html	<any>	<loaded>
-modload-404b.test.js	item-photo.js	<any>	<loaded>	smallPhotos
-modload-404b.test.js	item-view.js	<any>	<loaded>	@serveitemopen	@{constb$ivbody}	itemShown	page-shown	renderItem	synced
-modload-404b.test.js	itemsheet.js	<any>	<loaded>	@{constel$wardrobe}	page-shown
-modload-404b.test.js	kit.js	<any>	<loaded>	@servekitquiet	homeAbout	homeLabel	kitFixOldImports	kitHasSample	kitSampleBanner	kitSampleMigrate	kitSends	kitShareDone	kitShareFilter	kitStartRow	kitUserEdit	start-checks	start-safety	sync-send	today-parts
-modload-404b.test.js	locale.js	<any>	<loaded>	appLocale
-modload-404b.test.js	locks.js	<any>	<loaded>	lockPast	lockSpan	lockUpcoming
-modload-404b.test.js	look-base.js	<any>	<loaded>
-modload-404b.test.js	look.js	<any>	<loaded>
-modload-404b.test.js	mannequin.js	<any>	<loaded>	@{}	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg
-modload-404b.test.js	measure.js	<any>	<loaded>
-modload-404b.test.js	merge.js	<any>	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	mergeList	mergeSettingsBy	mergeStateBy	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	stateSig	subOk	tombWins
-modload-404b.test.js	migrate.js	<any>	<loaded>	fixBlackBackdrops	recolourSpecSetts	remakeAfterPull	upgradeCloseups	upgradePhotos
-modload-404b.test.js	missed.js	<any>	<loaded>	firstReal	missedCard	missedNote	missedOpen	missedTell
-modload-404b.test.js	month.js	<any>	<loaded>	dayMarks	dayOnly	dayWord	homeDay	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	piecesLine	piecesParts	planOn	recentWork	shirtWords	shortRest	shortTop	stackSVG	tieWord	wardShort
-modload-404b.test.js	mq/shirt-open.js	<any>	<loaded>
-modload-404b.test.js	mq/shirt-tie.js	<any>	<loaded>
-modload-404b.test.js	mq/suit-open.js	<any>	<loaded>
-modload-404b.test.js	mq/suit.js	<any>	<loaded>
-modload-404b.test.js	mq/vest.js	<any>	<loaded>
-modload-404b.test.js	nav.js	<any>	<loaded>	@onsettingsclosed	pageIn	setPageWant	setPagesOn	show	showWanted
-modload-404b.test.js	own-lists.js	<any>	<loaded>
-modload-404b.test.js	pack.js	<any>	<loaded>	packShow	page-shown
-modload-404b.test.js	pattern-read.js	<any>	<loaded>	claudeOnly	motifPat	readable	settable
-modload-404b.test.js	photo-keys.js	<any>	<loaded>	@serverenders	comboKey	comboSig	fnv64	keepRender	listPaused	loadRenders	lookSig	picsDrawn	shirtPatterned	shirtTextured	workerBase	workerList
-modload-404b.test.js	photos.js	<any>	<loaded>	aAn	asmLive	fetchItemPic	fetchRemoteRender	fixItemBackdrops	itemDesc	itemKey	itemPic	itemPicHtml	lastWorn	picCol	prefetchRenders	remoteHold	remoteList	renderFor	schedulePrefetch	settings-rows	shareLocalPics
-modload-404b.test.js	pickscore.js	<any>	<loaded>
-modload-404b.test.js	planner.js	<any>	<loaded>	accFams	accMetal	aheadShirt	aheadTie	beltFit	blackOnBlack	chooseAccessories	chooseClothes	chooseJacket	chooseLeather	clipAllowed	clothesHard	clothesScore	colourRepeat	colsOf	colsOf0	comboRepeat	dCol	dJacket	dLin	dPiece	dStretch	dWhen	darkJkt	darkShirt	darkUnderLight	dayPools	dialFreshness	dialHarmony	dialInterest	dialLook	dialOccasion	dialSum	dialTexture	dialVariety	fam	favItemSet	favLookOf	favLooks	favPair	favRead	finish	formalTie	formalTop	frozenOutfit	groupsNear	idsAhead	intChr	intHx	intLabs	isCamo	jacketGroup	leatherGroup	lockStale	lookLeather	lookRepeat	metalOf	metalSame	metalsWhy	nearCost	oneColor	outfit	outfitNotes	outfitScore	pairRepeat	pairScore	pairSeen	pantsAsJacket	patInfo	patsHard	patsOf	patternScore	pcol	planLook	planSim	planStart	pocketScore	psEcho	psSameTie	psTargets	psWhite	rateOutfit	shirtGroup	shirtJacketHard	shirtLook	shirtRepeat	shirtScore	shoeClash	shoeCtx	shoeFormality	shoeScore	shoeSuits	sockBold	sockDayScore	sockEcho	sockFormalDay	sockMatFit	sockScore	spokenCol	surfOf	takeOff	tieAsShirt	tieFlat	tieGroup	tieLook	tieLum	tieRepeat	tieScore	tieShirtHard	topGw	uniformSplit	wardStart	watchFit	withColRun
-modload-404b.test.js	remind.js	<any>	<loaded>	remindAny	remindCareOn	remindPrefs	remindRefresh	remindSoon	remindStart{}	remindStart{}>go
-modload-404b.test.js	safety.js	<any>	<loaded>	@addEventListenererror	@addEventListenerunhandledrejection	db.then.dbDown	errList	errMsg	errNoise	errNote	errReporting	errSend	errSoon	errTell	errWhere	pruneTagImgs	safetyStart	storageDown
-modload-404b.test.js	scorecard.js	<any>	<loaded>	cardLabel	dialCycle	dialHtml	dialTone	dialsFor	itemWord	ordinal	outfitKey	rankFill	rankFor	rankLine	rankPools	rankWorker	scoreCard	swapsHtml	weekOf	weekVariety	weeksHtml	whyText	wxLine
-modload-404b.test.js	settings.js	<any>	<loaded>	@constsetChan{try}	@onpageshowing	backupSummary	closeSettings	refreshToday	saveUserSettings	setLock	setSetSeen	setWanted	weekFirst
-modload-404b.test.js	setup.js	<any>	<loaded>	page-shown	setupAuto	setupDress	setupKeep	setupNeeds	setupResume	setupShown	setupStart	setupToday	setupYield	start-jobs	today-parts
-modload-404b.test.js	shop.js	<any>	<loaded>	@db.then	@db.thenmetaGetshop.then	page-shown
-modload-404b.test.js	snapshots.js	<any>	<loaded>
-modload-404b.test.js	srgb.js	<any>	<loaded>	srgbLin	srgbLin8
-modload-404b.test.js	start.js	<any>	<loaded>	applyStored	loadStored	onSyncedData	retryDone	startChecks	startFailed	startJobs	startPlain	startUp
-modload-404b.test.js	stats.js	<any>	<loaded>	@afterScripts	page-shown	wornDays
-modload-404b.test.js	styles.css	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#mannequin-container	#mbox .mhead	#mbox .mswipe	#modal-backdrop	#modal-backdrop,#settings-modal	#mpanel-in .mc[data-mv]	#nps-backdrop,#shop-backdrop	#nps-sheet,#shop-sheet	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#sbox .month-link	#sbox:not(.open) #spanel .mpanel-in	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#spanel .mpanel-in	#toast	#toast,body.iv-on #toast	#toast.on	#toast:not(.on)	#today	#today .plegend	#today .plegend span	#today .row	#today .row .dot	#today .row>.mut:first-child	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.b-good	.b-low,.b-bad	.b-ok	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.c-good	.c-low,.c-bad	.c-ok	.cap	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.day h2 .wx.haspill	.day h2 .wx.haspill .wxc	.day h2 .wx.haspill:has(.wpgrp)	.dial	.dial .darc	.dial .dtrack	.dial small	.dial svg	.dial text	.dial.d-good	.dial.d-low,.dial.d-bad	.dialrow	.dot	.dot svg	.dot,.shop-rechead .rec-img .thumb,.shop-toprow .rec-img .thumb,.st-pic,.pick-pic	.favic	.fig	.fig .cband	.fig .cband .cdots	.fig .cband .cdots em	.fig .cband .cdots i	.fig .cband .cdots i.on	.fig .cband .crow	.fig .cband .ctxt	.fig .cband .ctxt b	.fig .cband path	.fig .cband svg	.fig .cframe	.fig.cb	.fig.cb.care-last,.fig.cb.care-over	.fig>svg	.firstrun	.firstrun h3	.foldbar	.foldbar .fchev	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.hbtns	.hgear	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mc	.mc .dn	.mc.rest	.mc.today	.mc.worn	.mdow	.mgrid	.mhead	.mhead h3	.mli	.mli .stack	.mli small	.mlstrip	.mlstrip,.pstrip	.mltxt	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.pchip	.pchip svg	.pchip.vest	.pri	.pstrip	.row	.row .mut	.row .swap	.row .swap::after	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.sactions	.score	.score .srank	.score .srules	.score .ssec	.score .ssec b	.score .swhy	.score .swx	.sdb	.sdb i	.sdh	.sdh b	.sdl	.sdl small	.sfixbtn	.sfixbtn .dot	.sfixbtn .dot>*	.sfixbtn .sfixnm	.sfixbtn b	.sfixbtn b small	.shelp	.side>.mbox:last-child	.side>.score,.side>.mbox,.side>.dayact,.side>p	.slide	.srl	.srl li	.srl li::before	.srules.ok	.ssec+.sdl	.sswaps	.sswaps .ssec	.stack	.stack.rest	.stage	.stage .firstrun	.sweeks	.sweeks .wn	.sweeks li	.sweeks li.cur	.sweeks li:first-child	.sweeks li>span:last-child	.sweeks small	.swhy::before	.thumb	.thumb svg	.vh	.wpfav	.wpfav::after	.wpgrp	.wpgrp .wpill	.wpgrp,.lwfav,.favpick,.favmark,.favtog,.favchip,.st-fav	.wpill	.wpill.yes	.wpill::after	.wxc.wxlk	.wxl	:root	:where(#today) .mbox	:where(#today) .mltxt b	:where(#today) .mltxt small	:where(#today) .month-link	:where(#today) .mpanel-in	<loaded>	[hidden]	body	button	button,.btn,select,input	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	main	nav	nav button	nav button.on	nav::before
-modload-404b.test.js	sync-photos.js	<any>	<loaded>
-modload-404b.test.js	sync-status.js	<any>	<loaded>	@onbackupchanged	showSyncStatus
-modload-404b.test.js	sync.js	<any>	<loaded>	@connRestored.then	adoptBackupSettings	afterPull	applyMerged	clockLearn	localState	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	setSyncStatus	settings-rows	settings-saved	syncJoinAt	syncJoinMark	syncNeedsPull	syncNow	syncOnce	syncPaused	syncRedraw	syncSaved	syncSettingsRedraw	syncWaiting	synced
-modload-404b.test.js	tag-request.js	<any>	<loaded>
-modload-404b.test.js	tagging.js	<any>	<loaded>
-modload-404b.test.js	tests/fixtures/cm/shirt-open/mask-background.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-open/mask-belt.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-open/mask-buckle.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-open/mask-dark.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-open/mask-shirt.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-open/mask-skin.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-open/mask-trousers.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-open/mask-watch.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-open/master.jpg	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-open/part-sleeveL.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-open/part-sleeveR.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-tie/mask-background.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-tie/mask-belt.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-tie/mask-buckle.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-tie/mask-dark.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-tie/mask-shirt.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-tie/mask-skin.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-tie/mask-tie.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-tie/mask-trousers.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-tie/mask-watch.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-tie/master.jpg	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-tie/part-sleeveL.png	<any>
-modload-404b.test.js	tests/fixtures/cm/shirt-tie/part-sleeveR.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit-open/mask-background.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit-open/mask-dark.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit-open/mask-jacket.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit-open/mask-shirt.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit-open/mask-skin.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit-open/mask-watch.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit-open/master.jpg	<any>
-modload-404b.test.js	tests/fixtures/cm/suit-open/part-lapelL.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit-open/part-lapelR.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit-open/part-sleeveL.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit-open/part-sleeveR.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit/mask-background.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit/mask-dark.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit/mask-jacket.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit/mask-shirt.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit/mask-skin.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit/mask-tie.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit/mask-watch.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit/master.jpg	<any>
-modload-404b.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
-modload-404b.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
-modload-404b.test.js	tests/fixtures/cm/vest/mask-background.png	<any>
-modload-404b.test.js	tests/fixtures/cm/vest/mask-dark.png	<any>
-modload-404b.test.js	tests/fixtures/cm/vest/mask-jacket.png	<any>
-modload-404b.test.js	tests/fixtures/cm/vest/mask-shirt.png	<any>
-modload-404b.test.js	tests/fixtures/cm/vest/mask-skin.png	<any>
-modload-404b.test.js	tests/fixtures/cm/vest/mask-tie.png	<any>
-modload-404b.test.js	tests/fixtures/cm/vest/mask-waistcoat.png	<any>
-modload-404b.test.js	tests/fixtures/cm/vest/mask-watch.png	<any>
-modload-404b.test.js	tests/fixtures/cm/vest/master.jpg	<any>
-modload-404b.test.js	tests/fixtures/cm/vest/part-lapelL.png	<any>
-modload-404b.test.js	tests/fixtures/cm/vest/part-lapelR.png	<any>
-modload-404b.test.js	tests/fixtures/cm/vest/part-sleeveL.png	<any>
-modload-404b.test.js	tests/fixtures/cm/vest/part-sleeveR.png	<any>
-modload-404b.test.js	tests/load-contract.json	<any>
-modload-404b.test.js	tests/modload-parts.js	<any>
-modload-404b.test.js	theme.js	<any>	<loaded>	applyTheme
-modload-404b.test.js	toast.js	<any>	<loaded>	toast
-modload-404b.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>todayTouch	@{constroot$today}	todayBusy
-modload-404b.test.js	today-photofold.js	<any>	<loaded>
-modload-404b.test.js	today-picture.js	<any>	<loaded>	@{constel$todayinPice}	applyZoom	swApply	today-parts	zoomTarget
-modload-404b.test.js	today-plan.js	<any>	<loaded>	@serveplansnap	hasOutfit	planDirty	planFor	planMonth	planSig	planSnapSoon	planSnapUse	planStartDay	planTrim	snapOut	strHash
-modload-404b.test.js	today.js	<any>	<loaded>	belowBox	figureStage	goneNote	offBtn	offOn	piecesBox	pocketRow	renderToday	restWarn	rollRow	slots	todaySay	vestRow	wornBar	wornPill	wxFit	wxPreload
-modload-404b.test.js	ui.js	<any>	<loaded>	layerInert	layerUp
-modload-404b.test.js	wardrobe.js	<any>	<loaded>	@whenPulled	matMigrate	matRenameTo	sockLegacy	sockToeMigrate	start-safety	synced	wardPendingRestore	wardPendingSoon	wardSynced
-modload-404b.test.js	weather.js	<any>	<loaded>	loadWeather	today-parts
-modload-404b.test.js	who.js	<any>	<loaded>	acctRole	applyRole	rememberRole
 modload.test.js	about.js	<any>	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	appVersion	checkForUpdate	swVersionOf
 modload.test.js	account.js	<any>	<loaded>	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI	settings-summary
 modload.test.js	act.js	<any>	<loaded>	@document.addEventListenerclick	actAttr	actErr	actFire	actListen	actPath	actTaps	acts	addEventListener.once
@@ -11007,67 +10685,7 @@ modload.test.js	sync-status.js	<any>	<loaded>	@onbackupchanged	settings-open	sho
 modload.test.js	sync.js	<any>	<loaded>	@addEventListenerpagehide	@connRestored.then	@document.addEventListenervisibilitychange	adoptBackupSettings	afterPull	applyMerged	backedUpWords	clockLearn	localState	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	setSyncStatus	settings-rows	settings-saved	syncJoinAt	syncJoinMark	syncNeedsPull	syncNetText	syncNow	syncOnce	syncPaused	syncRedraw	syncSaved	syncSettingsRedraw	syncWaiting	synced
 modload.test.js	tag-request.js	<any>	<loaded>	insights-cards	tagStatsCard
 modload.test.js	tagging.js	<any>	<loaded>
-modload.test.js	tests/fixtures/cm/shirt-open/mask-background.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-open/mask-belt.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-open/mask-buckle.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-open/mask-dark.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-open/mask-shirt.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-open/mask-skin.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-open/mask-trousers.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-open/mask-watch.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-open/master.jpg	<any>
-modload.test.js	tests/fixtures/cm/shirt-open/part-sleeveL.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-open/part-sleeveR.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-tie/mask-background.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-tie/mask-belt.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-tie/mask-buckle.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-tie/mask-dark.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-tie/mask-shirt.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-tie/mask-skin.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-tie/mask-tie.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-tie/mask-trousers.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-tie/mask-watch.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-tie/master.jpg	<any>
-modload.test.js	tests/fixtures/cm/shirt-tie/part-sleeveL.png	<any>
-modload.test.js	tests/fixtures/cm/shirt-tie/part-sleeveR.png	<any>
-modload.test.js	tests/fixtures/cm/suit-open/mask-background.png	<any>
-modload.test.js	tests/fixtures/cm/suit-open/mask-dark.png	<any>
-modload.test.js	tests/fixtures/cm/suit-open/mask-jacket.png	<any>
-modload.test.js	tests/fixtures/cm/suit-open/mask-shirt.png	<any>
-modload.test.js	tests/fixtures/cm/suit-open/mask-skin.png	<any>
-modload.test.js	tests/fixtures/cm/suit-open/mask-watch.png	<any>
-modload.test.js	tests/fixtures/cm/suit-open/master.jpg	<any>
-modload.test.js	tests/fixtures/cm/suit-open/part-lapelL.png	<any>
-modload.test.js	tests/fixtures/cm/suit-open/part-lapelR.png	<any>
-modload.test.js	tests/fixtures/cm/suit-open/part-sleeveL.png	<any>
-modload.test.js	tests/fixtures/cm/suit-open/part-sleeveR.png	<any>
-modload.test.js	tests/fixtures/cm/suit/mask-background.png	<any>
-modload.test.js	tests/fixtures/cm/suit/mask-dark.png	<any>
-modload.test.js	tests/fixtures/cm/suit/mask-jacket.png	<any>
-modload.test.js	tests/fixtures/cm/suit/mask-shirt.png	<any>
-modload.test.js	tests/fixtures/cm/suit/mask-skin.png	<any>
-modload.test.js	tests/fixtures/cm/suit/mask-tie.png	<any>
-modload.test.js	tests/fixtures/cm/suit/mask-watch.png	<any>
-modload.test.js	tests/fixtures/cm/suit/master.jpg	<any>
-modload.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
-modload.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
-modload.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
-modload.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
-modload.test.js	tests/fixtures/cm/vest/mask-background.png	<any>
-modload.test.js	tests/fixtures/cm/vest/mask-dark.png	<any>
-modload.test.js	tests/fixtures/cm/vest/mask-jacket.png	<any>
-modload.test.js	tests/fixtures/cm/vest/mask-shirt.png	<any>
-modload.test.js	tests/fixtures/cm/vest/mask-skin.png	<any>
-modload.test.js	tests/fixtures/cm/vest/mask-tie.png	<any>
-modload.test.js	tests/fixtures/cm/vest/mask-waistcoat.png	<any>
-modload.test.js	tests/fixtures/cm/vest/mask-watch.png	<any>
-modload.test.js	tests/fixtures/cm/vest/master.jpg	<any>
-modload.test.js	tests/fixtures/cm/vest/part-lapelL.png	<any>
-modload.test.js	tests/fixtures/cm/vest/part-lapelR.png	<any>
-modload.test.js	tests/fixtures/cm/vest/part-sleeveL.png	<any>
-modload.test.js	tests/fixtures/cm/vest/part-sleeveR.png	<any>
 modload.test.js	tests/load-contract.json	<any>
-modload.test.js	tests/modload-parts.js	<any>
 modload.test.js	tests/webkit.js	<any>
 modload.test.js	theme.js	<any>	<loaded>	applyTheme	cycleTheme	themeTap
 modload.test.js	toast.js	<any>	<loaded>	toast	toastOff
@@ -11291,9 +10909,6 @@ modtools.test.js	tests/masterspeed.test.js	<any>
 modtools.test.js	tests/materials.test.js	<any>
 modtools.test.js	tests/measure.test.js	<any>
 modtools.test.js	tests/mergeshared.test.js	<any>
-modtools.test.js	tests/modload-404a.test.js	<any>
-modtools.test.js	tests/modload-404b.test.js	<any>
-modtools.test.js	tests/modload-parts.js	<any>
 modtools.test.js	tests/modload.test.js	<any>
 modtools.test.js	tests/modscope.js	<any>
 modtools.test.js	tests/month.test.js	<any>
@@ -14911,6 +14526,7 @@ retry.test.js	tag-request.js	<any>	<loaded>
 retry.test.js	tagging.js	<any>	<loaded>
 retry.test.js	tests/fixedplan.js	<any>
 retry.test.js	tests/safeport.js	<any>
+retry.test.js	tests/webkit.js	<any>
 retry.test.js	theme.js	<any>	<loaded>	applyTheme
 retry.test.js	toast.js	<any>	<loaded>	loadFailed	set loadTold	toast
 retry.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constroot$today}
@@ -16215,9 +15831,6 @@ safeport.test.js	tests/masterspeed.test.js	<any>
 safeport.test.js	tests/materials.test.js	<any>
 safeport.test.js	tests/measure.test.js	<any>
 safeport.test.js	tests/mergeshared.test.js	<any>
-safeport.test.js	tests/modload-404a.test.js	<any>
-safeport.test.js	tests/modload-404b.test.js	<any>
-safeport.test.js	tests/modload-parts.js	<any>
 safeport.test.js	tests/modload.test.js	<any>
 safeport.test.js	tests/modscope.js	<any>
 safeport.test.js	tests/modtools.test.js	<any>
@@ -17975,6 +17588,7 @@ shard.test.js	tests/combatboot.test.js	<any>
 shard.test.js	tests/connkeep.test.js	<any>
 shard.test.js	tests/connrole.test.js	<any>
 shard.test.js	tests/costwear.test.js	<any>
+shard.test.js	tests/csp.test.js	<any>
 shard.test.js	tests/daysoff.test.js	<any>
 shard.test.js	tests/deploy.test.js	<any>
 shard.test.js	tests/deps.test.js	<any>
@@ -18023,8 +17637,6 @@ shard.test.js	tests/masterspeed.test.js	<any>
 shard.test.js	tests/materials.test.js	<any>
 shard.test.js	tests/measure.test.js	<any>
 shard.test.js	tests/mergeshared.test.js	<any>
-shard.test.js	tests/modload-404a.test.js	<any>
-shard.test.js	tests/modload-404b.test.js	<any>
 shard.test.js	tests/modload.test.js	<any>
 shard.test.js	tests/modtools.test.js	<any>
 shard.test.js	tests/month.test.js	<any>
@@ -18059,6 +17671,7 @@ shard.test.js	tests/pocketsquare.test.js	<any>
 shard.test.js	tests/records.test.js	<any>
 shard.test.js	tests/remind.test.js	<any>
 shard.test.js	tests/restacts.test.js	<any>
+shard.test.js	tests/retry.test.js	<any>
 shard.test.js	tests/rollback.test.js	<any>
 shard.test.js	tests/rotation-pause.test.js	<any>
 shard.test.js	tests/run.js	<any>

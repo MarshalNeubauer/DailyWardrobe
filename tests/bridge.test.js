@@ -439,7 +439,7 @@ const GLOBALS={
   // merge.js, classic: the server's copy (worker/backup.js) and analysis-worker.js run it as a module, where its names are this one object
   DW_MERGE:'merge.js hands its rules over as one object where it runs as a module (worker/backup.js, analysis-worker.js)',
   // switches a test or a tool sets before the app runs, which the app reads by name
-  ASM_CM_SIZE:'a test\'s size for the painted masters (asm-cm-job.js, asm-cm-page.js): tests/modload.test.js, the labs',
+  ASM_CM_SIZE:'a test\'s size for the painted masters (asm-cm-job.js, asm-cm-page.js): tests/asmcolor.test.js, the labs',
   ASM_NO_WORKER:'a test paints on the page, not in the painting worker (assemble.js)',
   ASM_TEST_OFF:'a test turns the painter off (assemble.js)',
   DW_ANDROID:'a test says the phone is an Android one (core.js homeAndroid)',
