@@ -18,7 +18,8 @@ const CITIES=[{id:1,name:'Springfield',admin1:'Illinois',country_code:'US',latit
   {id:3,name:'Springfield',admin1:'Massachusetts',country_code:'US',latitude:42.1,longitude:-72.59}];
 async function run(eng,browser,{ok,url,settle,ROOT}){
   const T=eng+': ';
-  const ctx=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:eng==='Chromium',locale:'en-US'});
+  // (bypassCSP: part 2 builds markup with inline handlers, which index.html's security policy refuses, to compare them with data-act)
+  const ctx=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:eng==='Chromium',locale:'en-US',bypassCSP:true});
   const days=['2026-11-15','2026-11-16','2026-11-17','2026-11-18','2026-11-19','2026-11-20'];
   await ctx.route('https://archive-api.open-meteo.com/**',r=>r.fulfill({status:503,contentType:'application/json',body:'{}'}));
   await ctx.route('https://api.open-meteo.com/**',r=>r.fulfill({contentType:'application/json',body:JSON.stringify({daily:{time:days,temperature_2m_max:[14,14,14,14,14,14],temperature_2m_min:[6,6,6,6,6,6],precipitation_probability_max:[0,0,0,0,0,0],precipitation_sum:[0,0,0,0,0,0],weather_code:[2,2,2,2,2,2]}})}));

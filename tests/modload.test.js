@@ -156,7 +156,7 @@ async function survey(eng,browser,{ok,url,C,page,imports,ord}){
   const FIX=path.join(ROOT,'tests','fixtures','cm'),data=f=>`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(f).toString('base64');
   const recs={};for(const kind of ['suit','vest','suit-open','shirt-tie','shirt-open']){const d=path.join(FIX,kind);for(const f of fs.readdirSync(d)){const n=f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/');recs[kind+'|'+n]=data(path.join(d,f))}}
   const served={};
-  const ctxFor=async(state,fail,swap)=>{const ctx=await browser.newContext({viewport:{width:402,height:874},serviceWorkers:'block',...(state?{storageState:state}:{})});
+  const ctxFor=async(state,fail,swap)=>{const ctx=await browser.newContext({viewport:{width:402,height:874},serviceWorkers:'block',...(state?{storageState:state}:{}),...(state||fail!==null?{}:{bypassCSP:true})});   // (the seeding page is handed an inline module below, which index.html's security policy refuses)
     await ctx.route(u=>!u.href.startsWith(origin)&&!u.href.startsWith(HOST)&&/^https?:/.test(u.href),route=>route.fulfill({status:503,headers:{'content-type':'application/json','access-control-allow-origin':'*'},body:'{"error":"server"}'}));
     await ctx.route(HOST+'**',route=>{const u=new URL(route.request().url()),k=u.searchParams.get('key');const j=(x,st=200)=>route.fulfill({status:st,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify(x)});
       if(route.request().method()!=='GET')return j({ok:true,rev:1,saved:Date.now()});
@@ -313,7 +313,7 @@ async function run(eng,browser,{ok,url,settle}){
   const CTRL={Today:'#n-today',Wardrobe:'#n-wardrobe',Insights:'#n-stats','the gear':'header .hbtns button[data-act="setOpenTap"]','the theme button':'#theme-btn'};
 
   /* ---- taps while the scripts load ---- */
-  const c=await open();
+  const c=await open({bypassCSP:true});   // (the module this page is handed below is inline: index.html's security policy refuses it, tests/csp.test.js)
   const sw=await c.p.evaluate(async()=>({root:(await fetch('./',{cache:'no-store'})).status,ctl:!!(navigator.serviceWorker&&navigator.serviceWorker.controller),reg:!!(navigator.serviceWorker&&await navigator.serviceWorker.getRegistration())}));
   ok(sw.root===200&&!sw.ctl&&!sw.reg,T+`the test server serves the folder's address (./, ${sw.root}) as on every system, and no service worker is in the way of the routes (controlled ${sw.ctl}, registered ${sw.reg})`);
   // the script right after act.js (add.js until the restructure S3a moved the ui kit and logic there), and the one after start.js
@@ -398,7 +398,7 @@ async function run(eng,browser,{ok,url,settle}){
   ok(live.join(' ')==='false//false/ true/set/false/set false//false/'&&kept==='false/set'&&c.errs.length===0,T+`a getter gives the module's value of the moment: no entry, Settings' entry, none again (${live.join(' ')}); a write from outside is refused and changes nothing (${kept})`);
   // the pattern for a `let` the tests assign: a getter and a setter, so a bare assignment in the page reaches the module's own variable
   await c.p.addScriptTag({type:'module',content:'let mlState=1;globalThis.mlRead=()=>mlState;Object.defineProperties(globalThis,{mlState:{get:()=>mlState,set:v=>{mlState=v}}});export {};'});
-  await c.p.waitForFunction('typeof mlRead==="function"');
+  await c.p.waitForFunction(()=>typeof globalThis.mlRead==='function');   // (a function: WebKit's bypassCSP doesn't let a string predicate be compiled)
   const sett=await c.p.evaluate('(()=>{const a=mlState+"/"+mlRead();mlState=5;const b=mlState+"/"+mlRead();mlState++;return a+" "+b+" "+mlRead()})()');
   ok(sett==='1/1 5/5 6',T+`a module's \`let\` bridged with a getter and a setter: \`name=5\` and \`name++\` in the page change the module's own variable (${sett})`);
 

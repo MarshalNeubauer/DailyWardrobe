@@ -14,7 +14,7 @@ const garmentdraw=async({ok,chromium,url,ROOT})=>{
   let old='',imps=[];try{const raw=execSync('git show origin/main:draw.js',{cwd:ROOT,encoding:'utf8',maxBuffer:64e6});old=require('./appsrc').asScript(raw);
     if(old!==raw)imps=require('acorn').parse(raw,{ecmaVersion:'latest',sourceType:'module'}).body.filter(st=>st.type==='ImportDeclaration')
       .map(st=>({from:st.source.value,names:st.specifiers.map(s=>s.local.name)}))}catch(e){old=''}
-  const browser=await chromium.launch();const p=await browser.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  const browser=await chromium.launch();const p=await browser.newPage({bypassCSP:true});const errs=[];   // (bypassCSP: main's draw.js is run below with new Function, which index.html's security policy refuses)p.on('pageerror',e=>errs.push(e.message));
   try{
     await p.goto(url);await p.waitForFunction(()=>window.appReady);
     const r=await p.evaluate(()=>{const I=(type,x)=>({id:'g-'+type,type,primaryColor:'navy',pattern:'solid',...x}),T=['tee','polo','henley','sweater','sweatshirt','hoodie','qzip','cardigan','chore'];
