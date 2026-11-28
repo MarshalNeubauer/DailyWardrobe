@@ -35,7 +35,7 @@ env:
   # how many runners, and how many of them (the last ones) take the WebKit halves (only those install WebKit); the split is balanced by
   # tests/shard-times.json. Change SHARDS together with the matrix below
   SHARDS: 10
-  SHARD_WEBKIT: 3
+  SHARD_WEBKIT: 2
   # 'true' on the nightly and on a run testing main: those fail (and email) as before; 'false' on every other ref (see the top)
   STRICT: ${{ github.event_name == 'schedule' || (inputs.ref || github.ref_name) == 'main' }}
 jobs:
