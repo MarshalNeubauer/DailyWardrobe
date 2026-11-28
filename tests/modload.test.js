@@ -61,6 +61,24 @@ module.exports=async({ok,engines,url,settle})=>{
       for(const a of e.absent){n++;if(!reg.includes(`'${a.hook}':`)||!new RegExp(`\\b${a.part}\\b`).test(reg))bad.push(`${f} does not register ${a.part} for ${a.hook}`)}}
     const was=ab.flatMap(([,e])=>e.absent.map(a=>a.was)),still=page.filter(f=>was.some(w=>new RegExp(`\\b(?:serve|ask|askFor|served|need|needFn)\\('${w}'`).test(fs.readFileSync(path.join(ROOT,f),'utf8'))));
     ok(n===15&&!bad.length&&!still.length,`D1: the ${n} parts that were \`need\` on main are their files' hooks (${ab.map(([f])=>f).join(', ')}), and none is a socket any more${bad.length?': '+bad.join('; '):''}${still.length?'; still a socket in '+still.join(', '):''}`)}
+  /* D2 (the owner's decision, 2026-11-27; the notice board made clean, N3): the Add page and the item sheet are one group, add, and its
+     files import each other. The order the page runs its modules in is worked out here as a browser runs them (each tag's graph depth
+     first, a file's imports in their order, a file still running passed over: a cycle). Every import reaches a file that ran before the
+     importer, but a cycle's way back; no cycle runs code at load (none of those names is used outside a function body); the files run in
+     their tags' order but itemsheet.js, the cycle's entry, which runs last of it (index.html says so). (The painter's own cycles, N6's
+     direct links, are inside the painter group: checked here for code at load, their order is the painter's) */
+  const ord=runOrder(ROOT,page);
+  {const addF=page.filter(f=>C.files[f].group==='add'),ao=ord.order.filter(f=>addF.includes(f));
+    const late=ao.filter((f,i)=>ao.slice(0,i).some(g=>page.indexOf(g)>page.indexOf(f)));
+    const rest=ao.filter(f=>!late.includes(f)),inTags=addF.filter(f=>!late.includes(f)).join()===rest.join();
+    const entry=ord.order.indexOf('itemsheet.js'),after=ord.order.slice(0,entry).filter(f=>page.indexOf(f)>page.indexOf('itemsheet.js'));
+    ok(late.join()==='itemsheet.js'&&inTags&&after.join()===ord.core.filter(f=>f!=='itemsheet.js').join(),`the add group's files run in their tags' order but itemsheet.js, which runs after the ${after.length} files of its cycle it reaches (${after.join(' ')})${late.join()!=='itemsheet.js'?'; out of order: '+late.join(', '):''}${inTags?'':'; the others not in their tags\' order'}`);
+    const outside=ord.back.filter(b=>C.files[b.from].group!==C.files[b.to].group),used=ord.back.filter(b=>b.used.length),inAdd=ord.back.filter(b=>C.files[b.from].group==='add');
+    ok(inAdd.length>0&&!outside.length&&!used.length,`no cycle runs code at load: the ${ord.back.length} imports of a file that runs later (${ord.back.map(b=>b.from+' → '+b.to).join(', ')}) are each inside one group (${inAdd.length} in add) and none of their names is used at load${outside.length?'; across groups: '+outside.map(b=>b.from+' → '+b.to).join(', '):''}${used.length?'; used at load: '+used.map(b=>b.from+' '+b.used.join(' ')).join('; '):''}`);
+    // the check itself: a name of a later file read at load is caught (colpick.js reading look.js's lookUsePick as it runs)
+    const PN=['look','Use','Pick'].join('');   // (spelled in parts: tests/bridge.test.js would read a whole name in a string as a test's read of it)
+    const pl=runOrder(ROOT,page,{'colpick.js':s=>s+`\nconst __plant=${PN};\n`}).back.filter(b=>b.used.length);
+    ok(pl.length===1&&pl[0].from==='colpick.js'&&pl[0].used.join()===PN,`planted: a later file's name read at load is caught (${pl.map(b=>b.from+' '+b.used.join(' ')).join('; ')||'nothing caught'})`)}
   // N5 (2026-11-28, D1): the sockets a required or today-no-picture file asked of an optional one with `need` are asked with ask/served
   // (the contract's `asked.files`: each listed asker asks it, and no file needs it), and the `need` calls kept toward an optional file
   // (`asked.kept`) are still needs of the file named; a socket of either list that changed its server or askers fails here
@@ -75,7 +93,7 @@ module.exports=async({ok,engines,url,settle})=>{
     ok(nA>0&&!bad.length,`N5: ${nA} sockets of optional files (${Object.keys(A.files).join(', ')}) are asked, not needed, by the required and today-no-picture files; ${nK} needs toward optional files are kept (${Object.keys(A.kept).join(', ')})${bad.length?': '+bad.join('; '):''}`)}
   for(const [eng,launch] of engines){let browser;
     try{browser=await launch()}catch(e){ok(false,`${eng}: the browser starts (${e.message.split('\n')[0]})`);continue}
-    try{await run(eng,browser,{ok,url,settle});await survey(eng,browser,{ok,url,C,page,imports})}finally{await browser.close()}}
+    try{await run(eng,browser,{ok,url,settle});await survey(eng,browser,{ok,url,C,page,imports,ord})}finally{await browser.close()}}
 };
 // the planner and the painter run as on a phone: the contract's 404 outcomes were measured with them (every other part of this file
 // is the same with them on)
@@ -95,6 +113,29 @@ function importsOf(root,page){const acorn=require('acorn'),out={};
       for(const k in n){const x=n[k];if(Array.isArray(x))x.forEach(walk);else if(x&&typeof x.type==='string')walk(x)}};
     walk(ast);out[f]=[...new Set(got)]}
   return out}
+// the order the page runs its modules in, as a browser does: each tag's graph depth first, a file's static imports (import … from,
+// export … from) in their order, a file still running passed over (a cycle). → {order, back: [{from, to, used: [names read at load]}],
+// core: the files of itemsheet.js's cycle, in run order}. plant: {file: src => src} for the check itself
+function runOrder(root,page,plant={}){const acorn=require('acorn'),imp={},ast={},src={};
+  for(const f of page){src[f]=fs.readFileSync(path.join(root,f),'utf8');if(plant[f])src[f]=plant[f](src[f]);
+    try{ast[f]=acorn.parse(src[f],{ecmaVersion:'latest',sourceType:'module'})}catch(e){ast[f]=acorn.parse(src[f],{ecmaVersion:'latest',sourceType:'script'})}
+    imp[f]=ast[f].body.filter(n=>(n.type==='ImportDeclaration'||n.type==='ExportAllDeclaration'||n.type==='ExportNamedDeclaration')&&n.source)
+      .map(n=>({to:path.posix.normalize(path.posix.join(path.posix.dirname(f),n.source.value)),names:(n.specifiers||[]).map(s=>s.local.name)}))}
+  const state={},order=[];const visit=f=>{if(state[f]||!imp[f])return;state[f]=1;for(const i of imp[f])visit(i.to);order.push(f)};
+  page.forEach(visit);const at=Object.fromEntries(order.map((f,i)=>[f,i])),back=[];
+  for(const f of page){const later=imp[f].filter(i=>at[i.to]>at[f]);if(!later.length)continue;
+    const names=new Set(later.flatMap(i=>i.names)),used=new Set();
+    // code that runs at load: outside every function body (an immediately called function's body runs then too)
+    const walk=n=>{if(!n||typeof n.type!=='string'||n.type==='ImportDeclaration')return;
+      if(n.type==='CallExpression'&&/^(Arrow)?FunctionExpression$/.test(n.callee.type)){walk(n.callee.body);n.arguments.forEach(walk);return}
+      if(/^(FunctionDeclaration|FunctionExpression|ArrowFunctionExpression)$/.test(n.type))return;
+      if(n.type==='Identifier'&&names.has(n.name))used.add(n.name);
+      for(const k in n){if((k==='key'&&n.type==='Property'||k==='property'&&n.type==='MemberExpression')&&!n.computed)continue;const x=n[k];if(Array.isArray(x))x.forEach(walk);else if(x&&typeof x.type==='string')walk(x)}};
+    ast[f].body.forEach(walk);
+    for(const i of later)back.push({from:f,to:i.to,used:i.names.filter(x=>used.has(x))})}
+  const reach=f=>{const seen=new Set([f]);const go=g=>{for(const i of imp[g]||[])if(!seen.has(i.to)){seen.add(i.to);go(i.to)}};go(f);return seen};
+  const fromIs=reach('itemsheet.js'),core=order.filter(f=>fromIs.has(f)&&reach(f).has('itemsheet.js'));
+  return {order,back,core}}
 // the import rules of the contract's classes → one line per import that breaks them
 // (an optional file may also import a group its own group needs: the contract's `needs`, the owner's rule 3 of 2026-11-27; those
 // groups then fail together)
@@ -110,7 +151,7 @@ function violations(C,imports){const out=[],at=f=>C.files[f]||C.lazy[f],needs=g=
    figure is there, else 8 s after Today was drawn (20 s after the page has loaded at most). A few at a time. The day is held (a Monday, a workday): which mannequin pose
    Today needs is the day's outfit's, and on WebKit that pose's file missing leaves Today with no figure ---- */
 const DAY=new Date(2026,10,16,12);
-async function survey(eng,browser,{ok,url,C,page,imports}){
+async function survey(eng,browser,{ok,url,C,page,imports,ord}){
   const E=eng.toLowerCase(),T=eng+': ',origin=new URL(url).origin,HOST='https://w.test/',wait=ms=>new Promise(r=>setTimeout(r,ms));
   const FIX=path.join(ROOT,'tests','fixtures','cm'),data=f=>`data:image/${f.endsWith('.jpg')?'jpeg':'png'};base64,`+fs.readFileSync(f).toString('base64');
   const recs={};for(const kind of ['suit','vest','suit-open','shirt-tie','shirt-open']){const d=path.join(FIX,kind);for(const f of fs.readdirSync(d)){const n=f.replace(/\.(png|jpg)$/,'').replace(/^mask-/,'mask/').replace(/^part-/,'part/');recs[kind+'|'+n]=data(path.join(d,f))}}
@@ -188,6 +229,17 @@ async function survey(eng,browser,{ok,url,C,page,imports}){
   const importers=f=>{const out=new Set([f]);for(let grew=true;grew;){grew=false;for(const [a,l] of Object.entries(imports))if(!out.has(a)&&l.some(t=>out.has(t))){out.add(a);grew=true}}return out};
   const base=ranBy['(none)']||[],baseMiss=page.filter(f=>!base.includes(f));
   ok(!baseMiss.length,T+`with every file there, every page script runs to its end (${base.length} of ${page.length}${baseMiss.length?'; not: '+baseMiss.join(', '):''})`);
+  // the order the scripts ran in (each notes it at its end) is the one worked out from the tags and the imports (D2, N3)
+  const ranOrder=base.filter(f=>page.includes(f));
+  ok(ranOrder.join()===ord.order.join(),T+`with every file there, the page's scripts run in the order worked out from the tags and the imports (itemsheet.js after ${ord.order[ord.order.indexOf('itemsheet.js')-1]})${ranOrder.join()===ord.order.join()?'':': ran '+ranOrder.join(' ')}`);
+  /* D2 (the owner's decision, 2026-11-27; N3): Add and the item sheet fail together. The 404 of each add-group file that another file
+     imports stops every file of the group's cycle (the Add page, its card and sheet, the color picker, the Look beta, the item sheet and
+     the Wardrobe) and kit.js (kit needs add); add-paste.js, which nothing imports, takes only itself */
+  {const grp=page.filter(f=>C.files[f].group==='add'&&C.files[f].class==='optional'),bad=[],leaves=[];
+    for(const f of grp){if(!ranBy[f])continue;const R=new Set(ranBy[f]),imported=Object.values(imports).some(l=>l.includes(f));
+      if(!imported){leaves.push(f);if(ord.core.some(g=>R.has(g)!==true))bad.push(f+' (nothing imports it) stopped part of the group')}
+      else{const still=[...ord.core,'kit.js'].filter(g=>R.has(g));if(still.length)bad.push(f+': '+still.join(' ')+' still ran')}}
+    ok(grp.length>20&&!bad.length&&leaves.join()==='add-paste.js',T+`D2: each of ${grp.length-leaves.length} add-group files that can't be loaded takes down the ${ord.core.length} files of the group's cycle and kit.js; ${leaves.join(', ')}, which nothing imports, only itself${bad.length?': '+bad.join('; '):''}`)}
   const downBad=[],needDown={};
   for(const f of page){const e=C.files[f];if(e.class!=='optional'||!ranBy[f])continue;const D=importers(f),R=new Set(ranBy[f]);
     const extra=page.filter(g=>!D.has(g)&&!R.has(g)),still=[...D].filter(g=>R.has(g));

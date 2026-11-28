@@ -6,6 +6,7 @@ import {fill,generateSwatch,imgOf,metaGet,queue,shrink,txs} from './app.js';
 import {$,TAG_MAX,items} from './core.js';
 import {toast} from './toast.js';
 import {openAdd} from './nav.js';
+import {addBackOnline} from './add.js';
 
 /* ---- waiting cards survive iOS closing Safari (audit 2026-11-15, H1: they lived only in memory, beforeunload never fires on an iPhone,
    and reading them again was paid again). Every card on Add is kept in the database's meta store, never synced: the form as `addq`, each
@@ -66,7 +67,7 @@ let addWatchOn=false;
 function addWatch(){if(addWatchOn)return;addWatchOn=true;askFor('guard-unsaved');
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')addKeep()});
   addEventListener('pagehide',()=>addKeep());
-  addEventListener('online',()=>askFor('add-back-online'))}
+  addEventListener('online',()=>addBackOnline())}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,get addKeepT(){return addKeepT},get addRestoreState(){return addRestoreState},set addRestoreState(v){addRestoreState=v}};
 export {addKeepT,addRestoreState,addKeepSoon,addCardRec,addKeep,addRevive,addRestore,addWatch};

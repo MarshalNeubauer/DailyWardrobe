@@ -4,7 +4,7 @@
    type allows as a chip with its name, grouped by family and light to dark. A tap on a chip only shows it beside the photo; "Use …"
    saves it (setq on the Add card, sete in the editor). */
 /* a card changed: add.js redraws Add on it (bus.js 'card-changed'; the restructure S3c, 2026-11-26: this file loads before add.js) */
-import {emit,askFor,serve,runHooks} from './bus.js';
+import {emit,askFor,runHooks} from './bus.js';
 import {$,COLORS,COLOR_OPTS,COLS_BY,CUSTOM_COL,CUSTOM_PAT,DIAL_COLS,LUMS,PATS_BY,TEXTURE_TYPES,TYPES,accentsFor,accentsOf,colBaseFor,colName,colNameTaken,colsFor,dE00,hexRgb,isConnected,items,labOf,matTypeOne,matTypeWord,matsFor,normPat,ownColFind,ownMatName,ownMats,ownNameClean,ownNameShort,ownPatFind,paperCloth,patBase,patName,patNameTaken,patOf,primaryCol,rgbLab,settings,shadeHex,shadeName,sockPatterned,sockToeKey,soleStyle,strapBand,esc} from './core.js';
 import {srcOk} from './photo-keys.js';
 import {ask,cap1,cardOf,editing,generateSwatch,imgOf,keepFocus,put,queue,refreshSwatch} from './app.js';
@@ -24,6 +24,12 @@ import {CHECK_PATS,MOTIF_PATS,STRIPE_PATS} from './detect.js';
 import {acts} from './act.js';
 import {LOOK_COATS,LOOK_ENAMEL,LOOK_KS,LOOK_METALT,LOOK_METAL_COLS,LOOK_PAT_GROUPS,LOOK_PK,lookClipMetal,lookCur,lookHasPat,lookOn,lookPatGroupOf} from './look-base.js';
 import {closeTagImg} from './add-ids.js';
+import {lookUsePick,lookSetEnamel,lookWrite,renderLookPick,lookSugCols,lookSugPats,lookShadeHtml} from './look.js';
+import {setq,setQField} from './add-card.js';
+import {addTexture} from './add.js';
+import {replaceTexture} from './item-photo.js';
+import {setItemField} from './wardrobe.js';
+import {sete} from './itemsheet.js';
 /** @type {{src: string, ref: any, k: string, from?: any, cur?: string, sel?: string, view?: string, [k: string]: any}} */
 let colPick=null;   // {src:'q'|'e', ref: queue index or item id, k: field, cur, sel, view:'tex'|'photo'}
 const COL_FAMS=['Whites, grays & blacks','Creams, tans & browns','Greens & olives','Blues','Reds, pinks & purples'];
@@ -132,9 +138,9 @@ function colPickView(v){if(!colPick)return;colPick.view=v;renderColPick(true)}
 async function useColPick(){if(!colPick)return;const {src,ref,k,sel,cur}=colPick,it=colTarget();let v=sel;if(!it){closeColPick();return}   // (its card is gone)
   if(k==='accents'){if(!sel||!COLORS[sel]||!it)return;closeColPick();await accSet(src,ref,[...accentsOf(it),sel]);return}   // "Also has": added at the end
   // the Look beta's own fields (look.js): a material, leather, metal or buckle; a tie clip's enamel; a watch's dial
-  if(LOOK_PK.includes(k))return askFor('look-use-pick');
-  if(k==='enamel'){closeColPick();if(sel!==cur)await askFor('look-set-enamel',src,ref,sel);return}
-  if(k==='dial'){closeColPick();if(sel!==cur&&COLORS[sel])await askFor('look-write',src,ref,{dial:sel});return}
+  if(LOOK_PK.includes(k))return lookUsePick();
+  if(k==='enamel'){closeColPick();if(sel!==cur)await lookSetEnamel(src,ref,sel);return}
+  if(k==='dial'){closeColPick();if(sel!==cur&&COLORS[sel])await lookWrite(src,ref,{dial:sel});return}
   if(sel===NEW_COL){try{v=k==='pattern'?await patAddNew(it,patNewFor(it)):await colAddNew(it,k,colNewFor(it,k))}catch(e){toast(e.message||'That could not be added.');return}}
   // the beta's Shade (picked in this sheet): kept with the colour, none for a metal
   const sh=colPick.shade!=null&&k==='primaryColor'&&lookOn()?(lookShadeOk(k,v)?colPick.shade:0):null,shCh=sh!==null&&sh!==(it.shade||0);
@@ -142,7 +148,7 @@ async function useColPick(){if(!colPick)return;const {src,ref,k,sel,cur}=colPick
   if(shCh){if(sh)it.shade=sh;else delete it.shade;if(v===cur){if(src==='q'){queueMicrotask(addKeep);emit('card-changed')}else{await put(it);planDirty();runHooks('wardrobe-changed')}return}}
   // one of the owner's colours not offered for this kind yet ("Your other colors", or "Use …" from New color): offered for it from now on
   const off=k!=='pattern'&&v&&CUSTOM_COL[v]&&it?await ownColOffer(v,it.type,k!=='primaryColor'):null;
-  if(src==='q')askFor('card-set',ref,k,v);else await askFor('item-set',ref,k,v);
+  if(src==='q')setq(ref,k,v);else await sete(ref,k,v);
   if(off)toast(off.msg,4000,{label:'Undo',fn:off.undo})}
 /* every redraw of the sheet goes through keepFocus (app.js): a keyboard user who pressed a tile, a Shade step or an "Offer it for" chip
    keeps the focus on that control in the new markup (it fell to <body>). A tile listed twice (one of the owner's own, under "Your colors"
@@ -153,7 +159,7 @@ const cpTyping=()=>{const a=document.activeElement,s=$('#col-sheet');
   return !!a&&!!s&&s.contains(a)&&(a.tagName==='TEXTAREA'||a.tagName==='INPUT'&&!/^(checkbox|radio|button|submit|reset|range|file|color|image)$/i.test(a.getAttribute('type')||''))};
 function renderColPick(keep){return cpTyping()?colPickDraw(keep):keepFocus($('#col-sheet'),()=>colPickDraw(keep))}
 function colPickDraw(keep){if(colPick&&colPick.newc)return colPick.newc.kind==='pattern'?renderPatNew(keep):renderColNew(keep);
-  if(colPick&&colPick.k==='pattern')return renderPatPick(keep);if(colPick&&LOOK_PK.includes(colPick.k))return askFor('look-pick-draw',keep);
+  if(colPick&&colPick.k==='pattern')return renderPatPick(keep);if(colPick&&LOOK_PK.includes(colPick.k))return renderLookPick(keep);
   const el=$('#col-sheet'),it=colTarget();if(!el||!it)return;const {k,sel,cur,view}=colPick,y=el.scrollTop;
   // the Look beta (look.js, 2026-11-17): Shade under the preview (not for a metal), Suggested first, no Ask Claude (Read with Claude is in
   // the Look section), "+ New color" at the end; a dial and a tie clip's enamel are picked here too
@@ -173,7 +179,7 @@ function colPickDraw(keep){if(colPick&&colPick.newc)return colPick.newc.kind==='
   // the owner's colours made for other kinds of item (2026-11-16, the owner's coyote brown T-shirt): picking one offers it for this kind too (useColPick)
   const others=acc||lk||!COLS_BY[it.type]?[]:Object.keys(CUSTOM_COL).filter(c=>COLORS[c]&&!colChoices(it,k).includes(c)),
     otherH=others.length?`<h4 class="cph" id="cp-other-h">Your other colors</h4><small class="cpothx">Made for other kinds of item. Pick one and it is offered for ${esc(typePl(it.type))} too.</small><div class="cpgrid cnown cpother" aria-labelledby="cp-other-h">${others.map(c=>tile(c)).join('')}</div>`:'';
-  const sug=L&&!acc&&!lk?askFor('look-sug-cols',it,k)||[]:[],sugH=sug.length?`<h4 class="cph">Suggested</h4><div class="cpgrid cpsug">${sug.map(([c,l])=>tile(c,`<small class="cpd cpaid">${esc(l)}</small>`)).join('')}</div>`:'',
+  const sug=L&&!acc&&!lk?lookSugCols(it,k)||[]:[],sugH=sug.length?`<h4 class="cph">Suggested</h4><div class="cpgrid cpsug">${sug.map(([c,l])=>tile(c,`<small class="cpd cpaid">${esc(l)}</small>`)).join('')}</div>`:'',
     newH=L&&!acc&&!lk&&COLS_BY[it.type]?`<h4 class="cph">New</h4><div class="cpgrid"><button type="button" class="cptile cpnewt" id="cn-open" data-act="lkNewCol"><span class="cpsw" aria-hidden="true">+</span><span class="cpnm">New color</span></button></div>`:'';
   // without a photo the drawing stands in, drawn in the colour being looked at (Claude's new colour isn't one yet: drawn as it is)
   const drawn=k==='enamel'?{...it,primaryColor:sel==='none'?lookClipMetal(it):sel}:k==='dial'?{...it,dial:sel}:L&&k==='primaryColor'&&sel!==NEW_COL&&(sel!==cur||shd!==(it.shade||0))?{...it,primaryColor:sel,color:undefined,shade:shd||undefined}
@@ -181,7 +187,7 @@ function colPickDraw(keep){if(colPick&&colPick.newc)return colPick.newc.kind==='
   const bigHex=c=>shd&&COLORS[c]?shadeHex(COLORS[c],shd):hex(c),shName=shd?' · '+shadeName(shd):'',same=sel===cur&&(!L||k!=='primaryColor'||shd===(lookShadeOk(k,cur)?it.shade||0:0));
   el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><b id="col-title">${acc?'Add a color it also has':k==='dial'?'Choose the dial color':k==='enamel'?'Choose the enamel':k==='toeColor'?'Toe cap color':k==='primaryColor'&&it.type!=='watch'?'Choose the color':'Choose the '+colFieldLabel(it,k).toLowerCase()+(colFieldLabel(it,k)==='Sole'?' color':'')}</b><button class="pick-x" data-act="cpCloseTap" aria-label="Close">×</button></div>
 <div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${srcOk(pic)}" alt="${what}">`:`<div class="cpdraw">${itemThumb(drawn)}</div>`}<figcaption>${pic?what:'As drawn'}</figcaption></figure><figure class="cpbig${sel==='none'?' none':''}"${sel==='none'?'':` style="background:${bigHex(sel)}"`}><figcaption>${esc(name(sel)+shName)}</figcaption></figure></div>
-${cpSeg(vs,view)}${L&&lookShadeOk(k,sel)?askFor('look-shade-html')||'':''}</div>
+${cpSeg(vs,view)}${L&&lookShadeOk(k,sel)?lookShadeHtml()||'':''}</div>
 ${acc||L?'':colAskHtml(it,k,tile,name)}
 <p class="cphelp">${acc?`Pick a further color you can see in the pattern, beyond its main ${it.tertiaryColor?'three':'colors'}: a speck or a logo doesn’t count.`:pic?`Tap a color to see it right beside your ${view==='tex'?'close-up':'photo'}. Pick the one whose edge you can hardly see.`:cpFig(it)?`Tap a color to see your ${(TYPES[it.type]||'item').toLowerCase()} drawn in it.`:'Tap a color to see it right beside your item. Pick the one whose edge you can hardly see.'}</p>
 ${sugH}${acc?'':ownH}${otherH}
@@ -237,7 +243,7 @@ async function colAskUseAll(){const it=colTarget(),a=it&&colAsk[it.id+'|c'];if(!
   closeColPick();
   const ch=COL_FIELDS(it).filter(f=>w[f]!==((f==='primaryColor'?primaryCol(it):it[f])||null));if(!ch.length)return;
   const offs=[];for(const f of ch)if(w[f]&&CUSTOM_COL[w[f]]){const o=await ownColOffer(w[f],it.type,f!=='primaryColor');if(o)offs.push(o.msg)}   // an own colour of another kind: offered for this one too
-  if(src==='q'){for(const f of ch)askFor('card-set',ref,f,w[f]||'none');if(offs.length)toast(offs.join(' '),4000);return}
+  if(src==='q'){for(const f of ch)setq(ref,f,w[f]||'none');if(offs.length)toast(offs.join(' '),4000);return}
   for(const f of ch)it[f]=w[f];delete it.color;
   if(ch.includes('primaryColor')&&it.swSrc==='tex')await refreshSwatch(it);await put(it);planDirty();runHooks('wardrobe-changed');toast(['Saved Claude’s colors.',...offs].join(' '),offs.length?4000:2500)}
 /* "Not sure? Add a close-up": in the item sheet the close-up is added from Pictures, the last section (folded; the checklist redesign
@@ -306,7 +312,7 @@ function renderPatPick(keep){const el=$('#col-sheet'),it=colTarget();if(!el||!it
     ownH=L?`<h4 class="cph">Yours</h4>${mine.length?`<div class="cpgrid cnown">${mine.map(p=>tile(p)).join('')}</div>`:'<p class="cphelp lkyours">Patterns you add show here first. “+ New pattern” is at the end.</p>'}`
       :mine.length?`<h4 class="cph">Your patterns</h4><div class="cpgrid cnown">${mine.map(p=>tile(p)).join('')}<button type="button" class="cptile cpnewt" id="pn-open" data-act="pnOpenTap"><span class="cpsw" aria-hidden="true">+</span><span class="cpnm">New pattern or texture</span></button></div>`
       :`<h4 class="cph cpownh">Your patterns</h4><div class="cpgrid cnown cnslim"><button type="button" class="cpnewl" id="pn-open" data-act="pnOpenTap"><span aria-hidden="true">+</span> New pattern or texture</button></div>`;
-  const sug=L?askFor('look-sug-pats',it)||[]:[],sugH=sug.length?`<h4 class="cph">Suggested</h4><div class="cpgrid cpsug">${sug.map(([p,l])=>tile(p,`<small class="cpd cpaid">${esc(l)}</small>`)).join('')}</div>`:'',
+  const sug=L?lookSugPats(it)||[]:[],sugH=sug.length?`<h4 class="cph">Suggested</h4><div class="cpgrid cpsug">${sug.map(([p,l])=>tile(p,`<small class="cpd cpaid">${esc(l)}</small>`)).join('')}</div>`:'',
     newH=L?`<h4 class="cph">New</h4><div class="cpgrid"><button type="button" class="cptile cpnewt" id="pn-open" data-act="lkNewPat"><span class="cpsw" aria-hidden="true">+</span><span class="cpnm">New pattern or texture</span></button></div>`:'';
   el.innerHTML=`<div class="cptop">${SW_GRAB}<div class="pick-head"><b id="col-title">Choose the pattern</b><button class="pick-x" data-act="cpCloseTap" aria-label="Close">×</button></div>
 <div class="cpcmp"><figure class="cpph${pic?'':' cpfig'}">${pic?`<img src="${srcOk(pic)}" alt="${what}">`:`<div class="cpdraw">${itemThumb(patVar(it,drawAs(sel)))}</div>`}<figcaption>${pic?what:'As drawn'}</figcaption></figure><figure class="cpbig cppatbig"><div class="cpdraw">${itemThumb(patVar(it,drawAs(sel)),true)}</div><figcaption>${esc(name(sel))}</figcaption></figure></div>
@@ -369,7 +375,7 @@ function cnPaperDefault(nc){const it=colTarget();if(!cnHasClose(it))return;const
   if(r){set(r);return}paperOf(it).then(r=>{if(!colPick||colPick.newc!==nc||!r)return;set(r);renderColPick(true)})}
 function cnToggleClose(){const nc=colPick&&colPick.newc;if(!nc)return;nc.closeOn=!nc.closeOn;nc.closeSet=true;renderColPick(true)}
 const cnRetakeHtml=()=>colPick&&colPick.src==='e'?' '+closeupBtn({label:'Retake close-up',cls:'linkbtn wbretake',mode:'retake',act:' data-act-change="cnRetakeFile"',cloth:paperCloth(colTarget()||{})}):'';   // the close-up chooser on a touch screen (ui.js)
-async function cnRetake(f){const nc=colPick&&colPick.newc;if(!nc||colPick.src!=='e'||!f)return;const id=colPick.ref;await askFor('replace-texture',id,f);
+async function cnRetake(f){const nc=colPick&&colPick.newc;if(!nc||colPick.src!=='e'||!f)return;const id=colPick.ref;await replaceTexture(id,f);
   if(!colPick||colPick.newc!==nc)return;nc.closeSet=false;await paperOf(colTarget());if(!colPick||colPick.newc!==nc)return;cnPaperDefault(nc);renderColPick(true)}
 function cnPaperLine(kind){const it=colTarget();if(!cnHasClose(it))return '';const r=paperNow(it);if(!r)return '';
   const ok=t=>`<p class="wbst ok" id="cn-paper"><span class="ic" aria-hidden="true">✓</span><span class="tx">${t}</span></p>`,no=t=>`<p class="wbst no" id="cn-paper"><span class="ic" aria-hidden="true">!</span><span class="tx">${t}</span></p>`;
@@ -586,7 +592,7 @@ function rdStart(src,id){const it=rdItem(src,id);if(!it)return;const off=rdOff()
   const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.onchange=()=>{const f=inp.files&&inp.files[0];if(f)file(f)};inp.click()}
 /* the close-up chosen (or retaken): kept as the Add card / editor keep one (on the Add card without the automatic re-tag), then read */
 async function rdWithClose(src,id,f){if(!f)return;const was=(rdItem(src,id)||{}).texture||'';
-  if(src==='q'){const i=queue.findIndex(x=>x&&x.id===id);if(i<0)return;await askFor('add-texture',i,f,true)}else await askFor('replace-texture',id,f);
+  if(src==='q'){const i=queue.findIndex(x=>x&&x.id===id);if(i<0)return;await addTexture(i,f,true)}else await replaceTexture(id,f);
   const it=rdItem(src,id);if(it&&it.texture&&it.texture!==was)rdRun(src,id)}
 function rdRetake(f){const me=rd;if(me)rdWithClose(me.src,me.id,f)}
 /* ask: {what:'both'} with the close-up as the New color sheet sends it (paperCopy: white-balanced from the paper, wb true; as taken, wb false) */
@@ -754,7 +760,7 @@ async function rdAddPat(it,x){const base=rdPatBase(it,x),types=CN_SUITING.includ
     return {key:await addCustomPattern({name:n,desc:x.r.description||'',base,types,look:x.look||null}),added:true}}
   throw new Error('That pattern’s name is taken: add it from the pattern sheet with a name of your own.')}
 const rdPick=(it,fields)=>Object.fromEntries(fields.map(k=>[k,it[k]==null?it[k]:JSON.parse(JSON.stringify(it[k]))]));
-async function rdSet(src,id,k,v){if(src==='q'){const i=queue.findIndex(x=>x&&x.id===id);if(i<0)return;const q=queue[i];if(k==='primaryColor')q.newColor=null;else q.newPattern=null;askFor('card-set',i,k,v)}else await askFor('item-set',id,k,v)}
+async function rdSet(src,id,k,v){if(src==='q'){const i=queue.findIndex(x=>x&&x.id===id);if(i<0)return;const q=queue[i];if(k==='primaryColor')q.newColor=null;else q.newPattern=null;setq(i,k,v)}else await sete(id,k,v)}
 async function rdUse(parts){const me=rd;if(!me||me.state!=='result'||me.applying)return;const it=rdItem(me.src,me.id);if(!it)return;me.applying=true;
   try{for(const [h,how] of parts){const x=me[h];if(!x||x.na||x.done)continue;const now=rdItem(me.src,me.id)||it,prev=rdPick(now,h==='c'?RD_COLF:h==='m'?['material']:h==='a'?['accents']:RD_PATF);let v,added=false,name;
       if(h==='a'){v=x.list;name='also '+rdAccWords(x.list);await rdSetAcc(me.src,me.id,v)}
@@ -767,7 +773,7 @@ async function rdUse(parts){const me=rd;if(!me||me.state!=='result'||me.applying
   catch(e){me.applying=false;toast(e.message||'That could not be set.');rdRender();return}
   me.applying=false;rdAfter()}
 /* the material set by the reading: the Add card's field (setQField: it then counts as chosen) or the item's (setItemField) */
-async function rdSetMat(src,id,v){if(src==='q'){const i=queue.findIndex(x=>x&&x.id===id);if(i>=0)askFor('card-field',i,'material',v)}else await askFor('item-field',id,'material',v)}
+async function rdSetMat(src,id,v){if(src==='q'){const i=queue.findIndex(x=>x&&x.id===id);if(i>=0)setQField(i,'material',v)}else await setItemField(id,'material',v)}
 /* "Use both" / "Use all": every card's main action; a card with none (the item's own already, a material the owner set) is kept */
 async function rdBoth(){const me=rd;if(!me||me.applying)return;const it=rdItem(me.src,me.id);if(!it)return;
   const acts=RD_HALVES.filter(h=>me[h]&&!me[h].na&&!me[h].done).map(h=>[h,rdMain(it,me,h)]);
@@ -840,4 +846,3 @@ function rdRetakeFile(el,ev,f){cuGot(el,f,x=>rdRetake(x))}
 globalThis.HOOK={__proto__:globalThis.HOOK||null,cnDrawn,cnFromHsv,cnName,colAsk,colAskImgs,colChoices,colFamily,colFieldLabel,colNewAdd,colPickView,cpAskHint,get rd(){return rd},set rd(v){rd=v},rdAccOf,rdClose,rdColOf,get rdLast(){return rdLast},rdOpen,rdRender,rdRetake,rdRun,rdUndoAll,get colPick(){return colPick},set colPick(v){colPick=v},closeColPick,colPickSel,colTarget,patChoices,patVar,renderColPick,useColPick,colRows,colShows,openColNew,openColPick,openCustomNew};
 export {lookShadeOk,colPick,colFamily,colHas,SOCK_THIRD,colShows,colFieldLabel,colTidy,colRows,colTarget,colChoices,accDel,colNear,openColPick,closeColPick,SW_GRAB,colPickSel,colPickView,useColPick,renderColPick,colAsk,colAskImgs,NEW_COL,cpAskHint,patChoices,patVar,patBtn,EP,cnHex,cnFromHsv,cnDrawn,cnLeft,openColNew,openPatNew,openCustomNew,cnName,colNewAdd,rd,rdLast,RD_LOOKUPS,rdOff,rdCost,rdCostLine,rdEditorBtn,rdAddBtn,rdStart,rdRetake,rdRun,rdColOf,rdOpen,rdClose,rdAccOf,rdRender,rdUndoAll,rdDoneHtml,openColForm,openPatForm,custNewTap,accDelTap,accAddTap};
 acts({colBtnTap,cpViewTap,cpTileTap,cpCloseTap,cpUseTap,cpPicsTap,cpAskTap,cpAskAllTap,cnOpenTap,pnOpenTap,cnBackTap,cnCloseupTap,cnAskTap,cnDescType,cnDescKey,cnKindTap,cnAddTap,cnUseOldTap,pnAnywayTap,cnBasePick,cnTypeTap,cnAccentTap,cnForPick,cnSqPress,cnHuePress,cnSqKey,cnHueKey,cnSlideUp,cnHexType,cnHexDone,cnNameType,rdReadTap,rdKeepTap,rdChangeTap,rdUndoTap,rdUseTap,rdBothTap,rdCloseTap,rdAgainTap,rdUndoAllTap,colBackdropTap,cnRetakeFile,rdRetakeFile,custNewTap,accDelTap,accAddTap});
-serve('col-form',openColForm);serve('pat-form',openPatForm);   // (tagging.js's New color and New pattern chips; the restructure S6c)

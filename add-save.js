@@ -16,6 +16,7 @@ import {planDirty} from './today-plan.js';
 import {keepCloseImg,keepTagImg} from './tag-request.js';
 import {makeSmall} from './measure.js';
 import {saveUserSettings} from './settings.js';
+import {addCalm,multiMsg} from './add.js';
 /* save every finished card in the queue (Skip the ones you don't want first) */
 /* a card that can be saved now (Save all and its count) */
 const cardReady=q=>!!q&&!q.busy&&!q.err&&!q.multiErr&&!q.saving&&!needType(q);
@@ -26,7 +27,7 @@ async function saveAll(){if(saveAllOn||queue.some(cardReading))return;saveAllOn=
   try{const cards=queue.filter(cardReady);for(let k=cards.length-1;k>=0;k--){const q=cards[k];if(queue.includes(q)&&await save(q.id)===true)n++}}
   finally{saveAllOn=false}
   const left=queue.filter(needType).length;
-  if(n||left)askFor('multi-msg',`${n?`Saved ${n} item${n===1?'':'s'} to your wardrobe.`:''}${left?`${n?' ':''}${left===1?'One card needs its type':`${left} cards need their type`} first.`:''}`);emit('card-changed')}
+  if(n||left)multiMsg(`${n?`Saved ${n} item${n===1?'':'s'} to your wardrobe.`:''}${left?`${n?' ':''}${left===1?'One card needs its type':`${left} cards need their type`} first.`:''}`);emit('card-changed')}
 /* Confirm (and the sample, the import, Save all): a failure is said and the card stays (a tester's Confirm did nothing at all, 2026-11-14) */
 /* (2026-11-17, the title audit) the short title, shortDesc: "Saved: Navy argyle socks." */
 /* what the Saved toast calls the item: its own name, else its colours with what it is ("Grey suit", "Navy tie", "Gold watch · white dial
@@ -85,7 +86,7 @@ async function saveCard(q){
   const all=[it,...copies],at=nowMs();for(const x of all)x.updated=at;
   await txs('items','readwrite',s=>{for(const x of all)s.put(x)});askFor('sync-soon');
   items.push(...all);
-  const i=queue.indexOf(q);planDirty();if(i>=0)queue.splice(i,1);{const c=askFor('add-calm');if(c)c.ok=1}emit('card-changed');   // (only a card that really went closes up the list: a failed save's Confirm can be tapped again at once)
+  const i=queue.indexOf(q);planDirty();if(i>=0)queue.splice(i,1);{const c=addCalm;if(c)c.ok=1}emit('card-changed');   // (only a card that really went closes up the list: a failed save's Confirm can be tapped again at once)
   P.kitSaved?.(it,q,Math.max(0,i),copies);   // Saved, with Undo for all of them (kit.js)
   if(q.tagImg)for(const x of all)keepTagImg(x.id,q.tagImg,it.photo);recordTagResult(q,it);askPersist();   // tag-request.js: the sharp copy (signed with the photo), for every copy too (CR-1-04); what the tagger got wrong
   if(it.texture&&q.raw&&q.raw.tex)closeTagImg(q).then(u=>{for(const x of all)keepCloseImg(x.id,u,it.texture)}).catch(()=>{});   // the sharp close-up for later readings (tag-request.js)

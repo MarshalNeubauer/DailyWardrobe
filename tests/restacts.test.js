@@ -50,17 +50,18 @@ async function open(browser,eng,url,settle,o={}){
     HOOK.items=[{id:'s1',type:'suit',primaryColor:'navy',pattern:'solid',photo:__pic(300,300,'#234')},{id:'s2',type:'suit',primaryColor:'charcoal',pattern:'solid',photo:__pic(300,300,'#444'),texture:__pic(200,200,'#444')},
       {id:'t1',type:'tie',primaryColor:'burgundy',pattern:'solid'},{id:'h1',type:'shirt',primaryColor:'white',pattern:'solid'},{id:'p1',type:'pants',primaryColor:'grey',pattern:'solid'},{id:'o1',type:'shoes',primaryColor:'black',pattern:'solid',leather:'calf'}];
     HOOK.settings.setupDone=1;HOOK.settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-20T09:00:00';HOOK.cache={};HOOK.queue.length=0;
-    window.__calls=[];window.__spy=(...names)=>{for(const f of names){const spy=(...a)=>{__calls.push([f,...a.map(x=>x instanceof File?'file:'+x.name:x)])};window[f]=spy;
-      // (an Add card's Try again, close-up, New color and New pattern reach add.js and colpick.js through bus.js sockets since the
-      // restructure S6c: the spy is served in their place too)
-      const k={retryTag:'retry-tag',addTexture:'add-texture',openColForm:'col-form',openPatForm:'pat-form'}[f];if(k&&window.__busServe)__busServe(k,spy)}};
+    window.__calls=[];
     /* a function of a file that is an ES module (remind.js: remindSwitch) is called inside its module, where a replaced window.<name>
        isn't seen (tests/bridge.test.js; tests/actsindex.test.js VIA): it is replaced one step earlier, at the handlers the markup names
        (ACTS, act.js), each given here with the arguments its own line calls the function with. So this file no longer runs those
        handlers' own lines: tests/remind.test.js taps both switches with the real ones (and a push service of its own). */
     window.__via=(f,how)=>{for(const h of Object.keys(how)){if(typeof HOOK.ACTS[h]!=='function'){__calls.push(['missing',h]);continue}HOOK.ACTS[h]=el=>{__calls.push([f,...how[h](el)])}}};
     HOOK.show('today')});
-  await p.evaluate(async()=>{const s=document.createElement('script');s.type='module';s.textContent=`import {serve} from './bus.js';window.__busServe=serve;`;document.head.appendChild(s);for(let i=0;i<100&&!window.__busServe;i++)await new Promise(r=>setTimeout(r,20))});
+  /* an Add card's Try again, New color, New pattern and close-up call add.js and colpick.js with an import since the notice board made
+     clean (N3), so they too are watched at their handlers (__via); a close-up's handler hands its file on through ui.js's own cuGot, as
+     its line does (add-card.js cardCuFile), so the field is still emptied by the app's code */
+  await p.evaluate(async()=>{const s=document.createElement('script');s.type='module';s.textContent=`import {cuGot} from './ui.js';window.__cuGot=cuGot;`;document.head.appendChild(s);for(let i=0;i<100&&!window.__cuGot;i++)await new Promise(r=>setTimeout(r,20));
+    window.__cuVia=(f,h)=>{HOOK.ACTS[h]=(el,ev,file)=>__cuGot(el,file,x=>{__calls.push([f,HOOK.cardIx(el),x instanceof File?'file:'+x.name:x])})}});
   await settle(p,400);
   const ev=(f,a)=>p.evaluate(f,a);
   const tap=async(sel,ms)=>{const l=typeof sel==='string'?p.locator(sel).first():sel;await l.scrollIntoViewIfNeeded();if(o.desk)await l.click();else await l.tap();await settle(p,ms||300)};
@@ -263,7 +264,7 @@ async function linked(eng,browser,{ok,url,settle}){
 
   // the Add card's notes: three cards, so a control must find its own card
   await ev(()=>{HOOK.closeSettings();const other=HOOK.PATS_BY.suit.find(x=>x!=='pinstripe'&&x!=='solid'&&x!=='other');window.__other=other;
-    __spy('retryTag','openColForm','openPatForm','addTexture');
+    __via('retryTag',{cardRetryTag:el=>[HOOK.cardIx(el)]});__via('openColForm',{tagNewCol:el=>[HOOK.cardIx(el)]});__via('openPatForm',{tagNewPat:el=>[HOOK.cardIx(el)]});__cuVia('addTexture','cardCuFile');
     // (patternAgain and refineAgain are tagging.js's own since the restructure S3c: watched at the handlers the markup names)
     __via('patternAgain',{tagPatternAgain:el=>[HOOK.cardIx(el)]});__via('refineAgain',{tagRefineAgain:el=>[HOOK.cardIx(el)]});
     HOOK.queue.length=0;HOOK.queue.push({id:'k0',manual:true,type:'tie',primaryColor:'navy',pattern:'solid'},
@@ -329,7 +330,7 @@ async function linked(eng,browser,{ok,url,settle}){
 /* ---- without a touch screen a close-up button is the file field itself ---- */
 async function desk(eng,browser,{ok,url,settle}){
   const T=eng+' (no touch): ',{ctx,p,errs,ev,calls}=await open(browser,eng,url,settle,{desk:true});
-  await ev(()=>{__spy('addTexture');window.__s2=HOOK.items.find(x=>x.id==='s2').texture;HOOK.queue.length=0;HOOK.queue.push({id:'k0',manual:true,type:'tie',primaryColor:'navy',pattern:'solid'},{id:'k2',type:'suit',primaryColor:'grey',pattern:'solid',ai:{}});HOOK.openAdd();HOOK.renderAdd()});await settle(p,600);
+  await ev(()=>{__cuVia('addTexture','cardCuFile');window.__s2=HOOK.items.find(x=>x.id==='s2').texture;HOOK.queue.length=0;HOOK.queue.push({id:'k0',manual:true,type:'tie',primaryColor:'navy',pattern:'solid'},{id:'k2',type:'suit',primaryColor:'grey',pattern:'solid',ai:{}});HOOK.openAdd();HOOK.renderAdd()});await settle(p,600);
   const f1=p.locator('#queue [data-q="k2"] label.ckadd input[type=file]').first();
   await f1.setInputFiles(FILE('c.jpg'));await settle(p,400);
   const a=await calls(),av=await f1.evaluate(e=>e.value);

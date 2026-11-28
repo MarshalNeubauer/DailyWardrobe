@@ -24,13 +24,11 @@
   "base": "the required files",
   "today": "Today and the plan behind it",
   "painter": "the outfit picture: drawn figure, mannequin poses, the painter",
-  "add": "the Add page and its readings",
-  "item-sheet": "the item sheet and the Wardrobe grid",
+  "add": "the Add page and its readings, the item sheet and the Wardrobe grid: one group since the notice board made clean N3 (the owner's decision D2, 2026-11-27): their files import each other and fail together",
   "backup": "sync, its photos and status, snapshots, backup files",
   "(a file's own name)": "a feature that is one file"
  },
  "needs": {
-  "item-sheet": ["add"],
   "kit": ["add"],
   "account": ["backup", "who"],
   "shop": ["analysis"],
@@ -156,18 +154,18 @@
   },
   "item-photo.js": {
    "class": "optional",
-   "group": "item-sheet",
+   "group": "add",
    "absent": [
     {"hook": "after-pull-fixups", "part": "smallPhotos", "was": "small-photos"}
    ]
   },
   "item-view.js": {
    "class": "optional",
-   "group": "item-sheet"
+   "group": "add"
   },
   "itemsheet.js": {
    "class": "optional",
-   "group": "item-sheet"
+   "group": "add"
   },
   "history.js": {
    "class": "today-no-picture",
@@ -388,7 +386,7 @@
   },
   "wardrobe.js": {
    "class": "optional",
-   "group": "item-sheet"
+   "group": "add"
   },
   "colpick.js": {
    "class": "optional",

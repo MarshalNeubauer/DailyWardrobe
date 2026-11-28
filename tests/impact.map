@@ -1,5 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
-# tested	31a2fc448925a3801183
+# tested	11472cb38f1837b64080
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	settings-category	swVersionOf
 a11y.test.js	account.js	<loaded>	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI	settings-summary
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -206,7 +206,7 @@ accents.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRo
 accents.test.js	add-paste.js	<loaded>
 accents.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 accents.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	page-shown	renderAddFor	setAddFor
-accents.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	renderAdd	wbNote
+accents.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	wbNote
 accents.test.js	analysis.js	<loaded>
 accents.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get queue	keepFocus	matTag	metaGet	metaPut	normTag	ownColorsOf	put	setEditing	setSel	setView	sockTag	texSwatches	tx	txFail	txs	window.fetch
 accents.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -621,7 +621,7 @@ addcards.test.js	add-more.js	<loaded>	arriveVal	cardQty	checkArrivals	orderHint	
 addcards.test.js	add-paste.js	<loaded>
 addcards.test.js	add-save.js	<loaded>	cardReady	get saveAllOn	recordTagResult	save	saveAll	saveCard	savedTitle
 addcards.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	page-shown	renderAddFor	setAddFor
-addcards.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addBackOnline	addFiles	addMulti	addNoteText	addShowCard	addTexture	cardByHand	cardPics	cardSkip	cardStop	countWord	cropBox	errToHand	measureGuess	multiAgain	multiFail	multiMsg	multiNote	oddWord	renderAdd	retryTag	saveAllTap	skipCard	stopRead	texGains	wbNote
+addcards.test.js	add.js	<loaded>	@document.addEventListenerclick	addBackOnline	addFiles	addMulti	addNoteText	addShowCard	addTexture	cardByHand	cardPics	cardSkip	cardStop	countWord	cropBox	errToHand	measureGuess	multiAgain	multiFail	multiMsg	multiNote	oddWord	renderAdd	retryTag	saveAllTap	skipCard	stopRead	texGains	wbNote
 addcards.test.js	analysis.js	<loaded>
 addcards.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	del	endedAnswer	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	qAt	renderBusy	set queue	setAiError	setAiModel	setEditing	setSel	setView	shrink	sockTag	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 addcards.test.js	asm-cm-job.js	<loaded>
@@ -722,7 +722,7 @@ additemacts.test.js	add-more.js	<loaded>	arriveVal	cardArrives	cardOrder	cardQty
 additemacts.test.js	add-paste.js	<loaded>
 additemacts.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveAll	saveCard	savedTitle
 additemacts.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	addManualTap	npsCancel	npsCancelTap	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	page-shown	renderAddFor	setAddFor
-additemacts.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	cardByHand	cardSkip	cardStop	dropTexture	errToHand	measureGuess	multiMsg	multiNote	renderAdd	saveAllTap	skipCard	stopRead	wbNote
+additemacts.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	cardByHand	cardSkip	cardStop	dropTexture	errToHand	measureGuess	multiMsg	multiNote	renderAdd	saveAllTap	skipCard	stopRead	wbNote
 additemacts.test.js	analysis.js	<loaded>
 additemacts.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	aiLabel	announce	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	del	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get flt	get queue	imgOf	keepFocus	loadImg	metaGet	metaPut	put	qAt	refreshSwatch	setEditing	setFlt	setSel	setView	shrink	texSwatches	tx	txFail	txs	window.fetch
 additemacts.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote
@@ -820,7 +820,7 @@ addsheet.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 addsheet.test.js	add-paste.js	<loaded>
 addsheet.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 addsheet.test.js	add-sheet.js	<loaded>	@backOnnps	@servenpsid	addManual	addManualTap	get npsId	npsBack	npsCancel	npsCancelTap	npsCard	npsClose	npsCloseTap	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	page-shown	renderAddFor	setAddFor
-addsheet.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	multiMsg	renderAdd	skipCard	wbNote
+addsheet.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	multiMsg	renderAdd	skipCard	wbNote
 addsheet.test.js	analysis.js	<loaded>
 addsheet.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusWatch	generateSwatch	get queue	keepFocus	metaGet	metaPut	qAt	setEditing	setSel	setView	storeFailure	tx	txFail	txs	window.fetch
 addsheet.test.js	asm-cm-job.js	<loaded>	asmCmRoute
@@ -1016,7 +1016,7 @@ aiverdict.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qty
 aiverdict.test.js	add-paste.js	<loaded>
 aiverdict.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 aiverdict.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	page-shown	renderAddFor
-aiverdict.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addNoteText	addShowCard	cardPics	renderAdd	wbNote
+aiverdict.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	cardPics	renderAdd	wbNote
 aiverdict.test.js	analysis.js	<loaded>
 aiverdict.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	qAt	setEditing	setSel	setView	shrink	sockTag	texSwatches	tx	txFail	txs	window.fetch
 aiverdict.test.js	asm-cm-job.js	<loaded>
@@ -4219,7 +4219,7 @@ canvasrefuse.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	
 canvasrefuse.test.js	add-paste.js	<loaded>
 canvasrefuse.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 canvasrefuse.test.js	add-sheet.js	<loaded>	@servenpsid	page-shown	renderAddFor	setAddFor
-canvasrefuse.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addNoteText	addShowCard	addTexture	cardPics	renderAdd	texGains	wbNote
+canvasrefuse.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	addTexture	cardPics	renderAdd	texGains	wbNote
 canvasrefuse.test.js	analysis.js	<loaded>
 canvasrefuse.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	endedAnswer	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	refreshSwatch	renderBusy	set editing	set flt	setEditing	setSel	setView	shrink	sockTag	texSwatches	tx	txFail	txs	window.fetch
 canvasrefuse.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -4319,7 +4319,7 @@ cardid.test.js	add-more.js	<loaded>	cardQty	checkArrivals	orderRow	qtyLabel	qtyO
 cardid.test.js	add-paste.js	<loaded>
 cardid.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 cardid.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	page-shown	renderAddFor	setAddFor
-cardid.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addNoteText	addShowCard	cardPics	errToHand	measureGuess	multiMsg	renderAdd	skipCard	wbNote
+cardid.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	cardPics	errToHand	measureGuess	multiMsg	renderAdd	skipCard	wbNote
 cardid.test.js	analysis.js	<loaded>
 cardid.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get editing	get queue	imgOf	keepFocus	loadImg	metaGet	metaPut	put	qAt	set flt	setEditing	setSel	setView	shrink	texSwatches	tx	txFail	txs	window.fetch
 cardid.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote
@@ -4623,7 +4623,7 @@ claudepattern.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf
 claudepattern.test.js	add-paste.js	<loaded>
 claudepattern.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 claudepattern.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	page-shown	renderAddFor	setAddFor
-claudepattern.test.js	add.js	<loaded>	@serveaddcalm	addFiles	addNoteText	addShowCard	addTexture	cardPics	renderAdd	texGains	wbNote
+claudepattern.test.js	add.js	<loaded>	addFiles	addNoteText	addShowCard	addTexture	cardPics	renderAdd	texGains	wbNote
 claudepattern.test.js	analysis.js	<loaded>
 claudepattern.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get editing	get queue	imgOf	keepFocus	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	set queue	setEditing	setSel	setView	shrink	sockTag	stillCur	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 claudepattern.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -6065,7 +6065,7 @@ costwear.test.js	add-more.js	<loaded>	checkArrivals	orderHint	orderRow	qtyLabel	
 costwear.test.js	add-paste.js	<loaded>
 costwear.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 costwear.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	page-shown	renderAddFor	setAddFor
-costwear.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	renderAdd	wbNote
+costwear.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	wbNote
 costwear.test.js	analysis.js	<loaded>	horizonKeys
 costwear.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get editing	get queue	keepFocus	metaGet	metaPut	put	qAt	set flt	set queue	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 costwear.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmWtWants
@@ -6524,7 +6524,7 @@ dress.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 dress.test.js	add-paste.js	<loaded>
 dress.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 dress.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	page-shown	renderAddFor	setAddFor
-dress.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	renderAdd	wbNote
+dress.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	wbNote
 dress.test.js	analysis-worker.js	<any>
 dress.test.js	analysis.js	<any>	<loaded>	clothesCandidates	compat	compatBase	evalPlan	fixWhy	groupHex	groupKind	groupLabel	horizonKeys	jClass	keyDate2	noteKind	occasionCheck	ownMix	plural	rankClothes	runAnalysis	runAnalysis0	sClass	several	shoeNotes	shopClass	shopDetail	shopGroup	shopKey	shopList	shopName	shopShelved	simFacts	smallCandidates	tClass
 dress.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get sel	keepFocus	metaGet	metaPut	put	putRaw	set queue	set sel	set view	setEditing	setSel	setView	storeFailure	texSwatches	tx	txFail	txs	window.fetch
@@ -9035,7 +9035,6 @@ invite.test.js	sync.js	<loaded>	@addEventListeneronline	@addEventListenerpagehid
 invite.test.js	tag-request.js	<loaded>	customForTag	ownMatsForTag	tagExtras	tagFixes
 invite.test.js	tagging.js	<loaded>
 invite.test.js	tests/fixedplan.js	<any>
-invite.test.js	tests/webkit.js	<any>
 invite.test.js	theme.js	<loaded>	applyTheme
 invite.test.js	toast.js	<loaded>	toast	toastOff
 invite.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -9169,7 +9168,7 @@ itemredesign.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 itemredesign.test.js	add-paste.js	<loaded>
 itemredesign.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 itemredesign.test.js	add-sheet.js	<loaded>	@backOnnps	@servenpsid	addManual	get npsId	npsBack	npsCancel	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	page-shown	renderAddFor	setAddFor
-itemredesign.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	renderAdd	skipCard	wbNote
+itemredesign.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	skipCard	wbNote
 itemredesign.test.js	analysis.js	<loaded>
 itemredesign.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get editing	get queue	imgOf	keepFocus	metaGet	metaPut	qAt	set editing	set flt	setEditing	setSel	setView	storeFailure	tx	txFail	txs	window.fetch
 itemredesign.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -9557,7 +9556,7 @@ keptphotos.test.js	worker.js	<loaded>	corsFor	fetch	serve
 keptphotos.test.js	worker/items.js	<loaded>	ITEM_BG	ITEM_REF_PROMPT	itemPhoto	kvIsFull	renderItem
 keptphotos.test.js	worker/links.js	<loaded>	readCapped
 keptphotos.test.js	worker/people.js	<loaded>	handleInvites	handleMe	ownerOnly	sameText	sha256Hex	spend	spendEach	usedOf	utcDay	whoIs
-keptphotos.test.js	worker/photostore.js	<loaded>	handleSync
+keptphotos.test.js	worker/photostore.js	handleSync
 keptphotos.test.js	worker/records.js	<loaded>	getRender	putRender	renderId	renderTtl
 keptphotos.test.js	worker/render.js	<loaded>	dataUrlToBlob	handleRender
 keptphotos.test.js	worker/tag.js	<loaded>	accOpts	colorText	knownOf	knowsCoat	knowsCombat	knowsSock	matTypes	materialExtra	materialRules	multiPrompt	orNull	promptFor	promptOf	readAiBody	tagRules	tagTypes
@@ -9571,7 +9570,7 @@ kit.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 kit.test.js	add-paste.js	<loaded>
 kit.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 kit.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	page-shown	renderAddFor	setAddFor
-kit.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	addShowCard	errToHand	multiMsg	renderAdd	wbNote
+kit.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	errToHand	multiMsg	renderAdd	wbNote
 kit.test.js	analysis.js	<loaded>
 kit.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbGone	dbLive	dbMark	dbOpen	dbRetry	del	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get editing	get queue	keepFocus	metaGet	metaPut	put	putRaw	setEditing	setSel	setView	storeErr	storeFailText	storeFailure	storeFull	texSwatches	tx	txFail	txs	window.fetch
 kit.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmWtWants
@@ -9780,7 +9779,7 @@ lookbeta.test.js	add-more.js	<loaded>	orderRow	qtyLabel	qtyOf	qtyRow
 lookbeta.test.js	add-paste.js	<loaded>
 lookbeta.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 lookbeta.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	page-shown	renderAddFor
-lookbeta.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	renderAdd	skipCard	wbNote
+lookbeta.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	skipCard	wbNote
 lookbeta.test.js	analysis.js	<loaded>
 lookbeta.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	announce	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get queue	keepFocus	metaGet	metaPut	put	qAt	renderBusy	set editing	set flt	setEditing	setSel	setView	storeFailure	tx	txFail	txs	window.fetch
 lookbeta.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -11149,7 +11148,7 @@ motif.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 motif.test.js	add-paste.js	<loaded>
 motif.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 motif.test.js	add-sheet.js	<loaded>	@servenpsid	page-shown	renderAddFor
-motif.test.js	add.js	<loaded>	@serveaddcalm	addFiles	addNoteText	addShowCard	addTexture	cardPics	renderAdd	texGains	wbNote
+motif.test.js	add.js	<loaded>	addFiles	addNoteText	addShowCard	addTexture	cardPics	renderAdd	texGains	wbNote
 motif.test.js	analysis.js	<loaded>
 motif.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	setEditing	setSel	setView	shrink	sockTag	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 motif.test.js	asm-cm-job.js	<loaded>	asmCmGaps	asmCmRoute
@@ -11466,7 +11465,7 @@ multi.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 multi.test.js	add-paste.js	<loaded>
 multi.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveAll	saveCard	savedTitle
 multi.test.js	add-sheet.js	<loaded>	@servenpsid	page-shown	renderAddFor
-multi.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addMulti	addNoteText	addShowCard	cardMultiAgain	cardPics	cardSkip	countWord	cropBox	multiAgain	multiFail	multiMsg	multiNote	renderAdd	saveAllTap	skipCard	wbNote
+multi.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addMulti	addNoteText	addShowCard	cardMultiAgain	cardPics	cardSkip	countWord	cropBox	multiAgain	multiFail	multiMsg	multiNote	renderAdd	saveAllTap	skipCard	wbNote
 multi.test.js	analysis.js	<loaded>
 multi.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	set queue	setAiError	setAiModel	setEditing	setSel	setView	shrink	sockTag	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 multi.test.js	asm-cm-job.js	<loaded>
@@ -12135,7 +12134,7 @@ onorder.test.js	add-more.js	<loaded>	arriveVal	cardArrives	cardOrder	checkArriva
 onorder.test.js	add-paste.js	<loaded>
 onorder.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 onorder.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	page-shown	renderAddFor	setAddFor
-onorder.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	addShowCard	renderAdd	wbNote
+onorder.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	renderAdd	wbNote
 onorder.test.js	analysis.js	<loaded>
 onorder.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get queue	get sel	keepFocus	metaGet	metaPut	put	putRaw	qAt	set editing	set flt	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 onorder.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -12331,7 +12330,7 @@ ownmaterials.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	
 ownmaterials.test.js	add-paste.js	<loaded>
 ownmaterials.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 ownmaterials.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	page-shown	renderAddFor	setAddFor
-ownmaterials.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	renderAdd	wbNote
+ownmaterials.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	renderAdd	wbNote
 ownmaterials.test.js	analysis.js	<loaded>
 ownmaterials.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	atomic	busyLabelFor	busyStart	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	generateSwatch	get queue	keepFocus	matTag	metaGet	metaPut	normTag	ownColorsOf	put	qAt	renderBusy	set editing	set flt	setEditing	setSel	setView	sockTag	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 ownmaterials.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -12922,7 +12921,7 @@ paste.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 paste.test.js	add-paste.js	<loaded>	@document.addEventListenerdrop	@document.addEventListenerpaste	addBlobs	addFromUrl	addLink	clipImages	fetchPhoto	isLink	linkAddTap	linkKey	pasteFromClipboard	pasteMsg	pasteTap	pasteUp
 paste.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 paste.test.js	add-sheet.js	<loaded>	@servenpsid	page-shown	renderAddFor	setAddFor
-paste.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addNoteText	addShowCard	cardPics	measureGuess	renderAdd	wbNote
+paste.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	cardPics	measureGuess	renderAdd	wbNote
 paste.test.js	analysis.js	<loaded>
 paste.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	metaGet	metaPut	put	putRaw	renderBusy	setEditing	setSel	setView	shrink	texSwatches	tx	txFail	txs	window.fetch
 paste.test.js	asm-cm-job.js	<loaded>
@@ -13612,7 +13611,7 @@ planner-repeats.test.js	add-more.js	<loaded>	checkArrivals	qtyOf
 planner-repeats.test.js	add-paste.js	<loaded>
 planner-repeats.test.js	add-save.js	<loaded>	recordTagResult	save	saveCard	savedTitle
 planner-repeats.test.js	add-sheet.js	<loaded>	@servenpsid	page-shown	renderAddFor
-planner-repeats.test.js	add.js	<loaded>	@serveaddcalm	addNoteText	renderAdd
+planner-repeats.test.js	add.js	<loaded>	addNoteText	renderAdd
 planner-repeats.test.js	analysis-worker.js	<any>
 planner-repeats.test.js	analysis.js	<any>	<loaded>
 planner-repeats.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	del	fitNav	fitNavSoon	focusWatch	generateSwatch	get sel	keepFocus	metaGet	metaPut	set queue	set sel	set view	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
@@ -14522,7 +14521,7 @@ run.js: add an item without a photo; it persists	add-more.js	<loaded>	checkArriv
 run.js: add an item without a photo; it persists	add-paste.js	<loaded>
 run.js: add an item without a photo; it persists	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 run.js: add an item without a photo; it persists	add-sheet.js	<loaded>	@servenpsid	addManual	addManualTap	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	page-shown	renderAddFor	setAddFor
-run.js: add an item without a photo; it persists	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	addShowCard	renderAdd	wbNote
+run.js: add an item without a photo; it persists	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	renderAdd	wbNote
 run.js: add an item without a photo; it persists	analysis.js	<loaded>
 run.js: add an item without a photo; it persists	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	fitNav	fitNavSoon	focusWatch	generateSwatch	keepFocus	metaGet	metaPut	put	putRaw	qAt	setEditing	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 run.js: add an item without a photo; it persists	asm-cm-job.js	<loaded>
@@ -15133,7 +15132,7 @@ run.js: renders the outfit without errors	checklist.js	<loaded>
 run.js: renders the outfit without errors	colpick.js	<loaded>
 run.js: renders the outfit without errors	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	LUM	accentOf	acctBase	applyCustom	camoPat	careLimit	colBase	colName	colOf	colourNameRe	dE00	dayClimate	dayFields	di	esc	hasInviteHash	hasVest	hexRgb	homeAndroid	homeIOS	homeNeeded	homeStandalone	inRotation	inviteOver	isCargo	isConnected	isHandPick	isWorkday	isoKey	itemName	itemSeason	itemTitle	key	keyDate	keySettings	keySplit	leatherWord	lum	lumCol	matSeason	metalWord	mix	nameHtml	nextStamp	nm	nowMs	occOf	offDays	offName	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	rgbHex	rgbLab	seasonFit	sentence	set items	setWardrobe	settingsOpen	shoeStyle	shortCol	shortDesc	sockPatterned	sockToe	sockToeKey	strapBand	styleWord	subHashes	syncUrl	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	watchOpts	wearsJacket	wearsTie
 run.js: renders the outfit without errors	cost.js	<loaded>
-run.js: renders the outfit without errors	days.js	<loaded>	idsOf	releaseLocks	saveDay
+run.js: renders the outfit without errors	days.js	<loaded>	idsOf	lockIds	releaseLocks	saveDay
 run.js: renders the outfit without errors	daysoff.js	<loaded>	refreshHolidays	start-jobs
 run.js: renders the outfit without errors	detect.js	<loaded>	@	@servecheckpats	@servestripepats	camoLook	lookOf	ownSett	settToTag	usableSett
 run.js: renders the outfit without errors	draw.js	<loaded>	drawBelt	drawShoePair	drawShoeSide	drawSock	fabricDef	figBg	figCloth	figFabric	figKind	figStripeLift	figWay	figureSvg	itemThumb	leatherLayers	sockPat	swatchSVG
@@ -15850,7 +15849,7 @@ safety.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 safety.test.js	add-paste.js	<loaded>
 safety.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 safety.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	addManualTap	npsCard	npsClose	npsDraw	npsInert	npsOpen	npsSig	npsSwipe	page-shown	renderAddFor
-safety.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addNoteText	addShowCard	cardPics	renderAdd	retryTag	wbNote
+safety.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	cardPics	renderAdd	retryTag	wbNote
 safety.test.js	analysis.js	<loaded>
 safety.test.js	app.js	<loaded>	@.catch	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	announce	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbDrop	dbGone	dbLive	dbMark	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusWatch	generateSwatch	get dbConn	get queue	keepFocus	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	qAt	renderBusy	setEditing	setSel	setView	shrink	sockTag	storeErr	storeFailText	storeFailure	storeFull	texSwatches	tx	txFail	txs	window.fetch
 safety.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmWtWants
@@ -16595,7 +16594,7 @@ sett.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 sett.test.js	add-paste.js	<loaded>
 sett.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 sett.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	page-shown	renderAddFor	setAddFor
-sett.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addNoteText	addShowCard	cardPics	renderAdd	wbNote
+sett.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	cardPics	renderAdd	wbNote
 sett.test.js	analysis.js	<loaded>
 sett.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	qAt	renderBusy	setEditing	setSel	setView	shrink	sockTag	texSwatches	tx	txFail	txs	window.fetch
 sett.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -17199,7 +17198,7 @@ shade.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRow
 shade.test.js	add-paste.js	<loaded>
 shade.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 shade.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	page-shown	renderAddFor	setAddFor
-shade.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	addShowCard	renderAdd	wbNote
+shade.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	renderAdd	wbNote
 shade.test.js	analysis.js	<loaded>
 shade.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	deadCanvas	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get queue	imgOf	keepFocus	metaGet	metaPut	put	putRaw	qAt	set editing	set flt	setEditing	setSel	setView	shrink	texSwatches	tx	txFail	txs	window.fetch
 shade.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -17823,7 +17822,7 @@ shirtweave.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qt
 shirtweave.test.js	add-paste.js	<loaded>
 shirtweave.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 shirtweave.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	page-shown	renderAddFor	setAddFor
-shirtweave.test.js	add.js	<loaded>	@serveaddcalm	addFiles	addNoteText	addShowCard	addTexture	cardPics	renderAdd	texGains	wbNote
+shirtweave.test.js	add.js	<loaded>	addFiles	addNoteText	addShowCard	addTexture	cardPics	renderAdd	texGains	wbNote
 shirtweave.test.js	analysis.js	<loaded>
 shirtweave.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	set queue	setEditing	setSel	setView	shrink	sockTag	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 shirtweave.test.js	asm-cm-job.js	<loaded>	asmCmGaps	asmCmRoute
@@ -18223,7 +18222,7 @@ sockpatterns.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	
 sockpatterns.test.js	add-paste.js	<loaded>
 sockpatterns.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 sockpatterns.test.js	add-sheet.js	<loaded>	@servenpsid	page-shown	renderAddFor	setAddFor
-sockpatterns.test.js	add.js	<loaded>	@serveaddcalm	addFiles	addNoteText	addShowCard	cardPics	renderAdd	wbNote
+sockpatterns.test.js	add.js	<loaded>	addFiles	addNoteText	addShowCard	cardPics	renderAdd	wbNote
 sockpatterns.test.js	analysis.js	<loaded>	clothesCandidates	compat	compatBase	evalPlan	fixWhy	groupHex	groupKind	groupLabel	horizonKeys	jClass	keyDate2	noteKind	occasionCheck	ownMix	plural	rankClothes	runAnalysis	runAnalysis0	sClass	several	shoeNotes	shopClass	shopDetail	shopGroup	shopKey	shopList	shopName	shopShelved	simFacts	smallCandidates	tClass
 sockpatterns.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	fixupRedraw	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	renderBusy	set queue	setEditing	setSel	setView	shrink	sockTag	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 sockpatterns.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -19669,7 +19668,7 @@ tagging.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRo
 tagging.test.js	add-paste.js	<loaded>
 tagging.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 tagging.test.js	add-sheet.js	<loaded>	@servenpsid	page-shown	renderAddFor
-tagging.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addNoteText	addShowCard	addTexture	cardPics	renderAdd	texGains	wbNote
+tagging.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addShowCard	addTexture	cardPics	renderAdd	texGains	wbNote
 tagging.test.js	analysis.js	<loaded>
 tagging.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matTag	matchLight	metaGet	metaPut	normTag	ownColorsOf	put	putRaw	qAt	renderBusy	setEditing	setSel	setView	shrink	sockTag	storeFailure	texSwatches	tx	txFail	txs	window.fetch
 tagging.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmCuDark	asmCuTile	asmCuTile1	asmCuWants
@@ -20080,7 +20079,7 @@ texswatch.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qty
 texswatch.test.js	add-paste.js	<loaded>
 texswatch.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 texswatch.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	page-shown	renderAddFor	setAddFor
-texswatch.test.js	add.js	<loaded>	@serveaddcalm	addFiles	addNoteText	addShowCard	addTexture	cardPics	dropTexture	measureGuess	renderAdd	texGains	wbNote
+texswatch.test.js	add.js	<loaded>	addFiles	addNoteText	addShowCard	addTexture	cardPics	dropTexture	measureGuess	renderAdd	texGains	wbNote
 texswatch.test.js	analysis.js	<loaded>
 texswatch.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	announce	ask	atomic	busyLabelFor	cap1	cardAt	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	fill	fitNav	fitNavSoon	focusWatch	generateSwatch	get queue	get sel	imgOf	keepFocus	loadImg	matchLight	metaGet	metaPut	put	putRaw	refreshSwatch	set sel	set view	setEditing	setSel	setView	shrink	stillCur	texSwatches	tx	txFail	txs	updateSwatchParam	window.fetch
 texswatch.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmCuDark	asmCuTile	asmCuTile1	asmCuWants
@@ -20181,7 +20180,7 @@ texture.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyRo
 texture.test.js	add-paste.js	<loaded>
 texture.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 texture.test.js	add-sheet.js	<loaded>	@servenpsid	npsLeave	page-shown	renderAddFor	setAddFor
-texture.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addFiles	addNoteText	addPhotosPick	addShowCard	addTexture	cardPics	cardWb	measureGuess	renderAdd	texGains	toggleWb	wbNote
+texture.test.js	add.js	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addPhotosPick	addShowCard	addTexture	cardPics	cardWb	measureGuess	renderAdd	texGains	toggleWb	wbNote
 texture.test.js	analysis.js	<loaded>
 texture.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@serveconnrestored	@serveselday	S	addEventListener.once	afterDom	afterScripts	aiLabel	ask	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	deadPic	fill	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get queue	imgOf	keepFocus	loadImg	matchLight	metaGet	metaPut	put	putRaw	qAt	refreshSwatch	setEditing	setSel	setView	shrink	texSwatches	tx	txFail	txs	window.fetch
 texture.test.js	asm-cm-job.js	<loaded>	asmGapNote
@@ -21582,7 +21581,7 @@ wardrobe.test.js	add-more.js	<loaded>	checkArrivals	orderRow	qtyLabel	qtyOf	qtyR
 wardrobe.test.js	add-paste.js	<loaded>
 wardrobe.test.js	add-save.js	<loaded>	cardReady	recordTagResult	save	saveCard	savedTitle
 wardrobe.test.js	add-sheet.js	<loaded>	@servenpsid	addManual	npsCard	npsClose	npsDraw	npsInert	npsLeave	npsOpen	npsSig	npsSwipe	page-shown	renderAddFor	setAddFor
-wardrobe.test.js	add.js	<loaded>	@document.addEventListenerclick	@serveaddcalm	addNoteText	addShowCard	renderAdd	wbNote
+wardrobe.test.js	add.js	<loaded>	@document.addEventListenerclick	addNoteText	addShowCard	renderAdd	wbNote
 wardrobe.test.js	analysis.js	<loaded>
 wardrobe.test.js	app.js	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	announce	atomic	busyLabelFor	cap1	cardAt	cardIx	cardOf	cleanStored	cleanStoredSettings	connKeep	connNow	dbLive	dbOpen	dbRetry	del	endedAnswer	fitNav	fitNavSoon	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	get editing	get flt	get queue	get sel	imgOf	keepFocus	metaGet	metaPut	put	putRaw	qAt	set editing	set flt	set sel	set view	setEditing	setFlt	setSel	setView	texSwatches	tx	txFail	txs	window.fetch
 wardrobe.test.js	asm-cm-job.js	<loaded>	asmCmRoute	asmGapNote	asmWtWants

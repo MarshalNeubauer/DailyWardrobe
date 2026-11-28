@@ -14,6 +14,7 @@ import {measureAndApply,readPatternWithClaude,readSett,settNote} from './pattern
 import {toast} from './toast.js';
 import {lookOn} from './look-base.js';
 import {acts} from './act.js';
+import {openColForm,openPatForm} from './colpick.js';
 
 /* ---- tagging again once the close-up is in: both photos and the measurement go to the tagger; fields the owner has set by
    hand stay, the rest take the new answer, and the card says what changed ---- */
@@ -108,8 +109,8 @@ function tagNotes(q){if(q.manual)return '';const out=[];if(q.meas)q.measV=colour
     if(q.newColor||far)out.push(`<div class="offer"><small>${q.newColor?`None of your colors quite fit: Claude calls it <b>${esc(q.newColor.name)}</b>${q.newColor.why?`, ${esc(q.newColor.why)}`:''}.`:'The measured color is far from every color for this item.'}</small><button type="button" class="chipbtn" data-act="tagNewCol" ${cardAt(q)}>Add as a new color</button></div>`)}
   if(!L&&PATS_BY[q.type]){if(q.newPattern)out.push(`<div class="offer"><small>No listed pattern fits: Claude calls it <b>${esc(q.newPattern.name)}</b>${q.newPattern.why?`: ${esc(q.newPattern.why)}`:''}.</small><button type="button" class="chipbtn" data-act="tagNewPat" ${cardAt(q)}>Add this pattern</button></div>`)}
   return out.join('')}
-function tagNewCol(el){askFor('col-form',cardIx(el))}   // (colpick.js, later: a socket)
-function tagNewPat(el){askFor('pat-form',cardIx(el))}
+function tagNewCol(el){openColForm(cardIx(el))}   // (colpick.js)
+function tagNewPat(el){openPatForm(cardIx(el))}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,confTxt,takeExtras};
 export {takeExtras,refineFromCloseup,confTxt,tagNotes};

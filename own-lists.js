@@ -1,6 +1,6 @@
 /* Daily Wardrobe: photo tagging, the person's own lists (split from tagging.js, Round B CR-2-17): adding a colour or a pattern the lists
    lack, own materials from Claude's offers, and their Settings lists. */
-import {askFor,emit,register} from './bus.js';   // emit: a card changed (add.js redraws Add on 'card-changed'; this file loads before add.js since the restructure S3c)
+import {emit,register} from './bus.js';   // emit: a card changed (add.js redraws Add on 'card-changed'; this file loads before add.js since the restructure S3c)
 import {$,CASUAL_JACKETS,CASUAL_TOPS,COLORS,COLS_BY,CUSTOM_COL,CUSTOM_PAT,MATERIALS_BY,OWN_COL_RE,OWN_MAT_MAX,OWN_PAT_RE,PATS_BY,TYPES,applyCustom,colName,colNameTaken,colsFor,items,matTypeWord,matsFor,normCol,ownColFind,ownColKey,ownDescClean,ownFreeKey,ownMatName,ownMats,ownNameBad,ownNameClean,ownNameShort,ownPatKey,patLabel,patNameTaken,settings,esc} from './core.js';
 import {planDirty} from './today-plan.js';
 import {saveUserSettings} from './settings.js';
@@ -10,6 +10,8 @@ import {toast} from './toast.js';
 import {addKeepSoon} from './add-keep.js';
 import {acts} from './act.js';
 import {lookOn} from './look-base.js';
+import {setQField} from './add-card.js';
+import {lookOwnMatUI} from './look.js';
 
 /* ---- adding a colour or a pattern (settings.custom, synced; see applyCustom in core.js) ---- */
 /* the kinds a new colour is offered for at first ("Offer it for"): the casual tops together and the casual jackets together (2026-11-16,
@@ -99,7 +101,7 @@ async function matOffer(i){const q=queue[i];if(!q||!q.matNew)return;const nm=q.m
   toast(`${cap1(n)} added to your ${matTypeWord(q.type)} materials.`,6000,{label:'Undo',fn:async()=>{const c=queue.find(x=>x.id===q.id);
     if(c&&c.material===n){if(was)c.material=was;else delete c.material;delete c.matAdded;c.matNew=nm}if(!had)await removeOwnMaterial(q.type,n);emit('card-changed')}})}
 /* the Add card's "Use wool" on Claude's low-confidence guess: chosen by hand (matSet, Fabric & fit checked) */
-function matGuessUse(i){const q=queue[i];if(!q||!q.matGuess)return;const k=q.matGuess.key;delete q.matGuess;askFor('card-field',i,'material',k)}
+function matGuessUse(i){const q=queue[i];if(!q||!q.matGuess)return;const k=q.matGuess.key;delete q.matGuess;setQField(i,'material',k)}
 /* Settings → Your materials: the materials added from Claude's offers, per type; each can be removed (items already using it keep it: it
    shows as Other with its name there; it is only no longer offered) */
 function renderOwnMatUI(){const el=$('#ownmat-list');if(!el)return;const rows=[];
@@ -107,7 +109,7 @@ function renderOwnMatUI(){const el=$('#ownmat-list');if(!el)return;const rows=[]
     rows.push(`<div class="custrow ownmatrow" data-t="${esc(t)}" data-m="${esc(m)}"><span><b>${esc(cap1(m))}</b><br><small class="mut">${esc(TYPES[t]||t)}${n?` · ${n} item${n>1?'s':''}`:''}</small></span><button type="button" aria-label="Remove ${esc(m)} from your ${esc(matTypeWord(t))} materials" data-act="ownMatRmTap" data-t="${esc(t)}" data-m="${esc(m)}">Remove</button></div>`)}
   el.innerHTML=rows.length?rows.join('')+'<p class="mut"><small>Removing one leaves the items that use it as they are; it just stops being offered.</small></p>'
     :'<p class="mut"><small>None yet. When Claude reads a material that is on no list (cupro, say), the Add card offers to add it here.</small></p>';
-  if(lookOn())el.insertAdjacentHTML('beforeend',askFor('look-own-mat-ui')??'')}   // (the Look beta: leathers and metals too, and "+ New material": look.js)
+  if(lookOn())el.insertAdjacentHTML('beforeend',lookOwnMatUI()??'')}   // (the Look beta: leathers and metals too, and "+ New material": look.js)
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,guessPatBase,addCustomColor,addCustomPattern,addOwnMaterial,groupOf,newColHex,removeOwnMaterial,renderCustomUI};
 export {groupOf,typePl,ownColOffer,newColHex,addCustomColor,guessPatBase,addCustomPattern,renderCustomUI,removeCustom,addOwnMaterial,removeOwnMaterial,matOffer,matGuessUse,renderOwnMatUI};
