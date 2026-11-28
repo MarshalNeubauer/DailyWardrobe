@@ -145,7 +145,7 @@ async function asmCrTile1(i,all){const L=ASM_LIN,im=new Image();im.src=i.texture
   const la=Math.hypot(f.ax,f.ay),lb=Math.hypot(f.bx,f.by),TW=Math.max(ASM_CR.TW,Math.min(ASM_CR.TWmax,Math.round(la*1.25))),TH=Math.max(8,Math.min(512,Math.round(TW*lb/la))),n=TW*TH,t=new Float32Array(3*n),lum=new Float32Array(n),nc=f.nc,nb=nc,mx=W/2,my=H/2;
   // each cell is lined up on the others before they are averaged (ASM_CR.align px either way, then half steps; twice): cloth is never
   // quite flat, and cells a few px out of step blurred a print's small figures into soft dashes
-  const AL=ASM_CR.align,CL=[];for(let j=-nb;j<=nb;j++)for(let ii=-nc;ii<=nc;ii++){let ok=1;for(const cu of [0,1])for(const cw of [0,1]){const x=mx+(ii+cu)*f.ax+(j+cw)*f.bx,y=my+(ii+cu)*f.ay+(j+cw)*f.by;if(x<AL+2||y<AL+2||x>W-AL-3||y>H-AL-3)ok=0}if(ok)CL.push({ii,j,ox:0,oy:0})}
+  const AL=ASM_CR.align,CL=[];for(let j=-nb;j<=nb;j++)for(let ii=-nc;ii<=nc;ii++){let ok=1;for(const cu of [0,1])for(const cw of [0,1]){const x=mx+(ii+cu)*f.ax+(j+cw)*f.bx,y=my+(ii+cu)*f.ay+(j+cw)*f.by;if(x<AL+2||y<AL+2||x>W-AL-3||y>H-AL-3)ok=0}if(ok)CL.push({ii,j,ox:0,oy:0,nx:0,ny:0})}
   if(!CL.length)return null;
   {const GU=32,GV=Math.max(8,Math.round(GU*lb/la)),gn=GU*GV,tp=new Float32Array(gn),px=new Float32Array(gn),py=new Float32Array(gn);
     for(let v=0;v<GV;v++)for(let u=0;u<GU;u++){const k=v*GU+u;px[k]=(u+.5)/GU*f.ax+(v+.5)/GV*f.bx;py[k]=(u+.5)/GU*f.ay+(v+.5)/GV*f.by}
@@ -201,7 +201,7 @@ async function asmPaisleyTile(i){const T=128,cv=document.createElement('canvas')
   x.fillStyle=g;x.fillRect(0,0,T,T);
   // a teardrop: a round body with its tip curling to one side, a smaller drop of the third colour inside, and an eye
   const drop=(cx,cy,r,rot)=>{for(const [dx,dy] of [[0,0],[T,0],[-T,0],[0,T],[0,-T]]){x.save();x.translate(cx+dx,cy+dy);x.rotate(rot);
-      const path=(s,oy)=>{const P=(a,b)=>[a*r*s,b*r*s+oy*r];x.beginPath();x.moveTo(...P(.7,-1.9));x.bezierCurveTo(...P(.9,-1),...P(1.1,.2),...P(.2,1));
+      const path=(s,oy)=>{const P=(a,b)=>/** @type {[number,number]} */([a*r*s,b*r*s+oy*r]);x.beginPath();x.moveTo(...P(.7,-1.9));x.bezierCurveTo(...P(.9,-1),...P(1.1,.2),...P(.2,1));
         x.bezierCurveTo(...P(-.7,1.6),...P(-1.3,.3),...P(-.8,-.4));x.bezierCurveTo(...P(-.4,-1),...P(.3,-.9),...P(.7,-1.9));x.closePath()};
       x.fillStyle=c2;path(1,0);x.fill();x.fillStyle=c3;path(.55,.2);x.fill();x.fillStyle=c2;x.beginPath();x.arc(-.05*r,.35*r,.18*r,0,2*Math.PI);x.fill();
       x.restore()}};

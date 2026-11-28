@@ -101,12 +101,16 @@ var GLB_WORKER_SRC='',GLB_APP_VERSION=null;
     // (the Worker runs them joined as one plain script: an ES module's `export {…}` line, the painter's since C3, 2026-11-24, is left out there; its bridge above it is plain code)
     // (its `import {…} from './x.js';` lines too, the painter's since the restructure S5c: the files before it in the one script already gave those names)
     GLB_WORKER_SRC=WORKER.map(function(u){return src[u].replace(/^export \{[^\n]*\};?[ \t]*$/mg,'').replace(/^import [^\n]*? from '\.\/[^']+';[ \t]*$/mg,'')+'\n;\n'}).join('');
-    var blob={};
+    var blob={},map={};
+    // (a blob's module can't resolve './bus.js': an app file's import of another file of this list is named 'glb/<file>', and an import map, written
+    //  before the first module runs, gives each name its blob; so every file runs once, and two files may import each other (N6, 2026-11-28:
+    //  asm-color.js and asm-gl.js, draw.js and asm-look.js), which a blob made in order could not name; an import of a file not in the list is
+    //  given the file's own address)
     for(var i=0;i<PAGE.length;i++){var u=PAGE[i];
-      // (a blob's module can't resolve './bus.js': an app file's import of another, draw.js's of bus.js since the restructure S4, is given the file's own address;
-      //  an import of a file this page already ran from a blob, the painter's of core.js, srgb.js … since the restructure S5c, is given that blob, so no second copy runs)
-      var text=src[u].replace(/^(import [^\n]*? from )'\.\/([^']+)';/mg,function(m,a,f){var d=u.replace(/[^\/]*$/,'')+f;return a+"'"+(blob[d]||new URL(d,location.href).href)+"';"});
-      blob[u]=URL.createObjectURL(new Blob([text+'\n//# sourceURL='+u.replace('../','')],{type:'text/javascript'}));
+      var text=src[u].replace(/^(import [^\n]*? from )'\.\/([^']+)';/mg,function(m,a,f){var d=u.replace(/[^\/]*$/,'')+f;return a+"'"+(PAGE.indexOf(d)>=0?'glb/'+d.replace('../',''):new URL(d,location.href).href)+"';"});
+      blob[u]=URL.createObjectURL(new Blob([text+'\n//# sourceURL='+u.replace('../','')],{type:'text/javascript'}));map['glb/'+u.replace('../','')]=blob[u]}
+    var im=document.createElement('script');im.type='importmap';im.textContent=JSON.stringify({imports:map});document.head.appendChild(im);
+    for(var i=0;i<PAGE.length;i++){var u=PAGE[i];
       // (an app file that is an ES module, core.js since 2026-11-24, is imported: the painter's files hand nothing to globalThis since the
       //  restructure S6p, so this page puts what gl-bench-run.js and gl-bench.js call on its own globals, a setter where an export has one)
       if(/^export \{/m.test(src[u])){let ns;try{ns=await import(blob[u])}catch(e){throw new Error('could not run '+u+': '+(e&&e.message||e))}
