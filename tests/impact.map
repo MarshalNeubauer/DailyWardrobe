@@ -61,7 +61,7 @@ a11y.test.js	mq/shirt-tie.js	<loaded>
 a11y.test.js	mq/suit-open.js	<loaded>
 a11y.test.js	mq/suit.js	<loaded>
 a11y.test.js	mq/vest.js	<loaded>
-a11y.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+a11y.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 a11y.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 a11y.test.js	pack.js	<loaded>	packShow	page-shown
 a11y.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -159,7 +159,7 @@ about.test.js	mq/shirt-tie.js	<loaded>
 about.test.js	mq/suit-open.js	<loaded>
 about.test.js	mq/suit.js	<loaded>
 about.test.js	mq/vest.js	<loaded>
-about.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+about.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 about.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 about.test.js	pack.js	<loaded>	packShow	page-shown
 about.test.js	pattern-read.js	<loaded>
@@ -257,7 +257,7 @@ accents.test.js	mq/shirt-tie.js	<loaded>
 accents.test.js	mq/suit-open.js	<loaded>
 accents.test.js	mq/suit.js	<loaded>
 accents.test.js	mq/vest.js	<loaded>
-accents.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+accents.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 accents.test.js	own-lists.js	<loaded>
 accents.test.js	pack.js	<loaded>	packShow	page-shown
 accents.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settable
@@ -355,7 +355,7 @@ accounts.test.js	mq/shirt-tie.js	<loaded>
 accounts.test.js	mq/suit-open.js	<loaded>
 accounts.test.js	mq/suit.js	<loaded>
 accounts.test.js	mq/vest.js	<loaded>
-accounts.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+accounts.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 accounts.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 accounts.test.js	pack.js	<loaded>	packShow	page-shown
 accounts.test.js	pattern-read.js	<loaded>	claudeOnly	claudePattern	measureAndApply	missedPattern	motifPat	readSett	readable	settCheck	settNote	settable
@@ -468,7 +468,7 @@ acts.test.js	mq/shirt-tie.js	<loaded>
 acts.test.js	mq/suit-open.js	<loaded>
 acts.test.js	mq/suit.js	<loaded>
 acts.test.js	mq/vest.js	<loaded>
-acts.test.js	nav.js	<any>	<loaded>	pageIn	setPagesOn	show	showWanted
+acts.test.js	nav.js	<any>	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 acts.test.js	own-lists.js	<any>	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 acts.test.js	pack.js	<any>	<loaded>	packShow	page-shown
 acts.test.js	pattern-read.js	<any>	<loaded>	claudeOnly	motifPat	readable	settable
@@ -572,7 +572,7 @@ actsindex.test.js	mq/shirt-tie.js	<loaded>
 actsindex.test.js	mq/suit-open.js	<loaded>
 actsindex.test.js	mq/suit.js	<loaded>
 actsindex.test.js	mq/vest.js	<loaded>
-actsindex.test.js	nav.js	<any>	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subBack	subOpen	subShown
+actsindex.test.js	nav.js	<any>	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subBack	subOpen	subShown
 actsindex.test.js	own-lists.js	<any>	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 actsindex.test.js	pack.js	<any>	<loaded>	openPack	packCount	packDate	packDays	packDaysTxt	packDefault	packLate	packLight	packList	packLive	packLockState	packMark	packMarkKey	packN	packName	packOpenTap	packProgress	packRead	packShow	packText	packTrip	packUses	packWeekStart	packWornIds	page-shown	renderPack
 actsindex.test.js	pattern-read.js	<any>	<loaded>	claudeOnly	motifPat	readable	settable
@@ -672,7 +672,7 @@ addcards.test.js	mq/shirt-tie.js	<loaded>
 addcards.test.js	mq/suit-open.js	<loaded>
 addcards.test.js	mq/suit.js	<loaded>
 addcards.test.js	mq/vest.js	<loaded>
-addcards.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen	subShown
+addcards.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen	subShown
 addcards.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 addcards.test.js	pack.js	<loaded>	packShow	page-shown
 addcards.test.js	pattern-read.js	<loaded>	claudeOnly	claudePattern	measureAndApply	medLab	missedPattern	motifPat	readPatternWithClaude	readSett	readable	sampleLabs	settCanvas	settCheck	settFrom	settFromRaw	settFromSpec	settFromWeave	settNote	settable	specSett	specSett1
@@ -773,7 +773,7 @@ additemacts.test.js	mq/shirt-tie.js	<loaded>
 additemacts.test.js	mq/suit-open.js	<loaded>
 additemacts.test.js	mq/suit.js	<loaded>
 additemacts.test.js	mq/vest.js	<loaded>
-additemacts.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+additemacts.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 additemacts.test.js	own-lists.js	<loaded>	matGuessUse
 additemacts.test.js	pack.js	<loaded>	packShow	page-shown
 additemacts.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settNote	settable
@@ -871,7 +871,7 @@ addsheet.test.js	mq/shirt-tie.js	<loaded>
 addsheet.test.js	mq/suit-open.js	<loaded>
 addsheet.test.js	mq/suit.js	<loaded>
 addsheet.test.js	mq/vest.js	<loaded>
-addsheet.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+addsheet.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 addsheet.test.js	own-lists.js	<loaded>
 addsheet.test.js	pack.js	<loaded>	packShow	page-shown
 addsheet.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settable
@@ -970,7 +970,7 @@ advicefresh.test.js	mq/shirt-tie.js	<loaded>
 advicefresh.test.js	mq/suit-open.js	<loaded>
 advicefresh.test.js	mq/suit.js	<loaded>
 advicefresh.test.js	mq/vest.js	<loaded>
-advicefresh.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+advicefresh.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 advicefresh.test.js	own-lists.js	<loaded>
 advicefresh.test.js	pack.js	<loaded>	packShow	page-shown
 advicefresh.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -1067,7 +1067,7 @@ aiverdict.test.js	mq/shirt-tie.js	<loaded>
 aiverdict.test.js	mq/suit-open.js	<loaded>
 aiverdict.test.js	mq/suit.js	<loaded>
 aiverdict.test.js	mq/vest.js	<loaded>
-aiverdict.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+aiverdict.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 aiverdict.test.js	own-lists.js	<loaded>
 aiverdict.test.js	pack.js	<loaded>	packShow	page-shown
 aiverdict.test.js	pattern-read.js	<loaded>	claudeOnly	measureAndApply	missedPattern	motifPat	readSett	readable	settCheck	settNote	settable
@@ -1166,7 +1166,7 @@ asmahead.test.js	mq/shirt-tie.js	<loaded>
 asmahead.test.js	mq/suit-open.js	<loaded>
 asmahead.test.js	mq/suit.js	<loaded>
 asmahead.test.js	mq/vest.js	<loaded>
-asmahead.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+asmahead.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 asmahead.test.js	own-lists.js	<loaded>
 asmahead.test.js	pack.js	<loaded>	packShow	page-shown
 asmahead.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -1277,7 +1277,7 @@ asmaheadonce.test.js	mq/shirt-tie.js	<loaded>
 asmaheadonce.test.js	mq/suit-open.js	<loaded>
 asmaheadonce.test.js	mq/suit.js	<loaded>
 asmaheadonce.test.js	mq/vest.js	<loaded>
-asmaheadonce.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+asmaheadonce.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 asmaheadonce.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 asmaheadonce.test.js	pack.js	<loaded>	packShow	page-shown
 asmaheadonce.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -1387,7 +1387,7 @@ asmcloth.test.js	mq/shirt-tie.js	<loaded>
 asmcloth.test.js	mq/suit-open.js	<loaded>
 asmcloth.test.js	mq/suit.js	<loaded>
 asmcloth.test.js	mq/vest.js	<loaded>
-asmcloth.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+asmcloth.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 asmcloth.test.js	own-lists.js	<loaded>
 asmcloth.test.js	pack.js	<loaded>	packShow	page-shown
 asmcloth.test.js	pattern-read.js	<loaded>
@@ -1485,7 +1485,7 @@ asmcode.test.js	mq/shirt-tie.js	<loaded>
 asmcode.test.js	mq/suit-open.js	<loaded>
 asmcode.test.js	mq/suit.js	<loaded>
 asmcode.test.js	mq/vest.js	<loaded>
-asmcode.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+asmcode.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 asmcode.test.js	own-lists.js	<loaded>
 asmcode.test.js	pack.js	<loaded>	packShow	page-shown
 asmcode.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -1584,7 +1584,7 @@ asmcolor.test.js	mq/shirt-tie.js	<loaded>
 asmcolor.test.js	mq/suit-open.js	<loaded>
 asmcolor.test.js	mq/suit.js	<loaded>
 asmcolor.test.js	mq/vest.js	<loaded>
-asmcolor.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+asmcolor.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 asmcolor.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 asmcolor.test.js	pack.js	<loaded>	packShow	page-shown
 asmcolor.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -1709,7 +1709,7 @@ asmcr.test.js	mq/shirt-tie.js	<loaded>
 asmcr.test.js	mq/suit-open.js	<loaded>
 asmcr.test.js	mq/suit.js	<loaded>
 asmcr.test.js	mq/vest.js	<loaded>
-asmcr.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+asmcr.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 asmcr.test.js	own-lists.js	<loaded>
 asmcr.test.js	pack.js	<loaded>	packShow	page-shown
 asmcr.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -1807,7 +1807,7 @@ asmcu.test.js	mq/shirt-tie.js	<loaded>
 asmcu.test.js	mq/suit-open.js	<loaded>
 asmcu.test.js	mq/suit.js	<loaded>
 asmcu.test.js	mq/vest.js	<loaded>
-asmcu.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+asmcu.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 asmcu.test.js	own-lists.js	<loaded>
 asmcu.test.js	pack.js	<loaded>	packShow	page-shown
 asmcu.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -1906,7 +1906,7 @@ asmgl.test.js	mq/shirt-tie.js	<loaded>
 asmgl.test.js	mq/suit-open.js	<loaded>
 asmgl.test.js	mq/suit.js	<loaded>
 asmgl.test.js	mq/vest.js	<loaded>
-asmgl.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+asmgl.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 asmgl.test.js	own-lists.js	<loaded>
 asmgl.test.js	pack.js	<loaded>	packShow	page-shown
 asmgl.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -1955,7 +1955,6 @@ asmgl.test.js	tests/fixtures/cm/suit/part-lapelL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-lapelR.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveL.png	<any>
 asmgl.test.js	tests/fixtures/cm/suit/part-sleeveR.png	<any>
-asmgl.test.js	tests/webkit.js	<any>
 asmgl.test.js	theme.js	<loaded>	applyTheme
 asmgl.test.js	toast.js	<loaded>
 asmgl.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constroot$today}
@@ -2030,7 +2029,7 @@ asmrelease.test.js	mq/shirt-tie.js	<loaded>
 asmrelease.test.js	mq/suit-open.js	<loaded>
 asmrelease.test.js	mq/suit.js	<loaded>
 asmrelease.test.js	mq/vest.js	<loaded>
-asmrelease.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+asmrelease.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 asmrelease.test.js	own-lists.js	<loaded>
 asmrelease.test.js	pack.js	<loaded>	packShow	page-shown
 asmrelease.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -2141,7 +2140,7 @@ asmroute.test.js	mq/shirt-tie.js	<loaded>
 asmroute.test.js	mq/suit-open.js	<loaded>
 asmroute.test.js	mq/suit.js	<loaded>
 asmroute.test.js	mq/vest.js	<loaded>
-asmroute.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+asmroute.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 asmroute.test.js	own-lists.js	<loaded>	guessPatBase
 asmroute.test.js	pack.js	<loaded>	packShow	page-shown
 asmroute.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -2258,7 +2257,7 @@ asmserverpic.test.js	mq/shirt-tie.js	<loaded>
 asmserverpic.test.js	mq/suit-open.js	<loaded>
 asmserverpic.test.js	mq/suit.js	<loaded>
 asmserverpic.test.js	mq/vest.js	<loaded>
-asmserverpic.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+asmserverpic.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 asmserverpic.test.js	own-lists.js	<loaded>
 asmserverpic.test.js	pack.js	<loaded>	packShow	page-shown
 asmserverpic.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -2369,7 +2368,7 @@ asmstuck.test.js	mq/shirt-tie.js	<loaded>
 asmstuck.test.js	mq/suit-open.js	<loaded>
 asmstuck.test.js	mq/suit.js	<loaded>
 asmstuck.test.js	mq/vest.js	<loaded>
-asmstuck.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+asmstuck.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 asmstuck.test.js	own-lists.js	<loaded>
 asmstuck.test.js	pack.js	<loaded>	packShow	page-shown
 asmstuck.test.js	pattern-read.js	<loaded>
@@ -2467,7 +2466,7 @@ asmtwill.test.js	mq/shirt-tie.js	<loaded>
 asmtwill.test.js	mq/suit-open.js	<loaded>
 asmtwill.test.js	mq/suit.js	<loaded>
 asmtwill.test.js	mq/vest.js	<loaded>
-asmtwill.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+asmtwill.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 asmtwill.test.js	own-lists.js	<loaded>
 asmtwill.test.js	pack.js	<loaded>	packShow	page-shown
 asmtwill.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -2566,7 +2565,7 @@ asmwatch.test.js	mq/shirt-tie.js	<loaded>
 asmwatch.test.js	mq/suit-open.js	<loaded>
 asmwatch.test.js	mq/suit.js	<loaded>
 asmwatch.test.js	mq/vest.js	<loaded>
-asmwatch.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+asmwatch.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 asmwatch.test.js	own-lists.js	<loaded>
 asmwatch.test.js	pack.js	<loaded>	packShow	page-shown
 asmwatch.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -2666,7 +2665,7 @@ asmweave.test.js	mq/shirt-tie.js	<loaded>
 asmweave.test.js	mq/suit-open.js	<loaded>
 asmweave.test.js	mq/suit.js	<loaded>
 asmweave.test.js	mq/vest.js	<loaded>
-asmweave.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+asmweave.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 asmweave.test.js	own-lists.js	<loaded>
 asmweave.test.js	pack.js	<loaded>	packShow	page-shown
 asmweave.test.js	pattern-read.js	<loaded>
@@ -2765,7 +2764,7 @@ assemble.test.js	mq/shirt-tie.js	<loaded>
 assemble.test.js	mq/suit-open.js	<loaded>
 assemble.test.js	mq/suit.js	<loaded>
 assemble.test.js	mq/vest.js	<loaded>
-assemble.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+assemble.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 assemble.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 assemble.test.js	pack.js	<loaded>	packShow	page-shown
 assemble.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -2876,7 +2875,7 @@ back.test.js	mq/shirt-tie.js	<loaded>
 back.test.js	mq/suit-open.js	<loaded>
 back.test.js	mq/suit.js	<loaded>
 back.test.js	mq/vest.js	<loaded>
-back.test.js	nav.js	<loaded>	openAdd	pageBack	pageIn	setPagesOn	show	showWanted	subBack	subOpen	subShown
+back.test.js	nav.js	<loaded>	openAdd	pageBack	pageIn	setPagesOn	settingsClosed	show	showWanted	subBack	subOpen	subShown
 back.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 back.test.js	pack.js	<loaded>	openPack	packBackTap	packCount	packDate	packDays	packDaysTxt	packDefault	packLate	packLight	packList	packLive	packLockState	packMark	packMarkKey	packN	packName	packOpenTap	packProgress	packRead	packShow	packText	packTrip	packUses	packWeekStart	packWornIds	page-shown	renderPack
 back.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -2975,7 +2974,7 @@ backgesture-item.test.js	mq/shirt-tie.js	<loaded>
 backgesture-item.test.js	mq/suit-open.js	<loaded>
 backgesture-item.test.js	mq/suit.js	<loaded>
 backgesture-item.test.js	mq/vest.js	<loaded>
-backgesture-item.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+backgesture-item.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 backgesture-item.test.js	own-lists.js	<loaded>	groupOf
 backgesture-item.test.js	pack.js	<loaded>	packShow	page-shown
 backgesture-item.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -3003,6 +3002,7 @@ backgesture-item.test.js	tests/backgesture-parts.js	<any>
 backgesture-item.test.js	tests/fixedplan.js	<any>
 backgesture-item.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-item.test.js	tests/fixtures/suit-mink.jpg	<loaded>
+backgesture-item.test.js	tests/webkit.js	<any>
 backgesture-item.test.js	theme.js	<loaded>	applyTheme
 backgesture-item.test.js	toast.js	<loaded>	toast	undoHere
 backgesture-item.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -3077,7 +3077,7 @@ backgesture-over.test.js	mq/shirt-tie.js	<loaded>
 backgesture-over.test.js	mq/suit-open.js	<loaded>
 backgesture-over.test.js	mq/suit.js	<loaded>
 backgesture-over.test.js	mq/vest.js	<loaded>
-backgesture-over.test.js	nav.js	<loaded>	openAdd	pageBack	pageIn	setPagesOn	show	showWanted	subBack	subOpen	subShown
+backgesture-over.test.js	nav.js	<loaded>	openAdd	pageBack	pageIn	setPagesOn	settingsClosed	show	showWanted	subBack	subOpen	subShown
 backgesture-over.test.js	own-lists.js	<loaded>	groupOf	renderCustomUI	renderOwnMatUI	settings-draw
 backgesture-over.test.js	pack.js	<loaded>	packShow	page-shown
 backgesture-over.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settable
@@ -3105,6 +3105,7 @@ backgesture-over.test.js	tests/backgesture-parts.js	<any>
 backgesture-over.test.js	tests/fixedplan.js	<any>
 backgesture-over.test.js	tests/fixtures/suit-mink-closeup.png	<loaded>
 backgesture-over.test.js	tests/fixtures/suit-mink.jpg	<loaded>
+backgesture-over.test.js	tests/webkit.js	<any>
 backgesture-over.test.js	theme.js	<loaded>	applyTheme
 backgesture-over.test.js	toast.js	<loaded>	toastDrop	undoOff
 backgesture-over.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -3178,7 +3179,7 @@ backgesture.test.js	mq/shirt-tie.js	<loaded>
 backgesture.test.js	mq/suit-open.js	<loaded>
 backgesture.test.js	mq/suit.js	<loaded>
 backgesture.test.js	mq/vest.js	<loaded>
-backgesture.test.js	nav.js	<loaded>	openAdd	pageBack	pageIn	setPagesOn	show	showWanted	subBack	subOpen	subShown
+backgesture.test.js	nav.js	<loaded>	openAdd	pageBack	pageIn	setPagesOn	settingsClosed	show	showWanted	subBack	subOpen	subShown
 backgesture.test.js	own-lists.js	<loaded>	groupOf	renderCustomUI	renderOwnMatUI	settings-draw
 backgesture.test.js	pack.js	<loaded>	openPack	packBackTap	packCount	packDate	packDays	packDaysTxt	packDefault	packLate	packLight	packList	packLive	packLockState	packMark	packMarkKey	packN	packName	packOpenTap	packProgress	packRead	packShow	packText	packTrip	packUses	packWeekStart	packWornIds	page-shown	renderPack
 backgesture.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settable
@@ -3279,7 +3280,7 @@ backup-storage.test.js	mq/shirt-tie.js	<loaded>
 backup-storage.test.js	mq/suit-open.js	<loaded>
 backup-storage.test.js	mq/suit.js	<loaded>
 backup-storage.test.js	mq/vest.js	<loaded>
-backup-storage.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+backup-storage.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 backup-storage.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 backup-storage.test.js	pack.js	<loaded>	packShow	page-shown
 backup-storage.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -3878,7 +3879,6 @@ bus.test.js	sync.js	<any>
 bus.test.js	tag-request.js	<any>
 bus.test.js	tagging.js	<any>
 bus.test.js	tests/appsrc.js	<any>
-bus.test.js	tests/webkit.js	<any>
 bus.test.js	theme.js	<any>
 bus.test.js	toast.js	<any>
 bus.test.js	today-gestures.js	<any>
@@ -3956,7 +3956,7 @@ calendar.test.js	mq/shirt-tie.js	<loaded>
 calendar.test.js	mq/suit-open.js	<loaded>
 calendar.test.js	mq/suit.js	<loaded>
 calendar.test.js	mq/vest.js	<loaded>
-calendar.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+calendar.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 calendar.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 calendar.test.js	pack.js	<loaded>	packSetTrip	packShow	packTrip	packWrite	page-shown
 calendar.test.js	pattern-read.js	<loaded>
@@ -4062,7 +4062,7 @@ calfeed.test.js	mq/shirt-tie.js	<loaded>
 calfeed.test.js	mq/suit-open.js	<loaded>
 calfeed.test.js	mq/suit.js	<loaded>
 calfeed.test.js	mq/vest.js	<loaded>
-calfeed.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+calfeed.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 calfeed.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 calfeed.test.js	pack.js	<loaded>	packShow	page-shown
 calfeed.test.js	pattern-read.js	<loaded>
@@ -4168,7 +4168,7 @@ camouflage.test.js	mq/shirt-tie.js	<loaded>
 camouflage.test.js	mq/suit-open.js	<loaded>
 camouflage.test.js	mq/suit.js	<loaded>
 camouflage.test.js	mq/vest.js	<loaded>
-camouflage.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+camouflage.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 camouflage.test.js	own-lists.js	<loaded>
 camouflage.test.js	pack.js	<loaded>	packShow	page-shown
 camouflage.test.js	pattern-read.js	<loaded>	camoFromPixels	claudeOnly	motifPat	readable	settSummary	settable
@@ -4271,7 +4271,7 @@ canvasrefuse.test.js	mq/shirt-tie.js	<loaded>
 canvasrefuse.test.js	mq/suit-open.js	<loaded>
 canvasrefuse.test.js	mq/suit.js	<loaded>
 canvasrefuse.test.js	mq/vest.js	<loaded>
-canvasrefuse.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+canvasrefuse.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 canvasrefuse.test.js	own-lists.js	<loaded>
 canvasrefuse.test.js	pack.js	<loaded>	packShow	page-shown
 canvasrefuse.test.js	pattern-read.js	<loaded>	claudeOnly	claudePattern	measureAndApply	missedPattern	motifPat	readPatternWithClaude	readSett	readable	settCanvas	settCheck	settNote	settSummary	settable	specSett	specSett1	texContrast	texFromSpec
@@ -4371,7 +4371,7 @@ cardid.test.js	mq/shirt-tie.js	<loaded>
 cardid.test.js	mq/suit-open.js	<loaded>
 cardid.test.js	mq/suit.js	<loaded>
 cardid.test.js	mq/vest.js	<loaded>
-cardid.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+cardid.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 cardid.test.js	own-lists.js	<loaded>
 cardid.test.js	pack.js	<loaded>	packShow	page-shown
 cardid.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settNote	settable
@@ -4469,7 +4469,7 @@ care.test.js	mq/shirt-tie.js	<loaded>
 care.test.js	mq/suit-open.js	<loaded>
 care.test.js	mq/suit.js	<loaded>
 care.test.js	mq/vest.js	<loaded>
-care.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+care.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 care.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 care.test.js	pack.js	<loaded>	packShow	page-shown
 care.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -4573,7 +4573,7 @@ casual.test.js	mq/shirt-tie.js	<loaded>
 casual.test.js	mq/suit-open.js	<loaded>
 casual.test.js	mq/suit.js	<loaded>
 casual.test.js	mq/vest.js	<loaded>
-casual.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+casual.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 casual.test.js	own-lists.js	<loaded>
 casual.test.js	pack.js	<loaded>	packShow	page-shown
 casual.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settable
@@ -4675,7 +4675,7 @@ claudepattern.test.js	mq/shirt-tie.js	<loaded>
 claudepattern.test.js	mq/suit-open.js	<loaded>
 claudepattern.test.js	mq/suit.js	<loaded>
 claudepattern.test.js	mq/vest.js	<loaded>
-claudepattern.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+claudepattern.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 claudepattern.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 claudepattern.test.js	pack.js	<loaded>	packShow	page-shown
 claudepattern.test.js	pattern-read.js	<loaded>	claudeOnly	claudePattern	cropCanvas	measureAndApply	medLab	missedPattern	motifPat	readPatternWithClaude	readSett	readable	rereadSett	sampleLabs	settCanvas	settCheck	settFrom	settFromRaw	settFromSpec	settNote	settSummary	settable	specSett	specSett1
@@ -4782,7 +4782,7 @@ clock.test.js	mq/shirt-tie.js	<loaded>
 clock.test.js	mq/suit-open.js	<loaded>
 clock.test.js	mq/suit.js	<loaded>
 clock.test.js	mq/vest.js	<loaded>
-clock.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+clock.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 clock.test.js	own-lists.js	<loaded>
 clock.test.js	pack.js	<loaded>	packShow	page-shown
 clock.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -4887,7 +4887,7 @@ closeupread.test.js	mq/shirt-tie.js	<loaded>
 closeupread.test.js	mq/suit-open.js	<loaded>
 closeupread.test.js	mq/suit.js	<loaded>
 closeupread.test.js	mq/vest.js	<loaded>
-closeupread.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+closeupread.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 closeupread.test.js	own-lists.js	<loaded>	addCustomColor	addCustomPattern	cleanLookApp	groupOf	ownColOffer	removeCustom	renderCustomUI
 closeupread.test.js	pack.js	<loaded>	packShow	page-shown
 closeupread.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settable
@@ -4987,7 +4987,7 @@ closeupsheet.test.js	mq/shirt-tie.js	<loaded>
 closeupsheet.test.js	mq/suit-open.js	<loaded>
 closeupsheet.test.js	mq/suit.js	<loaded>
 closeupsheet.test.js	mq/vest.js	<loaded>
-closeupsheet.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+closeupsheet.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 closeupsheet.test.js	own-lists.js	<loaded>	groupOf
 closeupsheet.test.js	pack.js	<loaded>	packShow	page-shown
 closeupsheet.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	settable
@@ -5087,7 +5087,7 @@ cmhandedge.test.js	mq/shirt-tie.js	<loaded>
 cmhandedge.test.js	mq/suit-open.js	<loaded>
 cmhandedge.test.js	mq/suit.js	<loaded>
 cmhandedge.test.js	mq/vest.js	<loaded>
-cmhandedge.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+cmhandedge.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 cmhandedge.test.js	own-lists.js	<loaded>
 cmhandedge.test.js	pack.js	<loaded>	packShow	page-shown
 cmhandedge.test.js	pattern-read.js	<loaded>
@@ -5197,7 +5197,7 @@ cmpmeasure.test.js	mq/shirt-tie.js	<loaded>
 cmpmeasure.test.js	mq/suit-open.js	<loaded>
 cmpmeasure.test.js	mq/suit.js	<loaded>
 cmpmeasure.test.js	mq/vest.js	<loaded>
-cmpmeasure.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+cmpmeasure.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 cmpmeasure.test.js	own-lists.js	<loaded>
 cmpmeasure.test.js	pack.js	<loaded>	packShow	page-shown
 cmpmeasure.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	settable
@@ -5295,7 +5295,7 @@ colnew.test.js	mq/shirt-tie.js	<loaded>
 colnew.test.js	mq/suit-open.js	<loaded>
 colnew.test.js	mq/suit.js	<loaded>
 colnew.test.js	mq/vest.js	<loaded>
-colnew.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+colnew.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 colnew.test.js	own-lists.js	<loaded>	addCustomColor	addCustomPattern	cleanLookApp	groupOf	ownColOffer	renderCustomUI	renderOwnMatUI	settings-draw	typePl
 colnew.test.js	pack.js	<loaded>	packShow	page-shown
 colnew.test.js	pattern-read.js	<loaded>
@@ -5409,7 +5409,7 @@ colors.test.js	mq/shirt-tie.js	<loaded>
 colors.test.js	mq/suit-open.js	<loaded>
 colors.test.js	mq/suit.js	<loaded>
 colors.test.js	mq/vest.js	<loaded>
-colors.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+colors.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 colors.test.js	own-lists.js	<loaded>
 colors.test.js	pack.js	<loaded>	packShow	page-shown
 colors.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settable
@@ -5525,7 +5525,7 @@ colpick.test.js	mq/shirt-tie.js	<loaded>
 colpick.test.js	mq/suit-open.js	<loaded>
 colpick.test.js	mq/suit.js	<loaded>
 colpick.test.js	mq/vest.js	<loaded>
-colpick.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+colpick.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 colpick.test.js	own-lists.js	<loaded>	addCustomColor	addCustomPattern	cleanLookApp	groupOf	ownColOffer	typePl
 colpick.test.js	pack.js	<loaded>	packShow	page-shown
 colpick.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	settable
@@ -5623,7 +5623,7 @@ colpickacts.test.js	mq/shirt-tie.js	<loaded>
 colpickacts.test.js	mq/suit-open.js	<loaded>
 colpickacts.test.js	mq/suit.js	<loaded>
 colpickacts.test.js	mq/vest.js	<loaded>
-colpickacts.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+colpickacts.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 colpickacts.test.js	own-lists.js	<loaded>	addCustomColor	addCustomPattern	cleanLookApp	groupOf	ownColOffer	removeCustom	renderCustomUI	renderOwnMatUI	typePl
 colpickacts.test.js	pack.js	<loaded>	packShow	page-shown
 colpickacts.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	settable
@@ -5723,7 +5723,7 @@ colpickfocus.test.js	mq/shirt-tie.js	<loaded>
 colpickfocus.test.js	mq/suit-open.js	<loaded>
 colpickfocus.test.js	mq/suit.js	<loaded>
 colpickfocus.test.js	mq/vest.js	<loaded>
-colpickfocus.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+colpickfocus.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 colpickfocus.test.js	own-lists.js	<loaded>	addCustomColor	groupOf	renderOwnMatUI
 colpickfocus.test.js	pack.js	<loaded>	packShow	page-shown
 colpickfocus.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	settable
@@ -5822,7 +5822,7 @@ combatboot.test.js	mq/shirt-tie.js	<loaded>
 combatboot.test.js	mq/suit-open.js	<loaded>
 combatboot.test.js	mq/suit.js	<loaded>
 combatboot.test.js	mq/vest.js	<loaded>
-combatboot.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+combatboot.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 combatboot.test.js	own-lists.js	<loaded>
 combatboot.test.js	pack.js	<loaded>	packShow	page-shown
 combatboot.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -5920,7 +5920,7 @@ connkeep.test.js	mq/shirt-tie.js	<loaded>
 connkeep.test.js	mq/suit-open.js	<loaded>
 connkeep.test.js	mq/suit.js	<loaded>
 connkeep.test.js	mq/vest.js	<loaded>
-connkeep.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+connkeep.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 connkeep.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 connkeep.test.js	pack.js	<loaded>	packShow	page-shown
 connkeep.test.js	pattern-read.js	<loaded>
@@ -6019,7 +6019,7 @@ connrole.test.js	mq/shirt-tie.js	<loaded>
 connrole.test.js	mq/suit-open.js	<loaded>
 connrole.test.js	mq/suit.js	<loaded>
 connrole.test.js	mq/vest.js	<loaded>
-connrole.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+connrole.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 connrole.test.js	own-lists.js	<loaded>
 connrole.test.js	pack.js	<loaded>	packShow	page-shown
 connrole.test.js	pattern-read.js	<loaded>
@@ -6117,7 +6117,7 @@ costwear.test.js	mq/shirt-tie.js	<loaded>
 costwear.test.js	mq/suit-open.js	<loaded>
 costwear.test.js	mq/suit.js	<loaded>
 costwear.test.js	mq/vest.js	<loaded>
-costwear.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+costwear.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 costwear.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 costwear.test.js	pack.js	<loaded>	packShow	page-shown
 costwear.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settable
@@ -6172,7 +6172,7 @@ csp.test.js	add-save.js	<any>	<loaded>	cardReady	savedTitle
 csp.test.js	add-sheet.js	<any>	<loaded>	@servenpsid	npsLeave	page-shown	renderAddFor	setAddFor
 csp.test.js	add.js	<any>	<loaded>	@document.addEventListenerclick	addFiles	addNoteText	addPhotosPick	addShowCard	cardPics	renderAdd	wbNote
 csp.test.js	analysis-worker.js	<any>
-csp.test.js	analysis.js	<any>	<loaded>
+csp.test.js	analysis.js	<any>	<loaded>	horizonKeys
 csp.test.js	app.js	<any>	<loaded>	@bserverundefinedaddEventListenerDOMContentLoaded	@constconnRestoreddb.then	@document.addEventListenervisibilitychange	@serveconnrestored	@serveselday	S	addEventListener.once	addTombstones	afterDom	afterScripts	aiLabel	announce	ask	atomic	busyLabelFor	busyStart	cap1	cardAt	cleanStored	cleanStoredSettings	connKeep	connNow	cropSwatch	dbLive	dbOpen	dbRetry	deadCanvas	endedAnswer	fill	fitNav	fitNavSoon	fixupRedraw	focusActs	focusAt	focusFind	focusKey	focusOpens	focusSafe	focusWatch	generateSwatch	keepFocus	loadImg	matTag	metaGet	metaPut	normTag	ownColorsOf	put	renderBusy	setEditing	setSel	setView	shrink	sockTag	texSwatches	tx	txFail	txs	window.fetch
 csp.test.js	apple-touch-icon.png	<loaded>
 csp.test.js	asm-cm-job.js	<any>	<loaded>	asmCmAssets	asmCmBaseJob	asmCmBgGet	asmCmBgKey	asmCmCode	asmCmCodeSig	asmCmGaps	asmCmGeoKeys	asmCmJob	asmCmKindOf	asmCmLightKeys	asmCmMat	asmCmMfKey	asmCmMfNow	asmCmOutKey	asmCmRev	asmCmRoute	asmCmSig	asmCmStamp	asmCmTieTag	asmCmTrSc	asmCmWeaveTag	asmCrTag	asmCrWants	asmCuTag	asmCuWants	asmGapNote	asmHbShirt	asmJfWants	asmJob	asmKindOf	asmLookTag	asmNkJob	asmOcpJob	asmOcpSig	asmPocketJob	asmPocketSig	asmWatchJob	asmWatchPaints	asmWtTag	asmWtWants
@@ -6198,13 +6198,13 @@ csp.test.js	care.js	<any>	<loaded>	careBadge	careBandFit	careBandSoon	careCard	c
 csp.test.js	checklist.js	<any>	<loaded>	accRow	ckChip	ckColSum	ckIsOpen	ckMark	ckSec	ckSure	cmpMount
 csp.test.js	colpick.js	<any>	<loaded>	@backOver	@window.addEventListenerkeydown	EP	closeColPick	colAskHtml	colBackdropTap	colBtn	colBtnTap	colChoices	colFamily	colFieldLabel	colHas	colNear	colNewFor	colPickDraw	colRows	colShows	colSwipe	colTarget	cpAskHint	cpFig	cpSeg	cpSwipe	cpTyping	cpViews	openColPick	patBtn	patTitle	patVar	rdCost	rdCostLine	rdDoneHtml	rdEditorBtn	rdOff	renderColPick
 csp.test.js	core.js	$	<any>	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	COLOR_OPTS	LUM	SLOT_TYPE	accentOf	accentsOf	acctBase	acctCall	acctEsc	applyCustom	askPersist	avgText	calendar	camoPat	careLimit	careTimes	careWashed	careWord	cleanDay	cleanRecord	cleanSettings	cleanState	clipMetal	colBase	colName	colOf	colorDesc	colourNameRe	colsFor	dE00	dayClimate	dayFields	desc	di	dressOut	esc	fitCol	get settings	handPickSlot	hasInviteHash	hasPat	hasVest	hexRgb	holidays	homeAndroid	homeIOS	homeNeeded	inRotation	inviteOver	iosDevice	iosInSafari	isCargo	isConnected	isHandPick	isOcp	isWorkday	isoKey	isoToDate	itemFields	itemName	itemSeason	itemTitle	key	keyDate	keySettings	keySplit	labOf	leatherWord	listAnd	lum	lumCol	matSeason	matTypeOne	matTypeWord	matsFor	mergeSettings	mergeState	metalWord	mix	nameHtml	nameIso	nextStamp	nm	noBidi	normCol	normColFor	normPat	now	nowMs	occOf	offDays	offName	ownMats	paperCloth	patBase	patLabel	patName	patOf	planCol	prettyCols	primaryCol	pw	recClean	recCol	recFree	rgbHex	rgbLab	seasonFit	sentence	setClimate	setClockSkew	setDate	setDay	setDays	setFields	setList	setStr	setWardrobe	setWeather	settingsOpen	shadeName	shoeStyle	shortCol	shortDate	shortDesc	sockPatterned	sockToe	sockToeKey	stampSettings	strapBand	styleWord	subHashes	syncMark	syncUrl	tagTypesNow	takeSettings	thirdOf	titleCls	todayDate	trouserKind	trueToday	typeWord	watchOpts	watchText	wearsJacket	wearsTie	yearDate
-csp.test.js	cost.js	<any>	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	add-card-sections	cpwBlock	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSettingsUI	cpwSum	cpwSym	cpwWashLine	cpwWashed	insights-cards	item-sheet-parts	settings-draw
+csp.test.js	cost.js	<any>	<loaded>	@addEventListenerpagehide	@document.addEventListenervisibilitychange	add-card-sections	cpwBlock	cpwCur	cpwCurOk	cpwFlush	cpwFmt	cpwOf	cpwOut	cpwPriced	cpwQRow	cpwRegion	cpwSettingsUI	cpwStats	cpwStatsCard	cpwSum	cpwSym	cpwWashLine	cpwWashed	insights-cards	item-sheet-parts	settings-draw
 csp.test.js	days.js	<any>	<loaded>	idsOf	lockIds	notAhead	releaseLocks	saveDay
 csp.test.js	daysoff.js	<any>	<loaded>	countryName	countryPick	daysOffListen	fetchHolidays	holPast	holYears	isoDate	nagerKeep	refreshHolidays	renderDaysOffUI	renderFormalUI	setHolidayCountry	settings-draw	settings-summary	start-jobs
 csp.test.js	detect.js	<any>	<loaded>	@	camoLook	lookOf	ownSett	settSig	settToTag	texPat	tieWeave	usableSett
 csp.test.js	draw.js	<any>	<loaded>	blazerFabric	blazerMarks	drawBelt	drawShoePair	drawShoeSide	drawSock	drawWatchTraced	fabricDef	figBg	figCloth	figEyes	figFabric	figKind	figLiftK	figLin	figLum	figStripeLift	figWay	figY	figureSvg	itemThumb	leatherLayers	pantsFabric	pantsMarks	pocketDef	pocketEdge	pocketMarks	shirtFabric	shirtMarks	sockPat	suitFabric	suitMarks	swatchSVG	tieFabric	tieMarks
 csp.test.js	dress.js	<any>	<loaded>	add-card-sections	dressOn	dressSynced	legacyVest	migrateVests	renderDressUI	settings-draw	settings-summary	start-checks	synced
-csp.test.js	fav.js	<any>	<loaded>	@servefavward	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favStrip	favWhy	insights-cards	item-sheet-parts	today-parts
+csp.test.js	fav.js	<any>	<loaded>	@servefavward	favAny	favChip	favItemRow	favLookFrom	favMark	favPillSeg	favStatsCard	favStrip	favWhy	insights-cards	item-sheet-parts	today-parts
 csp.test.js	fields.js	<any>	<loaded>	fldRow	matRow	notesRow	optLab
 csp.test.js	history.js	<any>	<loaded>	canPick	checkPlanRules	closePicker	combatAway	dayActions	dayChanged	dropLearn	handGroup	openPicker	pickPic	planRulesCheck	planRulesLs	planRulesNote	pluralWord	recordDays	renderReplanUI	replanCount	resetCard	setTodayPullWait	settings-rows	slotLabel	start-checks	whenPulled
 csp.test.js	icon-192.png	<loaded>
@@ -6230,7 +6230,7 @@ csp.test.js	mq/shirt-tie.js	<any>	<loaded>
 csp.test.js	mq/suit-open.js	<any>	<loaded>
 csp.test.js	mq/suit.js	<any>	<loaded>
 csp.test.js	mq/vest.js	<any>	<loaded>
-csp.test.js	nav.js	<any>	<loaded>	openAdd	pageBack	pageIn	setPagesOn	show	showWanted	subBack	subOpen
+csp.test.js	nav.js	<any>	<loaded>	openAdd	pageBack	pageIn	setPagesOn	settingsClosed	show	showWanted	subBack	subOpen
 csp.test.js	own-lists.js	<any>	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 csp.test.js	pack.js	<any>	<loaded>	openPack	packCount	packDate	packDays	packDaysTxt	packDefault	packLate	packLight	packList	packLive	packLockState	packMark	packMarkKey	packN	packName	packProgress	packRead	packShow	packText	packTrip	packUses	packWeekStart	packWornIds	page-shown	renderPack
 csp.test.js	pattern-read.js	<any>	<loaded>	claudeOnly	measureAndApply	missedPattern	motifPat	readSett	readable	settCheck	settNote	settable
@@ -6247,13 +6247,13 @@ csp.test.js	shop.js	<any>	<loaded>	@db.then	@db.thenmetaGetshop.then	@document.a
 csp.test.js	snapshots.js	<any>	<loaded>	loadSnapshots	settings-category	snapCount	snapDay	snapLabel	snapsRead
 csp.test.js	srgb.js	<any>	<loaded>	linSrgb	linSrgb8	srgbLin	srgbLin8
 csp.test.js	start.js	<any>	<loaded>	addBackTap	applyStored	loadStored	onSyncedData	retryDone	startChecks	startJobs	startUp	tabTap	wardAddTap
-csp.test.js	stats.js	<any>	<loaded>	@afterScripts	page-shown	statPic	statsMonths	statsPlan	statsPlanned	statsShow	wornDays
-csp.test.js	styles.css	#add	#add #queue .card	#add #queue .card>label select,#item-view .card>label select,#nps-q .card>label select,.colbtn,:is(#item-view,#add) .wfld,.morein>label select	#add #queue .ckfoot .btns .pri	#add #queue .qcard	#add #queue .qcard.ckcard	#add #queue .qcard>.qx	#add .addfor	#add .addlong	#add .addlong .aic	#add .addmore	#add .addpick	#add .addpick .btn	#add .addpick .btn small	#add .addpick .btn span	#add .drop-hint	#add .nps-bar	#add .nps-x	#add .paste-box	#add .paste-box .btn	#add .paste-box input	#busy	#busy.on	#care-in .care-card	#care-in .care-card h3	#col-backdrop	#col-backdrop.on	#col-sheet	#col-sheet .cnown.cnslim	#col-sheet .cpask.cpaskhint	#col-sheet .cpaskhint .cpasktx b,#col-sheet .cpaskhint .cpasktx small	#col-sheet .cpcmp figure	#col-sheet .cpnewl	#col-sheet .cpownh	#col-sheet.on	#col-sheet.on,#rd-sheet.on	#item-backdrop	#item-backdrop.closing	#item-backdrop.on,#item-backdrop.closing	#item-view	#item-view .card.ivsec	#item-view .cropwrap .btns .pri,#add #queue .card .btns .pri,#add .nps-bar .pri	#item-view .ivct .ivrd	#item-view .ivct .wbstcard	#item-view .ivct .wbsteps	#item-view.closing	#item-view.on,#item-view.closing	#kit-backdrop	#kit-backdrop.on	#kitsheet	#kitsheet .btns	#kitsheet .kit-x	#kitsheet .vfile	#kitsheet button.pri	#kitsheet button:not(.linkbtn),#kitsheet label.btn	#kitsheet button[disabled]	#kitsheet.kbs	#kitsheet.kbs .kit-head	#kitsheet.kbs.going	#kitsheet.kbs.on	#kitsheet.on	#mannequin-container	#mbox .mhead	#mbox .mswipe	#mbox.mfast .mpanel,#mbox.mfast .mpanel-in,.mbox.bfast .mpanel,.mbox.bfast .mpanel-in	#mbox.mshut .chev,.mbox.bshut .chev	#modal-backdrop	#modal-backdrop,#settings-modal	#mpanel-in .mc[data-mv]	#multi-status	#multi-status:empty	#nps-backdrop,#shop-backdrop	#nps-backdrop.on,#shop-backdrop.on	#nps-sheet	#nps-sheet .nps-head .aic	#nps-sheet .nps-ht h2	#nps-sheet .nps-ht small	#nps-sheet,#shop-sheet	#pack .pk-card	#pack .pk-card h3	#pack .pk-card h4	#pack .pk-out	#pack .pk-wear	#pack :where(select,input[type=date])	#paste-status:empty	#photos-conn	#photos-conn:empty	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-backdrop.on	#pick-sheet	#pick-sheet .btns	#pick-sheet p	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#pick-sheet.on	#sbox .month-link	#sbox:not(.open) #spanel .mpanel-in	#settings-modal	#settings-modal .cal-btns .cal-ok	#settings-modal .cal-btns .cal-ok,#settings-modal .cal-btns .cal-no	#settings-modal .cpwset .cpwin input[type="text"]	#settings-modal .days	#settings-modal .dtog	#settings-modal .dtog.on	#settings-modal .dtog::after	#settings-modal .fchips:empty	#settings-modal .hlist	#settings-modal .mbox:is(.instant,.bfast) .mpanel-in	#settings-modal .mpanel-in	#settings-modal .mpanel-in::after	#settings-modal .mpanel-in::before	#settings-modal .occadd	#settings-modal .occadd button	#settings-modal .occadd input[type=date],#settings-modal .occadd select	#settings-modal .offadd	#settings-modal .offadd button	#settings-modal .offadd input	#settings-modal .offadd input[type=date]	#settings-modal .offadd input[type=text]	#settings-modal .scat	#settings-modal .scat-head	#settings-modal .scat-head .mltxt b,.slink .mltxt b	#settings-modal .scat-head .mltxt small,.slink .mltxt small	#settings-modal .sgroup:has(>.days)	#settings-modal .srow	#settings-modal .srow select	#settings-modal button.adv-head	#settings-modal button.dress-sw	#settings-modal label.btn	#settings-modal,#setup,#kitsheet	#setup	#setup .su-day	#setup .su-day.on	#setup .su-skip	#setup button	#setup button.pri,.ask-btns button.pri	#setup.on	#shop-sheet	#shop-sheet .btns	#shop-sheet button:where(:not(.pick-x,.shop-toprow,.shop-rechead))	#shop-sheet p	#shop-sheet.on	#spanel .mpanel-in	#stats .shopbtn	#stats .st-wait	#toast	#toast,body.iv-on #toast	#toast.on	#toast:not(.on)	#today	#today .plegend	#today .plegend span	#today .row	#today .row .dot	#today .row>.mut:first-child	#today .wxretry	#undo-fab	#ward-add	#ward-add svg	#wardrobe	#wardrobe .chip	#wardrobe .chip.on	#wardrobe .chip::after	#wardrobe .chips	#wardrobe .gi	#wardrobe .gi img.ph,#wardrobe .gi .giopen .thumb	#wardrobe .grid	#wardrobe .wclear	#wardrobe .wsearch input	#wardrobe .wsort	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	#wardrobe:not([hidden])~#ward-add	*	.about-confirm	.about-fold summary	.about-fold summary::after	.about-note	.about-text	.acct-box .acct-h	.addlong .chev	.addlong-t	.addlong-t b	.addlong-t small	.addpick	.addpick .btn	.addpick .btn small	.addrow	.addrow .chev	.addrow small	.addrow span:first-child	.adv	.adv-head .chev	.adv-in	.adv-in>.sgroup:first-child	.adv-t	.adv-t small	.adv.open .adv-head .chev	.adv.open .adv-in	.aic	.b-good	.b-low,.b-bad	.b-ok	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.btn	.btns	.c-good	.c-low,.c-bad	.c-ok	.cal-banner	.cal-banner .linkbtn	.cal-btns	.cal-conn	.cal-conn .mut	.cal-ev	.cal-ev b	.cal-ev small	.cal-form input[type=url]	.cal-guides button	.cal-howh	.cal-list	.cal-priv	.cal-row	.cal-to	.cap	.card label	.care-acts	.care-acts button	.care-card>.care-row:first-of-type	.care-card>.shelp+.care-row	.care-foot	.care-foot .linkbtn	.care-main	.care-main small	.care-nm	.care-row	.caretag	.chip	.chip.on	.chips	.ck-good	.ck-opt,.ck-todo	.ck-warn	.ckadds	.ckai	.ckb	.ckb .wbst,.ckb .wbstcard	.ckb .wbsteps	.ckb>label	.ckb>label select,.ckb>label>input[type=text]	.ckcheap	.ckchev	.ckchip	.ckcn	.ckfoot	.ckfoot .btns	.ckhd	.ckhd b	.ckhd small	.ckhelp	.ckintro .pair	.ckleft	.ckm	.ckm b	.ckm svg	.ckprog	.ckreadadd .rdcost	.cks	.cks.open>.ckb	.cks.open>.ckh .ckchev	.ckt	.ckt b	.ckt small	.cktrack	.cktrack i	.colbtn	.conn-off-note:empty	.conn-tick	.cpask	.cpasktx	.cpasktx b	.cpasktx small	.cpbar	.cpbar button	.cpbig	.cpcmp	.cpcmp figcaption	.cpcmp figure	.cpdraw,.cpdraw svg	.cpfig .cpdraw	.cpfig .ph.thumb	.cpgrab	.cpgrid	.cph	.cphelp	.cpnm	.cpnow	.cpph	.cpsw	.cptile	.cptile.sel	.cptop	.cpw-h	.cpwbought input	.cpwf	.cpwf label	.cpwin	.cpwin input[type="text"]	.cpwset	.cpwset input[type="number"]	.cpwsym	.custadd	.custadd button	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.day h2 .wx.haspill	.day h2 .wx.haspill .wxc	.day h2 .wx.haspill:has(.wpgrp)	.daygrid	.daygrid .side	.daygrid .stage	.days	.dial	.dial .darc	.dial .dtrack	.dial small	.dial svg	.dial text	.dial.d-good	.dial.d-low,.dial.d-bad	.dialrow	.dot	.dot svg	.dot,.shop-rechead .rec-img .thumb,.shop-toprow .rec-img .thumb,.st-pic,.pick-pic	.dress-row	.dress-row:first-child	.dress-sw i	.dress-sw i::after	.dress-sw.on i	.dress-sw.on i::after	.dress-txt	.dress-txt b	.dress-txt small	.drop-hint	.dtog	.dtog.on	.favhint	.favic	.favsw2	.favsw2::after	.favtog	.favtog-t	.favtog>.favic	.fb-item	.fb-item p	.fb-item small	.fb-list	.fchips	.fedge	.fedge-on	.fedge>i	.fedge>i::before	.fig	.fig .cband	.fig .cband .cdots	.fig .cband .cdots em	.fig .cband .cdots i	.fig .cband .cdots i.on	.fig .cband .crow	.fig .cband .ctxt	.fig .cband .ctxt b	.fig .cband path	.fig .cband svg	.fig .cframe	.fig .swstack	.fig .swstack .ovsw	.fig .swstack .ovsw svg,.fig .swstack .ovsw img	.fig.cb	.fig.cb.care-last,.fig.cb.care-over	.fig.photo	.fig.photo img	.fig>svg	.firstrun	.firstrun h3	.fit.best,.fit.good	.fit.best,.fit.good,.cpd	.fit.ok	.foldbar	.foldbar .fchev	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gi	.gi,.card	.gimeta	.gimeta .gtype	.gimeta b	.giopen	.grid	.hbtns	.hgear	.hlist	.hlist:empty	.hrow	.hrow .hd	.hrow .hn	.hrow input	.hrow.wk	.hrow.wk .hd,.hrow.wk .hn	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.ivbar	.ivbar .ivdone	.ivbar .ivnav	.ivbar,.nps-bar,.su-bar,.kit-bar	.ivbody	.ivcare .btns button	.ivcare .carecount	.ivcare .carecount.due	.ivchev	.ivck .cks .ivcare	.ivck .cks .ivcare h3	.ivcl,.ivcr	.ivcols	.ivdel	.ivdel button	.ivdup	.ivdup button	.ivdup+.ivdel	.ivhead	.ivhead .pcount	.ivhead::before	.ivin	.ivpill	.ivpill.good	.ivpill.warn	.ivpills	.ivrd	.ivrd .ivrdbtn	.ivrot .rotbtn	.ivsec .btns	.ivsec .shelp	.ivsec h3	.ivsum	.ivsumph	.ivsumph .ph.thumb	.ivsumph svg	.ivsumt	.ivt	.ivt .gtype	.ivt h2	.kit-banner .btns button,#pick-next	.kit-bar	.kit-bar .pri	.kit-body	.kit-body p	.kit-grab	.kit-head	.kit-head h2	.kit-head small	.kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar	.kit-hic	.kit-ht	.kit-paste	.kit-paste textarea	.kit-pic	.kit-pic svg	.kit-prog	.kit-start	.kit-tip	.kp-card	.kp-good	.kp-num	.kp-s	.kp-t	.kp-t2	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mbox.blift .bli	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mbox.open .chev	.mbox.open .mpanel	.mbox.open .mpanel-in	.mc	.mc .dn	.mc.rest	.mc.today	.mc.worn	.mdow	.mgrid	.mhead	.mhead h3	.mli	.mli .stack	.mli small	.mlstrip	.mlstrip,.pstrip	.mltxt	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.nps-bar	.nps-body	.nps-grab	.nps-grab,.shop-grab,.kit-grab	.nps-head	.nps-ht	.offadd input[type=date]	.pack-link	.pair	.pair .tagsw .ph.thumb	.pair .tagsw .ph.thumb svg	.pair figcaption	.pair figcaption b	.pair figure	.pair img.ph,.rv .pair img.ph	.paste-box	.paste-box .btn	.paste-box input	.pchip	.pchip svg	.pchip.vest	.phead	.phead .pback	.phead .pcount	.phead h2	.pick-grid	.pick-head	.pick-head b	.pick-it	.pick-it .fit	.pick-it.cur	.pick-nm	.pick-pic	.pick-pic .ph.thumb,.st-pic .ph.thumb	.pick-pic svg	.pick-x	.pk-caps	.pk-count	.pk-dates,.pk-caps	.pk-day	.pk-day:last-child	.pk-dn	.pk-f	.pk-group .pk-line:last-of-type	.pk-h	.pk-help	.pk-line	.pk-nm	.pk-nm small	.pk-note	.pk-stack	.pk-sw	.pk-sw svg	.pk-tick	.pk-tick input	.pk-travel .pk-help	.pk-what	.pk-what b	.pk-what small	.pri	.pstrip	.psub	.rdcost	.rec-img .thumb	.row	.row .mut	.row .mut.none	.row .swap	.row .swap::after	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.rv .thumb	.rv img.ph	.sactions	.sactions:empty	.sbody	.scat-h	.score	.score .srank	.score .srules	.score .ssec	.score .ssec b	.score .swhy	.score .swx	.score.open:not(.instant) .sdb i	.score.open:not(.instant) .sli,.score.open:not(.instant) .sfixbtn	.sdb	.sdb i	.sdh	.sdh b	.sdl	.sdl small	.setup-again	.sfixbtn	.sfixbtn .dot	.sfixbtn .dot>*	.sfixbtn .sfixnm	.sfixbtn b	.sfixbtn b small	.sfoot	.sform	.sform input[type=date]	.sform input[type=text],.sform select	.sform>span	.sgh	.sgh.sgh-first	.sgroup	.sgroup+.srow,.srow:first-child	.sgroup:first-child	.shead	.shead .sdone	.shead h2	.shelp	.shelp:empty	.shop-busy	.shop-busy .st-bar	.shop-busy .st-bar i	.shop-cat	.shop-cat h3	.shop-chev	.shop-foot	.shop-g	.shop-g i	.shop-grab	.shop-lead	.shop-mix	.shop-n	.shop-occ	.shop-occ small,.shop-occ ul	.shop-rec	.shop-rechead	.shop-rechead .rec-img .thumb,.shop-toprow .rec-img .thumb	.shop-rechead .rec-txt	.shop-rechead .rec-txt b	.shop-tag	.shop-tag.gap,.shop-tag.variety	.shop-top	.shop-top li	.shop-top-head	.shop-top-head b	.shop-topnm	.shop-topnm b	.shop-toprow	.shop-toprow .rec-img .thumb	.shop-v	.shop-v.covered	.shop-v.worth	.shopbtn-c	.shopbtn-t	.shopbtn-t b	.shopbtn-t small	.sic	.sicw	.side>.mbox:last-child	.side>.score,.side>.mbox,.side>.dayact,.side>p	.slabel	.slide	.slink	.slink .chev	.slinks	.slinks .slink	.spin	.srl	.srl li	.srl li::before	.srow	.srow select	.srow.stack	.srow.stack input	.srules.ok	.ssec+.sdl	.sswaps	.sswaps .ssec	.st-bar	.st-bar i	.st-pic	.st-pic svg	.stack	.stack.rest	.stage	.stage .firstrun	.su-bar	.su-bar .pri	.su-body	.su-days	.su-group	.su-group:first-child	.su-head	.su-help	.su-in	.su-label	.su-lead	.su-prog	.su-prog i	.su-prog i.on	.su-ttl	.su-ttl h2	.su-ttl small	.sweeks	.sweeks .wn	.sweeks li	.sweeks li.cur	.sweeks li:first-child	.sweeks li>span:last-child	.sweeks small	.swhy::before	.swsplit	.thumb	.thumb svg	.vfile	.vh	.warn	.wbpic i	.wbpic::after	.wbpic::before	.wbstcard .arr	.wbstcard .cam	.wbstcard .eb	.wbstcard .hd	.wbstcard .li	.wbstcard .more	.wbstcard .n	.wbstcard .n b	.wbstcard .ol	.wbstcard .tap	.wbstcard .wbpic.nobox::before,.wbstcard .wbpic.noring i	.wbsteps	.wfind	.wpfav	.wpfav::after	.wpgrp	.wpgrp .wpill	.wpgrp,.lwfav,.favpick,.favmark,.favtog,.favchip,.st-fav	.wpill	.wpill.yes	.wpill::after	.wsearch	.wsicon	.wslide	.wxc.wxlk	.wxl	::placeholder	:focus-visible	:is(#item-view,#add) .ckadds .btn	:is(#item-view,#add) .ckh	:is(#item-view,#add) .cklr	:is(#item-view,#add) .wbstcard	:is(#item-view,#add) .wbstcard .wbpic	:is(#item-view,.wbsteps,#cu-sheet) .wbpic	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#stats) .shopbtn	:is(input:not([type=range],[type=color],[type=checkbox],[type=radio],[type=file],[type=hidden],[type=button],[type=submit]),select,textarea)	:root	:where(#today) .mbox	:where(#today) .mbox.open .mpanel-in	:where(#today) .mltxt b	:where(#today) .mltxt small	:where(#today) .month-link	:where(#today) .mpanel-in	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text]):is(select)	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text],input[type=url],input[type=date],input[type=number])	<loaded>	[hidden]	body	body.busy-on #toast	body.iv-on #toast,body.iv-on #busy	body:not(.iv-on):has(main:not([inert]) #wardrobe:not([hidden])) #toast	button	button,.btn,select,input	button:focus-visible,select:focus-visible,input:focus-visible	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	html.set-lock,html.set-lock body	label:has(>.vfile)	main	main[inert] #wardrobe~#undo-fab,body.iv-on #wardrobe~#undo-fab	main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add	nav	nav button	nav button.on	nav.tab-none::before	nav::before	select,input[type="text"],input[type="range"]
+csp.test.js	stats.js	<any>	<loaded>	@afterScripts	buildStats	groupCol	groupName	page-shown	plannedDays	renderStats	statBar	statDate	statName	statName1	statName2	statPic	statRowsHtml	statTypeRows	statsDays	statsDraw	statsFold	statsMonths	statsPlan	statsPlanned	statsShort	statsShow	statsToggle	wornDays
+csp.test.js	styles.css	#add	#add #queue .card	#add #queue .card>label select,#item-view .card>label select,#nps-q .card>label select,.colbtn,:is(#item-view,#add) .wfld,.morein>label select	#add #queue .ckfoot .btns .pri	#add #queue .qcard	#add #queue .qcard.ckcard	#add #queue .qcard>.qx	#add .addfor	#add .addlong	#add .addlong .aic	#add .addmore	#add .addpick	#add .addpick .btn	#add .addpick .btn small	#add .addpick .btn span	#add .drop-hint	#add .nps-bar	#add .nps-x	#add .paste-box	#add .paste-box .btn	#add .paste-box input	#busy	#busy.on	#care-in .care-card	#care-in .care-card h3	#col-backdrop	#col-backdrop.on	#col-sheet	#col-sheet .cnown.cnslim	#col-sheet .cpask.cpaskhint	#col-sheet .cpaskhint .cpasktx b,#col-sheet .cpaskhint .cpasktx small	#col-sheet .cpcmp figure	#col-sheet .cpnewl	#col-sheet .cpownh	#col-sheet.on	#col-sheet.on,#rd-sheet.on	#item-backdrop	#item-backdrop.closing	#item-backdrop.on,#item-backdrop.closing	#item-view	#item-view .card.ivsec	#item-view .cropwrap .btns .pri,#add #queue .card .btns .pri,#add .nps-bar .pri	#item-view .ivct .ivrd	#item-view .ivct .wbstcard	#item-view .ivct .wbsteps	#item-view.closing	#item-view.on,#item-view.closing	#kit-backdrop	#kit-backdrop.on	#kitsheet	#kitsheet .btns	#kitsheet .kit-x	#kitsheet .vfile	#kitsheet button.pri	#kitsheet button:not(.linkbtn),#kitsheet label.btn	#kitsheet button[disabled]	#kitsheet.kbs	#kitsheet.kbs .kit-head	#kitsheet.kbs.going	#kitsheet.kbs.on	#kitsheet.on	#mannequin-container	#mbox .mhead	#mbox .mswipe	#mbox.mfast .mpanel,#mbox.mfast .mpanel-in,.mbox.bfast .mpanel,.mbox.bfast .mpanel-in	#mbox.mshut .chev,.mbox.bshut .chev	#modal-backdrop	#modal-backdrop,#settings-modal	#mpanel-in .mc[data-mv]	#multi-status	#multi-status:empty	#nps-backdrop,#shop-backdrop	#nps-backdrop.on,#shop-backdrop.on	#nps-sheet	#nps-sheet .nps-head .aic	#nps-sheet .nps-ht h2	#nps-sheet .nps-ht small	#nps-sheet,#shop-sheet	#pack .pk-card	#pack .pk-card h3	#pack .pk-card h4	#pack .pk-out	#pack .pk-wear	#pack :where(select,input[type=date])	#paste-status:empty	#photos-conn	#photos-conn:empty	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-backdrop.on	#pick-sheet	#pick-sheet .btns	#pick-sheet p	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#pick-sheet.on	#sbox .month-link	#sbox:not(.open) #spanel .mpanel-in	#settings-modal	#settings-modal .cal-btns .cal-ok	#settings-modal .cal-btns .cal-ok,#settings-modal .cal-btns .cal-no	#settings-modal .cpwset .cpwin input[type="text"]	#settings-modal .days	#settings-modal .dtog	#settings-modal .dtog.on	#settings-modal .dtog::after	#settings-modal .fchips:empty	#settings-modal .hlist	#settings-modal .mbox:is(.instant,.bfast) .mpanel-in	#settings-modal .mpanel-in	#settings-modal .mpanel-in::after	#settings-modal .mpanel-in::before	#settings-modal .occadd	#settings-modal .occadd button	#settings-modal .occadd input[type=date],#settings-modal .occadd select	#settings-modal .offadd	#settings-modal .offadd button	#settings-modal .offadd input	#settings-modal .offadd input[type=date]	#settings-modal .offadd input[type=text]	#settings-modal .scat	#settings-modal .scat-head	#settings-modal .scat-head .mltxt b,.slink .mltxt b	#settings-modal .scat-head .mltxt small,.slink .mltxt small	#settings-modal .sgroup:has(>.days)	#settings-modal .srow	#settings-modal .srow select	#settings-modal button.adv-head	#settings-modal button.dress-sw	#settings-modal label.btn	#settings-modal,#setup,#kitsheet	#setup	#setup .su-day	#setup .su-day.on	#setup .su-skip	#setup button	#setup button.pri,.ask-btns button.pri	#setup.on	#shop-sheet	#shop-sheet .btns	#shop-sheet button:where(:not(.pick-x,.shop-toprow,.shop-rechead))	#shop-sheet p	#shop-sheet.on	#spanel .mpanel-in	#stats .card	#stats .shopbtn	#stats .st-card h3	#stats .st-tile	#stats .st-tiles	#stats .st-wait	#toast	#toast,body.iv-on #toast	#toast.on	#toast:not(.on)	#today	#today .plegend	#today .plegend span	#today .row	#today .row .dot	#today .row>.mut:first-child	#today .wxretry	#undo-fab	#ward-add	#ward-add svg	#wardrobe	#wardrobe .chip	#wardrobe .chip.on	#wardrobe .chip::after	#wardrobe .chips	#wardrobe .gi	#wardrobe .gi img.ph,#wardrobe .gi .giopen .thumb	#wardrobe .grid	#wardrobe .wclear	#wardrobe .wsearch input	#wardrobe .wsort	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	#wardrobe:not([hidden])~#ward-add	*	.about-confirm	.about-fold summary	.about-fold summary::after	.about-note	.about-text	.acct-box .acct-h	.addlong .chev	.addlong-t	.addlong-t b	.addlong-t small	.addpick	.addpick .btn	.addpick .btn small	.addrow	.addrow .chev	.addrow small	.addrow span:first-child	.adv	.adv-head .chev	.adv-in	.adv-in>.sgroup:first-child	.adv-t	.adv-t small	.adv.open .adv-head .chev	.adv.open .adv-in	.aic	.b-good	.b-low,.b-bad	.b-ok	.bbox	.bbox .rpanel-in	.below	.below .tile	.below .tile .ph.thumb	.below .tile small	.below .tile svg	.btn	.btns	.c-good	.c-low,.c-bad	.c-ok	.cal-banner	.cal-banner .linkbtn	.cal-btns	.cal-conn	.cal-conn .mut	.cal-ev	.cal-ev b	.cal-ev small	.cal-form input[type=url]	.cal-guides button	.cal-howh	.cal-list	.cal-priv	.cal-row	.cal-to	.cap	.card label	.care-acts	.care-acts button	.care-card>.care-row:first-of-type	.care-card>.shelp+.care-row	.care-foot	.care-foot .linkbtn	.care-main	.care-main small	.care-nm	.care-row	.caretag	.chip	.chip.on	.chips	.ck-good	.ck-opt,.ck-todo	.ck-warn	.ckadds	.ckai	.ckb	.ckb .wbst,.ckb .wbstcard	.ckb .wbsteps	.ckb>label	.ckb>label select,.ckb>label>input[type=text]	.ckcheap	.ckchev	.ckchip	.ckcn	.ckfoot	.ckfoot .btns	.ckhd	.ckhd b	.ckhd small	.ckhelp	.ckintro .pair	.ckleft	.ckm	.ckm b	.ckm svg	.ckprog	.ckreadadd .rdcost	.cks	.cks.open>.ckb	.cks.open>.ckh .ckchev	.ckt	.ckt b	.ckt small	.cktrack	.cktrack i	.colbtn	.conn-off-note:empty	.conn-tick	.cpask	.cpasktx	.cpasktx b	.cpasktx small	.cpbar	.cpbar button	.cpbig	.cpcmp	.cpcmp figcaption	.cpcmp figure	.cpdraw,.cpdraw svg	.cpfig .cpdraw	.cpfig .ph.thumb	.cpgrab	.cpgrid	.cph	.cphelp	.cpnm	.cpnow	.cpph	.cpsw	.cptile	.cptile.sel	.cptop	.cpw-h	.cpwbought input	.cpwf	.cpwf label	.cpwin	.cpwin input[type="text"]	.cpwset	.cpwset input[type="number"]	.cpwsym	.custadd	.custadd button	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.day h2 .wx.haspill	.day h2 .wx.haspill .wxc	.day h2 .wx.haspill:has(.wpgrp)	.daygrid	.daygrid .side	.daygrid .stage	.days	.dial	.dial .darc	.dial .dtrack	.dial small	.dial svg	.dial text	.dial.d-good	.dial.d-low,.dial.d-bad	.dialrow	.dot	.dot svg	.dot,.shop-rechead .rec-img .thumb,.shop-toprow .rec-img .thumb,.st-pic,.pick-pic	.dress-row	.dress-row:first-child	.dress-sw i	.dress-sw i::after	.dress-sw.on i	.dress-sw.on i::after	.dress-txt	.dress-txt b	.dress-txt small	.drop-hint	.dtog	.dtog.on	.favhint	.favic	.favsw2	.favsw2::after	.favtog	.favtog-t	.favtog>.favic	.fb-item	.fb-item p	.fb-item small	.fb-list	.fchips	.fedge	.fedge-on	.fedge>i	.fedge>i::before	.fig	.fig .cband	.fig .cband .cdots	.fig .cband .cdots em	.fig .cband .cdots i	.fig .cband .cdots i.on	.fig .cband .crow	.fig .cband .ctxt	.fig .cband .ctxt b	.fig .cband path	.fig .cband svg	.fig .cframe	.fig .swstack	.fig .swstack .ovsw	.fig .swstack .ovsw svg,.fig .swstack .ovsw img	.fig.cb	.fig.cb.care-last,.fig.cb.care-over	.fig.photo	.fig.photo img	.fig>svg	.firstrun	.firstrun h3	.fit.best,.fit.good	.fit.best,.fit.good,.cpd	.fit.ok	.foldbar	.foldbar .fchev	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gi	.gi,.card	.gimeta	.gimeta .gtype	.gimeta b	.giopen	.grid	.hbtns	.hgear	.hlist	.hlist:empty	.hrow	.hrow .hd	.hrow .hn	.hrow input	.hrow.wk	.hrow.wk .hd,.hrow.wk .hn	.ibox	.ibox .list	.ibox .row>.mut:first-child	.ibox .rpanel-in	.ivbar	.ivbar .ivdone	.ivbar .ivnav	.ivbar,.nps-bar,.su-bar,.kit-bar	.ivbody	.ivcare .btns button	.ivcare .carecount	.ivcare .carecount.due	.ivchev	.ivck .cks .ivcare	.ivck .cks .ivcare h3	.ivcl,.ivcr	.ivcols	.ivdel	.ivdel button	.ivdup	.ivdup button	.ivdup+.ivdel	.ivhead	.ivhead .pcount	.ivhead::before	.ivin	.ivpill	.ivpill.good	.ivpill.warn	.ivpills	.ivrd	.ivrd .ivrdbtn	.ivrot .rotbtn	.ivsec .btns	.ivsec .shelp	.ivsec h3	.ivsum	.ivsumph	.ivsumph .ph.thumb	.ivsumph svg	.ivsumt	.ivt	.ivt .gtype	.ivt h2	.kit-banner .btns button,#pick-next	.kit-bar	.kit-bar .pri	.kit-body	.kit-body p	.kit-grab	.kit-head	.kit-head h2	.kit-head small	.kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar	.kit-hic	.kit-ht	.kit-paste	.kit-paste textarea	.kit-pic	.kit-pic svg	.kit-prog	.kit-start	.kit-tip	.kp-card	.kp-good	.kp-num	.kp-s	.kp-t	.kp-t2	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.list	.list .ritem	.list .ritem:last-child	.list .ritem>.row	.mbox	.mbox .chev	.mbox.blift .bli	.mbox.instant .mpanel,.mbox.instant .mpanel-in,.mbox.instant .chev	.mbox.open .chev	.mbox.open .mpanel	.mbox.open .mpanel-in	.mc	.mc .dn	.mc.rest	.mc.today	.mc.worn	.mdow	.mgrid	.mhead	.mhead h3	.mli	.mli .stack	.mli small	.mlstrip	.mlstrip,.pstrip	.mltxt	.month-link	.month-link .chev	.mpanel	.mpanel-in	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.nps-bar	.nps-body	.nps-grab	.nps-grab,.shop-grab,.kit-grab	.nps-head	.nps-ht	.offadd input[type=date]	.pack-link	.pair	.pair .tagsw .ph.thumb	.pair .tagsw .ph.thumb svg	.pair figcaption	.pair figcaption b	.pair figure	.pair img.ph,.rv .pair img.ph	.paste-box	.paste-box .btn	.paste-box input	.pchip	.pchip svg	.pchip.vest	.phead	.phead .pback	.phead .pcount	.phead h2	.pick-grid	.pick-head	.pick-head b	.pick-it	.pick-it .fit	.pick-it.cur	.pick-nm	.pick-pic	.pick-pic .ph.thumb,.st-pic .ph.thumb	.pick-pic svg	.pick-x	.pk-caps	.pk-count	.pk-dates,.pk-caps	.pk-day	.pk-day:last-child	.pk-dn	.pk-f	.pk-group .pk-line:last-of-type	.pk-h	.pk-help	.pk-line	.pk-nm	.pk-nm small	.pk-note	.pk-stack	.pk-sw	.pk-sw svg	.pk-tick	.pk-tick input	.pk-travel .pk-help	.pk-what	.pk-what b	.pk-what small	.pri	.pstrip	.psub	.rdcost	.rec-img .thumb	.row	.row .mut	.row .mut.none	.row .swap	.row .swap::after	.rowtap	.rowtap .cap	.rpanel	.rpanel-in	.rv .thumb	.rv img.ph	.sactions	.sactions:empty	.sbody	.scat-h	.score	.score .srank	.score .srules	.score .ssec	.score .ssec b	.score .swhy	.score .swx	.score.open:not(.instant) .sdb i	.score.open:not(.instant) .sli,.score.open:not(.instant) .sfixbtn	.sdb	.sdb i	.sdh	.sdh b	.sdl	.sdl small	.setup-again	.sfixbtn	.sfixbtn .dot	.sfixbtn .dot>*	.sfixbtn .sfixnm	.sfixbtn b	.sfixbtn b small	.sfoot	.sform	.sform input[type=date]	.sform input[type=text],.sform select	.sform>span	.sgh	.sgh.sgh-first	.sgroup	.sgroup+.srow,.srow:first-child	.sgroup:first-child	.shead	.shead .sdone	.shead h2	.shelp	.shelp:empty	.shop-busy	.shop-busy .st-bar	.shop-busy .st-bar i	.shop-cat	.shop-cat h3	.shop-chev	.shop-foot	.shop-g	.shop-g i	.shop-grab	.shop-lead	.shop-mix	.shop-n	.shop-occ	.shop-occ small,.shop-occ ul	.shop-rec	.shop-rechead	.shop-rechead .rec-img .thumb,.shop-toprow .rec-img .thumb	.shop-rechead .rec-txt	.shop-rechead .rec-txt b	.shop-tag	.shop-tag.gap,.shop-tag.variety	.shop-top	.shop-top li	.shop-top-head	.shop-top-head b	.shop-topnm	.shop-topnm b	.shop-toprow	.shop-toprow .rec-img .thumb	.shop-v	.shop-v.covered	.shop-v.worth	.shopbtn-c	.shopbtn-t	.shopbtn-t b	.shopbtn-t small	.sic	.sicw	.side>.mbox:last-child	.side>.score,.side>.mbox,.side>.dayact,.side>p	.slabel	.slide	.slink	.slink .chev	.slinks	.slinks .slink	.spin	.srl	.srl li	.srl li::before	.srow	.srow select	.srow.stack	.srow.stack input	.srules.ok	.ssec+.sdl	.sswaps	.sswaps .ssec	.st-bar	.st-bar i	.st-bar.p i	.st-bar.w i	.st-bars	.st-bars .st-bar	.st-card h3	.st-card>p	.st-col	.st-col i	.st-col i.good	.st-dot	.st-key	.st-key.p	.st-key.w	.st-main	.st-main small	.st-mix	.st-mixrow	.st-mixrow small	.st-nm	.st-pair	.st-pair .dot svg	.st-pair .st-nm	.st-pic	.st-pic svg	.st-row	.st-tile	.st-tile b	.st-tile small	.st-tiles	.st-trend	.st-type	.st-type summary	.st-type summary b	.st-type summary::after	.st-type[open] summary::after	.st-wk	.st-wk b	.st-wk small	.stack	.stack.rest	.stage	.stage .firstrun	.su-bar	.su-bar .pri	.su-body	.su-days	.su-group	.su-group:first-child	.su-head	.su-help	.su-in	.su-label	.su-lead	.su-prog	.su-prog i	.su-prog i.on	.su-ttl	.su-ttl h2	.su-ttl small	.sweeks	.sweeks .wn	.sweeks li	.sweeks li.cur	.sweeks li:first-child	.sweeks li>span:last-child	.sweeks small	.swhy::before	.swsplit	.thumb	.thumb svg	.vfile	.vh	.warn	.wbpic i	.wbpic::after	.wbpic::before	.wbstcard .arr	.wbstcard .cam	.wbstcard .eb	.wbstcard .hd	.wbstcard .li	.wbstcard .more	.wbstcard .n	.wbstcard .n b	.wbstcard .ol	.wbstcard .tap	.wbstcard .wbpic.nobox::before,.wbstcard .wbpic.noring i	.wbsteps	.wfind	.wpfav	.wpfav::after	.wpgrp	.wpgrp .wpill	.wpgrp,.lwfav,.favpick,.favmark,.favtog,.favchip,.st-fav	.wpill	.wpill.yes	.wpill::after	.wsearch	.wsicon	.wslide	.wxc.wxlk	.wxl	::placeholder	:focus-visible	:is(#item-view,#add) .ckadds .btn	:is(#item-view,#add) .ckh	:is(#item-view,#add) .cklr	:is(#item-view,#add) .wbstcard	:is(#item-view,#add) .wbstcard .wbpic	:is(#item-view,.wbsteps,#cu-sheet) .wbpic	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(#wardrobe,#stats) .shopbtn	:is(input:not([type=range],[type=color],[type=checkbox],[type=radio],[type=file],[type=hidden],[type=button],[type=submit]),select,textarea)	:root	:where(#today) .mbox	:where(#today) .mbox.open .mpanel-in	:where(#today) .mltxt b	:where(#today) .mltxt small	:where(#today) .month-link	:where(#today) .mpanel-in	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).danger	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text]):is(select)	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text],input[type=url],input[type=date],input[type=number])	<loaded>	[hidden]	body	body.busy-on #toast	body.iv-on #toast,body.iv-on #busy	body:not(.iv-on):has(main:not([inert]) #wardrobe:not([hidden])) #toast	button	button,.btn,select,input	button:focus-visible,select:focus-visible,input:focus-visible	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	html.set-lock,html.set-lock body	label:has(>.vfile)	main	main[inert] #wardrobe~#undo-fab,body.iv-on #wardrobe~#undo-fab	main[inert] #wardrobe~#ward-add,body.iv-on #wardrobe~#ward-add	nav	nav button	nav button.on	nav.tab-none::before	nav::before	select,input[type="text"],input[type="range"]
 csp.test.js	sw.js	<any>
 csp.test.js	sync-photos.js	<any>	<loaded>	isPh	phBatch	phIn	phMap	phOut	phStrings
 csp.test.js	sync-status.js	<any>	<loaded>	@onbackupchanged	settings-open	showSyncStatus
 csp.test.js	sync.js	<any>	<loaded>	@connRestored.then	adoptBackupSettings	afterPull	applyMerged	backedUpWords	clockFix	clockLearn	clockTell	clockText	connection-saved	localState	pullDone	pulledYet	restoreDone	restoreWanted	scheduleSync	setSyncMark	setSyncStatus	settings-rows	settings-saved	syncJoinAt	syncJoinMark	syncLaterRun	syncLite	syncNeedsPull	syncNow	syncNowTap	syncOnce	syncPaused	syncRedraw	syncSaved	syncSettingsRedraw	syncTap	syncWaiting	synced
-csp.test.js	tag-request.js	<any>	<loaded>	aiFields	customForTag	describeEstimate	insights-cards	ownMatsForTag	readEstimate	tagExtras	tagFixes	visTok
+csp.test.js	tag-request.js	<any>	<loaded>	aiFields	customForTag	describeEstimate	insights-cards	ownMatsForTag	readEstimate	tagExtras	tagFixes	tagStatsCard	visTok
 csp.test.js	tagging.js	<any>	<loaded>	confTxt	tagNotes	takeExtras	takeMaterial
 csp.test.js	tests/fixtures/cm/shirt-open/mask-background.png	<any>
 csp.test.js	tests/fixtures/cm/shirt-open/mask-belt.png	<any>
@@ -6403,7 +6403,7 @@ daysoff.test.js	mq/shirt-tie.js	<loaded>
 daysoff.test.js	mq/suit-open.js	<loaded>
 daysoff.test.js	mq/suit.js	<loaded>
 daysoff.test.js	mq/vest.js	<loaded>
-daysoff.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+daysoff.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 daysoff.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 daysoff.test.js	pack.js	<loaded>	packShow	page-shown
 daysoff.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -6558,6 +6558,7 @@ deps.test.js	tagging.js	<any>
 deps.test.js	tests/deps.json	<any>
 deps.test.js	tests/modscope.js	<any>
 deps.test.js	tests/scriptlist.js	<any>
+deps.test.js	tests/webkit.js	<any>
 deps.test.js	theme.js	<any>
 deps.test.js	toast.js	<any>
 deps.test.js	today-gestures.js	<any>
@@ -6641,7 +6642,7 @@ drawnonly.test.js	mq/shirt-tie.js	<loaded>
 drawnonly.test.js	mq/suit-open.js	<loaded>
 drawnonly.test.js	mq/suit.js	<loaded>
 drawnonly.test.js	mq/vest.js	<loaded>
-drawnonly.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+drawnonly.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 drawnonly.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 drawnonly.test.js	pack.js	<loaded>	packShow	page-shown
 drawnonly.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -6758,7 +6759,7 @@ dress.test.js	mq/shirt-tie.js	<loaded>
 dress.test.js	mq/suit-open.js	<loaded>
 dress.test.js	mq/suit.js	<loaded>
 dress.test.js	mq/vest.js	<loaded>
-dress.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+dress.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 dress.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 dress.test.js	pack.js	<loaded>	packShow	page-shown
 dress.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -6861,7 +6862,7 @@ editorrework.test.js	mq/shirt-tie.js	<loaded>
 editorrework.test.js	mq/suit-open.js	<loaded>
 editorrework.test.js	mq/suit.js	<loaded>
 editorrework.test.js	mq/vest.js	<loaded>
-editorrework.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+editorrework.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 editorrework.test.js	own-lists.js	<loaded>	groupOf
 editorrework.test.js	pack.js	<loaded>	packShow	page-shown
 editorrework.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	settable
@@ -6962,7 +6963,7 @@ editphotosb.test.js	mq/shirt-tie.js	<loaded>
 editphotosb.test.js	mq/suit-open.js	<loaded>
 editphotosb.test.js	mq/suit.js	<loaded>
 editphotosb.test.js	mq/vest.js	<loaded>
-editphotosb.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+editphotosb.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 editphotosb.test.js	own-lists.js	<loaded>
 editphotosb.test.js	pack.js	<loaded>	packShow	page-shown
 editphotosb.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	settable
@@ -7062,7 +7063,7 @@ errnet.test.js	mq/shirt-tie.js	<loaded>
 errnet.test.js	mq/suit-open.js	<loaded>
 errnet.test.js	mq/suit.js	<loaded>
 errnet.test.js	mq/vest.js	<loaded>
-errnet.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+errnet.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 errnet.test.js	own-lists.js	<loaded>
 errnet.test.js	pack.js	<loaded>	packShow	page-shown
 errnet.test.js	pattern-read.js	<loaded>
@@ -7160,7 +7161,7 @@ errreport.test.js	mq/shirt-tie.js	<loaded>
 errreport.test.js	mq/suit-open.js	<loaded>
 errreport.test.js	mq/suit.js	<loaded>
 errreport.test.js	mq/vest.js	<loaded>
-errreport.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+errreport.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 errreport.test.js	own-lists.js	<loaded>
 errreport.test.js	pack.js	<loaded>	packShow	page-shown
 errreport.test.js	pattern-read.js	<loaded>
@@ -7262,7 +7263,7 @@ favorites.test.js	mq/shirt-tie.js	<loaded>
 favorites.test.js	mq/suit-open.js	<loaded>
 favorites.test.js	mq/suit.js	<loaded>
 favorites.test.js	mq/vest.js	<loaded>
-favorites.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+favorites.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 favorites.test.js	own-lists.js	<loaded>
 favorites.test.js	pack.js	<loaded>	packShow	page-shown
 favorites.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -7360,7 +7361,7 @@ favplan.test.js	mq/shirt-tie.js	<loaded>
 favplan.test.js	mq/suit-open.js	<loaded>
 favplan.test.js	mq/suit.js	<loaded>
 favplan.test.js	mq/vest.js	<loaded>
-favplan.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+favplan.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 favplan.test.js	own-lists.js	<loaded>
 favplan.test.js	pack.js	<loaded>	packShow	page-shown
 favplan.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -7463,7 +7464,7 @@ fieldmerge.test.js	mq/shirt-tie.js	<loaded>
 fieldmerge.test.js	mq/suit-open.js	<loaded>
 fieldmerge.test.js	mq/suit.js	<loaded>
 fieldmerge.test.js	mq/vest.js	<loaded>
-fieldmerge.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+fieldmerge.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 fieldmerge.test.js	own-lists.js	<loaded>
 fieldmerge.test.js	pack.js	<loaded>	packShow	page-shown
 fieldmerge.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	settable
@@ -7569,7 +7570,7 @@ figure.test.js	mq/shirt-tie.js	<loaded>
 figure.test.js	mq/suit-open.js	<loaded>
 figure.test.js	mq/suit.js	<loaded>
 figure.test.js	mq/vest.js	<loaded>
-figure.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+figure.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 figure.test.js	own-lists.js	<loaded>
 figure.test.js	pack.js	<loaded>	packShow	page-shown
 figure.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -7669,7 +7670,7 @@ folds.test.js	mq/shirt-tie.js	<loaded>
 folds.test.js	mq/suit-open.js	<loaded>
 folds.test.js	mq/suit.js	<loaded>
 folds.test.js	mq/vest.js	<loaded>
-folds.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+folds.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 folds.test.js	own-lists.js	<loaded>
 folds.test.js	pack.js	<loaded>	packShow	page-shown
 folds.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -7767,7 +7768,7 @@ freshrest.test.js	mq/shirt-tie.js	<loaded>
 freshrest.test.js	mq/suit-open.js	<loaded>
 freshrest.test.js	mq/suit.js	<loaded>
 freshrest.test.js	mq/vest.js	<loaded>
-freshrest.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+freshrest.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 freshrest.test.js	own-lists.js	<loaded>
 freshrest.test.js	pack.js	<loaded>	packShow	page-shown
 freshrest.test.js	pattern-read.js	<loaded>
@@ -7864,7 +7865,7 @@ garmentdraw.test.js	mq/shirt-tie.js	<loaded>
 garmentdraw.test.js	mq/suit-open.js	<loaded>
 garmentdraw.test.js	mq/suit.js	<loaded>
 garmentdraw.test.js	mq/vest.js	<loaded>
-garmentdraw.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+garmentdraw.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 garmentdraw.test.js	own-lists.js	<loaded>
 garmentdraw.test.js	pack.js	<loaded>	packShow	page-shown
 garmentdraw.test.js	pattern-read.js	<loaded>
@@ -7964,7 +7965,7 @@ garmentpaint.test.js	mq/shirt-tie.js	<loaded>
 garmentpaint.test.js	mq/suit-open.js	<loaded>
 garmentpaint.test.js	mq/suit.js	<loaded>
 garmentpaint.test.js	mq/vest.js	<loaded>
-garmentpaint.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+garmentpaint.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 garmentpaint.test.js	own-lists.js	<loaded>
 garmentpaint.test.js	pack.js	<loaded>	packShow	page-shown
 garmentpaint.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -8185,7 +8186,7 @@ geomaps.test.js	mq/shirt-tie.js	<loaded>
 geomaps.test.js	mq/suit-open.js	<loaded>
 geomaps.test.js	mq/suit.js	<loaded>
 geomaps.test.js	mq/vest.js	<loaded>
-geomaps.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+geomaps.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 geomaps.test.js	own-lists.js	<loaded>
 geomaps.test.js	pack.js	<loaded>	packShow	page-shown
 geomaps.test.js	pattern-read.js	<loaded>
@@ -8382,7 +8383,7 @@ handpick.test.js	mq/shirt-tie.js	<loaded>
 handpick.test.js	mq/suit-open.js	<loaded>
 handpick.test.js	mq/suit.js	<loaded>
 handpick.test.js	mq/vest.js	<loaded>
-handpick.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+handpick.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 handpick.test.js	own-lists.js	<loaded>
 handpick.test.js	pack.js	<loaded>	packShow	page-shown
 handpick.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -8479,7 +8480,7 @@ hbshirt.test.js	mq/shirt-tie.js	<loaded>
 hbshirt.test.js	mq/suit-open.js	<loaded>
 hbshirt.test.js	mq/suit.js	<loaded>
 hbshirt.test.js	mq/vest.js	<loaded>
-hbshirt.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+hbshirt.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 hbshirt.test.js	own-lists.js	<loaded>
 hbshirt.test.js	pack.js	<loaded>	packShow	page-shown
 hbshirt.test.js	pattern-read.js	<loaded>
@@ -8577,7 +8578,7 @@ hbswatch.test.js	mq/shirt-tie.js	<loaded>
 hbswatch.test.js	mq/suit-open.js	<loaded>
 hbswatch.test.js	mq/suit.js	<loaded>
 hbswatch.test.js	mq/vest.js	<loaded>
-hbswatch.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+hbswatch.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 hbswatch.test.js	own-lists.js	<loaded>
 hbswatch.test.js	pack.js	<loaded>	packShow	page-shown
 hbswatch.test.js	pattern-read.js	<loaded>
@@ -8675,7 +8676,7 @@ herringbone.test.js	mq/shirt-tie.js	<loaded>
 herringbone.test.js	mq/suit-open.js	<loaded>
 herringbone.test.js	mq/suit.js	<loaded>
 herringbone.test.js	mq/vest.js	<loaded>
-herringbone.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+herringbone.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 herringbone.test.js	own-lists.js	<loaded>
 herringbone.test.js	pack.js	<loaded>	packShow	page-shown
 herringbone.test.js	pattern-read.js	<loaded>
@@ -8791,7 +8792,7 @@ history.test.js	mq/shirt-tie.js	<loaded>
 history.test.js	mq/suit-open.js	<loaded>
 history.test.js	mq/suit.js	<loaded>
 history.test.js	mq/vest.js	<loaded>
-history.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+history.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 history.test.js	own-lists.js	<loaded>
 history.test.js	pack.js	<loaded>	packShow	page-shown
 history.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -8890,7 +8891,7 @@ homescreen.test.js	mq/shirt-tie.js	<loaded>
 homescreen.test.js	mq/suit-open.js	<loaded>
 homescreen.test.js	mq/suit.js	<loaded>
 homescreen.test.js	mq/vest.js	<loaded>
-homescreen.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+homescreen.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 homescreen.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 homescreen.test.js	pack.js	<loaded>	packShow	page-shown
 homescreen.test.js	pattern-read.js	<loaded>
@@ -8989,7 +8990,7 @@ impact.test.js	mq/shirt-tie.js	<loaded>
 impact.test.js	mq/suit-open.js	<loaded>
 impact.test.js	mq/suit.js	<loaded>
 impact.test.js	mq/vest.js	<loaded>
-impact.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+impact.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 impact.test.js	own-lists.js	<loaded>
 impact.test.js	pack.js	<loaded>	packShow	page-shown
 impact.test.js	pattern-read.js	<loaded>
@@ -9191,7 +9192,7 @@ invite.test.js	mq/shirt-tie.js	<loaded>
 invite.test.js	mq/suit-open.js	<loaded>
 invite.test.js	mq/suit.js	<loaded>
 invite.test.js	mq/vest.js	<loaded>
-invite.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+invite.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 invite.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 invite.test.js	pack.js	<loaded>	packShow	page-shown
 invite.test.js	pattern-read.js	<loaded>
@@ -9296,7 +9297,7 @@ itempics.test.js	mq/shirt-tie.js	<loaded>
 itempics.test.js	mq/suit-open.js	<loaded>
 itempics.test.js	mq/suit.js	<loaded>
 itempics.test.js	mq/vest.js	<loaded>
-itempics.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+itempics.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 itempics.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 itempics.test.js	pack.js	<loaded>	packShow	page-shown
 itempics.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -9401,7 +9402,7 @@ itemredesign.test.js	mq/shirt-tie.js	<loaded>
 itemredesign.test.js	mq/suit-open.js	<loaded>
 itemredesign.test.js	mq/suit.js	<loaded>
 itemredesign.test.js	mq/vest.js	<loaded>
-itemredesign.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+itemredesign.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 itemredesign.test.js	own-lists.js	<loaded>
 itemredesign.test.js	pack.js	<loaded>	packShow	page-shown
 itemredesign.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settNote	settable
@@ -9501,7 +9502,7 @@ itemsheet.test.js	mq/shirt-tie.js	<loaded>
 itemsheet.test.js	mq/suit-open.js	<loaded>
 itemsheet.test.js	mq/suit.js	<loaded>
 itemsheet.test.js	mq/vest.js	<loaded>
-itemsheet.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+itemsheet.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 itemsheet.test.js	own-lists.js	<loaded>	addCustomColor	groupOf	ownColOffer	typePl
 itemsheet.test.js	pack.js	<loaded>	packShow	page-shown
 itemsheet.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -9599,7 +9600,7 @@ jacketcolour.test.js	mq/shirt-tie.js	<loaded>
 jacketcolour.test.js	mq/suit-open.js	<loaded>
 jacketcolour.test.js	mq/suit.js	<loaded>
 jacketcolour.test.js	mq/vest.js	<loaded>
-jacketcolour.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+jacketcolour.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 jacketcolour.test.js	own-lists.js	<loaded>
 jacketcolour.test.js	pack.js	<loaded>	packShow	page-shown
 jacketcolour.test.js	pattern-read.js	<loaded>
@@ -9697,7 +9698,7 @@ keptphotos.test.js	mq/shirt-tie.js	<loaded>
 keptphotos.test.js	mq/suit-open.js	<loaded>
 keptphotos.test.js	mq/suit.js	<loaded>
 keptphotos.test.js	mq/vest.js	<loaded>
-keptphotos.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+keptphotos.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 keptphotos.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 keptphotos.test.js	pack.js	<loaded>	packShow	page-shown
 keptphotos.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -9803,7 +9804,7 @@ kit.test.js	mq/shirt-tie.js	<loaded>
 kit.test.js	mq/suit-open.js	<loaded>
 kit.test.js	mq/suit.js	<loaded>
 kit.test.js	mq/vest.js	<loaded>
-kit.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+kit.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 kit.test.js	own-lists.js	<loaded>
 kit.test.js	pack.js	<loaded>	packShow	page-shown
 kit.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -9901,7 +9902,7 @@ kitsetup-taps.test.js	mq/shirt-tie.js	<loaded>
 kitsetup-taps.test.js	mq/suit-open.js	<loaded>
 kitsetup-taps.test.js	mq/suit.js	<loaded>
 kitsetup-taps.test.js	mq/vest.js	<loaded>
-kitsetup-taps.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+kitsetup-taps.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 kitsetup-taps.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 kitsetup-taps.test.js	pack.js	<loaded>	packShow	page-shown
 kitsetup-taps.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -10012,7 +10013,7 @@ lookbeta.test.js	mq/shirt-tie.js	<loaded>
 lookbeta.test.js	mq/suit-open.js	<loaded>
 lookbeta.test.js	mq/suit.js	<loaded>
 lookbeta.test.js	mq/vest.js	<loaded>
-lookbeta.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+lookbeta.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 lookbeta.test.js	own-lists.js	<loaded>	addCustomColor	addCustomPattern	addOwnMaterial	cleanLookApp	groupOf	ownColOffer	renderCustomUI	renderOwnMatUI	settings-draw
 lookbeta.test.js	pack.js	<loaded>	packShow	page-shown
 lookbeta.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settNote	settable
@@ -10110,7 +10111,7 @@ lookplan.test.js	mq/shirt-tie.js	<loaded>
 lookplan.test.js	mq/suit-open.js	<loaded>
 lookplan.test.js	mq/suit.js	<loaded>
 lookplan.test.js	mq/vest.js	<loaded>
-lookplan.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+lookplan.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 lookplan.test.js	own-lists.js	<loaded>
 lookplan.test.js	pack.js	<loaded>	packShow	page-shown
 lookplan.test.js	pattern-read.js	<loaded>
@@ -10215,7 +10216,7 @@ mannequin.test.js	mq/shirt-tie.js	<any>	<loaded>
 mannequin.test.js	mq/suit-open.js	<any>	<loaded>
 mannequin.test.js	mq/suit.js	<any>	<loaded>
 mannequin.test.js	mq/vest.js	<any>	<loaded>
-mannequin.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+mannequin.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 mannequin.test.js	own-lists.js	<loaded>
 mannequin.test.js	pack.js	<loaded>	packShow	page-shown
 mannequin.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -10315,7 +10316,7 @@ masterspeed.test.js	mq/shirt-tie.js	<loaded>
 masterspeed.test.js	mq/suit-open.js	<loaded>
 masterspeed.test.js	mq/suit.js	<loaded>
 masterspeed.test.js	mq/vest.js	<loaded>
-masterspeed.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+masterspeed.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 masterspeed.test.js	own-lists.js	<loaded>
 masterspeed.test.js	pack.js	<loaded>	packShow	page-shown
 masterspeed.test.js	pattern-read.js	<loaded>
@@ -10430,7 +10431,7 @@ materials.test.js	mq/shirt-tie.js	<loaded>
 materials.test.js	mq/suit-open.js	<loaded>
 materials.test.js	mq/suit.js	<loaded>
 materials.test.js	mq/vest.js	<loaded>
-materials.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+materials.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 materials.test.js	own-lists.js	<loaded>	addCustomColor	groupOf	ownColOffer	removeCustom	renderCustomUI
 materials.test.js	pack.js	<loaded>	packShow	page-shown
 materials.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settable
@@ -10528,7 +10529,7 @@ measure.test.js	mq/shirt-tie.js	<loaded>
 measure.test.js	mq/suit-open.js	<loaded>
 measure.test.js	mq/suit.js	<loaded>
 measure.test.js	mq/vest.js	<loaded>
-measure.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+measure.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 measure.test.js	own-lists.js	<loaded>
 measure.test.js	pack.js	<loaded>	packShow	page-shown
 measure.test.js	pattern-read.js	<loaded>	claudeOnly	claudePattern	missedPattern	motifPat	readSett	readable	settCanvas	settCheck	settFrom	settFromRaw	settNote	settable
@@ -10685,7 +10686,6 @@ modload.test.js	sync.js	<any>	<loaded>	@addEventListenerpagehide	@connRestored.t
 modload.test.js	tag-request.js	<any>	<loaded>	insights-cards	tagStatsCard
 modload.test.js	tagging.js	<any>	<loaded>
 modload.test.js	tests/load-contract.json	<any>
-modload.test.js	tests/webkit.js	<any>
 modload.test.js	theme.js	<any>	<loaded>	applyTheme	cycleTheme	themeTap
 modload.test.js	toast.js	<any>	<loaded>	toast	toastOff
 modload.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointerup	@{constel$today}>@document.addEventListenerkeydown	@{constel$today}>@el.addEventListenerclick	@{constel$today}>todayTouch	@{constroot$today}	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>@root.addEventListenerclick	todayBusy	todayCovered
@@ -11220,7 +11220,7 @@ month.test.js	mq/shirt-tie.js	<loaded>
 month.test.js	mq/suit-open.js	<loaded>
 month.test.js	mq/suit.js	<loaded>
 month.test.js	mq/vest.js	<loaded>
-month.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+month.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 month.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 month.test.js	pack.js	<loaded>	packShow	page-shown
 month.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -11324,7 +11324,7 @@ motif.test.js	mq/shirt-tie.js	<loaded>
 motif.test.js	mq/suit-open.js	<loaded>
 motif.test.js	mq/suit.js	<loaded>
 motif.test.js	mq/vest.js	<loaded>
-motif.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+motif.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 motif.test.js	own-lists.js	<loaded>
 motif.test.js	pack.js	<loaded>	packShow	page-shown
 motif.test.js	pattern-read.js	<loaded>	claudeOnly	claudePattern	cropCanvas	measureAndApply	medLab	missedPattern	motifFromSpec	motifPat	readPatternWithClaude	readSett	readable	rereadSett	sampleLabs	settCanvas	settCheck	settNote	settSummary	settable	specSett	specSett1
@@ -11443,7 +11443,7 @@ moveoutfit.test.js	mq/shirt-tie.js	<loaded>
 moveoutfit.test.js	mq/suit-open.js	<loaded>
 moveoutfit.test.js	mq/suit.js	<loaded>
 moveoutfit.test.js	mq/vest.js	<loaded>
-moveoutfit.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+moveoutfit.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 moveoutfit.test.js	own-lists.js	<loaded>
 moveoutfit.test.js	pack.js	<loaded>	packShow	page-shown
 moveoutfit.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -11541,7 +11541,7 @@ mqcloth.test.js	mq/shirt-tie.js	<loaded>
 mqcloth.test.js	mq/suit-open.js	<loaded>
 mqcloth.test.js	mq/suit.js	<loaded>
 mqcloth.test.js	mq/vest.js	<loaded>
-mqcloth.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+mqcloth.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 mqcloth.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 mqcloth.test.js	pack.js	<loaded>	packShow	page-shown
 mqcloth.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -11641,7 +11641,7 @@ multi.test.js	mq/shirt-tie.js	<loaded>
 multi.test.js	mq/suit-open.js	<loaded>
 multi.test.js	mq/suit.js	<loaded>
 multi.test.js	mq/vest.js	<loaded>
-multi.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+multi.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 multi.test.js	own-lists.js	<loaded>
 multi.test.js	pack.js	<loaded>	packShow	page-shown
 multi.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settNote	settable
@@ -11744,7 +11744,7 @@ navfit.test.js	mq/shirt-tie.js	<loaded>
 navfit.test.js	mq/suit-open.js	<loaded>
 navfit.test.js	mq/suit.js	<loaded>
 navfit.test.js	mq/vest.js	<loaded>
-navfit.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+navfit.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 navfit.test.js	own-lists.js	<loaded>
 navfit.test.js	pack.js	<loaded>	packShow	page-shown
 navfit.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -11844,7 +11844,7 @@ newuser.test.js	mq/shirt-tie.js	<loaded>
 newuser.test.js	mq/suit-open.js	<loaded>
 newuser.test.js	mq/suit.js	<loaded>
 newuser.test.js	mq/vest.js	<loaded>
-newuser.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+newuser.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 newuser.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 newuser.test.js	pack.js	<loaded>	packShow	page-shown
 newuser.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -11942,7 +11942,7 @@ occasions.test.js	mq/shirt-tie.js	<loaded>
 occasions.test.js	mq/suit-open.js	<loaded>
 occasions.test.js	mq/suit.js	<loaded>
 occasions.test.js	mq/vest.js	<loaded>
-occasions.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+occasions.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 occasions.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 occasions.test.js	pack.js	<loaded>	packShow	page-shown
 occasions.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -12046,7 +12046,7 @@ ocpblouse.test.js	mq/shirt-tie.js	<loaded>
 ocpblouse.test.js	mq/suit-open.js	<loaded>
 ocpblouse.test.js	mq/suit.js	<loaded>
 ocpblouse.test.js	mq/vest.js	<loaded>
-ocpblouse.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+ocpblouse.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 ocpblouse.test.js	own-lists.js	<loaded>
 ocpblouse.test.js	pack.js	<loaded>	packShow	page-shown
 ocpblouse.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -12190,7 +12190,7 @@ ocpcloth.test.js	mq/shirt-tie.js	<loaded>
 ocpcloth.test.js	mq/suit-open.js	<loaded>
 ocpcloth.test.js	mq/suit.js	<loaded>
 ocpcloth.test.js	mq/vest.js	<loaded>
-ocpcloth.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+ocpcloth.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 ocpcloth.test.js	own-lists.js	<loaded>
 ocpcloth.test.js	pack.js	<loaded>	packShow	page-shown
 ocpcloth.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -12310,7 +12310,7 @@ onorder.test.js	mq/shirt-tie.js	<loaded>
 onorder.test.js	mq/suit-open.js	<loaded>
 onorder.test.js	mq/suit.js	<loaded>
 onorder.test.js	mq/vest.js	<loaded>
-onorder.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+onorder.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 onorder.test.js	own-lists.js	<loaded>
 onorder.test.js	pack.js	<loaded>	packShow	page-shown
 onorder.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settable
@@ -12408,7 +12408,7 @@ owncolany.test.js	mq/shirt-tie.js	<loaded>
 owncolany.test.js	mq/suit-open.js	<loaded>
 owncolany.test.js	mq/suit.js	<loaded>
 owncolany.test.js	mq/vest.js	<loaded>
-owncolany.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+owncolany.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 owncolany.test.js	own-lists.js	<loaded>	groupOf	ownColOffer	renderCustomUI	typePl
 owncolany.test.js	pack.js	<loaded>	packShow	page-shown
 owncolany.test.js	pattern-read.js	<loaded>
@@ -12506,7 +12506,7 @@ ownmaterials.test.js	mq/shirt-tie.js	<loaded>
 ownmaterials.test.js	mq/suit-open.js	<loaded>
 ownmaterials.test.js	mq/suit.js	<loaded>
 ownmaterials.test.js	mq/vest.js	<loaded>
-ownmaterials.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+ownmaterials.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 ownmaterials.test.js	own-lists.js	<loaded>	addOwnMaterial	matGuessUse	matOffer	ownMatRmTap	removeOwnMaterial	renderCustomUI	renderOwnMatUI	settings-draw
 ownmaterials.test.js	pack.js	<loaded>	packShow	page-shown
 ownmaterials.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settNote	settable
@@ -12604,7 +12604,7 @@ ownnames.test.js	mq/shirt-tie.js	<loaded>
 ownnames.test.js	mq/suit-open.js	<loaded>
 ownnames.test.js	mq/suit.js	<loaded>
 ownnames.test.js	mq/vest.js	<loaded>
-ownnames.test.js	nav.js	<loaded>	openAdd	pageBack	pageIn	setPagesOn	show	showWanted	subBack	subOpen	subShown
+ownnames.test.js	nav.js	<loaded>	openAdd	pageBack	pageIn	setPagesOn	settingsClosed	show	showWanted	subBack	subOpen	subShown
 ownnames.test.js	own-lists.js	<loaded>	addCustomColor	addCustomPattern	cleanLookApp	groupOf	nameHex	newColHex	renderCustomUI	renderOwnMatUI	settings-draw	typePl
 ownnames.test.js	pack.js	<loaded>	openPack	packCount	packDate	packDays	packDaysTxt	packDefault	packLate	packLight	packList	packLive	packLockState	packMark	packMarkKey	packN	packName	packProgress	packRead	packShow	packText	packTrip	packUses	packWeekStart	packWornIds	page-shown	renderPack
 ownnames.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -12705,7 +12705,7 @@ pack.test.js	mq/shirt-tie.js	<loaded>
 pack.test.js	mq/suit-open.js	<loaded>
 pack.test.js	mq/suit.js	<loaded>
 pack.test.js	mq/vest.js	<loaded>
-pack.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted	subBack	subOpen	subShown
+pack.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted	subBack	subOpen	subShown
 pack.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 pack.test.js	pack.js	<loaded>	get packNow	get packT	openPack	packAvg	packBackTap	packCapPick	packComplete	packCopy	packCopyTap	packCount	packDate	packDatePick	packDays	packDaysTxt	packDefault	packKeepTap	packLate	packLight	packLightRecs	packList	packLive	packLock	packLockDays	packLockState	packMark	packMarkKey	packN	packName	packNoCap	packNoCapTap	packOpenTap	packPlanOf	packProgress	packRate	packRead	packRelease	packReleaseTap	packSaved	packSetCap	packSetDate	packSetMark	packSets	packShare	packShareTap	packShow	packTally	packText	packTick	packTickPick	packTrip	packUses	packWear	packWearDay	packWearDayTap	packWearTap	packWeekStart	packWornIds	packWrite	page-shown	renderPack	set packNow	set packT
 pack.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -12803,7 +12803,7 @@ packcare-taps.test.js	mq/shirt-tie.js	<loaded>
 packcare-taps.test.js	mq/suit-open.js	<loaded>
 packcare-taps.test.js	mq/suit.js	<loaded>
 packcare-taps.test.js	mq/vest.js	<loaded>
-packcare-taps.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subBack	subOpen
+packcare-taps.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subBack	subOpen
 packcare-taps.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 packcare-taps.test.js	pack.js	<loaded>	get packNow	openPack	packAvg	packBackTap	packCapPick	packComplete	packCopy	packCopyTap	packCount	packDate	packDatePick	packDays	packDaysTxt	packDefault	packKeepTap	packLate	packLight	packLightRecs	packList	packLive	packLock	packLockDays	packLockState	packMark	packMarkKey	packN	packName	packNoCap	packNoCapTap	packPlanOf	packProgress	packRate	packRead	packRelease	packReleaseTap	packSaved	packSetCap	packSetDate	packSetMark	packSets	packShare	packShareTap	packShow	packTally	packText	packTick	packTickPick	packTrip	packUses	packWear	packWearDay	packWearDayTap	packWearTap	packWeekStart	packWornIds	packWrite	page-shown	renderPack	set packT
 packcare-taps.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settable
@@ -12900,7 +12900,7 @@ pairrepeat.test.js	mq/shirt-tie.js	<loaded>
 pairrepeat.test.js	mq/suit-open.js	<loaded>
 pairrepeat.test.js	mq/suit.js	<loaded>
 pairrepeat.test.js	mq/vest.js	<loaded>
-pairrepeat.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+pairrepeat.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 pairrepeat.test.js	own-lists.js	<loaded>
 pairrepeat.test.js	pack.js	<loaded>	packShow	page-shown
 pairrepeat.test.js	pattern-read.js	<loaded>
@@ -12997,7 +12997,7 @@ paperstatus.test.js	mq/shirt-tie.js	<loaded>
 paperstatus.test.js	mq/suit-open.js	<loaded>
 paperstatus.test.js	mq/suit.js	<loaded>
 paperstatus.test.js	mq/vest.js	<loaded>
-paperstatus.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+paperstatus.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 paperstatus.test.js	own-lists.js	<loaded>
 paperstatus.test.js	pack.js	<loaded>	packShow	page-shown
 paperstatus.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	settable
@@ -13097,7 +13097,7 @@ paste.test.js	mq/shirt-tie.js	<loaded>
 paste.test.js	mq/suit-open.js	<loaded>
 paste.test.js	mq/suit.js	<loaded>
 paste.test.js	mq/vest.js	<loaded>
-paste.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen	subShown
+paste.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen	subShown
 paste.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 paste.test.js	pack.js	<loaded>	packShow	page-shown
 paste.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settNote	settable
@@ -13199,7 +13199,7 @@ photoedit.test.js	mq/shirt-tie.js	<loaded>
 photoedit.test.js	mq/suit-open.js	<loaded>
 photoedit.test.js	mq/suit.js	<loaded>
 photoedit.test.js	mq/vest.js	<loaded>
-photoedit.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+photoedit.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 photoedit.test.js	own-lists.js	<loaded>
 photoedit.test.js	pack.js	<loaded>	packShow	page-shown
 photoedit.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	settable
@@ -13297,7 +13297,7 @@ pickbugs.test.js	mq/shirt-tie.js	<loaded>
 pickbugs.test.js	mq/suit-open.js	<loaded>
 pickbugs.test.js	mq/suit.js	<loaded>
 pickbugs.test.js	mq/vest.js	<loaded>
-pickbugs.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+pickbugs.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 pickbugs.test.js	own-lists.js	<loaded>	addCustomColor	addCustomPattern	cleanLookApp	groupOf	ownColOffer	renderCustomUI	renderOwnMatUI	settings-draw	typePl
 pickbugs.test.js	pack.js	<loaded>	packShow	page-shown
 pickbugs.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	settable
@@ -13396,7 +13396,7 @@ picker.test.js	mq/shirt-tie.js	<loaded>
 picker.test.js	mq/suit-open.js	<loaded>
 picker.test.js	mq/suit.js	<loaded>
 picker.test.js	mq/vest.js	<loaded>
-picker.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+picker.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 picker.test.js	own-lists.js	<loaded>
 picker.test.js	pack.js	<loaded>	packShow	page-shown
 picker.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -13493,7 +13493,7 @@ pickerfocus.test.js	mq/shirt-tie.js	<loaded>
 pickerfocus.test.js	mq/suit-open.js	<loaded>
 pickerfocus.test.js	mq/suit.js	<loaded>
 pickerfocus.test.js	mq/vest.js	<loaded>
-pickerfocus.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+pickerfocus.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 pickerfocus.test.js	own-lists.js	<loaded>
 pickerfocus.test.js	pack.js	<loaded>	packShow	page-shown
 pickerfocus.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settable
@@ -13591,7 +13591,7 @@ pieces.test.js	mq/shirt-tie.js	<loaded>
 pieces.test.js	mq/suit-open.js	<loaded>
 pieces.test.js	mq/suit.js	<loaded>
 pieces.test.js	mq/vest.js	<loaded>
-pieces.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+pieces.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 pieces.test.js	own-lists.js	<loaded>
 pieces.test.js	pack.js	<loaded>	packShow	page-shown
 pieces.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -13689,7 +13689,7 @@ planner-pairs.test.js	mq/shirt-tie.js	<loaded>
 planner-pairs.test.js	mq/suit-open.js	<loaded>
 planner-pairs.test.js	mq/suit.js	<loaded>
 planner-pairs.test.js	mq/vest.js	<loaded>
-planner-pairs.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+planner-pairs.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 planner-pairs.test.js	own-lists.js	<loaded>
 planner-pairs.test.js	pack.js	<loaded>	packShow	page-shown
 planner-pairs.test.js	pattern-read.js	<loaded>
@@ -13788,7 +13788,7 @@ planner-repeats.test.js	mq/shirt-tie.js	<loaded>
 planner-repeats.test.js	mq/suit-open.js	<loaded>
 planner-repeats.test.js	mq/suit.js	<loaded>
 planner-repeats.test.js	mq/vest.js	<loaded>
-planner-repeats.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+planner-repeats.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 planner-repeats.test.js	own-lists.js	<loaded>
 planner-repeats.test.js	pack.js	<loaded>	packShow	page-shown
 planner-repeats.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -13886,7 +13886,7 @@ planner-rules.test.js	mq/shirt-tie.js	<loaded>
 planner-rules.test.js	mq/suit-open.js	<loaded>
 planner-rules.test.js	mq/suit.js	<loaded>
 planner-rules.test.js	mq/vest.js	<loaded>
-planner-rules.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+planner-rules.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 planner-rules.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 planner-rules.test.js	pack.js	<loaded>	packShow	page-shown
 planner-rules.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -13984,7 +13984,7 @@ planreview.test.js	mq/shirt-tie.js	<loaded>
 planreview.test.js	mq/suit-open.js	<loaded>
 planreview.test.js	mq/suit.js	<loaded>
 planreview.test.js	mq/vest.js	<loaded>
-planreview.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+planreview.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 planreview.test.js	own-lists.js	<loaded>
 planreview.test.js	pack.js	<loaded>	get packNow	packComplete	packCount	packDate	packDays	packDaysTxt	packKeepTap	packLate	packLight	packList	packLive	packLock	packLockDays	packLockState	packMark	packMarkKey	packN	packName	packProgress	packRead	packShow	packText	packTrip	packUses	packWornIds	page-shown	renderPack	set packT
 planreview.test.js	pattern-read.js	<loaded>	readable	settable
@@ -14082,7 +14082,7 @@ pocketsquare.test.js	mq/shirt-tie.js	<loaded>
 pocketsquare.test.js	mq/suit-open.js	<loaded>
 pocketsquare.test.js	mq/suit.js	<loaded>
 pocketsquare.test.js	mq/vest.js	<loaded>
-pocketsquare.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+pocketsquare.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 pocketsquare.test.js	own-lists.js	<loaded>
 pocketsquare.test.js	pack.js	<loaded>	packShow	page-shown
 pocketsquare.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -14179,7 +14179,7 @@ records.test.js	mq/shirt-tie.js	<loaded>
 records.test.js	mq/suit-open.js	<loaded>
 records.test.js	mq/suit.js	<loaded>
 records.test.js	mq/vest.js	<loaded>
-records.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+records.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 records.test.js	own-lists.js	<loaded>
 records.test.js	pack.js	<loaded>	packShow	page-shown
 records.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settSummary	settable
@@ -14285,7 +14285,7 @@ remind.test.js	mq/shirt-tie.js	<loaded>
 remind.test.js	mq/suit-open.js	<loaded>
 remind.test.js	mq/suit.js	<loaded>
 remind.test.js	mq/vest.js	<loaded>
-remind.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+remind.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 remind.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 remind.test.js	pack.js	<loaded>	packShow	page-shown
 remind.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -14391,7 +14391,7 @@ restacts.test.js	mq/shirt-tie.js	<loaded>
 restacts.test.js	mq/suit-open.js	<loaded>
 restacts.test.js	mq/suit.js	<loaded>
 restacts.test.js	mq/vest.js	<loaded>
-restacts.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+restacts.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 restacts.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 restacts.test.js	pack.js	<loaded>	openPack	packCount	packDate	packDays	packDaysTxt	packLate	packLight	packList	packLive	packLockState	packMark	packMarkKey	packN	packName	packProgress	packRead	packSetTrip	packShow	packText	packTrip	packUses	packWornIds	packWrite	page-shown	renderPack
 restacts.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settNote	settTap	settable	toggleSett
@@ -14498,7 +14498,7 @@ retry.test.js	mq/shirt-tie.js	<any>	<loaded>
 retry.test.js	mq/suit-open.js	<any>	<loaded>
 retry.test.js	mq/suit.js	<any>	<loaded>
 retry.test.js	mq/vest.js	<any>	<loaded>
-retry.test.js	nav.js	<any>	<loaded>	pageIn	setPagesOn	show	showWanted
+retry.test.js	nav.js	<any>	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 retry.test.js	own-lists.js	<any>	<loaded>
 retry.test.js	pack.js	<any>	<loaded>	packShow	page-shown
 retry.test.js	pattern-read.js	<any>	<loaded>
@@ -14525,7 +14525,6 @@ retry.test.js	tag-request.js	<any>	<loaded>
 retry.test.js	tagging.js	<any>	<loaded>
 retry.test.js	tests/fixedplan.js	<any>
 retry.test.js	tests/safeport.js	<any>
-retry.test.js	tests/webkit.js	<any>
 retry.test.js	theme.js	<any>	<loaded>	applyTheme
 retry.test.js	toast.js	<any>	<loaded>	loadFailed	set loadTold	toast
 retry.test.js	today-gestures.js	<any>	<loaded>	@{constel$today}	@{constroot$today}
@@ -14604,7 +14603,7 @@ rollback.test.js	mq/shirt-tie.js	<loaded>
 rollback.test.js	mq/suit-open.js	<loaded>
 rollback.test.js	mq/suit.js	<loaded>
 rollback.test.js	mq/vest.js	<loaded>
-rollback.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+rollback.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 rollback.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 rollback.test.js	pack.js	<loaded>	packShow	page-shown
 rollback.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -14709,7 +14708,7 @@ rotation-pause.test.js	mq/shirt-tie.js	<loaded>
 rotation-pause.test.js	mq/suit-open.js	<loaded>
 rotation-pause.test.js	mq/suit.js	<loaded>
 rotation-pause.test.js	mq/vest.js	<loaded>
-rotation-pause.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+rotation-pause.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 rotation-pause.test.js	own-lists.js	<loaded>
 rotation-pause.test.js	pack.js	<loaded>	packShow	page-shown
 rotation-pause.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -14811,7 +14810,7 @@ run.js: add an item without a photo; it persists	mq/shirt-tie.js	<loaded>
 run.js: add an item without a photo; it persists	mq/suit-open.js	<loaded>
 run.js: add an item without a photo; it persists	mq/suit.js	<loaded>
 run.js: add an item without a photo; it persists	mq/vest.js	<loaded>
-run.js: add an item without a photo; it persists	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+run.js: add an item without a photo; it persists	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 run.js: add an item without a photo; it persists	own-lists.js	<loaded>
 run.js: add an item without a photo; it persists	pack.js	<loaded>	packShow	page-shown
 run.js: add an item without a photo; it persists	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settable
@@ -14909,7 +14908,7 @@ run.js: figure draws the tie, and the shirt when there is no jacket	mq/shirt-tie
 run.js: figure draws the tie, and the shirt when there is no jacket	mq/suit-open.js	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	mq/suit.js	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	mq/vest.js	<loaded>
-run.js: figure draws the tie, and the shirt when there is no jacket	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+run.js: figure draws the tie, and the shirt when there is no jacket	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 run.js: figure draws the tie, and the shirt when there is no jacket	own-lists.js	<loaded>
 run.js: figure draws the tie, and the shirt when there is no jacket	pack.js	<loaded>	packShow	page-shown
 run.js: figure draws the tie, and the shirt when there is no jacket	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -15007,7 +15006,7 @@ run.js: outfit score	mq/shirt-tie.js	<loaded>
 run.js: outfit score	mq/suit-open.js	<loaded>
 run.js: outfit score	mq/suit.js	<loaded>
 run.js: outfit score	mq/vest.js	<loaded>
-run.js: outfit score	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+run.js: outfit score	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 run.js: outfit score	own-lists.js	<loaded>
 run.js: outfit score	pack.js	<loaded>	packShow	page-shown
 run.js: outfit score	pattern-read.js	<loaded>
@@ -15104,7 +15103,7 @@ run.js: pattern detection on synthetic fabric photos	mq/shirt-tie.js	<loaded>
 run.js: pattern detection on synthetic fabric photos	mq/suit-open.js	<loaded>
 run.js: pattern detection on synthetic fabric photos	mq/suit.js	<loaded>
 run.js: pattern detection on synthetic fabric photos	mq/vest.js	<loaded>
-run.js: pattern detection on synthetic fabric photos	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+run.js: pattern detection on synthetic fabric photos	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 run.js: pattern detection on synthetic fabric photos	own-lists.js	<loaded>
 run.js: pattern detection on synthetic fabric photos	pack.js	<loaded>	packShow	page-shown
 run.js: pattern detection on synthetic fabric photos	pattern-read.js	<loaded>
@@ -15202,7 +15201,7 @@ run.js: planner: independent outfit checklist	mq/shirt-tie.js	<loaded>
 run.js: planner: independent outfit checklist	mq/suit-open.js	<loaded>
 run.js: planner: independent outfit checklist	mq/suit.js	<loaded>
 run.js: planner: independent outfit checklist	mq/vest.js	<loaded>
-run.js: planner: independent outfit checklist	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+run.js: planner: independent outfit checklist	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 run.js: planner: independent outfit checklist	own-lists.js	<loaded>
 run.js: planner: independent outfit checklist	pack.js	<loaded>	packShow	page-shown
 run.js: planner: independent outfit checklist	pattern-read.js	<loaded>
@@ -15299,7 +15298,7 @@ run.js: planner: shoes, belts, leather and metals	mq/shirt-tie.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	mq/suit-open.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	mq/suit.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	mq/vest.js	<loaded>
-run.js: planner: shoes, belts, leather and metals	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+run.js: planner: shoes, belts, leather and metals	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 run.js: planner: shoes, belts, leather and metals	own-lists.js	<loaded>
 run.js: planner: shoes, belts, leather and metals	pack.js	<loaded>	packShow	page-shown
 run.js: planner: shoes, belts, leather and metals	pattern-read.js	<loaded>
@@ -15398,7 +15397,7 @@ run.js: renders the outfit without errors	mq/shirt-tie.js	<loaded>
 run.js: renders the outfit without errors	mq/suit-open.js	<loaded>
 run.js: renders the outfit without errors	mq/suit.js	<loaded>
 run.js: renders the outfit without errors	mq/vest.js	<loaded>
-run.js: renders the outfit without errors	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+run.js: renders the outfit without errors	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 run.js: renders the outfit without errors	own-lists.js	<loaded>
 run.js: renders the outfit without errors	pack.js	<loaded>	packShow	page-shown
 run.js: renders the outfit without errors	pattern-read.js	<loaded>	readable	settable
@@ -15495,7 +15494,7 @@ run.js: swipe edge cases and month crossing	mq/shirt-tie.js	<loaded>
 run.js: swipe edge cases and month crossing	mq/suit-open.js	<loaded>
 run.js: swipe edge cases and month crossing	mq/suit.js	<loaded>
 run.js: swipe edge cases and month crossing	mq/vest.js	<loaded>
-run.js: swipe edge cases and month crossing	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+run.js: swipe edge cases and month crossing	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 run.js: swipe edge cases and month crossing	own-lists.js	<loaded>
 run.js: swipe edge cases and month crossing	pack.js	<loaded>	packShow	page-shown
 run.js: swipe edge cases and month crossing	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -15593,7 +15592,7 @@ run.js: swipe moves only the outfit, across viewports	mq/shirt-tie.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	mq/suit-open.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	mq/suit.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	mq/vest.js	<loaded>
-run.js: swipe moves only the outfit, across viewports	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+run.js: swipe moves only the outfit, across viewports	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 run.js: swipe moves only the outfit, across viewports	own-lists.js	<loaded>
 run.js: swipe moves only the outfit, across viewports	pack.js	<loaded>	packShow	page-shown
 run.js: swipe moves only the outfit, across viewports	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -15691,7 +15690,7 @@ safeport.test.js	mq/shirt-tie.js	<loaded>
 safeport.test.js	mq/suit-open.js	<loaded>
 safeport.test.js	mq/suit.js	<loaded>
 safeport.test.js	mq/vest.js	<loaded>
-safeport.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+safeport.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 safeport.test.js	own-lists.js	<loaded>
 safeport.test.js	pack.js	<loaded>	packShow	page-shown
 safeport.test.js	pattern-read.js	<loaded>
@@ -16141,7 +16140,7 @@ safety.test.js	mq/shirt-tie.js	<loaded>
 safety.test.js	mq/suit-open.js	<loaded>
 safety.test.js	mq/suit.js	<loaded>
 safety.test.js	mq/vest.js	<loaded>
-safety.test.js	nav.js	<loaded>	pageIn	setPageWant	setPagesOn	show	showWanted
+safety.test.js	nav.js	<loaded>	pageIn	setPageWant	setPagesOn	settingsClosed	show	showWanted
 safety.test.js	own-lists.js	<loaded>
 safety.test.js	pack.js	<loaded>	packShow	page-shown
 safety.test.js	pattern-read.js	<loaded>	claudeOnly	measureAndApply	missedPattern	motifPat	readSett	readable	settCheck	settNote	settable
@@ -16239,7 +16238,7 @@ safetysync.test.js	mq/shirt-tie.js	<loaded>
 safetysync.test.js	mq/suit-open.js	<loaded>
 safetysync.test.js	mq/suit.js	<loaded>
 safetysync.test.js	mq/vest.js	<loaded>
-safetysync.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+safetysync.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 safetysync.test.js	own-lists.js	<loaded>
 safetysync.test.js	pack.js	<loaded>	packShow	page-shown
 safetysync.test.js	pattern-read.js	<loaded>
@@ -16343,7 +16342,7 @@ sample.test.js	mq/shirt-tie.js	<loaded>
 sample.test.js	mq/suit-open.js	<loaded>
 sample.test.js	mq/suit.js	<loaded>
 sample.test.js	mq/vest.js	<loaded>
-sample.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+sample.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 sample.test.js	own-lists.js	<loaded>
 sample.test.js	pack.js	<loaded>	packShow	page-shown
 sample.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -16463,7 +16462,7 @@ scoreanim.test.js	mq/shirt-tie.js	<loaded>
 scoreanim.test.js	mq/suit-open.js	<loaded>
 scoreanim.test.js	mq/suit.js	<loaded>
 scoreanim.test.js	mq/vest.js	<loaded>
-scoreanim.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+scoreanim.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 scoreanim.test.js	own-lists.js	<loaded>
 scoreanim.test.js	pack.js	<loaded>	packShow	page-shown
 scoreanim.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -16561,7 +16560,7 @@ scoredials.test.js	mq/shirt-tie.js	<loaded>
 scoredials.test.js	mq/suit-open.js	<loaded>
 scoredials.test.js	mq/suit.js	<loaded>
 scoredials.test.js	mq/vest.js	<loaded>
-scoredials.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+scoredials.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 scoredials.test.js	own-lists.js	<loaded>
 scoredials.test.js	pack.js	<loaded>	packShow	page-shown
 scoredials.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -16660,7 +16659,7 @@ scorefix.test.js	mq/shirt-tie.js	<loaded>
 scorefix.test.js	mq/suit-open.js	<loaded>
 scorefix.test.js	mq/suit.js	<loaded>
 scorefix.test.js	mq/vest.js	<loaded>
-scorefix.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+scorefix.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 scorefix.test.js	own-lists.js	<loaded>
 scorefix.test.js	pack.js	<loaded>	packShow	page-shown
 scorefix.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -16757,7 +16756,7 @@ server-limits.test.js	mq/shirt-tie.js	<loaded>
 server-limits.test.js	mq/suit-open.js	<loaded>
 server-limits.test.js	mq/suit.js	<loaded>
 server-limits.test.js	mq/vest.js	<loaded>
-server-limits.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+server-limits.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 server-limits.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 server-limits.test.js	pack.js	<loaded>	packShow	page-shown
 server-limits.test.js	pattern-read.js	<loaded>
@@ -16886,7 +16885,7 @@ sett.test.js	mq/shirt-tie.js	<loaded>
 sett.test.js	mq/suit-open.js	<loaded>
 sett.test.js	mq/suit.js	<loaded>
 sett.test.js	mq/vest.js	<loaded>
-sett.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+sett.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 sett.test.js	own-lists.js	<loaded>
 sett.test.js	pack.js	<loaded>	packShow	page-shown
 sett.test.js	pattern-read.js	<loaded>	claudeOnly	claudePattern	measureAndApply	missedPattern	motifPat	readSett	readable	rereadSett	settCanvas	settCheck	settFrom	settFromRaw	settFromWeave	settNote	settSummary	settTap	settable	specSett	specSett1	toggleSett
@@ -16991,7 +16990,7 @@ settag.test.js	mq/shirt-tie.js	<loaded>
 settag.test.js	mq/suit-open.js	<loaded>
 settag.test.js	mq/suit.js	<loaded>
 settag.test.js	mq/vest.js	<loaded>
-settag.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+settag.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 settag.test.js	own-lists.js	<loaded>
 settag.test.js	pack.js	<loaded>	packShow	page-shown
 settag.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -17089,7 +17088,7 @@ settingsin.test.js	mq/shirt-tie.js	<loaded>
 settingsin.test.js	mq/suit-open.js	<loaded>
 settingsin.test.js	mq/suit.js	<loaded>
 settingsin.test.js	mq/vest.js	<loaded>
-settingsin.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+settingsin.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 settingsin.test.js	own-lists.js	<loaded>	removeCustom	renderCustomUI	renderOwnMatUI	settings-draw
 settingsin.test.js	pack.js	<loaded>	packShow	page-shown
 settingsin.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -17187,7 +17186,7 @@ settingsmerge.test.js	mq/shirt-tie.js	<loaded>
 settingsmerge.test.js	mq/suit-open.js	<loaded>
 settingsmerge.test.js	mq/suit.js	<loaded>
 settingsmerge.test.js	mq/vest.js	<loaded>
-settingsmerge.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+settingsmerge.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 settingsmerge.test.js	own-lists.js	<loaded>
 settingsmerge.test.js	pack.js	<loaded>	packShow	page-shown
 settingsmerge.test.js	pattern-read.js	<loaded>
@@ -17292,7 +17291,7 @@ settingsui.test.js	mq/shirt-tie.js	<loaded>
 settingsui.test.js	mq/suit-open.js	<loaded>
 settingsui.test.js	mq/suit.js	<loaded>
 settingsui.test.js	mq/vest.js	<loaded>
-settingsui.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+settingsui.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 settingsui.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 settingsui.test.js	pack.js	<loaded>	packShow	page-shown
 settingsui.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -17391,7 +17390,7 @@ setup.test.js	mq/shirt-tie.js	<loaded>
 setup.test.js	mq/suit-open.js	<loaded>
 setup.test.js	mq/suit.js	<loaded>
 setup.test.js	mq/vest.js	<loaded>
-setup.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+setup.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 setup.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 setup.test.js	pack.js	<loaded>	packShow	page-shown
 setup.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -17490,7 +17489,7 @@ shade.test.js	mq/shirt-tie.js	<loaded>
 shade.test.js	mq/suit-open.js	<loaded>
 shade.test.js	mq/suit.js	<loaded>
 shade.test.js	mq/vest.js	<loaded>
-shade.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+shade.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 shade.test.js	own-lists.js	<loaded>
 shade.test.js	pack.js	<loaded>	packShow	page-shown
 shade.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settNote	settable
@@ -17813,7 +17812,7 @@ sharedmasters.test.js	mq/shirt-tie.js	<loaded>
 sharedmasters.test.js	mq/suit-open.js	<loaded>
 sharedmasters.test.js	mq/suit.js	<loaded>
 sharedmasters.test.js	mq/vest.js	<loaded>
-sharedmasters.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+sharedmasters.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 sharedmasters.test.js	own-lists.js	<loaded>
 sharedmasters.test.js	pack.js	<loaded>	packShow	page-shown
 sharedmasters.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -17923,7 +17922,7 @@ sharpclose.test.js	mq/shirt-tie.js	<loaded>
 sharpclose.test.js	mq/suit-open.js	<loaded>
 sharpclose.test.js	mq/suit.js	<loaded>
 sharpclose.test.js	mq/vest.js	<loaded>
-sharpclose.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+sharpclose.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 sharpclose.test.js	own-lists.js	<loaded>
 sharpclose.test.js	pack.js	<loaded>	packShow	page-shown
 sharpclose.test.js	pattern-read.js	<loaded>	claudeOnly	claudePattern	motifPat	rereadSett	settCanvas	settCheck	settFrom	settFromRaw	settSummary	settable	specSett	specSett1
@@ -18021,7 +18020,7 @@ shellfix.test.js	mq/shirt-tie.js	<loaded>
 shellfix.test.js	mq/suit-open.js	<loaded>
 shellfix.test.js	mq/suit.js	<loaded>
 shellfix.test.js	mq/vest.js	<loaded>
-shellfix.test.js	nav.js	<loaded>	openAdd	pageBack	pageIn	setPageWant	setPagesOn	show	showWanted	subBack	subOpen	subShown
+shellfix.test.js	nav.js	<loaded>	openAdd	pageBack	pageIn	setPageWant	setPagesOn	settingsClosed	show	showWanted	subBack	subOpen	subShown
 shellfix.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 shellfix.test.js	pack.js	<loaded>	packShow	page-shown
 shellfix.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -18119,7 +18118,7 @@ shirtweave.test.js	mq/shirt-tie.js	<loaded>
 shirtweave.test.js	mq/suit-open.js	<loaded>
 shirtweave.test.js	mq/suit.js	<loaded>
 shirtweave.test.js	mq/vest.js	<loaded>
-shirtweave.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+shirtweave.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 shirtweave.test.js	own-lists.js	<loaded>
 shirtweave.test.js	pack.js	<loaded>	packShow	page-shown
 shirtweave.test.js	pattern-read.js	<loaded>	claudeOnly	claudePattern	measureAndApply	missedPattern	motifPat	readPatternWithClaude	readSett	readable	rereadSett	settCanvas	settCheck	settNote	settSummary	settable	specSett	specSett1	texContrast	texFromSpec
@@ -18225,7 +18224,7 @@ shop.test.js	mq/shirt-tie.js	<loaded>
 shop.test.js	mq/suit-open.js	<loaded>
 shop.test.js	mq/suit.js	<loaded>
 shop.test.js	mq/vest.js	<loaded>
-shop.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+shop.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 shop.test.js	own-lists.js	<loaded>
 shop.test.js	pack.js	<loaded>	packShow	page-shown
 shop.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -18323,7 +18322,7 @@ shopstay.test.js	mq/shirt-tie.js	<loaded>
 shopstay.test.js	mq/suit-open.js	<loaded>
 shopstay.test.js	mq/suit.js	<loaded>
 shopstay.test.js	mq/vest.js	<loaded>
-shopstay.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+shopstay.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 shopstay.test.js	own-lists.js	<loaded>
 shopstay.test.js	pack.js	<loaded>	packShow	page-shown
 shopstay.test.js	pattern-read.js	<loaded>
@@ -18421,7 +18420,7 @@ shopswipe.test.js	mq/shirt-tie.js	<loaded>
 shopswipe.test.js	mq/suit-open.js	<loaded>
 shopswipe.test.js	mq/suit.js	<loaded>
 shopswipe.test.js	mq/vest.js	<loaded>
-shopswipe.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+shopswipe.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 shopswipe.test.js	own-lists.js	<loaded>
 shopswipe.test.js	pack.js	<loaded>	packShow	page-shown
 shopswipe.test.js	pattern-read.js	<loaded>
@@ -18519,7 +18518,7 @@ sockpatterns.test.js	mq/shirt-tie.js	<loaded>
 sockpatterns.test.js	mq/suit-open.js	<loaded>
 sockpatterns.test.js	mq/suit.js	<loaded>
 sockpatterns.test.js	mq/vest.js	<loaded>
-sockpatterns.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+sockpatterns.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 sockpatterns.test.js	own-lists.js	<loaded>
 sockpatterns.test.js	pack.js	<loaded>	packShow	page-shown
 sockpatterns.test.js	pattern-read.js	<loaded>	claudeOnly	measureAndApply	missedPattern	motifPat	readSett	readable	settCheck	settNote	settable
@@ -18616,7 +18615,7 @@ socktoe.test.js	mq/shirt-tie.js	<loaded>
 socktoe.test.js	mq/suit-open.js	<loaded>
 socktoe.test.js	mq/suit.js	<loaded>
 socktoe.test.js	mq/vest.js	<loaded>
-socktoe.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+socktoe.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 socktoe.test.js	own-lists.js	<loaded>
 socktoe.test.js	pack.js	<loaded>	packShow	page-shown
 socktoe.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	settable
@@ -18837,7 +18836,7 @@ speed.test.js	mq/shirt-tie.js	<loaded>
 speed.test.js	mq/suit-open.js	<loaded>
 speed.test.js	mq/suit.js	<loaded>
 speed.test.js	mq/vest.js	<loaded>
-speed.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+speed.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 speed.test.js	own-lists.js	<loaded>
 speed.test.js	pack.js	<loaded>	packShow	page-shown
 speed.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -18934,7 +18933,7 @@ staledevice.test.js	mq/shirt-tie.js	<loaded>
 staledevice.test.js	mq/suit-open.js	<loaded>
 staledevice.test.js	mq/suit.js	<loaded>
 staledevice.test.js	mq/vest.js	<loaded>
-staledevice.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+staledevice.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 staledevice.test.js	own-lists.js	<loaded>
 staledevice.test.js	pack.js	<loaded>	packShow	page-shown
 staledevice.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -19039,7 +19038,7 @@ stats.test.js	mq/shirt-tie.js	<loaded>
 stats.test.js	mq/suit-open.js	<loaded>
 stats.test.js	mq/suit.js	<loaded>
 stats.test.js	mq/vest.js	<loaded>
-stats.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+stats.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 stats.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 stats.test.js	pack.js	<loaded>	get packNow	packCount	packDate	packDays	packDaysTxt	packLate	packLateRecs	packLight	packList	packLive	packLock	packLockDays	packLockState	packMark	packMarkKey	packN	packName	packPlanOf	packProgress	packRead	packRelease	packShow	packText	packTrip	packUses	packWornIds	page-shown	renderPack	set packT
 stats.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -19140,7 +19139,7 @@ stylea11y.test.js	mq/shirt-tie.js	<any>	<loaded>
 stylea11y.test.js	mq/suit-open.js	<any>	<loaded>
 stylea11y.test.js	mq/suit.js	<any>	<loaded>
 stylea11y.test.js	mq/vest.js	<any>	<loaded>
-stylea11y.test.js	nav.js	<any>	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+stylea11y.test.js	nav.js	<any>	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 stylea11y.test.js	own-lists.js	<any>	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 stylea11y.test.js	pack.js	<any>	<loaded>	packShow	page-shown
 stylea11y.test.js	pattern-read.js	<any>	<loaded>	claudeOnly	motifPat	readable	settable
@@ -19251,7 +19250,7 @@ sw.test.js	mq/shirt-tie.js	<any>	<loaded>
 sw.test.js	mq/suit-open.js	<any>	<loaded>
 sw.test.js	mq/suit.js	<any>	<loaded>
 sw.test.js	mq/vest.js	<any>	<loaded>
-sw.test.js	nav.js	<any>	<loaded>	pageIn	setPagesOn	show	showWanted
+sw.test.js	nav.js	<any>	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 sw.test.js	own-lists.js	<any>	<loaded>
 sw.test.js	pack.js	<any>	<loaded>	packShow	page-shown
 sw.test.js	pattern-read.js	<any>	<loaded>
@@ -19356,7 +19355,7 @@ swatchzoom.test.js	mq/shirt-tie.js	<loaded>
 swatchzoom.test.js	mq/suit-open.js	<loaded>
 swatchzoom.test.js	mq/suit.js	<loaded>
 swatchzoom.test.js	mq/vest.js	<loaded>
-swatchzoom.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+swatchzoom.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 swatchzoom.test.js	own-lists.js	<loaded>
 swatchzoom.test.js	pack.js	<loaded>	packShow	page-shown
 swatchzoom.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -19454,7 +19453,7 @@ sync.test.js	mq/shirt-tie.js	<loaded>
 sync.test.js	mq/suit-open.js	<loaded>
 sync.test.js	mq/suit.js	<loaded>
 sync.test.js	mq/vest.js	<loaded>
-sync.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+sync.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 sync.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 sync.test.js	pack.js	<loaded>	packShow	page-shown
 sync.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -19558,7 +19557,7 @@ syncwrite.test.js	mq/shirt-tie.js	<loaded>
 syncwrite.test.js	mq/suit-open.js	<loaded>
 syncwrite.test.js	mq/suit.js	<loaded>
 syncwrite.test.js	mq/vest.js	<loaded>
-syncwrite.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+syncwrite.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 syncwrite.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 syncwrite.test.js	pack.js	<loaded>	packShow	page-shown
 syncwrite.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -19662,7 +19661,7 @@ tabload.test.js	mq/shirt-tie.js	<loaded>
 tabload.test.js	mq/suit-open.js	<loaded>
 tabload.test.js	mq/suit.js	<loaded>
 tabload.test.js	mq/vest.js	<loaded>
-tabload.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+tabload.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 tabload.test.js	own-lists.js	<loaded>
 tabload.test.js	pack.js	<loaded>	packShow	page-shown
 tabload.test.js	pattern-read.js	<loaded>
@@ -19760,7 +19759,7 @@ tabmove.test.js	mq/shirt-tie.js	<loaded>
 tabmove.test.js	mq/suit-open.js	<loaded>
 tabmove.test.js	mq/suit.js	<loaded>
 tabmove.test.js	mq/vest.js	<loaded>
-tabmove.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+tabmove.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 tabmove.test.js	own-lists.js	<loaded>
 tabmove.test.js	pack.js	<loaded>	packShow	page-shown
 tabmove.test.js	pattern-read.js	<loaded>
@@ -19858,7 +19857,7 @@ tagger.test.js	mq/shirt-tie.js	<loaded>
 tagger.test.js	mq/suit-open.js	<loaded>
 tagger.test.js	mq/suit.js	<loaded>
 tagger.test.js	mq/vest.js	<loaded>
-tagger.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+tagger.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 tagger.test.js	own-lists.js	<loaded>
 tagger.test.js	pack.js	<loaded>	packShow	page-shown
 tagger.test.js	pattern-read.js	<loaded>	claudeOnly	measureAndApply	missedPattern	motifPat	readSett	readable	settCheck	settNote	settable
@@ -19965,7 +19964,7 @@ tagging.test.js	mq/shirt-tie.js	<loaded>
 tagging.test.js	mq/suit-open.js	<loaded>
 tagging.test.js	mq/suit.js	<loaded>
 tagging.test.js	mq/vest.js	<loaded>
-tagging.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+tagging.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 tagging.test.js	own-lists.js	<loaded>	addCustomColor	addCustomPattern	cleanLookApp	groupOf	guessPatBase	newColHex	ownColOffer	removeCustom	renderCustomUI	renderOwnMatUI	settings-draw
 tagging.test.js	pack.js	<loaded>	packShow	page-shown
 tagging.test.js	pattern-read.js	<loaded>	claudeOnly	measureAndApply	missedPattern	motifPat	readPatternWithClaude	readSett	readable	settCheck	settNote	settable
@@ -20069,7 +20068,7 @@ tagreads.test.js	mq/shirt-tie.js	<loaded>
 tagreads.test.js	mq/suit-open.js	<loaded>
 tagreads.test.js	mq/suit.js	<loaded>
 tagreads.test.js	mq/vest.js	<loaded>
-tagreads.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+tagreads.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 tagreads.test.js	own-lists.js	<loaded>
 tagreads.test.js	pack.js	<loaded>	packShow	page-shown
 tagreads.test.js	pattern-read.js	<loaded>	camoFromPixels	camoFromSpec	claudeOnly	claudePattern	measureAndApply	missedPattern	motifPat	readPatternWithClaude	readSett	readable	settCanvas	settCheck	settFrom	settFromRaw	settNote	settSummary	settable	specSett	specSett1
@@ -20180,7 +20179,7 @@ tagswatch.test.js	mq/shirt-tie.js	<loaded>
 tagswatch.test.js	mq/suit-open.js	<loaded>
 tagswatch.test.js	mq/suit.js	<loaded>
 tagswatch.test.js	mq/vest.js	<loaded>
-tagswatch.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+tagswatch.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 tagswatch.test.js	own-lists.js	<loaded>
 tagswatch.test.js	pack.js	<loaded>	packShow	page-shown
 tagswatch.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settNote	settable
@@ -20279,7 +20278,7 @@ takeoff.test.js	mq/shirt-tie.js	<loaded>
 takeoff.test.js	mq/suit-open.js	<loaded>
 takeoff.test.js	mq/suit.js	<loaded>
 takeoff.test.js	mq/vest.js	<loaded>
-takeoff.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+takeoff.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 takeoff.test.js	own-lists.js	<loaded>
 takeoff.test.js	pack.js	<loaded>	packShow	page-shown
 takeoff.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -20376,7 +20375,7 @@ texswatch.test.js	mq/shirt-tie.js	<loaded>
 texswatch.test.js	mq/suit-open.js	<loaded>
 texswatch.test.js	mq/suit.js	<loaded>
 texswatch.test.js	mq/vest.js	<loaded>
-texswatch.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+texswatch.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 texswatch.test.js	own-lists.js	<loaded>
 texswatch.test.js	pack.js	<loaded>	packShow	page-shown
 texswatch.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settNote	settable
@@ -20477,7 +20476,7 @@ texture.test.js	mq/shirt-tie.js	<loaded>
 texture.test.js	mq/suit-open.js	<loaded>
 texture.test.js	mq/suit.js	<loaded>
 texture.test.js	mq/vest.js	<loaded>
-texture.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+texture.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 texture.test.js	own-lists.js	<loaded>
 texture.test.js	pack.js	<loaded>	packShow	page-shown
 texture.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settNote	settable
@@ -20579,7 +20578,7 @@ theme.test.js	mq/shirt-tie.js	<loaded>
 theme.test.js	mq/suit-open.js	<loaded>
 theme.test.js	mq/suit.js	<loaded>
 theme.test.js	mq/vest.js	<loaded>
-theme.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+theme.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 theme.test.js	own-lists.js	<loaded>
 theme.test.js	pack.js	<loaded>	packShow	page-shown
 theme.test.js	pattern-read.js	<loaded>
@@ -20677,7 +20676,7 @@ tieweave.test.js	mq/shirt-tie.js	<loaded>
 tieweave.test.js	mq/suit-open.js	<loaded>
 tieweave.test.js	mq/suit.js	<loaded>
 tieweave.test.js	mq/vest.js	<loaded>
-tieweave.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+tieweave.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 tieweave.test.js	own-lists.js	<loaded>
 tieweave.test.js	pack.js	<loaded>	packShow	page-shown
 tieweave.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settSummary	settable	specSett	specSett1	texFromSpec
@@ -20793,7 +20792,7 @@ titles.test.js	mq/shirt-tie.js	<loaded>
 titles.test.js	mq/suit-open.js	<loaded>
 titles.test.js	mq/suit.js	<loaded>
 titles.test.js	mq/vest.js	<loaded>
-titles.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+titles.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 titles.test.js	own-lists.js	<loaded>
 titles.test.js	pack.js	<loaded>	packShow	page-shown
 titles.test.js	pattern-read.js	<loaded>
@@ -20891,7 +20890,7 @@ today.test.js	mq/shirt-tie.js	<loaded>
 today.test.js	mq/suit-open.js	<loaded>
 today.test.js	mq/suit.js	<loaded>
 today.test.js	mq/vest.js	<loaded>
-today.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+today.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 today.test.js	own-lists.js	<loaded>
 today.test.js	pack.js	<loaded>	packShow	page-shown
 today.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -20990,7 +20989,7 @@ todayacts.test.js	mq/shirt-tie.js	<loaded>
 todayacts.test.js	mq/suit-open.js	<loaded>
 todayacts.test.js	mq/suit.js	<loaded>
 todayacts.test.js	mq/vest.js	<loaded>
-todayacts.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+todayacts.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 todayacts.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI
 todayacts.test.js	pack.js	<loaded>	packShow	page-shown
 todayacts.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settable
@@ -21087,7 +21086,7 @@ todayedges.test.js	mq/shirt-tie.js	<loaded>
 todayedges.test.js	mq/suit-open.js	<loaded>
 todayedges.test.js	mq/suit.js	<loaded>
 todayedges.test.js	mq/vest.js	<loaded>
-todayedges.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+todayedges.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 todayedges.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 todayedges.test.js	pack.js	<loaded>	packShow	page-shown
 todayedges.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -21185,7 +21184,7 @@ todayswatch.test.js	mq/shirt-tie.js	<loaded>
 todayswatch.test.js	mq/suit-open.js	<loaded>
 todayswatch.test.js	mq/suit.js	<loaded>
 todayswatch.test.js	mq/vest.js	<loaded>
-todayswatch.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+todayswatch.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 todayswatch.test.js	own-lists.js	<loaded>
 todayswatch.test.js	pack.js	<loaded>	packShow	page-shown
 todayswatch.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -21283,7 +21282,7 @@ todayzoom.test.js	mq/shirt-tie.js	<loaded>
 todayzoom.test.js	mq/suit-open.js	<loaded>
 todayzoom.test.js	mq/suit.js	<loaded>
 todayzoom.test.js	mq/vest.js	<loaded>
-todayzoom.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+todayzoom.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 todayzoom.test.js	own-lists.js	<loaded>
 todayzoom.test.js	pack.js	<loaded>	packShow	page-shown
 todayzoom.test.js	pattern-read.js	<loaded>	claudeOnly	claudePattern	motifPat	readable	settable
@@ -21381,7 +21380,7 @@ twillswatch.test.js	mq/shirt-tie.js	<loaded>
 twillswatch.test.js	mq/suit-open.js	<loaded>
 twillswatch.test.js	mq/suit.js	<loaded>
 twillswatch.test.js	mq/vest.js	<loaded>
-twillswatch.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+twillswatch.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 twillswatch.test.js	own-lists.js	<loaded>
 twillswatch.test.js	pack.js	<loaded>	packShow	page-shown
 twillswatch.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -21483,7 +21482,7 @@ ui.test.js	mq/shirt-tie.js	<loaded>
 ui.test.js	mq/suit-open.js	<loaded>
 ui.test.js	mq/suit.js	<loaded>
 ui.test.js	mq/vest.js	<loaded>
-ui.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subOpen
+ui.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subOpen
 ui.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 ui.test.js	pack.js	<loaded>	packCount	packDate	packDays	packDaysTxt	packDefault	packLate	packLight	packList	packLive	packLockState	packMark	packMarkKey	packN	packName	packProgress	packRead	packShow	packText	packTrip	packUses	packWeekStart	packWornIds	page-shown	renderPack
 ui.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -21581,7 +21580,7 @@ uipages.test.js	mq/shirt-tie.js	<loaded>
 uipages.test.js	mq/suit-open.js	<loaded>
 uipages.test.js	mq/suit.js	<loaded>
 uipages.test.js	mq/vest.js	<loaded>
-uipages.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+uipages.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 uipages.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 uipages.test.js	pack.js	<loaded>	packShow	page-shown
 uipages.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settable
@@ -21681,7 +21680,7 @@ vest.test.js	mq/shirt-tie.js	<loaded>
 vest.test.js	mq/suit-open.js	<loaded>
 vest.test.js	mq/suit.js	<loaded>
 vest.test.js	mq/vest.js	<loaded>
-vest.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+vest.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 vest.test.js	own-lists.js	<loaded>
 vest.test.js	pack.js	<loaded>	packShow	page-shown
 vest.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -21779,7 +21778,7 @@ wardfab.test.js	mq/shirt-tie.js	<loaded>
 wardfab.test.js	mq/suit-open.js	<loaded>
 wardfab.test.js	mq/suit.js	<loaded>
 wardfab.test.js	mq/vest.js	<loaded>
-wardfab.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	show	showWanted	subBack	subOpen
+wardfab.test.js	nav.js	<loaded>	openAdd	pageIn	setPagesOn	settingsClosed	show	showWanted	subBack	subOpen
 wardfab.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 wardfab.test.js	pack.js	<loaded>	packShow	page-shown
 wardfab.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -21877,7 +21876,7 @@ wardrobe.test.js	mq/shirt-tie.js	<loaded>
 wardrobe.test.js	mq/suit-open.js	<loaded>
 wardrobe.test.js	mq/suit.js	<loaded>
 wardrobe.test.js	mq/vest.js	<loaded>
-wardrobe.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+wardrobe.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 wardrobe.test.js	own-lists.js	<loaded>
 wardrobe.test.js	pack.js	<loaded>	packShow	page-shown
 wardrobe.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readSett	readable	settCheck	settSummary	settable
@@ -21981,7 +21980,7 @@ wardrobetap.test.js	mq/shirt-tie.js	<loaded>
 wardrobetap.test.js	mq/suit-open.js	<loaded>
 wardrobetap.test.js	mq/suit.js	<loaded>
 wardrobetap.test.js	mq/vest.js	<loaded>
-wardrobetap.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+wardrobetap.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 wardrobetap.test.js	own-lists.js	<loaded>
 wardrobetap.test.js	pack.js	<loaded>	packShow	page-shown
 wardrobetap.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	settable
@@ -22080,7 +22079,7 @@ wardswipe.test.js	mq/shirt-tie.js	<loaded>
 wardswipe.test.js	mq/suit-open.js	<loaded>
 wardswipe.test.js	mq/suit.js	<loaded>
 wardswipe.test.js	mq/vest.js	<loaded>
-wardswipe.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+wardswipe.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 wardswipe.test.js	own-lists.js	<loaded>
 wardswipe.test.js	pack.js	<loaded>	packShow	page-shown
 wardswipe.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	settable
@@ -22178,7 +22177,7 @@ watchmatch.test.js	mq/shirt-tie.js	<loaded>
 watchmatch.test.js	mq/suit-open.js	<loaded>
 watchmatch.test.js	mq/suit.js	<loaded>
 watchmatch.test.js	mq/vest.js	<loaded>
-watchmatch.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+watchmatch.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 watchmatch.test.js	own-lists.js	<loaded>
 watchmatch.test.js	pack.js	<loaded>	packShow	page-shown
 watchmatch.test.js	pattern-read.js	<loaded>
@@ -22284,7 +22283,7 @@ weather.test.js	mq/shirt-tie.js	<loaded>
 weather.test.js	mq/suit-open.js	<loaded>
 weather.test.js	mq/suit.js	<loaded>
 weather.test.js	mq/vest.js	<loaded>
-weather.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+weather.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 weather.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 weather.test.js	pack.js	<loaded>	packShow	page-shown
 weather.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -22382,7 +22381,7 @@ weeklock.test.js	mq/shirt-tie.js	<loaded>
 weeklock.test.js	mq/suit-open.js	<loaded>
 weeklock.test.js	mq/suit.js	<loaded>
 weeklock.test.js	mq/vest.js	<loaded>
-weeklock.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+weeklock.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 weeklock.test.js	own-lists.js	<loaded>	renderCustomUI	renderOwnMatUI	settings-draw
 weeklock.test.js	pack.js	<loaded>	packShow	page-shown
 weeklock.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
@@ -22479,7 +22478,7 @@ weeklockdays.test.js	mq/shirt-tie.js	<loaded>
 weeklockdays.test.js	mq/suit-open.js	<loaded>
 weeklockdays.test.js	mq/suit.js	<loaded>
 weeklockdays.test.js	mq/vest.js	<loaded>
-weeklockdays.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+weeklockdays.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 weeklockdays.test.js	own-lists.js	<loaded>
 weeklockdays.test.js	pack.js	<loaded>	packShow	page-shown
 weeklockdays.test.js	pattern-read.js	<loaded>
@@ -22592,7 +22591,7 @@ workersweep.test.js	mq/shirt-tie.js	<loaded>
 workersweep.test.js	mq/suit-open.js	<loaded>
 workersweep.test.js	mq/suit.js	<loaded>
 workersweep.test.js	mq/vest.js	<loaded>
-workersweep.test.js	nav.js	<loaded>	pageIn	setPagesOn	show	showWanted
+workersweep.test.js	nav.js	<loaded>	pageIn	setPagesOn	settingsClosed	show	showWanted
 workersweep.test.js	own-lists.js	<loaded>
 workersweep.test.js	pack.js	<loaded>	packShow	page-shown
 workersweep.test.js	pattern-read.js	<loaded>	claudeOnly	motifPat	readable	settable
