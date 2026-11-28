@@ -30,14 +30,16 @@ const navfit=async({ok,chromium,url,settle})=>{
     ok(d.keep.drawing===d.navx&&d.keep.weekend===d.navx,`the bar keeps that size on a day with only the drawing (${d.keep.drawing}px) and on a weekend (${d.keep.weekend}px)`);
     // the user's bug: measured before the photo loaded (it has no height yet), the bar jumped to 64px and was kept there
     {const ctx=await browser.newContext({viewport:{width:466,height:710},isMobile:true,hasTouch:true});
-      await ctx.route('https://slow.test/**',async r=>{await new Promise(z=>setTimeout(z,1500));const c=Buffer.from((await (await ctx.newPage()).evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=1024;c.getContext('2d').fillRect(0,0,9,9);return c.toDataURL('image/jpeg').split(',')[1]})),'base64');r.fulfill({status:200,contentType:'image/jpeg',body:c})});
+      // (the slow picture comes from the app's own address: index.html's security policy lets no other site's picture in, and the
+      // server's pictures are data: anyway)
+      await ctx.route(new URL(url).origin+'/slow-test/**',async r=>{await new Promise(z=>setTimeout(z,1500));const c=Buffer.from((await (await ctx.newPage()).evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=1024;c.getContext('2d').fillRect(0,0,9,9);return c.toDataURL('image/jpeg').split(',')[1]})),'base64');r.fulfill({status:200,contentType:'image/jpeg',body:c})});
       const p=await ctx.newPage();await p.goto(url);await p.waitForFunction(()=>window.appReady);
       await p.evaluate(()=>localStorage.setItem('nav_fit:466x710','64'));await p.reload();await p.waitForFunction(()=>window.appReady);
       const nx=()=>p.evaluate(()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--navx')));
       await p.evaluate(()=>{let k=0;const I=(type,primaryColor,x={})=>({id:type+(k++),type,primaryColor,pattern:'solid',...x});
         HOOK.items=[I('suit','grey'),I('shirt','lightblue'),I('tie','navy',{pattern:'stripe',secondaryColor:'grey'}),I('shoes','black',{leather:'calf'}),I('belt','black',{leather:'calf',metal:'silver'}),I('socks','charcoal')];
         HOOK.settings.workdays=[0,1,2,3,4];HOOK.dayRecs={};HOOK.TODAY_OVERRIDE='2026-11-08T12:00:00';HOOK.cache={};HOOK.sel=new Date(2026,10,8);HOOK.view={y:2026,m:10};
-        const o=HOOK.planFor()[HOOK.key(HOOK.sel)];HOOK.renders[HOOK.comboKey(o)]={sig:HOOK.comboSig(o),img:'https://slow.test/p.jpg',model:'m',t:1};HOOK.show('today');HOOK.fitNav()});
+        const o=HOOK.planFor()[HOOK.key(HOOK.sel)];HOOK.renders[HOOK.comboKey(o)]={sig:HOOK.comboSig(o),img:location.origin+'/slow-test/p.jpg',model:'m',t:1};HOOK.show('today');HOOK.fitNav()});
       await p.waitForTimeout(400);const early=await nx();
       await p.waitForFunction(()=>{const i=document.querySelector('#mannequin-container img');return i&&i.complete&&i.naturalHeight>0},null,{timeout:8000});await p.waitForTimeout(400);
       const late=await nx(),gap=await p.evaluate(()=>Math.round(document.querySelector('body>nav').getBoundingClientRect().top-document.querySelector('.below').getBoundingClientRect().bottom));
