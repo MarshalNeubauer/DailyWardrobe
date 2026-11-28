@@ -75,7 +75,7 @@
   "planner.js": ["bus.js","core.js"],
   "remind.js": ["act.js","bus.js","core.js","month.js","today-plan.js"],
   "safety.js": ["act.js","app.js","bus.js","core.js","toast.js","ui.js"],
-  "scorecard.js": ["act.js","app.js","core.js","days.js","draw.js","fav.js","history.js","month.js","planner.js","safety.js","settings.js","toast.js","today-plan.js","ui.js","weather.js"],
+  "scorecard.js": ["act.js","app.js","bus.js","core.js","days.js","draw.js","fav.js","history.js","month.js","planner.js","settings.js","toast.js","today-plan.js","ui.js","weather.js"],
   "settings.js": ["act.js","back.js","bus.js","core.js","nav.js","toast.js","ui.js"],
   "setup.js": ["act.js","app.js","back.js","bus.js","core.js","days.js","merge.js","nav.js","settings.js","today.js","ui.js"],
   "shop.js": ["act.js","analysis.js","app.js","back.js","bus.js","core.js","draw.js","planner.js","settings.js","toast.js","today-plan.js","ui.js"],

@@ -119,7 +119,7 @@ const SOCKETS={
   'sync-later-run':{serve:'sync.js',ask:['history.js','today-gestures.js','item-view.js'],what:'the redraw a gesture or the item sheet held back runs now (syncLaterRun)'},
   'sync-stop':{serve:'sync.js',ask:['about.js'],what:'the backup that was due is called off (clearTimeout(syncTimer)), before the device is wiped'},
   'sync-running':{serve:'sync.js',ask:['about.js'],what:'the backup under way, if any (syncRun)'},
-  'err-note':{serve:'safety.js',ask:['pattern-read.js','tagging.js','start.js','add-save.js','add-card.js','add.js','shop.js','about.js'],what:'an error noted for the error report (errNote)'},
+  'err-note':{serve:'safety.js',ask:['scorecard.js','pattern-read.js','tagging.js','start.js','add-save.js','add-card.js','add.js','shop.js','about.js'],what:'an error noted for the error report (errNote)'},
   'save-failed':{serve:'safety.js',ask:['add-save.js','kit.js'],what:'a failed save on this phone told (saveFailed)'},
   'tag-failed':{serve:'safety.js',ask:['add.js'],what:'a card\'s failed tagging noted on it (tagFailed)'},
   'guard-unsaved':{serve:'safety.js',ask:['add-keep.js'],what:'the warning before the tab closes over unsaved cards (guardUnsaved)'},
