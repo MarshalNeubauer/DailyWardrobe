@@ -115,7 +115,8 @@ async function run(eng,browser,{ok,url,settle,ROOT,worker}){
   const seen=async p=>p.evaluate(()=>window.__csp.splice(0)).catch(()=>['(page gone)']);
   const all={};const step=async(p,label,fn)=>{try{await fn()}catch(e){all[label+' (did not finish: '+e.message.split('\n')[0].slice(0,60)+')']=[]}await wait(150);const v=await seen(p);if(v.length)all[label]=v};
   const clk=(p,sel)=>p.evaluate(s=>{const e=document.querySelector(s);if(!e)throw new Error('no '+s);e.click()},sel);
-  const tap=async(p,sel)=>{const l=p.locator(sel).first();await l.scrollIntoViewIfNeeded({timeout:3000});await l.tap({timeout:3000})};
+  // (a real tap where it can be had; on a busy runner, a click: this file judges the policy, other tests judge the taps)
+  const tap=async(p,sel)=>{const l=p.locator(sel).first();try{await l.scrollIntoViewIfNeeded({timeout:8000});await l.tap({timeout:8000})}catch(e){await clk(p,sel)}};
 
   /* the seeded wardrobe, connected to the server, with a place for the weather; nothing painted yet (ASM_TEST_OFF while seeding) */
   const s=await ctxOf({},()=>{self.ASM_TEST_OFF=true}),sp=await s.newPage();await sp.goto(url);await sp.waitForFunction(()=>window.appReady,null,{timeout:90000});
