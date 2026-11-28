@@ -68,7 +68,7 @@ let monthOpen=false,monthPanel=null;
 const monthPlan=planMonth;
 function monthGridHtml(){
   const {y,m}=monthPanel,p=monthPlan(y,m),f=new Date(y,m,1),T=todayDate(),cells=[];let n=0;
-  const w0=served('week-first')?ask('week-first'):0;   // the week starts on the work week's first day (settings.js weekFirst; audit 2026-11-15)
+  const w0=ask('week-first')??0;   // the week starts on the work week's first day (settings.js weekFirst; audit 2026-11-15)
   for(let k=0;k<(f.getDay()-w0+7)%7;k++)cells.push('<span class="mc blank"></span>');
   for(const d=new Date(f);d.getMonth()===m;d.setDate(d.getDate()+1)){const k=key(d),o=p[k],wd=isWorkday(d),off=offName(d),work=wd&&hasOutfit(o),isT=+d===+T,past=d<T;
     // a past day marked "✕ Didn't" is not shown as worn (it was, exactly like one, audit 2026-11-14): faded, its number struck through;

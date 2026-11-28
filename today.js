@@ -276,7 +276,7 @@ function stepDay(n,from,times=1){
 function planWith(recs,y,m){const keep=dayRecs;setWardrobe({days:recs});try{return planTrim(buildPlan(y,m))}finally{setWardrobe({days:keep})}}   // (trimmed like the month: the days before the wardrobe existed flashed invented outfits during a drag)
 /* the markup's handlers (act.js). Today's markup has <div>s that take a tap (a row's photo, the photo under the tiles, the open list's
    own ground; scorecard.js's panel and swaps): renderToday calls actTaps on the page after writing it, so a phone's tap there is a click */
-function todayTabTap(){if(typeof show==='function')goToday()}   // the Today tab (index.html); tapped before start.js has run (the scripts are deferred) it does nothing: start-up opens on Today
+function todayTabTap(){goToday()}   // the Today tab (index.html): its handler is registered when today.js runs, after nav.js, whose show it calls; start-up opens on Today
 function vestTap(el){setVest(el.dataset.on==='1')}   // the Vest row's + / −
 function offTap(el){setOff(el.dataset.slot,el.dataset.on==='1')}   // − beside the jacket, tie or pocket square (data-on 1), + on its "Taken off" row (0)
 function pickTap(el){openPicker(el.dataset.s)}   // a row's ⇄ (and the pocket square's +): the picker for its slot

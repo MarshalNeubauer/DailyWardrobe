@@ -96,7 +96,7 @@ function dialHtml(k,d,bad){const t=bad?'bad':dialTone(d.v),r=15,c=2*Math.PI*r,p=
   const arc=p>=.05?`<circle class="darc" cx="20" cy="20" r="${r}" stroke-dasharray="${p.toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 20 20)"/>`:'';
   return `<span class="dial d-${t}"><svg viewBox="0 0 40 40" aria-hidden="true">${bad?'<circle class="dbad" cx="20" cy="20" r="18.6"/>':''}<circle class="dtrack" cx="20" cy="20" r="${r}"/>${arc}<text x="20" y="24.4" text-anchor="middle">${bad?'!':d.v}</text></svg><small>${DIAL_NAMES[k]}</small></span>`}
 /* ---- the week's variety (the unfolded card's last part): the work week holding the day, and each week of its month ---- */
-function weekOf(d){const w0=served('week-first')?ask('week-first'):0,s=dayOnly(d);s.setDate(s.getDate()-((s.getDay()-w0+7)%7));const days=[];
+function weekOf(d){const w0=ask('week-first')??0,s=dayOnly(d);s.setDate(s.getDate()-((s.getDay()-w0+7)%7));const days=[];
   for(let g=0;g<7;g++){const x=new Date(s.getFullYear(),s.getMonth(),s.getDate()+g);if(!isWorkday(x))continue;const r=dayRecs[key(x)];if(r&&r.worn===false)continue;const o=planOn(x);if(o&&hasOutfit(o))days.push({d:x,o})}
   return {start:s,days}}
 /* three parts, 0-100 each, and their average: Colors spread (different tie, shirt and jacket colors over the week's days), No pairing

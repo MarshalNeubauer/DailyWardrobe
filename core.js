@@ -269,7 +269,7 @@ const MAT_ALIAS={'*':{fresco:'tropical wool',tropical:'tropical wool','tropical 
    know nothing of them, so an own material has no season and is painted plain */
 const OWN_MAT_MAX=20;
 const ownMatName=v=>{const s=String(v??'').toLowerCase().replace(/\s+/g,' ').trim();return /^[a-z][a-z -]{0,22}[a-z]$/.test(s)&&!/--/.test(s)&&s.split(' ').length<=3?s:''};
-const ownMats=type=>{const o=typeof settings!=='undefined'&&settings&&settings.ownMaterials,l=o&&typeof o==='object'&&Array.isArray(o[type])?o[type]:[],std=MATERIALS_BY[type]||[],out=[];
+const ownMats=type=>{const o=settings&&settings.ownMaterials,l=o&&typeof o==='object'&&Array.isArray(o[type])?o[type]:[],std=MATERIALS_BY[type]||[],out=[];
   if(!MATERIALS_BY[type])return out;for(const v of l){const n=ownMatName(v);if(n&&!std.includes(n)&&!out.includes(n))out.push(n);if(out.length>=OWN_MAT_MAX)break}return out};
 /* the type in a material sentence: "your shirt materials" (matTypeWord), "every shirt / pair of pants you add" (matTypeOne) */
 const matTypeWord=t=>t==='shirt'?'shirt':(TYPES[t]||t).toLowerCase();
@@ -361,7 +361,7 @@ const SOUTH_CC=['AU','NZ','ZA','AR','CL','UY','PY','BR','BO','PE','NA','BW','ZW'
    domain-warped (looked up through a slow displacement field, CAMO_WARP of the tile: organic, irregular edges instead of round ones), on a
    finer lattice (CAMO_OCT: smaller, more numerous blotches), and camoImage softens the edges and adds a faint cloth grain */
 const CAMO_RE=/camo|multicam|\bocp\b|woodland|flecktarn|realtree/i,camoMemo=new Map(),CAMO_OCT=[[5,1],[10,.45],[20,.18],[40,.05]],CAMO_WARP=.09,CAMO_SOFT=.005,CAMO_GRAIN=.035,CAMO_V=2;
-const camoPat=p=>{if(!p)return false;if(patBase(p)==='camouflage')return true;const c=typeof CUSTOM_PAT!=='undefined'&&CUSTOM_PAT[p];return !!c&&CAMO_RE.test((c.name||'')+' '+(c.desc||'')+' '+p)};
+const camoPat=p=>{if(!p)return false;if(patBase(p)==='camouflage')return true;const c=CUSTOM_PAT[p];return !!c&&CAMO_RE.test((c.name||'')+' '+(c.desc||'')+' '+p)};
 function camoField(N,shares,seed=1){const key=N+'|'+shares.join(',')+'|'+seed;if(camoMemo.has(key))return camoMemo.get(key);
   let s=(Math.imul(seed|0,2654435761)>>>0)||1;const rnd=()=>(s=(Math.imul(s,1664525)+1013904223)>>>0)/4294967296;
   const noise=oct=>{const f=new Float32Array(N*N);for(const [G,w] of oct){const L=new Float32Array(G*G);for(let k=0;k<G*G;k++)L[k]=rnd();
@@ -398,7 +398,7 @@ function camoImage(N,cols,shares,seed=1){const idx=camoField(N,shares,seed),rgb=
 const OCP_V=2,OCP_CAMO={cols:['#BDA685','#828E5D','#8A6A4F','#D8D0BD','#3D3029'],shares:[.30,.28,.20,.11,.11],mm:450,ax:2,k:1.1,warp:.012,vs:.08,grain:.03};
 /* an OCP piece: the uniform blouse in camouflage, or camouflage pants whose own pattern is named or described as OCP, Scorpion or
    MultiCam (his "Camouflage (OCP/MultiCam)"), or any piece marked camo:'ocp' */
-const isOcp=i=>!!i&&camoPat(i.pattern)&&(i.type==='blouse'||i.camo==='ocp'||(i.type==='pants'&&(()=>{const c=typeof CUSTOM_PAT!=='undefined'&&CUSTOM_PAT[i.pattern];return !!c&&/\bocp\b|scorpion|multicam/i.test((c.name||'')+' '+(c.desc||''))})()));
+const isOcp=i=>!!i&&camoPat(i.pattern)&&(i.type==='blouse'||i.camo==='ocp'||(i.type==='pants'&&(()=>{const c=CUSTOM_PAT[i.pattern];return !!c&&/\bocp\b|scorpion|multicam/i.test((c.name||'')+' '+(c.desc||''))})()));
 /* the uniform blouse's tapes and rank (2026-11-18, the owner: per item, set in the item sheet and on the Add card): the name tape and
    service tape text (capitals, at most BLOUSE_TAPE_MAX letters; drawn and painted on the blank tapes) and the rank on the chest tab
    (OCP_RANKS; on OCP subdued spice brown: bars for lieutenants and captains, the oak leaf for majors and lieutenant colonels) */

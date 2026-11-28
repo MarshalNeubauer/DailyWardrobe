@@ -322,7 +322,7 @@ const FAV_TIE=1;   // a favorite piece wins when two choices score the same, or 
 const FAV_LOOK_REST=15;   // workdays a favorite look rests before the planner brings it back (about three weeks)
 const FAV_WEEK=7;   // at most one favorite look in any 7 days (worn, picked or planned)
 let favMemo={f:undefined,looks:[],items:null};
-const favRead=()=>{const f=typeof settings!=='undefined'&&settings?settings.fav:undefined;if(favMemo.f===f)return favMemo;
+const favRead=()=>{const f=settings?settings.fav:undefined;if(favMemo.f===f)return favMemo;
   const L=f&&Array.isArray(f.looks)?f.looks.filter(l=>l&&typeof l.sh==='string'&&(l.j||l.tie)):[],I=f&&Array.isArray(f.items)?f.items.filter(x=>typeof x==='string'):[];
   return favMemo={f,looks:L,items:I.length?new Set(I):null}};
 const favKey=(j,sh,tie)=>(j||'-')+'|'+(sh||'-')+'|'+(tie||'-');
@@ -1028,10 +1028,10 @@ const pairSeen=(o,recent)=>{if(!o||!o.shirt||!o.tie)return -1;const sg=shirtGrou
    - a shirt beyond plain white (15): a color or a pattern 1, a white weave .5, plain white .2;
    - the shoes (10): brown, oxblood or any not black 1, black with a black or charcoal jacket .6, else .35 */
 const INT_ECHO=[12,18],INT_ECHO_L=20,INT_WEAVES=['dobby','woven','oxford','herringbone','twill','royal-oxford','end-on-end','pinpoint','textured','fine-texture'];
-const intHx=k=>!k||k==='none'?null:(COLORS[k]||(typeof CUSTOM_COL!=='undefined'&&CUSTOM_COL[k]&&CUSTOM_COL[k].hex)||null),intChr=l=>Math.hypot(l[1],l[2]);
+const intHx=k=>!k||k==='none'?null:(COLORS[k]||(CUSTOM_COL[k]&&CUSTOM_COL[k].hex)||null),intChr=l=>Math.hypot(l[1],l[2]);
 /* an item's colors in Lab for the echo: [main, second, third] (null where none); kept for a planning or rank run (colRun.il), where the same
    pieces are met thousands of times (a 36,750-outfit rank at 4x CPU took 988 ms without it) */
-function intLabs(i){const run=typeof colRun!=='undefined'&&colRun,m=run&&(run.il||(run.il=new Map()));let v=m&&m.get(i);if(v)return v;
+function intLabs(i){const run=colRun,m=run&&(run.il||(run.il=new Map()));let v=m&&m.get(i);if(v)return v;
   const lab=h=>h?rgbLab(...hexRgb(h)):null;v=[lab(colOf(i)),lab(intHx(i.secondaryColor)),lab(intHx(i.tertiaryColor))];if(m)m.set(i,v);return v}
 function dialInterest(o,fast){const {top,shirt,tie,shoes}=o,P=[];
   if(tie){const tc=intLabs(tie).filter(l=>l&&intChr(l)>9),J=top?intLabs(top):[],S=shirt?intLabs(shirt):[];
@@ -1090,7 +1090,7 @@ function rankLooks(pools,cur){return withColRun(()=>{const t0=Date.now(),sd=!!cu
     if(hard(o))continue;scores.push(dialLook(o))}}
   scores.sort((a,b)=>b-a);const above=v=>{let lo=0,hi=scores.length;while(lo<hi){const m=(lo+hi)>>1;if(scores[m]>v+1e-9)lo=m+1;else hi=m}return lo};
   const strip=o=>({...base,top:o.top,bot:o.bot,shirt:o.shirt,tie:o.tie,shoes:o.shoes,belt:o.belt,watch:o.watch});
-  const me=strip(cur),meV=dialLook(me),rank=above(meV)+1,broken=typeof rateOutfit==='function'?rateOutfit(cur).hard:[],swaps=[];
+  const me=strip(cur),meV=dialLook(me),rank=above(meV)+1,broken=rateOutfit(cur).hard,swaps=[];
   const trySwap=(slot,it)=>{const a={...cur,[slot]:it};if(slot==='shoes'){let bb=null,bf=-1;for(const be of B){const f=beltFit(it,be);if(f!==null&&f>bf){bf=f;bb=be}}a.belt=bb}
     const fixes=broken.length>0&&!rateOutfit(a).hard.length,okA=!hard(strip(a));if(!okA&&!fixes)return;const r=above(dialLook(strip(a)))+1;
     if(broken.length?fixes:r<rank)swaps.push({slot,id:it.id,rank:r,fix:broken.length>0})};

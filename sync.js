@@ -26,7 +26,7 @@ function restoreDone(){restoring=false;try{localStorage.removeItem('sync_restore
    unreachable server, and what Connection and the setup say about backups. A change of the status announces 'backup-changed' (bus.js) */
 // a tester reads a server set-up error in plain words (plainErr, ui.js); the owner, or a connection whose role isn't known yet, the server's sentence
 function setSyncStatus(t){if(askFor('acct-role')==='tester'){const p=plainErr(t);if(p!==t)t='Backup failed: '+p}localStorage.setItem('sync_status',t);emit('backup-changed')}   // (the Backup line: sync-status.js, through bus.js)
-const tabBrowser=()=>typeof homeBrowser==='function'?homeBrowser():'Safari';
+const tabBrowser=()=>homeBrowser();
 /* a backup that couldn't reach the server (Safari's "Load failed", Chrome's "Failed to fetch"): plain words, not the browser's -> text or null.
    (2026-11-15, the audit: "Backup failed: Load failed") */
 function syncNetText(e){const m=String(e&&e.message||e||'');if(!netErr(m))return null;
@@ -46,7 +46,7 @@ function syncPaused(){const p=+localStorage.getItem('sync_pause')||0;if(!p)retur
 /* the server's room for new photos used up (pr.write): everyone's (pr.all) or this tester's own, said as such, without the server's
    "(0 of 6 new photos are saved)" (2026-11-15, the audit: the shared ceiling read "your backups") */
 /* in a Safari tab on an iPhone or iPad (kit.js), where Safari may clear a site's data: the pause adds a word about the backup file (W1-11-06) */
-const safariTab=()=>typeof homeIOS==='function'&&homeIOS()&&!homeStandalone();
+const safariTab=()=>homeIOS()&&!homeStandalone();
 const SAFARI_KEEP=()=>` ${tabBrowser()} can clear a website’s data, so Download backup in Settings → Backup & sync keeps a copy meanwhile.`;
 const backupFullMsg=pr=>{let at='';try{at=new Date(nextUtcDay()).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}catch{}
   const after=`Your changes are kept on this phone and back up after ${at||'midnight UTC'}.${safariTab()?SAFARI_KEEP():''}`;

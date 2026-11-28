@@ -342,7 +342,7 @@ function smallCandidates(L,B,base,skip){
   // striped pair on the casual pants' colour whose pattern picks up the two colours his ties have most; ranked by how often the plan
   // would wear it (an idea, never a fix: sockIdea in runAnalysis)
   {const casual=by('pants').filter(p=>['chinos','jeans'].includes(trouserKind(p)));
-    if(casual.length&&by('tie').length&&!by('socks').some(s=>typeof sockBold==='function'&&sockBold(s))){
+    if(casual.length&&by('tie').length&&!by('socks').some(s=>sockBold(s))){
       const n={},quiet=['white','black','grey','charcoal','silver','cream'];for(const t of by('tie'))for(const f of new Set(colsOf(t)))if(!quiet.includes(f))n[f]=(n[f]||0)+1;
       const tf=Object.entries(n).sort((a,b)=>b[1]-a[1]||(a[0]<b[0]?-1:1)).map(([f])=>f).slice(0,2);
       const pf={};for(const p of casual)pf[planCol(p)]=(pf[planCol(p)]||0)+1;const gc=Object.entries(pf).sort((a,b)=>b[1]-a[1])[0][0];   // (the pants' own colour when socks come in it: khaki on khaki chinos)

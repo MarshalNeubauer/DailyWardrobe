@@ -50,10 +50,10 @@ const ADD_MIN_PX=32;
   try{const img=await loadImg(f);
     if(Math.min(img.width,img.height)<TEX_MIN_PX){toast(`That close-up is too small to show the weave (${img.width}×${img.height} pixels). Take it close to the cloth, at full size.`,6000);return}
     q.raw=q.raw||{};delete q.texDone;delete q.refineCut;delete q.patternCut;q.raw.tex=shrink(img,Math.max(TEX_MAX,CLOSE_MAX));q.texCanvas=applyWb(q.raw.tex,texGains(q));q.texture=q.texCanvas.toDataURL('image/jpeg',.85);q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);q.refineNote='';renderAdd();
-    if(read){measureCard(q);renderAdd();if(typeof addKeep==='function')addKeep();return}
+    if(read){measureCard(q);renderAdd();addKeep();return}
     refineFromCloseup(queue.indexOf(q))}   // tag again with both photos (tagging.js)
   catch{toast('That picture couldn’t be read. Try a JPEG or PNG.')}}
-/** @param {*} i */ function dropTexture(i){const q=cardOf(i);if(!q)return;if(typeof readAbort==='function')readAbort(q);delete q.texture;delete q.texCanvas;delete q.texDone;delete q.refineCut;delete q.patternCut;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw)delete q.raw.tex;q.refineNote='';measureCard(q);renderAdd()}
+/** @param {*} i */ function dropTexture(i){const q=cardOf(i);if(!q)return;readAbort(q);delete q.texture;delete q.texCanvas;delete q.texDone;delete q.refineCut;delete q.patternCut;q.zoom=1;q.cx=q.cy=.5;generateSwatch(q);if(q.raw)delete q.raw.tex;q.refineNote='';measureCard(q);renderAdd()}
 /* (the close-up step of a card, "Step 2 · Fabric close-up", is now the checklist's Texture match section: addCkSecs below) */
 /** @param {*} q @param {*} i */ const wbNote=(q,i)=>q.wb&&q.raw?`<p class="wbnote mut"><small>${q.wbOff?'Original colors.':'Colors corrected for the light.'}</small> <button type="button" class="linkbtn" data-act="cardWb" ${cardAt(q)}>${q.wbOff?'Correct them':'Show original'}</button></p>`
   :q.wbWas&&q.photo?'<p class="wbnote mut"><small>Colors corrected for the light.</small></p>':'';   // a card brought back after a kill: still corrected, no original kept (addRevive)
@@ -99,16 +99,16 @@ document.addEventListener('click',e=>{const t=e.target&&/** @type {Element} */(e
   if(e.isTrusted)addCalm=t.closest('[id^="qconf-"]')?{t:Date.now(),x:e.clientX,y:e.clientY}:null},true);   // (any other tap ends it)
 /* a new card is brought into view (it used to land below the One item / Several items buttons, out of sight under the tab bar) */
 function addShowCard(id){requestAnimationFrame(()=>{const a=$('#add'),el=document.querySelector(`#queue [data-q="${id}"]`);if(!a||a.hidden||!el)return;
-  el.scrollIntoView({behavior:typeof noMotion==='function'&&noMotion()?'auto':'smooth',block:'start'})})}
+  el.scrollIntoView({behavior:noMotion()?'auto':'smooth',block:'start'})})}
 /* (a card not read by Claude asks for its type first: add-ids.js needType) */
 /* the colour is then measured from the middle of the photo (measureCloth, measure.js) once the type is known */
-function measureGuess(q){if(!q||!q.raw||!q.raw.big||(q.edited&&q.edited.primaryColor)||typeof measureCloth!=='function')return;
+function measureGuess(q){if(!q||!q.raw||!q.raw.big||(q.edited&&q.edited.primaryColor))return;
   try{const m=measureCloth(q.raw.big,q.clothBox||null,{gains:q.wbOff?null:q.wb}),n=nearestCols(q.type,m.lab,false)[0];if(n&&COLORS[n.c])q.primaryColor=n.c}catch(e){console.warn('color not measured',e)}}
 /* an image that couldn't be opened can still be added by hand */
 function errToHand(id){const q=queue.find(x=>x.id===id);if(!q)return;const wo=watchOpts({});
   for(const k of ['err','errWh','busy'])delete q[k];Object.assign(q,{manual:true,type:'suit',primaryColor:'grey',secondaryColor:null,tertiaryColor:null,pattern:'solid',metal:'silver',leather:'calf',dial:wo.dial,band:wo.band,bezel:wo.bezel,watchStyle:wo.style});renderAdd()}
 /* Skip, Cancel and Dismiss find their card by its id: by its place, a double tap skipped the next card too */
-function skipCard(id){const k=queue.findIndex(q=>q.id===id);if(k<0)return;const q=queue[k];if(q.abort)try{q.abort.abort()}catch{}if(typeof readAbort==='function')readAbort(q);queue.splice(k,1);   // (readAbort: tagging again and the pattern reading too, CR-2-10)
+function skipCard(id){const k=queue.findIndex(q=>q.id===id);if(k<0)return;const q=queue[k];if(q.abort)try{q.abort.abort()}catch{}readAbort(q);queue.splice(k,1);   // (readAbort: tagging again and the pattern reading too, CR-2-10)
   if((q.multiBusy||q.multiErr)&&!queue.some(x=>x.multi||x.multiBusy||x.multiErr))multiNote(false);   // "Each item in the photo gets its own card…" stayed over no card
   renderAdd()}
 
@@ -131,7 +131,7 @@ const MULTI_CAP=40;
 function multiFail(status,j,e){if(!status){const off=navigator.onLine===false;
     return off||e instanceof TypeError?MULTI_NET:'Something went wrong while reading the photo. Try again.'}
   if(status===404||status===405)return 'The server doesn’t support several items yet: it needs an update.';
-  const m=j&&(typeof j.message==='string'&&j.message.trim()||j.detail)||'',pe=m&&typeof plainErr==='function'?plainErr(m):m;
+  const m=j&&(typeof j.message==='string'&&j.message.trim()||j.detail)||'',pe=m?plainErr(m):m;
   // the server's "Try again later, or add the item by hand." is left out, as on a one-item card: the card has Try again right there
   const t=pe&&/\s/.test(pe)?String(pe).trim().replace(/\s*Try again later\b[^.]*\.?\s*$/i,'').trim():'';
   return t&&/\s/.test(t)?t.replace(/([^.!?])$/,'$1.'):'The photo couldn’t be read just now. Try again in a moment.'}
@@ -140,7 +140,7 @@ const MULTI_NET='You’re offline, or the server couldn’t be reached. The phot
 const oddWord=list=>[...new Set(list.map(it=>String(it.type||'').toLowerCase().replace(/[^a-z -]/g,'').trim().slice(0,20)).filter(Boolean))].slice(0,3).join(', ');
 async function addMulti(f,agg,again){
   const w=localStorage.getItem('worker_url'),tok=localStorage.getItem('app_token')||'';
-  if(!w||(typeof inviteOver==='function'&&inviteOver())){multiMsg('Connect in ⚙ Settings first: finding several items in one photo needs the server.');return}
+  if(!w||inviteOver()){multiMsg('Connect in ⚙ Settings first: finding several items in one photo needs the server.');return}
   // the photo's card while it is read: it has Cancel, and if the reading fails it stays with the reason, Try again and Dismiss (the
   // photo was dropped: it had to be picked again)
   const holder=again||{id:crypto.randomUUID()};Object.assign(holder,{busy:1,multiBusy:1,file:f});delete holder.multiErr;delete holder.multiNet;delete holder.multiCut;if(!again){queue.unshift(holder);addShowCard(holder.id)}
@@ -177,12 +177,12 @@ async function addMulti(f,agg,again){
 function multiAgain(id){const q=queue.find(x=>x.id===id);if(!q||!q.file||q.busy)return;multiNote(true);addMulti(q.file,null,q)}
 
 /* Add's note while not connected: an invitation still being checked (or waiting to be, offline) is not "won't be read" */
-function addNoteText(){const workerSet=typeof isConnected==='function'?isConnected():!!localStorage.getItem('worker_url');   // (an ended invitation reads nothing: ui.js)
+function addNoteText(){const workerSet=isConnected();   // (an ended invitation reads nothing: ui.js)
   // (no model name: a tester read "Last photo read by Claude (claude-…)")
   if(workerSet)return aiError||'Photos are read automatically: the type, colors and pattern are filled in for you.';
   if(askFor('invite-checking'))return 'Checking your invitation… Photos you add meanwhile can be read once it’s done.';
-  if(askFor('acct-why')==='offline'&&typeof hasInviteHash==='function'&&hasInviteHash())return 'Your invitation is checked once you’re back online. Photos you add meanwhile can be read then.';
-  if(typeof inviteOver==='function'&&inviteOver())return 'Your invitation has ended, so photos aren’t read automatically: add items by hand, or paste a new invitation link in Settings → Connection.';
+  if(askFor('acct-why')==='offline'&&hasInviteHash())return 'Your invitation is checked once you’re back online. Photos you add meanwhile can be read then.';
+  if(inviteOver())return 'Your invitation has ended, so photos aren’t read automatically: add items by hand, or paste a new invitation link in Settings → Connection.';
   return 'Photos won’t be read automatically. Paste your invite link in Settings → Connection, or add items by hand.'}
 /* (it no longer closes Settings: a reading coming back or the connection returning redrew Add and shut Settings mid-use; the pages
    that open Add close it themselves, show() and saveSettings) */
@@ -190,17 +190,17 @@ function renderAdd(){
   if($('#note')) $('#note').textContent = addNoteText();
   renderAddFor();
   const ready=queue.filter(cardReady).length,reading=queue.some(cardReading);if($('#save-all'))$('#save-all').innerHTML=ready>1?`<button class="btn pri" data-act="saveAllTap"${reading||saveAllOn?` disabled title="${saveAllOn?'Saving…':'Claude is still reading a card'}"`:''}>${saveAllOn?'Saving…':`Save all ${ready} items`}</button>`:'';
-  if(typeof addGate==='function')addGate();
+  addGate();
   addKeepSoon();
   if($('#queue')){keepFocus($('#queue'),()=>{$('#queue').innerHTML=queue.map((q,i)=>q.id===npsId?'':cardSafe(q,i,()=>q.busy?busyCard(q):q.multiErr?multiErrCard(q):q.err?errCard(q):needType(q)?typeCard(q,i):formCard(q,i))).join('')});   // (the field changed keeps the keyboard: W2-19-01)
-    if(typeof cmpMount==='function')cmpMount($('#queue'))}
+    cmpMount($('#queue'))}
   if(npsId)npsDraw();
-  if(typeof colPick!=='undefined'&&colPick&&colPick.src==='q'&&!cardOf(colPick.ref))closeColPick();   // the color or pattern sheet of a card that went (CR-1-02)
+  if(colPick&&colPick.src==='q'&&!cardOf(colPick.ref))closeColPick();   // the color or pattern sheet of a card that went (CR-1-02)
 }
 on('card-changed',renderAdd);
 /* the router (nav.js, required, loaded before this file) draws Add when it is shown through a socket ('add-draw'): without this file, nothing */
 serve('add-draw',renderAdd);
-function addBackOnline(){if(typeof tagNetText==='function'&&tagNetText(aiError))setAiError('');
+function addBackOnline(){if(tagNetText(aiError))setAiError('');
   for(const q of queue.slice())if(q.tagNet&&q.tagErr&&!q.busy&&q.tagImg)retryTag(queue.indexOf(q));
   for(const q of queue.slice())if(q.multiNet&&q.multiErr&&!q.busy&&q.file)multiAgain(q.id);   // "Several items" too (it waited for a tap)
   const a=$('#add');if(a&&!a.hidden)renderAdd()}

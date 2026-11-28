@@ -287,7 +287,7 @@ const paperSteps=cloth=>{const pic=cls=>`<span class="wbpic ${cls}" style="--clo
    matches the sharp copy, so it is cropped from itself */
 const CROP_MATCH=12;   // the largest mean grey difference (0-255) at 24x24 that still counts as the same picture
 async function cropSource(it){const ph=await imgOf(it.photo);
-  let sharp=null;try{const u=typeof tagImgOf==='function'?await tagImgOf(it.id):null;sharp=u?await imgOf(u):null}catch{sharp=null}
+  let sharp=null;try{const u=await tagImgOf(it.id);sharp=u?await imgOf(u):null}catch{sharp=null}
   if(!sharp||sharp.naturalWidth<=ph.naturalWidth)return ph;
   const grey=src=>{const N=24,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');x.drawImage(src,0,0,N,N);
     const d=x.getImageData(0,0,N,N).data,g=[];for(let k=0;k<d.length;k+=4)g.push(.3*d[k]+.59*d[k+1]+.11*d[k+2]);return g};
