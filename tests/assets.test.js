@@ -18,5 +18,7 @@ module.exports=async({ok,ROOT})=>{
   for(const ic of JSON.parse(R('manifest.webmanifest')).icons||[])need.add(ic.src);
   const unlisted=[...need].filter(f=>!assets.includes(f));
   ok(!unlisted.length,`every script, stylesheet, icon, manifest and worker the app loads is in ASSETS (${unlisted.join(', ')||'all listed'})`);
-  ok(/cache:'no-cache'/.test(sw)&&!/cache:'reload'/.test(sw),"the install revalidates (cache:'no-cache': an unchanged file is a small 304) instead of downloading everything again");
+  // (sw.js's {type:'refresh'} alone fetches past every cache, cache:'reload': it runs only after a page file failed, A1)
+  const inst=(/addEventListener\('install'[^\n]*/.exec(sw)||[''])[0];
+  ok(/cache:'no-cache'/.test(inst)&&!/cache:'reload'/.test(inst)&&/async function refresh\(\)\{[\s\S]*?cache:'reload'/.test(sw),"the install revalidates (cache:'no-cache': an unchanged file is a small 304) instead of downloading everything again; only the refresh after a failed start fetches past the cache");
 };

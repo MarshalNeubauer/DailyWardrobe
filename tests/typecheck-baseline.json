@@ -1,5 +1,5 @@
 {
- "note": "Type errors per file and scope (tests/typecheck.js). May only go down: fix errors, then `node tests/typecheck.js --update`.",
+ "note": "Type errors per file and scope (tests/typecheck.js). Held at 0: any type error fails, and --update refuses to write one.",
  "total": 0,
  "files": {
   "page": {},

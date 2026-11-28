@@ -32,6 +32,7 @@ const shopRecs=r=>r?r.cats.reduce((a,c)=>a+c.recs.filter(x=>!shopHid(x)).length,
 const shopFind=key=>{const r=shopPart||(shop&&shop.res);if(!r)return null;for(const c of r.cats){const x=c.recs.find(x=>x.key===key);if(x)return x}return null};
 /* What to buy closes as another page is shown, and its button on Insights (bus.js register, at the end) */
 import {serve,askFor,runHooks,register} from './bus.js';
+import {loadFailed} from './toast.js';
 import {layerClose,layerOpen} from './ui.js';
 import {CLASS_NAMES,TYPE_WORD,groupLabel,runAnalysis} from './analysis.js';
 db.then(()=>metaGet('shop')).then(v=>{if(v&&v.res&&v.res.v===2&&!shop){shop=v;if(!$('#wardrobe').hidden&&!editing)runHooks('wardrobe-changed')}}).catch(()=>{});
@@ -109,7 +110,7 @@ function analyzeWardrobe(){
   shopBusy={i:-1,n:1,label:'',t0:Date.now()};shopPart=null;redraw();
   let w=null;try{w=new Worker('analysis-worker.js',{type:'module'})}catch(e){}
   if(w){shopWorker=w;w.onmessage=e=>{const d=e.data;if(w!==shopWorker)return;if(d.progress)progress(...d.progress);else if(d.cat)part(d.cat);else{w.terminate();if(d.error)fail(d.error);else finish(d.done)}};
-    w.onerror=e=>{if(!(e instanceof ErrorEvent))askFor('err-note',new Error('The background check (analysis-worker.js) didn\u2019t start: it or a file it imports didn\u2019t load'));   // (as scorecard.js rankWorker: a load failure the page doesn't hear)
+    w.onerror=e=>{if(!(e instanceof ErrorEvent)){askFor('err-note',new Error('The background check (analysis-worker.js) didn\u2019t start: it or a file it imports didn\u2019t load'));loadFailed()}   // (as scorecard.js rankWorker: a load failure the page doesn't hear)
       w.terminate();if(w===shopWorker){shopWorker=null;onMain()}};w.postMessage(JSON.parse(JSON.stringify(payload)))}
   else onMain();
   function onMain(){setTimeout(()=>{try{finish(runAnalysis(items,todayDate(),SHOP_WEEKS,progress))}catch(e){fail(String(e&&e.message||e))}},30)}   // where workers aren't available

@@ -383,7 +383,7 @@ function asmWorker(){if(asmW!==null)return asmW;asmW=false;
     w.onmessage=e=>{const d=e.data||{};if('ready' in d){st.ok=!!d.ready;st.gl=!!d.gl;if(!st.ok)asmWorkerDown();else{asmPump();asmIdleArm()}return}
       if('saving' in d){st.saving=d.saving;asmIdleArm();return}   // (a setup still being saved to disk: asm-worker.js)
       clearTimeout(st.timer);const b=st.busy;st.busy=null;if(b&&b.id===d.id){if(d.error)b.no(new Error(d.error));else b.ok(d.res)}asmPump();asmIdleArm()};
-    w.onerror=e=>{e.preventDefault&&e.preventDefault();asmWorkerDown()};
+    w.onerror=e=>{e.preventDefault&&e.preventDefault();if(typeof ErrorEvent!=='undefined'&&!(e instanceof ErrorEvent))ask('load-failed');asmWorkerDown()};   // (a load failure is a plain Event: the toast's Reload, toast.js loadFailed)
     asmW=st}catch(e){console.warn('no assembly worker',e)}
   return asmW}
 /* the worker can't run (it failed to load, or the browser has no OffscreenCanvas): what is waiting is built on the page */

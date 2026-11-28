@@ -17,6 +17,7 @@ declare var SYNC_OLD: any;
 declare var SYNC_SEND_TEST: any;
 declare var TEST_PLAN: any;
 declare var appReady: any;
+declare var dwLoad: any;
 declare var mqData: any;
 declare var outfitMannequinSvg: any;
 declare var startBusy: any;
