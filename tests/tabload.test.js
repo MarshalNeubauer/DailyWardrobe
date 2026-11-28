@@ -29,7 +29,7 @@ async function run(eng,browser,{ok,url,settle}){
   const load=async taps=>{errs.length=0;hold=new Promise(r=>open=r);const hits0=hits;
     await p.goto(url,{waitUntil:'commit'});
     await p.waitForFunction(()=>'tabTap' in HOOK&&typeof HOOK.tabTap==='function'&&'todayTabTap' in HOOK&&typeof HOOK.todayTabTap==='function'&&!!document.querySelector('#n-stats'),null,{polling:50});   // (not polled by animation frame, the default: WebKit draws no frame while a script is awaited)
-    const before={late:await p.evaluate(()=>!('wardKeep' in HOOK)&&!('renderStats' in HOOK)&&!('errNote' in HOOK)&&!window.appReady),net:hits-hits0};
+    const before={late:await p.evaluate(()=>!('wardKeep' in HOOK)&&!('errNote' in HOOK)&&!window.appReady),net:hits-hits0};   // (stats.js runs before start.js since A5: today.js imports fav.js, which imports it)
     // Chromium: a finger at the tab's middle. WebKit: the tab's click (as tests/webkit.js's touches end): Playwright's WebKit takes no
     // input while a script is awaited (page.tap and touchscreen.tap never return; no animation frame is drawn either)
     for(const id of taps){
@@ -44,7 +44,7 @@ async function run(eng,browser,{ok,url,settle}){
   // the route never sees: 2026-11-24, every load after the first was a finished page) and had not run when the tabs were tapped
   const held=(r,what)=>ok(r.before.net===1&&r.before.late,T+what+`: safety.js was asked of the network and held, the later scripts not run when tapped (safety.js requests ${r.before.net}, held ${r.before.late})`);
   let r=await load(['#n-wardrobe']);held(r,'Wardrobe tapped');
-  ok(r.before.late,T+'the later scripts (safety.js on: wardrobe.js, stats.js) have not run when the tab is tapped');
+  ok(r.before.late,T+'the later scripts (safety.js on: wardrobe.js) have not run when the tab is tapped');
   ok(r.before.errs.length===0,T+`Wardrobe tapped while the later scripts load: no page error (${r.before.errs.join(' | ')||'none'})`);
   ok(r.after.shown==='wardrobe'&&r.after.on==='n-wardrobe'&&r.after.cur==='n-wardrobe',T+`after start-up the app is on the Wardrobe, its tab marked (${JSON.stringify(r.after)})`);
   ok(r.after.n===2&&r.after.wtext>0&&await p.evaluate(()=>['tl-shirt','tl-tie'].every(id=>document.querySelector('#wardrobe').innerHTML.includes(id))),T+'the Wardrobe shows the stored pieces, not an empty wardrobe');
