@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	d56479a36a29171fdaca
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	settings-category	swVersionOf
 a11y.test.js	account.js	<loaded>	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI	settings-summary
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -1357,7 +1358,7 @@ asmcloth.test.js	calendar.js	<loaded>	@whenPulled	calAuto	calBanner	calLink	toda
 asmcloth.test.js	care.js	<loaded>	today-parts
 asmcloth.test.js	checklist.js	<loaded>
 asmcloth.test.js	colpick.js	<loaded>
-asmcloth.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	acctBase	applyCustom	camoPat	casualTop	colOf	dE00	dayClimate	di	esc	get dayRecs	get items	get settings	hasInviteHash	hexRgb	homeAndroid	homeIOS	homeNeeded	isConnected	isWorkday	isoKey	key	keySettings	keySplit	lum	metalWord	mix	occOf	offDays	offName	patBase	primaryCol	rgbHex	rgbLab	setWardrobe	settingsOpen	subHashes	syncUrl	takeSettings	thirdOf	todayDate
+asmcloth.test.js	core.js	$	<loaded>	@PATS_BY{constsuitingsolidpinstripechalks}	@constMETAL_OPTSObject.keysMETAL.map	accentOf	acctBase	applyCustom	camoPat	casualTop	colOf	dE00	dayClimate	di	esc	get dayRecs	get items	get settings	hasInviteHash	hexRgb	homeAndroid	homeIOS	homeNeeded	inviteOver	isConnected	isWorkday	isoKey	key	keySettings	keySplit	lum	metalWord	mix	occOf	offDays	offName	patBase	primaryCol	rgbHex	rgbLab	setWardrobe	settingsOpen	subHashes	syncUrl	takeSettings	thirdOf	todayDate
 asmcloth.test.js	cost.js	<loaded>
 asmcloth.test.js	days.js	<loaded>
 asmcloth.test.js	daysoff.js	<loaded>	refreshHolidays	start-jobs
@@ -6558,7 +6559,6 @@ deps.test.js	tagging.js	<any>
 deps.test.js	tests/deps.json	<any>
 deps.test.js	tests/modscope.js	<any>
 deps.test.js	tests/scriptlist.js	<any>
-deps.test.js	tests/webkit.js	<any>
 deps.test.js	theme.js	<any>
 deps.test.js	toast.js	<any>
 deps.test.js	today-gestures.js	<any>
