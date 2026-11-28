@@ -104,7 +104,7 @@ const SOCKETS={
   'plan-snap':{serve:'today-plan.js',ask:['start.js'],what:"the plan snapshot's key in the meta store (PLAN_SNAP)"},
   'plan-snap-use':{serve:'today-plan.js',ask:['start.js'],what:"the stored plan snapshot taken at start-up (planSnapUse)"},
   'wx-preload':{serve:'today.js',ask:['start.js'],what:"the kept weather put in place at start-up (wxPreload)"},
-  'home-day':{serve:'month.js',ask:['missed.js','start.js'],what:"the day Today opens on (homeDay)"},
+  'home-day':{serve:'month.js',ask:['start.js'],what:"the day Today opens on (homeDay)"},
   'when-pulled':{serve:'history.js',ask:['start.js'],what:"fn once the first pull is in (whenPulled)"},
   'weather-load':{serve:'weather.js',ask:['today.js','start.js','sync.js'],what:"the weather loaded (loadWeather): start-up, a sync"},
   'renders-load':{serve:'photo-keys.js',ask:['start.js'],what:"the kept pictures read at start-up (loadRenders)"},

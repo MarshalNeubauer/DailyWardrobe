@@ -237,7 +237,7 @@ function layerInert(){const up=layerUp(),on=up.length>0||!!document.querySelecto
   // the item sheet under a sheet of its own (the color sheet, the close-up chooser, the reading sheet, a question, the picker): out of
   // reach too (fix round 3, W2-19-03: 18 of 40 Tabs from the color sheet landed in the item sheet behind it)
   const iv=/** @type {HTMLElement} */(document.querySelector('#item-view'));if(iv)iv.inert=!!up.length&&up[0]!==iv&&iv.classList.contains('on');
-  if((!on||npsTop)&&need('nps-id'))need('nps-inert',true)}   // the "Add without a photo" sheet (in main) still up: the page around it stays out of reach (add-sheet.js)
+  if((!on||npsTop)&&ask('nps-id'))ask('nps-inert',true)}   // the "Add without a photo" sheet (in main) still up: the page around it stays out of reach (add-sheet.js)
 function layerOpen(el){if(!el)return;if(!layerFrom.has(el)){const a=document.activeElement;layerFrom.set(el,a);if(a&&a.id)layerFromId.set(el,a.id);else layerFromId.delete(el)}
   if(!el.hasAttribute('tabindex'))el.tabIndex=-1;layerInert();
   if(!el.contains(document.activeElement))try{el.focus({preventScroll:true})}catch{}}
@@ -252,7 +252,7 @@ window.addEventListener('keydown',e=>{if(e.key!=='Tab'&&e.key!=='Escape')return;
   if(e.key==='Escape'){if(e.defaultPrevented)return;
     if(top.id==='settings-modal'){e.preventDefault();e.stopPropagation();need('settings-close')}
     else if(top.id==='pick-sheet'){e.preventDefault();e.stopPropagation();need('picker-close')}
-    else if(top.id==='nps-sheet'){e.preventDefault();e.stopPropagation();if(!need('nps-asking'))need('nps-cancel')}   // (here, not on the sheet: with the focus on <body> the sheet's own listener never heard it)
+    else if(top.id==='nps-sheet'){e.preventDefault();e.stopPropagation();if(!ask('nps-asking'))ask('nps-cancel')}   // (here, not on the sheet: with the focus on <body> the sheet's own listener never heard it)
     return}   // What to buy, the item sheet and the tour close on their own listeners
   const f=layerFocusables(top);if(!f.length){e.preventDefault();return}
   const at=f.indexOf(document.activeElement);

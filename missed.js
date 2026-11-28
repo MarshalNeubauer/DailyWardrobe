@@ -5,7 +5,8 @@ import {saveDay} from './days.js';
 import {sel} from './app.js';
 import {acts} from './act.js';
 import {toast} from './toast.js';
-import {ask,served} from './bus.js';
+import {ask} from './bus.js';
+import {homeDay} from './month.js';   // (N5: an import of an earlier today-no-picture file, where it asked the socket home-day)
 /* past workdays the app was not opened on are recorded as planned and count as worn: say so once, with a way to mark them not worn
    (2026-11-15, the audit: back after a week away, every missed workday was silently counted as worn, toward the cleaning counts too) */
 let missedDays=[],missedT=0;
@@ -44,7 +45,7 @@ function missedSeen(ks){const last=ks[ks.length-1],t=isoKey(todayDate());let s=n
   if(!s||s.k!==last||!Array.isArray(s.d))s={k:last,d:[]};if(s.d.includes(t))return true;if(s.d.length>=MISSED_DAYS)return false;
   s.d.push(t);try{localStorage.setItem('missed_seen',JSON.stringify(s))}catch{}return true}
 let missedPick=false;   // the card's day-by-day choice is open (W2-17-18: the card was all or nothing)
-function missedCard(){if(!served('home-day')||isoKey(sel)!==isoKey(ask('home-day')))return '';const ks=missedOpen(),n=ks.length;if(!n||!missedSeen(ks))return '';
+function missedCard(){if(isoKey(sel)!==isoKey(homeDay()))return '';const ks=missedOpen(),n=ks.length;if(!n||!missedSeen(ks))return '';
   const one=k=>`<button class="linkbtn missone" data-act="missOneTap" data-day="${k}" aria-label="I didn’t wear the outfit of ${esc(shortDate(keyDate(k)))}">${esc(shortDate(keyDate(k)))} ✕</button>`;
   return `<section class="mbox missbox" id="missbox" aria-label="Days counted as worn"><p class="misstxt">${n===1?'A workday':n+' workdays'} you didn’t open the app (${esc(missedSpan(ks))}) ${n===1?'counts':'count'} as worn, as planned.</p>`+
     `<div class="missbtns"><button class="linkbtn" data-act="missNoTap">I didn’t wear ${n===1?'it':'them'}</button>${n>1?`<button class="linkbtn" data-act="missPickTap" aria-expanded="${missedPick}">Choose days</button>`:''}<button class="linkbtn" data-act="missOkTap">Keep as worn</button></div>`+

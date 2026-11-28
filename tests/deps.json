@@ -1,6 +1,6 @@
 {
  "note": "Which file uses which other file's top-level names (tests/deps.test.js). It may only shrink: `node tests/deps.test.js --update` takes off what went away; a new edge is added by hand, with the reason in the pull request.",
- "edges": 700,
+ "edges": 701,
  "files": {
   "about.js": ["act.js","app.js","bus.js","core.js","toast.js","ui.js"],
   "account.js": ["act.js","app.js","back.js","bus.js","core.js","merge.js","settings.js","sync.js","toast.js","ui.js","who.js"],
@@ -58,7 +58,7 @@
   "measure.js": ["app.js","bus.js","core.js","detect.js","srgb.js","tag-request.js"],
   "merge.js": [],
   "migrate.js": ["app.js","bus.js","core.js","measure.js","pattern-read.js","srgb.js","tag-request.js","toast.js","today-plan.js"],
-  "missed.js": ["act.js","app.js","bus.js","core.js","days.js","toast.js"],
+  "missed.js": ["act.js","app.js","bus.js","core.js","days.js","month.js","toast.js"],
   "month.js": ["act.js","app.js","bus.js","core.js","draw.js","planner.js","today-plan.js","ui.js"],
   "mq/shirt-open.js": [],
   "mq/shirt-tie.js": [],
