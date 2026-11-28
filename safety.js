@@ -11,6 +11,7 @@ import {TAGIMG_CACHE,askPersist,inviteOver,isConnected,items,oneStop,settingsOpe
 import {toast} from './toast.js';
 import {plainErr} from './ui.js';
 import {acts} from './act.js';
+import {acctRole} from './who.js';
 let storeToldAt=0;
 // tell the person a save failed (one failed save can reject more than one promise: said once)
 /** @param {*} e */ function saveFailed(e){console.warn('storage failure',e);if(dbDown)return;const now=Date.now();if(now-storeToldAt<1500)return;storeToldAt=now;toast(storeFailText(e),7000)}
@@ -55,7 +56,7 @@ function errWhere(){try{const set=settingsOpen()?'settings ':'';
    Testers only: the owner's own phone keeps its log. Settings → About says so. ---- */
 const ERR_SEND_MS=60000,ERR_SEND_N=10;let errSendAt=0,errSendT=null;
 function errSoon(ms=5000){if(errSendT)return;errSendT=setTimeout(()=>{errSendT=null;errSend()},ms)}
-const errReporting=()=>askFor('acct-role')==='tester'&&isConnected();
+const errReporting=()=>acctRole()==='tester'&&isConnected();
 async function errSend(){try{if(!errReporting()||navigator.onLine===false)return;
   const wait=ERR_SEND_MS-(Date.now()-errSendAt);if(wait>0){errSoon(wait+500);return}
   const un=errList().filter(x=>x&&!x.s&&x.t>Date.now()-7*86400000).slice(-ERR_SEND_N);if(!un.length)return;errSendAt=Date.now();
@@ -132,5 +133,5 @@ export {storeToldAt,saveFailed,dbDown,errTapAt,errList,errNote,errReport,storage
 function nostoreAgainTap(){location.reload()}
 acts({nostoreAgainTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('err-note',errNote);serve('save-failed',saveFailed);serve('tag-failed',tagFailed);serve('guard-unsaved',guardUnsaved);serve('err-report',errReport);serve('sync-store-tell',syncStoreTell);
+serve('err-note',errNote);serve('save-failed',saveFailed);serve('tag-failed',tagFailed);serve('guard-unsaved',guardUnsaved);
 serve('tag-why',()=>tagWhy);serve('tag-net-last',()=>tagNetLast);serve('tag-fail-text',tagFailText);serve('storage-down',storageDown);serve('safety-start',safetyStart);   // the restructure S6f: what required and today-no-picture files ask of this file

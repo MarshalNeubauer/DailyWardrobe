@@ -17,7 +17,6 @@ const ROOT=path.resolve(__dirname,'..'),OUT='types/sockets.d.ts';
 /* inline answers whose type can't be read from an export: written out */
 const WRITTEN={
   'fav-ward':'() => boolean',
-  'sync-stop':'() => void',
   'paper-tip':'() => void',
   'kit-shown':'() => boolean',
   'kit-home-close':'() => void',

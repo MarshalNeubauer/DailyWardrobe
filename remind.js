@@ -7,11 +7,12 @@
    switch follows the morning reminder's until it is set by itself (remindPrefs().care: undefined = as the morning reminder).
    Needs the connection, a phone that can receive Web Push (on an iPhone: the app on the Home Screen, iOS 16.4 or later) and the
    VAPID keys on the server. The choice is this phone's own (localStorage.remind {on, care, time}); each phone subscribes for itself. */
-import {askFor,serve,register} from './bus.js';
+import {serve,register} from './bus.js';
 import {acctBase,acctCall,acctEsc,homeShareShort,iosInSafari,isWorkday,isoKey,key,sentence,todayDate} from './core.js';
 import {piecesLine} from './month.js';
 import {planMonth} from './today-plan.js';
 import {acts} from './act.js';
+import {careReminders} from './care.js';
 const REMIND_CACHE='dw-keep-remind',REMIND_URL='remind.json',CARE_URL='care.json',REMIND_DAYS=14,REMIND_POST_MS=20*3600000;
 const REMIND_CHECK_MS=12*3600000;   // how often a phone already told asks the server whether it still has its subscription
 let remindMsg='',remindBusy=false,remindTimer=null;
@@ -30,7 +31,7 @@ function remindLines(){const out={},T=todayDate();
 /* keep both kinds where the service worker reads them (only the kinds switched on) -> the dates a push is wanted on */
 async function remindKeep(p=remindPrefs()){const lines=p.on?remindLines():{};
   // (a cleaning reminder that throws must not stop the outfit lines from being kept and sent: Round D, after the code review's R3 N2)
-  let care={};if(remindCareOn(p)){try{care=askFor('care-reminders',REMIND_DAYS,p.time)??{}}catch(e){console.warn('cleaning reminders',e)}}
+  let care={};if(remindCareOn(p)){try{care=careReminders(REMIND_DAYS,p.time)}catch(e){console.warn('cleaning reminders',e)}}
   try{if(self.caches){const c=await caches.open(REMIND_CACHE),put=(u,o)=>c.put(u,new Response(JSON.stringify(o),{headers:{'content-type':'application/json'}}));await put(REMIND_URL,lines);await put(CARE_URL,care)}}catch(e){console.warn('reminder lines',e)}
   return [...new Set([...Object.keys(lines),...Object.keys(care)])].sort()}
 async function remindCall(body){const r=await acctCall('push',{method:'POST',body:JSON.stringify(body)});if(r.status!==200)throw new Error(r.j&&r.j.message||'The reminder couldn’t be set. Try again.');return r.j}

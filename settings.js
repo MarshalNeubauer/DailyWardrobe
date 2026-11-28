@@ -8,11 +8,11 @@
    opened or saved, and each of those files registered what it does then. It imports only the board: an import of core.js or back.js broke the offline deep link (the service worker
    answers a file asked for under another folder with the root's copy, so an import resolved against the root ran the file a second
    time; bus.js keeps nothing on the page, so a second copy of it is harmless). Everything else it still reads as globals. */
-import {on,emit,ask,served,serve,need,needFn,runHooks,slotsOf,hooked} from './bus.js';
+import {on,ask,served,serve,need,needFn,runHooks,slotsOf,hooked} from './bus.js';
 import {$,DAY_NAMES,MATERIALS_BY,applyCustom,dayRecs,inviteOver,isoKey,key,keyDate,keySettings,mergeSettings,nowMs,occOf,ownMats,setWardrobe,settings,settingsOpen,stampSettings,todayDate,wearsJacket,wearsTie} from './core.js';
 import {layerClose,layerOpen,tell} from './ui.js';
 import {backDrop,backKind,backPush} from './back.js';
-import {pagesOn,subShown} from './nav.js';
+import {pagesOn,settingsClosed,subShown} from './nav.js';
 import {toast} from './toast.js';
 import {acts} from './act.js';
 /* settings management */
@@ -115,7 +115,7 @@ function closeSettings(){const was=settingsOpen();
   if(was)layerClose($('#settings-modal'));
   if(todayStale){todayStale=false;need('today-home');need('today-draw')}   // (Today on the home day follows a workday taken away)
   // the Wardrobe or stats page a sync changed while Settings was open is drawn again if it is the page under Settings (nav.js show)
-  const v=viewStale;viewStale=null;emit('settings-closed',v)
+  const v=viewStale;viewStale=null;settingsClosed(v)
 }
 function saveSettings(){
   // (audit 2026-11-15, W1-7-02) another address or code typed while connected moves this phone to another account: it goes through the

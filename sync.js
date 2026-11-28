@@ -14,6 +14,9 @@ import {picker} from './history.js';
 import {show} from './nav.js';
 import {toast} from './toast.js';
 import {acts} from './act.js';
+import {syncStoreTell} from './safety.js';
+import {phBatch,phIn,phOut} from './sync-photos.js';
+import {acctRole} from './who.js';
 let restoring=false,syncing=false,syncTimer=null,syncAgain=null,syncRun=null,syncDue=0;
 /* a roll-back waiting for its upload (2026-11-15, the audit: Safari killed 200 ms after "Roll back" left the rolled-back wardrobe on the
    phone, and the next start's sync uploaded it as an ordinary save, so the server never kept "Before the last roll-back" and 24 pieces
@@ -25,7 +28,7 @@ function restoreDone(){restoring=false;try{localStorage.removeItem('sync_restore
    right after this file): the status kept in localStorage sync_status, the pause until the next UTC day, the words for an offline or
    unreachable server, and what Connection and the setup say about backups. A change of the status announces 'backup-changed' (bus.js) */
 // a tester reads a server set-up error in plain words (plainErr, ui.js); the owner, or a connection whose role isn't known yet, the server's sentence
-function setSyncStatus(t){if(askFor('acct-role')==='tester'){const p=plainErr(t);if(p!==t)t='Backup failed: '+p}localStorage.setItem('sync_status',t);emit('backup-changed')}   // (the Backup line: sync-status.js, through bus.js)
+function setSyncStatus(t){if(acctRole()==='tester'){const p=plainErr(t);if(p!==t)t='Backup failed: '+p}localStorage.setItem('sync_status',t);emit('backup-changed')}   // (the Backup line: sync-status.js, through bus.js)
 const tabBrowser=()=>homeBrowser();
 /* a backup that couldn't reach the server (Safari's "Load failed", Chrome's "Failed to fetch"): plain words, not the browser's -> text or null.
    (2026-11-15, the audit: "Backup failed: Load failed") */
@@ -200,7 +203,7 @@ function syncJoinAt(){try{const j=JSON.parse(localStorage.getItem('sync_join')||
 function syncJoinMark(token){try{if(!syncJoinAt()&&token)localStorage.setItem('sync_join',JSON.stringify({k:token.slice(-6),at:syncMark()?1:nowMs()}))}catch{}}   // (a phone that synced with this server before this version: in the account all along)
 /* one round of the small sync, after GET ?lite=1 answered remote: true/false as syncOnce, or {again:{since, all, legacy}} */
 async function syncLite(remote,local,url,token,inline){
-  const raw=await askFor('ph-in',{items:remote.items||[],days:remote.days||[],tombstones:remote.tombstones||{},settings:remote.settings||null},local,url,token),got=cleanState(raw);   // (core.js cleanState: records from outside)
+  const raw=await phIn({items:remote.items||[],days:remote.days||[],tombstones:remote.tombstones||{},settings:remote.settings||null},local,url,token),got=cleanState(raw);   // (core.js cleanState: records from outside)
   // records the check left out are not "lacking" here (else every sync asked for everything again): kept per backup in sync_off
   const gi=new Set(got.items.map(i=>i.id)),gd=new Set(got.days.map(d=>d.date));let off={};try{off=JSON.parse(localStorage.getItem('sync_off')||'{}')||{}}catch{}
   if(off.url!==url)off={url,i:[],d:[]};
@@ -227,9 +230,9 @@ async function syncLite(remote,local,url,token,inline){
   if(!up.items.length&&!up.days.length&&!up.settings&&!Object.keys(up.tombstones).length){setSyncMark(remote.rev,remote.saved,stateSig(now));synced();restoreDone();return true}
   if(syncPaused()){setSyncStatus(localStorage.getItem('sync_pause_msg')||'Today’s backups are used up.');return false}
   const have=new Set(remote.ph||[]);for(const h of inline)have.delete(h);
-  const batch=await askFor('ph-batch',up,have,syncSendMax);   // (up is already cleaned: each batch is a part of it)
+  const batch=await phBatch(up,have,syncSendMax);   // (up is already cleaned: each batch is a part of it)
   if(batch.left){const n=up.items.length;setSyncStatus(`Backing up: ${n} item${n===1?'':'s'} with photos still to send…`)}
-  const {recs,photos}=await askFor('ph-out',batch.up,have),t0=Date.now();
+  const {recs,photos}=await phOut(batch.up,have),t0=Date.now();
   const p=await fetch(url,{method:'POST',headers:{'content-type':'application/json','x-app-token':token},body:JSON.stringify({baseRev:remote.rev||0,baseSaved:remote.saved||0,day:isoKey(new Date(nowMs())),...(restoreWanted()?{reason:'restore'}:{}),delta:recs,photos})});
   clockLearn(p,t0,Date.now());const pr=await p.json().catch(()=>({})),since=`${remote.rev||0}:${remote.saved||0}`;
   if(p.status===409)return {again:{since}};                                   // another device saved first: what it saved, then again
@@ -295,7 +298,7 @@ async function syncOnce(){
     // showed an empty Welcome, and only Settings said "Backup failed: IDBTransaction will abort…")
     // (always toasted, not through saveFailed's 1.5 s once-only: on joining, a start-up write had failed a moment before and its toast was
     // already replaced by "Connected as …", so this one was skipped and the phone showed an empty Welcome with no word: the lead's re-run)
-    if(storeFailure(e)){askFor('sync-store-tell',e);setSyncStatus('Backup failed: '+storeFailText(e).replace(/^Couldn’t save: /,''));return false}
+    if(storeFailure(e)){syncStoreTell(e);setSyncStatus('Backup failed: '+storeFailText(e).replace(/^Couldn’t save: /,''));return false}
     const n=syncNetText(e);setSyncStatus(n||'Backup failed: '+(e.message||e));return false}
   finally{syncing=false}
 }
@@ -305,7 +308,7 @@ const TESTER_SYNC_MS=15*60000;
 /* sync_wait: a change made here that no backup has taken yet (cleared by synced); the Backup summary says so (settings.js backupSummary) */
 /* sync_wait and syncDue by the corrected clock (core.js nowMs), as last_sync and the pause (CR-5-15) */
 function scheduleSync(){clearTimeout(syncTimer);try{if(!localStorage.getItem('sync_wait'))localStorage.setItem('sync_wait',String(nowMs()))}catch{}
-  if(askFor('acct-role')==='tester'){if(!syncDue)syncDue=nowMs();syncTimer=setTimeout(syncNow,Math.max(1000,syncDue+TESTER_SYNC_MS-nowMs()));return}
+  if(acctRole()==='tester'){if(!syncDue)syncDue=nowMs();syncTimer=setTimeout(syncNow,Math.max(1000,syncDue+TESTER_SYNC_MS-nowMs()));return}
   syncTimer=setTimeout(syncNow,2500)}
 /* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
 function setRestoring(v){restoring=v}
@@ -336,7 +339,7 @@ connRestored.then(()=>setTimeout(syncNow,300));   // (after the connection is pu
 function syncNowTap(){syncTap()}
 acts({syncNowTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('sync-soon',scheduleSync);serve('sync-now',syncNow);serve('sync-redraw',syncRedraw);serve('sync-needs-pull',syncNeedsPull);serve('sync-later-run',syncLaterRun);serve('sync-stop',()=>clearTimeout(syncTimer));serve('sync-running',()=>syncRun);
+serve('sync-soon',scheduleSync);serve('sync-now',syncNow);serve('sync-redraw',syncRedraw);serve('sync-later-run',syncLaterRun);
 serve('after-pull',afterPull);serve('pulled-yet',pulledYet);   // the restructure S6f: what required and today-no-picture files ask of this file
 /* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
 register('sync',{'settings-rows':()=>({syncPaused}),   // the Backup line says Paused

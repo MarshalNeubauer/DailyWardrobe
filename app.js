@@ -4,8 +4,10 @@
    photos.js, settings.js, start.js (the start-up
    chain), ui.js and the rest, about.js last.
    (An ES module, at its place in index.html's order; split out of app.js on 2026-11-14.) */
-import {serve,askFor,need,served,runHooks} from './bus.js';   // the Wardrobe's redraw: itemsheet.js pins renderWardrobe for 'wardrobe-changed'
+import {serve,askFor,need,runHooks} from './bus.js';   // the Wardrobe's redraw: itemsheet.js pins renderWardrobe for 'wardrobe-changed'
 import {$,ACCENT_MAX,BELT_MATS,COLORS,FABRIC,LEATHERS,MATERIALS_BY,METAL,PATS_BY,SHOE_NAP,SHOE_STYLES,SHOE_TEXTILES,TAG_Q,TEXTURE_TYPES,TYPES,accentsFor,cleanDay,cleanRecord,cleanSettings,colOf,hexRgb,itemFields,items,labHex,matsFor,nextStamp,normCol,normColFor,normPat,ownMatName,rgbLab,settingsOpen,watchOpts,esc,inviteOver} from './core.js';
+import {tagExtras} from './tag-request.js';
+import {isTester} from './who.js';
 let flt='all',queue=[];const now=new Date();let view={y:now.getFullYear(),m:now.getMonth()},sel=new Date(now.getFullYear(),now.getMonth(),now.getDate());
 
 /* storage */
@@ -240,7 +242,7 @@ async function ask(c,extra){
     const res=await fetch(workerUrl,{
       method:'POST',
       headers:{'Content-Type':'application/json','x-app-token':localStorage.getItem('app_token')||''},   // (the code goes in the header only: the worker hasn't read a body appToken since 2026-11-12)
-      body:JSON.stringify({image:dataUrl,...askFor('tag-extras',ex)}),
+      body:JSON.stringify({image:dataUrl,...tagExtras(ex)}),
       ...(signal?{signal}:{})
     });
     if(!res.ok){let e='',j={};try{j=await res.json();e=j.detail||j.error||''}catch{}
@@ -415,7 +417,7 @@ const endedTold=j=>j&&j.replaced?ENDED_NEW:j&&j.error==='forbidden token'?ENDED_
 /* the server's answer means this invitation is over: switched off (403 'invite off'), or, for a tester, deleted (the account deleted
    on another phone, or its data deleted by the owner: the code is unknown, 403 'forbidden token'). A tester's phone said "Backups aren't
    available on this server yet" and kept trying. For the owner a refused code is a typing mistake, said as it is. */
-const endedAnswer=(status,j)=>status===403&&!!j&&(j.error==='invite off'||j.error==='forbidden token'&&served('is-tester')&&askFor('is-tester'));
+const endedAnswer=(status,j)=>status===403&&!!j&&(j.error==='invite off'||j.error==='forbidden token'&&isTester());
 /* (moved from safety.js with its text unchanged, the restructure S6a) */
 function storeFailure(e){if(!e)return false;if(e.dwStore||e.name==='QuotaExceededError')return true;const t=e.target;
   return !!(t&&typeof IDBRequest!=='undefined'&&(t instanceof IDBRequest||t instanceof IDBTransaction))}
@@ -434,5 +436,5 @@ function setEditing(v){editing=v}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,busyLabelFor,cropSwatch,fitNav,get sel(){return sel},set sel(v){sel=v},get view(){return view},set view(v){view=v},get flt(){return flt},set flt(v){flt=v},get queue(){return queue},set queue(v){queue=v},addTombstones,S,ask,atomic,deadCanvas,deadPic,del,fill,generateSwatch,imgOf,normTag,putRaw,refreshSwatch,shrink,updateSwatchParam,db,get dbConn(){return dbConn},put,afterDom,connKeep,connRestored,metaGet,metaPut,texSwatches,tx,txs,qAt,cardIx,cardOf,get editing(){return editing},set editing(v){editing=v}};
 export {flt,queue,view,sel,dbCur,dbConn,dbWiping,dbUnhold,db,dbGone,dbRetry,dbMark,txFail,txs,tx,metaGet,metaPut,connReady,connKeep,connRestored,atomic,addTombstones,cleanStored,cleanStoredSettings,putRaw,stillCur,fixupRedraw,put,del,cropSwatch,generateSwatch,refreshSwatch,texSwatches,updateSwatchParam,aiError,aiModel,busyLabelFor,fitNav,fitNavSoon,afterScripts,afterDom,aiLabel,ask,normTag,imgOf,loadImg,DEAD_MSG,deadCanvas,deadPic,shrink,fill,cap1,S,announce,keepFocus,setSel,setView,setFlt,setAiError,setAiModel,setConnReady,setDbConn,setDbCur,setDbWiping,ENDED,inviteEnded,endedAnswer,storeFailure,storeFailText,cardOf,qAt,cardAt,cardIx,editing,ENDED_NEW,ENDED_GONE,endedTold,storeErr,storeFull,setEditing};
-serve('announce',announce);serve('conn-keep',connKeep);serve('meta-get',metaGet);serve('meta-put',metaPut);serve('sel-day',()=>sel);serve('after-dom',afterDom);serve('after-scripts',afterScripts);serve('stored-clean',cleanStored);serve('stored-settings-clean',cleanStoredSettings);serve('conn-restored',()=>connRestored);serve('sel-set',setSel);serve('view-set',setView);serve('tex-swatches',texSwatches);serve('tx',tx);serve('txs',txs);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
+serve('conn-keep',connKeep);serve('meta-get',metaGet);serve('meta-put',metaPut);serve('sel-day',()=>sel);serve('after-dom',afterDom);serve('after-scripts',afterScripts);serve('stored-clean',cleanStored);serve('stored-settings-clean',cleanStoredSettings);serve('conn-restored',()=>connRestored);serve('sel-set',setSel);serve('view-set',setView);serve('tex-swatches',texSwatches);serve('tx',tx);serve('txs',txs);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
 serve('ended-answer',endedAnswer);serve('invite-ended',inviteEnded);   // the restructure S6f: photo-keys.js (it loads before this file) hears an ended invitation

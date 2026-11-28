@@ -9,40 +9,20 @@ export type Args<F> = F extends (...a: infer P) => any ? {[I in keyof P]: unknow
 
 /** every socket: serve, ask, askFor and served take these names */
 export interface Sockets {
-  /** the first day a month's plan starts from (planStart) (the restructure S6f) (planner.js) */
-  'plan-start': typeof import('../planner.js').planStart;
-  /** a month planned alone (buildPlan) (the restructure S6f) (planner.js) */
-  'plan-build': typeof import('../planner.js').buildPlan;
-  /** the shared simulation of the months ahead (planSim) (the restructure S6f) (planner.js) */
-  'plan-sim': typeof import('../planner.js').planSim;
   /** the workdays Insights and What to buy measure (horizonKeys) (analysis.js) */
   'horizon-keys': typeof import('../analysis.js').horizonKeys;
-  /** a reading's key (settSig), in a shirt's or a piece's picture key (the restructure S6f) (detect.js) */
-  'sett-sig': typeof import('../detect.js').settSig;
-  /** a piece's reading if it can be drawn (usableSett), for a shirt's picture key (the restructure S6f) (detect.js) */
-  'usable-sett': typeof import('../detect.js').usableSett;
-  /** the striped patterns (STRIPE_PATS), for a shirt's picture key (the restructure S6f) (detect.js) */
-  'stripe-pats': () => typeof import('../detect.js').STRIPE_PATS;
-  /** the checked patterns (CHECK_PATS), for a shirt's picture key (the restructure S6f) (detect.js) */
-  'check-pats': () => typeof import('../detect.js').CHECK_PATS;
   /** the role this phone is connected as: owner, tester or null (acctRole) (who.js) */
   'acct-role': typeof import('../who.js').acctRole;
   /** the account the server answered (acct.me), whose lookups count is kept up to date (who.js) */
   'acct-me': () => typeof import('../who.js').acct['me'];
   /** whether this phone is a tester's (isTester) (the restructure S6f) (who.js) */
   'is-tester': typeof import('../who.js').isTester;
-  /** the page follows who is connected (applyRole) (the restructure S6f) (who.js) */
-  'apply-role': typeof import('../who.js').applyRole;
   /** whether "Drawing only" is chosen (picsDrawn) (photo-keys.js) */
   'pics-drawn': typeof import('../photo-keys.js').picsDrawn;
   /** the kept pictures read at start-up (loadRenders) (photo-keys.js) */
   'renders-load': typeof import('../photo-keys.js').loadRenders;
   /** the kept pictures (renders) (photo-keys.js) */
   'renders': () => typeof import('../photo-keys.js').renders;
-  /** what a tag request sends beside the photo (tagExtras) (the restructure S6f) (tag-request.js) */
-  'tag-extras': typeof import('../tag-request.js').tagExtras;
-  /** words read out by the live region (announce): the Undo button's (app.js) */
-  'announce': typeof import('../app.js').announce;
   /** the database's copy of the connection follows (connKeep) (app.js) */
   'conn-keep': typeof import('../app.js').connKeep;
   /** a value read from the database's meta store (metaGet): the stored settings, the plan snapshot (app.js) */
@@ -293,10 +273,6 @@ export interface Sockets {
   'tag-failed': typeof import('../safety.js').tagFailed;
   /** the warning before the tab closes over unsaved cards (guardUnsaved) (safety.js) */
   'guard-unsaved': typeof import('../safety.js').guardUnsaved;
-  /** the problems noted on this phone, for Feedback (errReport) (safety.js) */
-  'err-report': typeof import('../safety.js').errReport;
-  /** a storage failure during a sync told (syncStoreTell) (safety.js) */
-  'sync-store-tell': typeof import('../safety.js').syncStoreTell;
   /** why the last tag request failed (safety.js tagWhy) (the restructure S6f) (safety.js) */
   'tag-why': () => typeof import('../safety.js').tagWhy;
   /** whether the last tag request failed on the network (tagNetLast) (the restructure S6f) (safety.js) */
@@ -365,8 +341,6 @@ export interface Sockets {
   'care-back-text': typeof import('../care.js').careBackText;
   /** the cleaning banner's cut follows the swatches (careBandSoon) (care.js) */
   'care-band-soon': typeof import('../care.js').careBandSoon;
-  /** the cleaning reminders for the days ahead (careReminders) (care.js) */
-  'care-reminders': typeof import('../care.js').careReminders;
   /** whether What to buy is open (shopOpen) (shop.js) */
   'shop-open': () => typeof import('../shop.js').shopOpen;
   /** how the backup stands, in words, for the setup's Connection step (backedUpWords) (sync.js) */
@@ -377,24 +351,12 @@ export interface Sockets {
   'sync-now': typeof import('../sync.js').syncNow;
   /** a sync's redraw of a page, which waits while Settings is open (syncRedraw) (sync.js) */
   'sync-redraw': typeof import('../sync.js').syncRedraw;
-  /** whether this phone must pull first, before remaking pictures (syncNeedsPull) (sync.js) */
-  'sync-needs-pull': typeof import('../sync.js').syncNeedsPull;
   /** the redraw a gesture or the item sheet held back runs now (syncLaterRun) (sync.js) */
   'sync-later-run': typeof import('../sync.js').syncLaterRun;
-  /** the backup that was due is called off (clearTimeout(syncTimer)), before the device is wiped (sync.js) */
-  'sync-stop': () => void;
-  /** the backup under way, if any (syncRun) (sync.js) */
-  'sync-running': () => any;
   /** a call once the first pull is merged (afterPull) (the restructure S6f) (sync.js) */
   'after-pull': typeof import('../sync.js').afterPull;
   /** whether the first pull is merged (pulledYet) (the restructure S6f) (sync.js) */
   'pulled-yet': typeof import('../sync.js').pulledYet;
-  /** a pulled backup's photos put back from their references (phIn) (sync-photos.js) */
-  'ph-in': typeof import('../sync-photos.js').phIn;
-  /** the next batch an upload carries (phBatch) (sync-photos.js) */
-  'ph-batch': typeof import('../sync-photos.js').phBatch;
-  /** an upload's photos sent as references (phOut) (sync-photos.js) */
-  'ph-out': typeof import('../sync-photos.js').phOut;
   /** a backup file downloaded (downloadBackup) (backupfile.js) */
   'backup-download': typeof import('../backupfile.js').downloadBackup;
   /** whether an invitation link is being checked (inviteChecking) (account.js) */
@@ -437,8 +399,6 @@ export interface Sockets {
   'kit-import-open': typeof import('../kit.js').kitImportOpen;
   /** a walkthrough opened over the app (kitOpen) (kit.js) */
   'kit-open': typeof import('../kit.js').kitOpen;
-  /** About's Add to Home Screen button (homeAbout) (kit.js) */
-  'home-about': typeof import('../kit.js').homeAbout;
   /** an edit in the item sheet makes a sample piece his (kitUserEdit) (the restructure S6f) (kit.js) */
   'kit-user-edit': typeof import('../kit.js').kitUserEdit;
   /** what the wardrobe still needs before a day can be dressed (setupNeeds), for Insights (setup.js) */
@@ -465,18 +425,10 @@ export interface Sockets {
 
 /** the sockets asked with need or needFn, which take only these names (a required call stays visible) */
 export interface Needs {
-  'plan-start': Sockets['plan-start'];
-  'plan-build': Sockets['plan-build'];
-  'plan-sim': Sockets['plan-sim'];
   'horizon-keys': Sockets['horizon-keys'];
-  'sett-sig': Sockets['sett-sig'];
-  'usable-sett': Sockets['usable-sett'];
-  'stripe-pats': Sockets['stripe-pats'];
-  'check-pats': Sockets['check-pats'];
   'pics-drawn': Sockets['pics-drawn'];
   'renders-load': Sockets['renders-load'];
   'renders': Sockets['renders'];
-  'announce': Sockets['announce'];
   'conn-keep': Sockets['conn-keep'];
   'meta-get': Sockets['meta-get'];
   'meta-put': Sockets['meta-put'];

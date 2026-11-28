@@ -11,6 +11,7 @@ import {ACTS,acts} from './act.js';
 import {toast} from './toast.js';
 import {backBorrow,backOn,backReturn,backSettled} from './back.js';
 import {$,MONTH_EASE,MONTH_MS,hasInviteHash,inviteOver,isConnected,items,settingsOpen} from './core.js';
+import {acct,acctRole,applyRole,isTester} from './who.js';
 /* the person asked for less motion, or the browser can't animate (moved here from item-view.js, the restructure S3d: the pages, sheets
    and cards all ask it) */
 const noMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches||!Element.prototype.animate;
@@ -261,7 +262,7 @@ window.addEventListener('keydown',e=>{if(e.key!=='Tab'&&e.key!=='Escape')return;
 /* ---- the server's set-up errors in plain words: "Add an OPENAI_API_KEY secret to the worker…" reached a new user's Today (audit
    2026-11-13). Only the owner (acctRole 'owner', account.js) sees the technical sentence, which says what to set up. ---- */
 const TECH_RE=/\bAPI key\b|\bsecret\b|\bbinding\b|\bworker\b|Workers AI|Cloudflare|\btoken\b/i,TECH_NAMES=/[A-Z]+_API_KEY|\bKV\b|\bWARDROBE\b|APP_TOKEN|RENDER_QUEUE|RENDER_HUB|VAPID/;   // (the names case-sensitive: "your wardrobe" is plain English)
-const ownerHere=()=>served('acct-role')&&ask('acct-role')==='owner';
+const ownerHere=()=>acctRole()==='owner';
 /* the browser's own words for a request that never reached the server (Safari "Load failed", Chrome "Failed to fetch", Firefox
    "NetworkError…") -> a plain sentence for everyone, or null (2026-11-15, the audit: "Backup failed: Load failed", "4 failed (Load failed)") */
 const NET_RE=/^(TypeError: )?(Load failed|Failed to fetch|NetworkError when attempting to fetch resource\.?|Network request failed|The network connection was lost\.?|The Internet connection appears to be offline\.?)$/i;
@@ -285,15 +286,15 @@ function needConn(btn){if(!btn)return false;const off=!isConnected(),box=btn.clo
 /* the reason as a line of text ('' when connected) */
 /* Settings → Connection: its one-line summary, and the box at its top. Not connected: what a connection adds, and a field for the
    invite link (the address and the code themselves are under Advanced). Who is connected is the account box under it (account.js). */
-function connSummary(){if(ask('invite-checking'))return 'Checking your invitation…';if(inviteOver())return 'Invitation ended';if(!isConnected())return 'Not connected';const m=ask('acct-me');
+function connSummary(){if(ask('invite-checking'))return 'Checking your invitation…';if(inviteOver())return 'Invitation ended';if(!isConnected())return 'Not connected';const m=acct.me;
   return m?(m.role==='owner'?'Connected as the owner':'Connected as '+(m.name||'a tester')):'Connected'}
 let connMsg='',connBusy=false;
 function renderConnUI(){const el=document.querySelector('#conn-box');if(!el)return;const typed=el.querySelector('#conn-link')?/** @type {HTMLInputElement} */(el.querySelector('#conn-link')).value:'';
   const checking=!!ask('invite-checking'),waiting=!checking&&ask('acct-why')==='offline'&&hasInviteHash();
   el.innerHTML=checking?'<p class="shelp" id="conn-state" role="status">Checking your invitation…</p>'
-   :isConnected()?`<p class="shelp" id="conn-state"><span class="conn-tick" aria-hidden="true">✓</span> Photos of your clothes are read automatically, item pictures can be made, and ${served('backed-up-words')?ask('backed-up-words'):'your wardrobe is backed up'}.</p>`+
+   :isConnected()?`<p class="shelp" id="conn-state"><span class="conn-tick" aria-hidden="true">✓</span> Photos of your clothes are read automatically, item pictures can be made, and ${ask('backed-up-words')}.</p>`+
      // (audit 2026-11-15, W1-7-02) the owner's phone moved to a tester's invitation keeps the owner's way back (account.js acctOwnerPhone)
-     (served('is-tester')&&ask('is-tester')&&localStorage.getItem('acct_was_owner')==='1'?'<p class="shelp conn-own" id="conn-own"><button type="button" class="linkbtn" data-act="connOwnTap">I run the server: connect with its address and code</button></p>':'')
+     (isTester()&&localStorage.getItem('acct_was_owner')==='1'?'<p class="shelp conn-own" id="conn-own"><button type="button" class="linkbtn" data-act="connOwnTap">I run the server: connect with its address and code</button></p>':'')
    :`<p class="shelp" id="conn-state">${inviteOver()?'Your invitation has ended, so photos aren’t read automatically and nothing is backed up. Your wardrobe stays on this phone, and the app keeps working without a connection. If you were given a new invitation link, paste it here.'
      :waiting?'Your invitation link couldn’t be checked: the server couldn’t be reached. It is tried again when you come back to the app or your connection returns, or tap Connect.'
      :'The app works without a connection: you add your items by hand. With an invite link, photos of your clothes are read automatically, item pictures can be made, and your wardrobe is backed up.'}</p>
@@ -302,7 +303,7 @@ function renderConnUI(){const el=document.querySelector('#conn-box');if(!el)retu
 <p class="shelp conn-own" id="conn-own"><button type="button" class="linkbtn" data-act="connOwnTap">I run the server: connect with its address and code</button></p>`;
   const f=/** @type {HTMLInputElement} */(el.querySelector('#conn-link'));if(f)f.value=typed||(waiting?location.href:'');
   for(const ph of /** @type {NodeListOf<HTMLElement>} */(document.querySelectorAll('.conn-off-note')))ph.innerHTML=isConnected()?'':`${uiEsc(ph.dataset.what||'This')} needs a connection. <button type="button" class="linkbtn" data-act="connOffTap">Connect</button>`;
-  ask('apply-role')}
+  applyRole()}
 /* not connected, the owner's fold (the server's address and code) stays out of sight until asked for: a new tester was invited to type
    into "Code" (audit 2026-11-14). The owner connecting a new phone taps this line (styles.css: body.nocon:not(.srv-open)) */
 function connOwn(){document.body.classList.add('srv-open');const f=document.querySelector('#adv-connection');if(f&&!f.classList.contains('open')){const b=f.querySelector('.adv-head');if(b)advToggle(b)}

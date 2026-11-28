@@ -26,4 +26,4 @@ globalThis.HOOK={__proto__:globalThis.HOOK||null,rememberRole,get acct(){return 
 export {acct,rememberRole,acctRole,isTester,applyRole,setAcct};
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('acct-role',acctRole);serve('acct-me',()=>acct.me);
-serve('is-tester',isTester);serve('apply-role',applyRole);   // the restructure S6f: what required and today-no-picture files ask of this file
+serve('is-tester',isTester);   // the restructure S6f: what required and today-no-picture files ask of this file

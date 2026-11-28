@@ -4,10 +4,11 @@
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of today.js on 2026-11-17, Round C.) */
 /* the plan for a month. Every month from two months back shares one simulation (kept in the cache, so anything that clears
    the cache starts it again): another month only plans the days not planned yet. Earlier months are built on their own. */
-import {serve,need} from './bus.js';   // (planner.js's planning, a logic file above this one in the layers: the restructure S6f)
+import {serve} from './bus.js';
 import {climate,dayRecs,isoKey,items,keyDate,settings,todayDate,weather} from './core.js';
 import {idsOf} from './days.js';
 import {metaPut,view} from './app.js';
+import {buildPlan,planSim,planStart} from './planner.js';
 let cache={};
 /* the one way to throw the plan away (Round B, CR-7-07: `cache={}` was written from 16 files): anything that changes what the planner
    sees (the wardrobe, the history, the settings, the weather) calls it */
@@ -15,9 +16,9 @@ function planDirty(){cache={}}
 const planRuns=[];   // the months worked out (not from the cache) since start-up (tests/speed.test.js)
 function planMonth(y,m){const k=y+'-'+m;if(cache[k])return cache[k];if(planRuns.length<200)planRuns.push(k);
   if(window.TEST_PLAN)return cache[k]=TEST_PLAN.plan(y,m);   // tests that don't need the planner (tests/fixedplan.js)
-  const start=need('plan-start',y,m),T=todayDate();
-  if(+start!==+need('plan-start',T.getFullYear(),T.getMonth()))return cache[k]=planTrim(need('plan-build',y,m));
-  return cache[k]=planTrim((cache.sim||(cache.sim=need('plan-sim',start))).upTo(new Date(y,m+1,0)))}
+  const start=planStart(y,m),T=todayDate();
+  if(+start!==+planStart(T.getFullYear(),T.getMonth()))return cache[k]=planTrim(buildPlan(y,m));
+  return cache[k]=planTrim((cache.sim||(cache.sim=planSim(start))).upTo(new Date(y,m+1,0)))}
 /* no outfit is shown for a day before the wardrobe existed (the day the first item was added; items from before `added` existed set no
    start): a new user saw two weeks of planned past days with ✕ and ✓ and "22 outfits" in the month (audit 2026-11-13). The planner
    still plans them (rest and variety carry on from them); they are only left out of the month's plan, and a day with a record stays */

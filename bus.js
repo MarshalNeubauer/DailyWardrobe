@@ -15,8 +15,10 @@
    A topic is named for what happened ('settings-saved'), not for who acts on it. Every topic, who emits it and who listens, is listed
    in tests/bus.test.js (TOPICS), which fails on a topic emitted with no listener in the app or pinned with no emitter.
 
-   Sockets (the restructure, step 2, 2026-11-26): how a required file calls into an optional one ("show a toast", "open the color
-   picker") without importing it, so that file failing to load loses only its own feature (tests/load-contract.json).
+   Sockets (the restructure, step 2, 2026-11-26): how a file calls one it may not import (a lower layer calling up: app.js "show a
+   toast", ui.js "close Settings") without naming it. Since A2 (2026-11-28) every page file loads or the app doesn't start (all or
+   nothing, tests/load-contract.json), so a socket no longer keeps a missing file's loss to its own feature; an import is used wherever
+   the import rules allow one.
      serve(name, fn)        the feature offers fn under name; the last one served is the one asked
      ask(name, ...args)     call what is served under name with args and give back its answer; when nothing is served (the feature's
                             file didn't load), nothing is called and the answer is undefined, as the `typeof f==='function'` guards did.

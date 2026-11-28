@@ -400,6 +400,8 @@ Static app served from `main` by GitHub Pages (no build step): ES modules with a
 - N7 (2026-11-28) made three asks that the asker's own imports already covered into imports: fav.js `swatchSVG` (draw.js), kit.js `openItem` (item-view.js; `item-show` stays for cost.js) and tagging.js `addKeep` (add-keep.js; `add-keep` stays for pattern-read.js and about.js); the page's run order is unchanged
 - the painter's fingerprint: asmCmCodeSig 1ui0u8j, the kept setups 14g16pr (N6, the one repaint); a `serve` or `register` line is never part of a listed function's text, and JSDoc above a painter function is not part of `String(fn)`
 - the counts (N7, main after N1-N7): 225 sockets, 71 Needs, 27 hooks (12 run, 15 slots), 10 topics; `node tools/sockets-dts.js --check` prints them
+- A4 (2026-11-28, lane C2: the data files and the ui kit) made their asks imports: photo-keys.js imports detect.js's readings, about.js add-keep.js, kit.js, safety.js, sync.js and who.js, ui.js, sync.js, safety.js and app.js who.js, sync.js safety.js and sync-photos.js, today-plan.js planner.js, app.js tag-request.js, days.js today-plan.js, toast.js app.js, migrate.js sync.js, remind.js care.js; `settings-closed` is a direct call (settings.js closeSettings calls nav.js `settingsClosed`)
+- A4 left as sockets: photo-keys.js's four of app.js (`meta-put`, `txs`, `ended-answer`, `invite-ended`): lab/gl-bench.html runs photo-keys.js without app.js; days.js's and locks.js's `sync-soon` and ui.js's `backed-up-words`: sync.js imports start.js and settings.js, so an early file importing sync.js runs nearly the whole app before it (modload's held start.js no longer has its tabs' handlers)
 
 ### `core.js`
 

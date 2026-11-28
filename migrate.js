@@ -8,7 +8,7 @@
    matched, gains held to 0.6-1.6. The sharp copy is kept again under the new close-up's signature. Another device has nothing to do. */
 /* a picture's mean colour in linear light (on a 64x64 copy), and a canvas's colours scaled so its mean matches another's, each channel's
    gain held to 0.6-1.6: the two remakes below (one copy: CR-2-15) */
-import {askFor,need,register} from './bus.js';
+import {need,register} from './bus.js';
 import {$,PH_MAX,TEX_MAX,colOf,isoKey,items} from './core.js';
 import {fixupRedraw,imgOf,put,refreshSwatch,stillCur} from './app.js';
 import {planDirty} from './today-plan.js';
@@ -17,6 +17,7 @@ import {linSrgb8,srgbLin8} from './srgb.js';
 import {keepCloseImg,resignTagImg,sharpCloseOf,tagImgOf} from './tag-request.js';
 import {toast} from './toast.js';
 import {settFromSpec} from './pattern-read.js';
+import {syncNeedsPull} from './sync.js';
 function linMean64(im){const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,64,64);const d=x.getImageData(0,0,64,64).data,m=[0,0,0];
   for(let k=0;k<d.length;k+=4)for(let q=0;q<3;q++)m[q]+=srgbLin8(d[k+q]);return m.map(v=>v/4096)}
 function matchMean(x,W,H,want,has){const g=want.map((v,q)=>Math.min(1.6,Math.max(.6,has[q]>1e-4?v/has[q]:1)));
@@ -42,7 +43,7 @@ async function upgradeCloseups(){try{if(localStorage.getItem(TEX_UP_FLAG)===TEX_
    copy) is a new server value: a connected phone remakes at most REMAKE_DAY a day (localStorage remake_day {d, n}), the rest on the next
    days; a phone with no connection writes nothing to the server and has no limit */
 const REMAKE_DAY=10;
-const remakeOn=()=>askFor('sync-needs-pull');
+const remakeOn=()=>syncNeedsPull();
 const remakeRead=()=>{try{const r=JSON.parse(localStorage.getItem('remake_day')||'null');return r&&r.d===isoKey(new Date())?+r.n||0:0}catch{return 0}};
 const remakeLeft=()=>remakeOn()?Math.max(0,REMAKE_DAY-remakeRead()):Infinity;
 function remakeSpend(k){if(!remakeOn())return;try{localStorage.setItem('remake_day',JSON.stringify({d:isoKey(new Date()),n:remakeRead()+k}))}catch{}}

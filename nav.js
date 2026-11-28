@@ -1,7 +1,7 @@
 /* Daily Wardrobe: moving between pages (show), the pages opened over another (subOpen, subBack, openAdd) and whether start-up lets a
    page be shown yet (pagesOn). The router, split out of start.js (the restructure S3f, 2026-11-26; the owner's choice of 2026-11-25):
    start.js keeps the start-up chain. An ES module in the ui kit, before the screens that move between pages. */
-import {on,emit,ask,needFn,slotsOf} from './bus.js';   // (this file reads nothing of app.js's own ask(), the server request)
+import {emit,ask,needFn,slotsOf} from './bus.js';   // (this file reads nothing of app.js's own ask(), the server request)
 import {$,MONTH_EASE,TYPES} from './core.js';
 import {backDrop,backHold,backPush} from './back.js';
 import {noMotion} from './ui.js';
@@ -36,9 +36,9 @@ let pagesOn=false,pageWant=null;
 function setPagesOn(v){pagesOn=v}
 function setPageWant(v){pageWant=v}
 globalThis.HOOK={__proto__:globalThis.HOOK||null,subBack,openAdd,show};
-/* the notice board (bus.js): what this file does when Settings announces it (settings.js no longer names this file) */
-on('settings-closed',v=>{if(v&&!$('#'+v).hidden)show(v)});   // the Wardrobe or stats page a sync changed while Settings was open
-export {PAGES,pageBack,subShown,subOpen,subBack,openAdd,pagesOn,setPagesOn,setPageWant,show,showWanted};
+/* Settings closed (settings.js closeSettings calls it): the Wardrobe or stats page a sync changed while Settings was open (v, or null) */
+function settingsClosed(v){if(v&&!$('#'+v).hidden)show(v)}
+export {PAGES,pageBack,subShown,subOpen,subBack,openAdd,pagesOn,setPagesOn,setPageWant,show,showWanted,settingsClosed};
 /* Settings, when open, fills in how it is (S.set: its open categories and scroll: settings.js on 'sub-opening') and is put back so
    (settings.js on 'sub-back') */
 function subOpen(){backPush('sub');
