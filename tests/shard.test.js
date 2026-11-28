@@ -3,6 +3,7 @@
 const fs=require('fs'),os=require('os'),path=require('path'),{execFileSync}=require('child_process');
 module.exports=async({ok,ROOT})=>{
   const S=require('./shard');
+  ok(false,'PLANT: a planted failing check (mailfix proof, removed next commit)');
   const keys=JSON.parse(execFileSync(process.execPath,[path.join(ROOT,'tests','run.js'),'--keys'],{encoding:'utf8'}));
   ok(keys.length>100&&keys.includes('shard.test.js')&&keys.some(k=>k.endsWith(S.WK_HALF))&&new Set(keys).size===keys.length,`run.js --keys lists every test once (${keys.length}, WebKit halves included)`);
   const times=S.readTimes();
