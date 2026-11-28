@@ -16,7 +16,8 @@
    (localStorage err_log, safety.js's list). Nothing is deleted or written to the wardrobe. A start-up that does come overwrites it.
    All or nothing (A1, the owner's decision of 2026-11-28): the page's last script, the entry, imports every page file, so when any one
    can't be loaded, doesn't parse or link, or throws as it runs, the entry never runs and window.dwEntry is missing once the page is
-   parsed (DOMContentLoaded: every module has run or failed by then; merge.js, the one classic script, counts by its DW_MERGE). The first
+   parsed (DOMContentLoaded: every module has run or failed by then; merge.js, the one classic script, counts by its DW_MERGE, which
+   the entry looks for before it sets dwEntry). The first
    time, the app's files are fetched afresh (with sw.js in control its {type:'refresh'}: this version's files again, or a newer version
    published meanwhile, taken at once, the owner's O2; with none, each file past the browser's cache) and the page reloads once, about
    1.5 s after the failure. sessionStorage dw_retry holds when (one automatic reload per tab every 2 minutes; where sessionStorage can't
@@ -31,7 +32,7 @@ function card(){timer=0;var t=document.getElementById("today");if(!t||w.appReady
   d.innerHTML='<p><b>The app couldn’t start.</b></p><p class="shelp">Your wardrobe is safe on this phone: nothing was deleted. Check your connection, then try again.</p><div class="sactions"><button type="button">Try again</button></div>';
   d.querySelector("button").addEventListener("click",function(){go("",0)});t.hidden=false;t.appendChild(d);note("Start-up: the app didn’t start: ")}
 function soon(ms){if(!timer&&!w.appReady&&!going)timer=setTimeout(card,ms)}
-function heard(m){if(w.appReady)return;if(why.length<4)why.push(String(m).slice(0,80));if(document.readyState==="complete")soon(WAIT)}
+function heard(m){if(w.appReady)return;m=String(m).slice(0,80);if(why.length<4&&why.indexOf(m)<0)why.push(m);if(document.readyState==="complete")soon(WAIT)}
 /* the app's files afresh -> "fresh", "kept" (the cache as it was: offline, or a file still missing), "files" (no service worker: each
    past the browser's cache), "newer" (found and downloading), "taken" (take: the newer version controls the page now), "late" (10 s) */
 function refresh(take){return new Promise(function(done){var S=navigator.serviceWorker,c=S&&S.controller,over=false;function end(r){if(!over){over=true;done(r)}}
@@ -52,7 +53,7 @@ function retry(){var now=Date.now(),url="";try{sessionStorage.setItem(K,String(n
 w.dwLoad={refresh:function(){return refresh(false)},reload:function(){go("",0)}};
 addEventListener("error",function(ev){var t=ev.target;if(t&&t!==w){if(t.tagName==="SCRIPT"&&t.src)heard("not loaded: "+t.src.split("/").pop().split("?")[0])}else heard(ev.message||"error")},true);
 addEventListener("unhandledrejection",function(ev){var r=ev.reason;heard(r&&r.message||r||"rejection")});
-document.addEventListener("DOMContentLoaded",function(){if(w.dwEntry&&w.DW_MERGE)return;if(!why.length)why.push(typeof w.startUp!=="function"?"no startUp":"the entry didn't run");
+document.addEventListener("DOMContentLoaded",function(){if(w.dwEntry)return;if(!why.length)why.push(typeof w.startUp!=="function"?"no startUp":"the entry didn't run");
   if(Math.abs(Date.now()-stamp())<GAP)soon(0);else retry()});
 addEventListener("load",function(){if(why.length)soon(WAIT)})})()</script>
 <title>Daily Wardrobe</title>
