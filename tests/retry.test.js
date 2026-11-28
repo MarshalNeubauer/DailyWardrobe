@@ -23,6 +23,7 @@ const fs=require('fs'),path=require('path'),http=require('http');
 const LOADS=()=>{if(!/^http/.test(location.protocol))return;try{const L=JSON.parse(localStorage.getItem('__a1loads')||'[]');L.push({t:Date.now(),href:location.href});localStorage.setItem('__a1loads',JSON.stringify(L))}catch(e){}};
 const FAST=()=>{window.DW_RETRY_NOW=true;try{localStorage.setItem('tour_seen','1')}catch(e){}};
 const NO_SESSION=()=>{const s=window.sessionStorage,set=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(this===s)throw new Error('sessionStorage refused');return set.call(this,k,v)}};
+const CSPV=()=>{addEventListener('securitypolicyviolation',e=>{try{const L=JSON.parse(localStorage.getItem('__a1csp')||'[]');L.push(e.violatedDirective+' '+(e.blockedURI||'inline'));localStorage.setItem('__a1csp',JSON.stringify(L))}catch(x){}},true)};
 const FRESH=()=>{try{sessionStorage.setItem('dw_retry',String(Date.now()))}catch(e){}};
 module.exports=async({ok,engines,url,ROOT})=>{
   const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8').replace(/<!--[\s\S]*?-->/g,'');
@@ -143,13 +144,14 @@ async function run(eng,browser,{ok,url,page,src,S}){
     finally{await c.ctx.close()}}
 
   /* ---- with a service worker in control (the test's own server: tests/run.js's server isn't sw.js's scope here) ---- */
-  const swOpen=async()=>{const ctx=await browser.newContext({viewport:{width:402,height:874},serviceWorkers:'allow'});await ctx.addInitScript(LOADS);await ctx.addInitScript(FAST);
+  const swOpen=async()=>{const ctx=await browser.newContext({viewport:{width:402,height:874},serviceWorkers:'allow'});await ctx.addInitScript(LOADS);await ctx.addInitScript(FAST);await ctx.addInitScript(CSPV);
     const p=await ctx.newPage();await p.goto(S.url);
     const ctl=await p.waitForFunction(()=>!!(navigator.serviceWorker&&navigator.serviceWorker.controller),null,{timeout:20000}).then(()=>true,()=>false);
     if(ctl){await p.reload();await until(p,s=>s.ready,25000)}
     return {ctx,p,ctl}};
   const broke=p=>p.evaluate(async()=>{const k=(await caches.keys()).find(k=>/^dw-v\d+$/.test(k));const c=await caches.open(k);await c.put(new Request('core.js'),new Response('const broken=;',{headers:{'content-type':'text/javascript'}}));return k});
   const cached=p=>p.evaluate(async()=>{const k=(await caches.keys()).find(k=>/^dw-v\d+$/.test(k));const r=await (await caches.open(k)).match('core.js');return {k,broken:!!r&&(await r.text()).startsWith('const broken=;'),keys:await caches.keys()}});
+  const viol=[],csp=async p=>{try{viol.push(...await p.evaluate(()=>JSON.parse(localStorage.getItem('__a1csp')||'[]')))}catch(e){}};
   let c=await swOpen();
   if(!c.ctl){ok(false,T+'a service worker controls the page on the test\'s own server (needed for the cases below)');await c.ctx.close()}
   else{try{
@@ -169,19 +171,21 @@ async function run(eng,browser,{ok,url,page,src,S}){
     S.st.down=false;await c.p.evaluate(()=>{try{sessionStorage.removeItem('dw_retry')}catch(e){}});
     await c.p.goto(S.url+'a1/deep/link').catch(()=>{});s=await until(c.p,s=>s.ready||!!s.card,30000);
     ok(s.ready&&!s.card&&new URL(s.href).pathname==='/'&&!(await cached(c.p)).broken,T+`online again, a deep link starts the app at its root (${s.href}), the retry having mended the cache`);
-    }finally{await c.ctx.close()}
+    }finally{await csp(c.p);await c.ctx.close()}
     // a newer version published while this one's cache is broken (mid-deploy): the retry takes the newer version at once (O2)
     c=await swOpen();
     try{const v0=(await cached(c.p)).k;await broke(c.p);S.st.bump=1;S.st.marker='v2';const n=(await look(c.p)).loads.length;
       await c.p.reload();await c.p.waitForFunction(()=>window.appReady&&/v2/.test(document.querySelector('h1').textContent),null,{timeout:40000}).catch(()=>{});
       const s=await look(c.p),m=await cached(c.p),core=await c.p.evaluate(()=>window.__core||'');
       ok(s.ready&&!s.card&&core==='v2'&&m.k!==v0&&!m.broken&&s.loads.length<=n+3,T+`a newer version published meanwhile (${v0} → ${m.k}): the retry takes it at once, and every file is the new release (core.js "${core}", ${s.loads.length-n} loads)`)}
-    finally{S.st.bump=0;S.st.marker='';await c.ctx.close()}}
+    finally{S.st.bump=0;S.st.marker='';await csp(c.p);await c.ctx.close()}}
   // no service worker, a broken copy kept by the browser's cache (GitHub Pages' max-age=600): the retry fetches each file past it
-  {const ctx=await browser.newContext({viewport:{width:402,height:874},serviceWorkers:'block'});await ctx.addInitScript(LOADS);await ctx.addInitScript(FAST);
-    try{const p=await ctx.newPage();S.st.maxAge=true;S.st.once['/core.js']='const broken=;';await p.goto(S.url);const s=await until(p,s=>s.ready||!!s.card,30000);
+  {const ctx=await browser.newContext({viewport:{width:402,height:874},serviceWorkers:'block'});await ctx.addInitScript(LOADS);await ctx.addInitScript(FAST);await ctx.addInitScript(CSPV);
+    let p;try{p=await ctx.newPage();S.st.maxAge=true;S.st.once['/core.js']='const broken=;';await p.goto(S.url);const s=await until(p,s=>s.ready||!!s.card,30000);
       ok(s.ready&&!s.card&&s.loads.length===2,T+`no service worker, core.js broken on its first fetch and kept 10 minutes by the browser's cache: the retry fetches it afresh and the app starts after one reload (${s.loads.length} loads)`)}
-    finally{S.st.maxAge=false;S.st.once={};await ctx.close()}}
+    finally{S.st.maxAge=false;S.st.once={};if(p)await csp(p);await ctx.close()}}
+  // the retry under index.html's security policy (these contexts don't bypass it): its fetches, sw.js's refresh and the reloads
+  ok(!viol.length,T+`the retry, sw.js's refresh, the newer version taken and the reloads cause no security-policy violation (${viol.length?viol.join('; '):'none'})`)
 }
 /* the test's own server for the service-worker cases: the repo's files; st.down drops every connection (offline), st.bump raises sw.js's
    CACHE (a release), st.marker marks that release's index.html and core.js, st.once answers a file once with other text, st.maxAge

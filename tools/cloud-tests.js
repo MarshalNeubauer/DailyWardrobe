@@ -13,8 +13,15 @@ const gh=a=>sh('gh',a);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const secs=(a,b)=>(new Date(b)-new Date(a))/1000;
 const mmss=s=>{s=Math.round(s);return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`};
+// the run's real result: the summary job's verdict.json (in `test-summary`), not the run's conclusion, since a run on any ref but main
+// ends as successful on GitHub whatever it found (full-tests.yml STRICT: no failure email for a branch). A workflow from before the
+// verdict (a branch made earlier, run with its own workflow) has none: then the run's conclusion, and every job's, decide
+function readVerdict(dir){try{const v=JSON.parse(fs.readFileSync(path.join(dir,'verdict.json'),'utf8'));return v&&typeof v.ok==='boolean'?v:null}catch(e){return null}}
+function passed(verdict,run){if(verdict)return verdict.ok===true;
+  return run.conclusion==='success'&&(run.jobs||[]).every(j=>['success','skipped'].includes(j.conclusion))}
+module.exports={readVerdict,passed};
 
-(async()=>{
+if(require.main===module)(async()=>{
   try{gh(['--version'])}catch(e){console.log('`gh` (GitHub CLI) is needed: https://cli.github.com, then `gh auth login`.');process.exit(2)}
   const repo=(()=>{const u=sh('git',['remote','get-url','origin']);const m=/github\.com[:/]([^/]+\/[^/.]+?)(?:\.git)?$/.exec(u);return m?m[1]:null})();
   if(!repo){console.log('origin is not a GitHub repository');process.exit(2)}
@@ -47,12 +54,14 @@ const mmss=s=>{s=Math.round(s);return `${Math.floor(s/60)}:${String(s%60).padSta
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'dw-cloud-'));let text='';
   try{gh(['run','download',String(run.databaseId),'-R',repo,'-n','test-summary','-D',dir]);text=fs.readFileSync(path.join(dir,'summary.md'),'utf8')}
   catch(e){text='(no summary: the summary job did not finish; see '+run.url+')'}
+  const verdict=readVerdict(dir);
   console.log('\n'+text.trim()+'\n');
   const jobs=v.jobs.filter(j=>j.startedAt&&j.completedAt),mins=jobs.reduce((a,j)=>a+secs(j.startedAt,j.completedAt),0)/60;
   const billed=jobs.reduce((a,j)=>a+Math.max(1,Math.ceil(secs(j.startedAt,j.completedAt)/60)),0);
   const slow=jobs.filter(j=>j.name.startsWith('shard')).sort((a,b)=>secs(b.startedAt,b.completedAt)-secs(a.startedAt,a.completedAt))[0];
   console.log(`wall clock ${mmss((Date.now()-T0)/1000)} from start to summary (run ${mmss(secs(v.createdAt,v.updatedAt))}); slowest: ${slow?slow.name+' '+mmss(secs(slow.startedAt,slow.completedAt)):'–'}; runner time ${mins.toFixed(1)} min (${billed} billed minutes, jobs rounded up)`);
   if(flag('--save-times')){try{fs.copyFileSync(path.join(dir,'shard-times.json'),path.join(ROOT,'tests','shard-times.json'));console.log('wrote tests/shard-times.json: commit it')}catch(e){console.log('no shard-times.json in the run')}}
-  console.log(v.conclusion==='success'?'✓ passed':'✗ '+v.conclusion+': '+run.url);
-  process.exit(v.conclusion==='success'?0:1);
+  const pass=passed(verdict,v);
+  console.log(pass?'✓ passed':'✗ '+(verdict?`FAILED (${verdict.failed} failed`+(v.conclusion==='success'?'; GitHub shows the run as successful: it is not on main':'')+')':v.conclusion)+': '+run.url);
+  process.exit(pass?0:1);
 })().catch(e=>{console.log(String(e.stderr||e.message||e).trim());process.exit(1)});

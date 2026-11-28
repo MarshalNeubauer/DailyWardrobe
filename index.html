@@ -1,5 +1,9 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
+<!-- The security policy (2026-11-28): only this app's own files run, plus the four inline scripts below by their sha256 (change one and
+     its hash here too: tests/csp.test.js says the new one). connect-src is any https address because the server address is typed in
+     Settings > Connection > Advanced, and a photo link may be on any site; loopback http is for a server run on this computer. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-imPZ+F1nECTkTdAO411vmbsYvjCEUrBQNuney85ZRMg=' 'sha256-d4twQfS0ErxBIFkSptmQAXyV43vk7Bp9VaQ1C9dolXY=' 'sha256-nWs1cV8GJlAN+lkXFI2AyOF1nl2Wr6IvXiqT39U9uwk=' 'sha256-FSZ2Sk3wqrjBtSaZxRkvqelgZJJlZPstiB9LYG37kuM='; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https: data: blob: http://localhost:* http://127.0.0.1:*; font-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#101820">
 <!-- The app has its own dark theme; tell dark-mode extensions not to recolor it (they invert the mannequin's colors). -->

@@ -105,7 +105,7 @@ const app=async({ok,chromium,url,ROOT,settle})=>{
   const env={APP_TOKEN:'o'},HOST='https://w.test/';
   const browser=await chromium.launch();
   try{
-    const ctx=await browser.newContext({viewport:{width:390,height:860},locale:'en-US',timezoneId:'Asia/Kuwait'});
+    const ctx=await browser.newContext({viewport:{width:390,height:860},locale:'en-US',timezoneId:'Asia/Kuwait',bypassCSP:true});   // (the spies below are an inline module, which index.html's security policy refuses)
     await ctx.addInitScript(h=>{localStorage.setItem('worker_url',h);localStorage.setItem('app_token','o');localStorage.setItem('last_sync',String(Date.now()))},HOST);
     // the server's clock is fixed for the reads (the window starts on the app's "today", Nov 20); backups are left out (no KV here)
     await ctx.route(HOST+'**',async r=>{const q=r.request(),u=new URL(q.url());if(u.pathname==='/sync')return r.fulfill({status:503,body:'{}'});
