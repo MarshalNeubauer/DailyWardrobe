@@ -1,4 +1,5 @@
 # What each test uses (written by tests/run.js; see tests/impact.js): test, file, then functions / CSS rules, <loaded> or <any>.
+# tested	908fd4ddb83b106622b0
 a11y.test.js	about.js	<loaded>	aboutAdopt	aboutLatest	aboutReadVersion	aboutReg	aboutShow	aboutStart	checkForUpdate	settings-category	swVersionOf
 a11y.test.js	account.js	<loaded>	@serveacctwhy	@serveinvitechecking	acctSettingsPart	acctStart	loadAccount	renderAccountUI	settings-summary
 a11y.test.js	act.js	<loaded>	@document.addEventListenerclick	actAttr	actFire	actListen	actNone	actPath	actTaps	acts	addEventListener.once
@@ -896,7 +897,6 @@ addsheet.test.js	sync.js	<loaded>	@connRestored.then	afterPull	clockLearn	localS
 addsheet.test.js	tag-request.js	<loaded>	describeEstimate	readEstimate	visTok
 addsheet.test.js	tagging.js	<loaded>	tagNotes
 addsheet.test.js	tests/fixedplan.js	<any>
-addsheet.test.js	tests/webkit.js	<any>
 addsheet.test.js	theme.js	<loaded>	applyTheme
 addsheet.test.js	toast.js	<loaded>	toast	toastDrop	undoHere	undoOff
 addsheet.test.js	today-gestures.js	<loaded>	@{constel$today}	@{constel$today}>@addEventListenerpointermove	@{constel$today}>@addEventListenerpointerup	@{constroot$today}	@{constroot$today}>@addEventListenerpointermove	@{constroot$today}>@addEventListenerpointerup	@{constroot$today}>cancelHold
@@ -1028,7 +1028,7 @@ aiverdict.test.js	asm-kinds.js	<loaded>	@{constownokObject.prototype.hasOw}	@{co
 aiverdict.test.js	asm-look.js	<loaded>
 aiverdict.test.js	asm-ocp.js	<loaded>	@{constownokObject.prototype.hasOw}	@{constownokObject.prototype.hasOw}>own
 aiverdict.test.js	asm-pocket.js	<loaded>
-aiverdict.test.js	asm-today.js	<loaded>	start-jobs
+aiverdict.test.js	asm-today.js	<loaded>	settings-rows	start-jobs
 aiverdict.test.js	asm-watch.js	<loaded>
 aiverdict.test.js	assemble.js	<loaded>	@
 aiverdict.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backBorrow	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backReturn	backSync	backWanted	inviteInUrl
@@ -1047,7 +1047,7 @@ aiverdict.test.js	draw.js	<loaded>	fabricDef	itemThumb	suitFabric	suitMarks	swat
 aiverdict.test.js	dress.js	<loaded>	add-card-sections	card-saved	dressNewItem	migrateVests	newSuitVest	start-checks
 aiverdict.test.js	fav.js	<loaded>	today-parts
 aiverdict.test.js	fields.js	<loaded>	fldRow	matRow	matTidy	notesRow	wardSaveFields
-aiverdict.test.js	history.js	<loaded>	checkPlanRules	dropLearn	start-checks	whenPulled
+aiverdict.test.js	history.js	<loaded>	checkPlanRules	dropLearn	settings-rows	start-checks	whenPulled
 aiverdict.test.js	index.html	<loaded>
 aiverdict.test.js	item-photo.js	<loaded>	smallPhotos
 aiverdict.test.js	item-view.js	<loaded>	@backLand	@serveitemopen	@{constb$ivbody}	itemShown	page-shown	renderItem
@@ -1073,7 +1073,7 @@ aiverdict.test.js	own-lists.js	<loaded>
 aiverdict.test.js	pack.js	<loaded>	packShow	page-shown
 aiverdict.test.js	pattern-read.js	<loaded>	claudeOnly	measureAndApply	missedPattern	motifPat	readSett	readable	settCheck	settNote	settable
 aiverdict.test.js	photo-keys.js	<loaded>	@serverenders	jsq	loadRenders	srcOk
-aiverdict.test.js	photos.js	<loaded>	asmLive	fixItemBackdrops
+aiverdict.test.js	photos.js	<loaded>	asmLive	fixItemBackdrops	settings-rows
 aiverdict.test.js	pickscore.js	<loaded>
 aiverdict.test.js	planner.js	<loaded>
 aiverdict.test.js	remind.js	<loaded>	remindStart{}	remindStart{}>go
@@ -1089,7 +1089,7 @@ aiverdict.test.js	stats.js	<loaded>	@afterScripts	page-shown
 aiverdict.test.js	styles.css	#add #nps-q .card	#add #nps-q .ckprog	#add #queue .card	#add #queue .card>.btns:last-of-type	#add #queue .card>label select,#item-view .card>label select,#nps-q .card>label select	#add #queue .card>label select,#item-view .card>label select,#nps-q .card>label select,.colbtn,:is(#item-view,#add) .wfld,.morein>label select	#add #queue .card>label,#item-view .card>label,#nps-q .card>label	#add #queue .ckfoot .btns .pri	#add #queue .qcard	#add #queue .qcard.ckcard	#add #queue .qcard>.qx	#add .addfor	#add .addlong	#add .addlong .aic	#add .addmore	#add .addpick	#add .addpick .btn	#add .addpick .btn small	#add .addpick .btn span	#add .drop-hint	#add .nps-bar	#add .nps-bar .ckleft	#add .nps-bar button	#add .nps-x	#add .paste-box	#add .paste-box .btn	#add .paste-box input	#col-backdrop	#col-sheet	#item-backdrop	#item-view	#item-view .cropwrap .btns .pri,#add #queue .card .btns .pri,#add .nps-bar .pri	#modal-backdrop	#modal-backdrop,#settings-modal	#multi-status	#multi-status:empty	#nps-backdrop,#shop-backdrop	#nps-backdrop.on,#shop-backdrop.on	#nps-sheet	#nps-sheet .nps-head .aic	#nps-sheet .nps-ht h2	#nps-sheet .nps-ht small	#nps-sheet,#shop-sheet	#nps-sheet.on	#paste-status:empty	#pick-backdrop	#pick-backdrop,#ask-backdrop,#col-backdrop,#cu-backdrop,#rd-backdrop,#kit-backdrop,#item-backdrop,#modal-backdrop,#nps-backdrop,#shop-backdrop	#pick-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet	#pick-sheet,#ask-sheet,#col-sheet,#cu-sheet,#rd-sheet,#nps-sheet,#shop-sheet	#settings-modal	#settings-modal,#setup,#kitsheet	#shop-sheet	#toast	#toast button	#toast button::after	#toast,body.iv-on #toast	#toast.act	#toast.on	#toast:not(.on)	#today	#undo-fab	#ward-add	#wardrobe	#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal	*	.accchips	.acclab	.accrow	.addlong .chev	.addlong-t	.addlong-t b	.addlong-t small	.addpick	.addpick .btn	.addpick .btn small	.addrow	.addrow .chev	.addrow small	.addrow span:first-child	.aic	.btn	.btns	.cap	.card label	.chipbtn	.ck-opt,.ck-todo	.ck-warn	.ckadds	.ckai	.ckb	.ckb .wbst,.ckb .wbstcard	.ckb .wbsteps	.ckb>label	.ckb>label select,.ckb>label>input[type=text]	.ckcheap	.ckchev	.ckchip	.ckcn	.ckfoot	.ckfoot .btns	.ckhd	.ckhd b	.ckhd small	.ckhelp	.ckintro .pair	.ckleft	.ckm	.ckm b	.ckprog	.ckpt b	.ckpt small	.ckpts	.ckptsw	.ckptsw svg	.ckreadadd .rdcost	.cks	.cks.open>.ckb	.cks.open>.ckh .ckchev	.ckt	.ckt b	.ckt small	.cktrack	.cktrack i	.colbtn	.colchev	.colchip	.colchip.none,.cpsw.none,.cpbig.none	.colnm	.day h2	.day h2 .dshort	.day h2 .wx	.day h2 .wx .wxc	.day h2 .wx a	.drop-hint	.firstrun	.firstrun h3	.fr-add	.fr-it	.fr-it:first-child	.fr-list	.fr-st	.fr-sub	.fr-t	.fr-t small	.fr-tick	.gi,.card	.hbtns	.hgear	.ivbar,.nps-bar,.su-bar,.kit-bar	.ivrdbtn[aria-disabled=true],.rdgo[aria-disabled=true]	.kit-head,.kit-bar,.su-head,.su-bar,.shead,.nps-bar	.kit-start	.linkbtn	.linkbtn,.day h2 .wx a,.sicw	.linkbtn::after	.mut,small	.nav	.nav.day	.nav.day>button	.nav.day>button,.row .swap,#wardrobe .chip	.nav.day>button::after	.nps-bar	.nps-body	.nps-grab	.nps-grab,.shop-grab,.kit-grab	.nps-head	.nps-ht	.offer	.ordrow	.ordrow .rotbtn	.pair	.pair .tagsw .ph.thumb	.pair .tagsw .ph.thumb svg	.pair figcaption	.pair figcaption b	.pair figure	.pair img.ph,.rv .pair img.ph	.paste-box	.paste-box .btn	.paste-box input	.patchip svg,.cppat svg	.patchip,.cppat	.phead	.phead .pback	.phead h2	.pri	.psub	.rdcost	.rv .thumb	.rv img.ph	.shaderow	.shaderow .chipbtn	.shctl	.shctl .shbtn	.shctl .shval	.shelp	.shlab	.slabel	.slide	.spin	.stage	.stage .empty	.stage .firstrun	.sw	.sw-box	.swsplit	.tagnote	.thumb	.thumb svg	.vfile	.vh	.wbpic i	.wbpic::after	.wbpic::before	.wbstcard .arr	.wbstcard .cam	.wbstcard .eb	.wbstcard .hd	.wbstcard .li	.wbstcard .more	.wbstcard .n	.wbstcard .n b	.wbstcard .ol	.wbstcard .tap	.wbstcard .wbpic.nobox::before,.wbstcard .wbpic.noring i	.wbsteps	.wxc.wxlk	.wxl	::placeholder	:focus-visible	:is(#item-view,#add) .ckadds .btn	:is(#item-view,#add) .ckh	:is(#item-view,#add) .cklr	:is(#item-view,#add) .ckpt	:is(#item-view,#add) .ckpt[aria-checked=true]	:is(#item-view,#add) .wbstcard	:is(#item-view,#add) .wbstcard .wbpic	:is(#item-view,#add,body) .accrow .accadd	:is(#item-view,.wbsteps,#cu-sheet) .wbpic	:is(#setup,#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal,#shop-sheet,#today) :is(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea),#add .paste-box	:is(#wardrobe,#item-view,#add,#stats) .card,#wardrobe .gi	:is(input:not([type=range],[type=color],[type=checkbox],[type=radio],[type=file],[type=hidden],[type=button],[type=submit]),select,textarea)	:root	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) .btns	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn).pri	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn):where(:not(.giopen,.chip,.month-link,.slink,.linkbtn,.chipbtn,.dtog,.mc,.pick-it,.fchip button))	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(button,.btn)[disabled]	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text]):is(select)	:where(#wardrobe,#item-view,#add,#stats,#pack,#care,#settings-modal) :is(select,input[type=text],input[type=url],input[type=date],input[type=number])	<loaded>	[hidden]	body	body.nocon .conn-only,.connhide	body.nps-on #toast,body.nps-on #busy	button	button,.btn,select,input	button:focus-visible,select:focus-visible,input:focus-visible	h1	h1,h2	h2	header	header button	header button,.linkbtn,#toast button,#settings-modal .dtog	header button::after	header button::after,.linkbtn::after,#toast button::after,#settings-modal .dtog::after	header h1	html	html,body	input[type="range"]	label:has(>.vfile)	main	nav	nav button	nav button.on	nav.tab-none::before	nav::before	select,input[type="text"],input[type="range"]
 aiverdict.test.js	sync-photos.js	<loaded>
 aiverdict.test.js	sync-status.js	<loaded>	@onbackupchanged	showSyncStatus
-aiverdict.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	scheduleSync	setSyncStatus	settings-saved	syncNeedsPull	syncNow	syncOnce	syncPaused	syncWaiting
+aiverdict.test.js	sync.js	<loaded>	@connRestored.then	afterPull	pulledYet	scheduleSync	setSyncStatus	settings-rows	settings-saved	syncNeedsPull	syncNow	syncOnce	syncPaused	syncWaiting
 aiverdict.test.js	tag-request.js	<loaded>	aiFields	customForTag	keepTagImg	ownMatsForTag	tagExtras	tagFixes
 aiverdict.test.js	tagging.js	<loaded>	confTxt	tagMeasUndo	tagNotes	takeExtras	takeMaterial
 aiverdict.test.js	tests/fixedplan.js	<any>
@@ -9484,7 +9484,7 @@ keptphotos.test.js	asm-watch.js	<loaded>
 keptphotos.test.js	assemble.js	<loaded>	@	@defineddocument.addEventListenervisibilitychange	asmIdleArm
 keptphotos.test.js	back.js	<loaded>	@addEventListenerpopstate	backApp	backDrop	backItem	backKind	backLand	backOn	backOut	backOver	backPop	backPush	backSync	backWanted	inviteInUrl
 keptphotos.test.js	backupfile.js	<loaded>
-keptphotos.test.js	bus.js	<loaded>	ask	emit	need	needFn	on	register	runHooks	serve	served	slotsOf
+keptphotos.test.js	bus.js	<loaded>	ask	emit	need	needFn	on	register	runHooks	runHooksSeq	serve	served	slotsOf
 keptphotos.test.js	calendar.js	<loaded>	@addEventListenervisibilitychange	@whenPulled	calAuto	calBanner	calLink	calSummary	renderCalUI	settings-summary	today-parts
 keptphotos.test.js	care.js	<loaded>	careBandFit	careBandSoon	careCounts	careDayState	careFrame	careNote	careTop	laundryDays	renderCareUI	settings-category	settings-draw	today-parts
 keptphotos.test.js	checklist.js	<loaded>
@@ -9511,7 +9511,7 @@ keptphotos.test.js	look.js	<loaded>	renderLookSetting
 keptphotos.test.js	mannequin.js	<loaded>	@{}	@{}>btnCol	@{}>esc	@{}>mqData	@{}>outfitMannequinSvg	@{}>pattern	@{}>pocketSvg	@{}>shirtButton
 keptphotos.test.js	measure.js	<loaded>
 keptphotos.test.js	merge.js	<loaded>	dayFlat	dayStamp	fieldStamp	fsOk	fsPack	sameVal	setEntries	setHash	setKeys	setStampOf	stamp	subOk
-keptphotos.test.js	migrate.js	<loaded>	blackBackdrop	fixBlackBackdrops	recolourSpecSetts	remakeLeft	remakeOn	remakeRead	remakeSpend	upgradeCloseups	upgradePhotos
+keptphotos.test.js	migrate.js	<loaded>	blackBackdrop	fixBlackBackdrops	recolourSpecSetts	remakeAfterPull	remakeLeft	remakeOn	remakeRead	remakeSpend	upgradeCloseups	upgradePhotos
 keptphotos.test.js	missed.js	<loaded>	firstReal	missedCard	missedNote	missedOpen
 keptphotos.test.js	month.js	<loaded>	dayMarks	dayOnly	dayWord	homeDay	monthFill	monthFillSoon	monthGridHtml	monthLink	mvSig	nextWorkday	piecesLine	piecesParts	planOn	recentWork	shirtWords	shortRest	shortTop	stackSVG	tieWord	wardShort
 keptphotos.test.js	mq/shirt-open.js	<loaded>
@@ -17835,7 +17835,6 @@ shard.test.js	tests/wardrobetap.test.js	<any>
 shard.test.js	tests/wardswipe.test.js	<any>
 shard.test.js	tests/watchmatch.test.js	<any>
 shard.test.js	tests/weather.test.js	<any>
-shard.test.js	tests/webkit.js	<any>
 shard.test.js	tests/weeklock.test.js	<any>
 shard.test.js	tests/weeklockdays.test.js	<any>
 shard.test.js	tests/workerfix.test.js	<any>
