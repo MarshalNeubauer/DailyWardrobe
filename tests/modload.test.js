@@ -65,14 +65,16 @@ module.exports=async({ok,engines,url,settle})=>{
      files import each other. The order the page runs its modules in is worked out here as a browser runs them (each tag's graph depth
      first, a file's imports in their order, a file still running passed over: a cycle). Every import reaches a file that ran before the
      importer, but a cycle's way back; no cycle runs code at load (none of those names is used outside a function body); the files run in
-     their tags' order but itemsheet.js, the cycle's entry, which runs last of it (index.html says so) */
+     their tags' order but itemsheet.js, the cycle's entry, which runs last of it (index.html says so). (The painter's own cycles, N6's
+     direct links, are inside the painter group: checked here for code at load, their order is the painter's) */
   const ord=runOrder(ROOT,page);
-  {const late=ord.order.filter((f,i)=>ord.order.slice(0,i).some(g=>page.indexOf(g)>page.indexOf(f)));
-    const rest=ord.order.filter(f=>!late.includes(f)),inTags=page.filter(f=>!late.includes(f)).join()===rest.join();
+  {const addF=page.filter(f=>C.files[f].group==='add'),ao=ord.order.filter(f=>addF.includes(f));
+    const late=ao.filter((f,i)=>ao.slice(0,i).some(g=>page.indexOf(g)>page.indexOf(f)));
+    const rest=ao.filter(f=>!late.includes(f)),inTags=addF.filter(f=>!late.includes(f)).join()===rest.join();
     const entry=ord.order.indexOf('itemsheet.js'),after=ord.order.slice(0,entry).filter(f=>page.indexOf(f)>page.indexOf('itemsheet.js'));
-    ok(late.join()==='itemsheet.js'&&inTags&&after.join()===ord.core.filter(f=>f!=='itemsheet.js').join(),`the page's modules run in their tags' order but itemsheet.js, which runs after the ${after.length} files of its cycle it reaches (${after.join(' ')})${late.join()!=='itemsheet.js'?'; out of order: '+late.join(', '):''}${inTags?'':'; the others not in their tags\' order'}`);
-    const outside=ord.back.filter(b=>C.files[b.from].group!=='add'||C.files[b.to].group!=='add'),used=ord.back.filter(b=>b.used.length);
-    ok(ord.back.length>0&&!outside.length&&!used.length,`no cycle runs code at load: the ${ord.back.length} imports of a file that runs later (${ord.back.map(b=>b.from+' → '+b.to).join(', ')}) are all in the add group and none of their names is used at load${outside.length?'; outside it: '+outside.map(b=>b.from+' → '+b.to).join(', '):''}${used.length?'; used at load: '+used.map(b=>b.from+' '+b.used.join(' ')).join('; '):''}`);
+    ok(late.join()==='itemsheet.js'&&inTags&&after.join()===ord.core.filter(f=>f!=='itemsheet.js').join(),`the add group's files run in their tags' order but itemsheet.js, which runs after the ${after.length} files of its cycle it reaches (${after.join(' ')})${late.join()!=='itemsheet.js'?'; out of order: '+late.join(', '):''}${inTags?'':'; the others not in their tags\' order'}`);
+    const outside=ord.back.filter(b=>C.files[b.from].group!==C.files[b.to].group),used=ord.back.filter(b=>b.used.length),inAdd=ord.back.filter(b=>C.files[b.from].group==='add');
+    ok(inAdd.length>0&&!outside.length&&!used.length,`no cycle runs code at load: the ${ord.back.length} imports of a file that runs later (${ord.back.map(b=>b.from+' → '+b.to).join(', ')}) are each inside one group (${inAdd.length} in add) and none of their names is used at load${outside.length?'; across groups: '+outside.map(b=>b.from+' → '+b.to).join(', '):''}${used.length?'; used at load: '+used.map(b=>b.from+' '+b.used.join(' ')).join('; '):''}`);
     // the check itself: a name of a later file read at load is caught (colpick.js reading look.js's lookUsePick as it runs)
     const PN=['look','Use','Pick'].join('');   // (spelled in parts: tests/bridge.test.js would read a whole name in a string as a test's read of it)
     const pl=runOrder(ROOT,page,{'colpick.js':s=>s+`\nconst __plant=${PN};\n`}).back.filter(b=>b.used.length);
