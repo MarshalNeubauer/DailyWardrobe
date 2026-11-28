@@ -1,8 +1,7 @@
 /* Daily Wardrobe: the month view (wear plan): the calendar of fabric stacks
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14.) */
-/* a day opened from the month says runHooks('day-changed') (bus.js; the restructure S3e, 2026-11-26): today.js, which runs after this file,
-   pins renderToday for it */
-import {serve,ask,served,runHooks} from './bus.js';
+/* a day opened from the month draws Today again (today.js renderToday, imported: the all-or-nothing load, A5, 2026-11-28) */
+import {serve,ask,served} from './bus.js';
 import {fabricDef} from './draw.js';
 import {$,MONTH_EASE,MONTH_MS,colName,dayRecs,isWorkday,itemName,key,keyDate,occOf,offName,patName,primaryCol,shortCol,todayDate,wearsJacket,esc} from './core.js';
 import {cache,hasOutfit,planFor,planMonth} from './today-plan.js';
@@ -10,6 +9,8 @@ import {PAIR_DAYS,pairSeen,rateOutfit} from './planner.js';
 import {sel,setSel,setView,view} from './app.js';
 import {acts} from './act.js';
 import {foldEdge,foldQuiet,keepInView,monthBelow,noMotion,pageScroll,revealNeed} from './ui.js';
+import {weekFirst} from './settings.js';
+import {renderToday} from './today.js';
 /* ---- month view (wear plan): a calendar of fabric stacks, from the design concept ---- */
 /* stacked bands for one outfit: jacket, trousers on blazer days, shirt, tie (drawn from the tagged fabrics) */
 let stkN=0;
@@ -68,7 +69,7 @@ let monthOpen=false,monthPanel=null;
 const monthPlan=planMonth;
 function monthGridHtml(){
   const {y,m}=monthPanel,p=monthPlan(y,m),f=new Date(y,m,1),T=todayDate(),cells=[];let n=0;
-  const w0=ask('week-first')??0;   // the week starts on the work week's first day (settings.js weekFirst; audit 2026-11-15)
+  const w0=weekFirst();   // the week starts on the work week's first day (settings.js weekFirst; audit 2026-11-15)
   for(let k=0;k<(f.getDay()-w0+7)%7;k++)cells.push('<span class="mc blank"></span>');
   for(const d=new Date(f);d.getMonth()===m;d.setDate(d.getDate()+1)){const k=key(d),o=p[k],wd=isWorkday(d),off=offName(d),work=wd&&hasOutfit(o),isT=+d===+T,past=d<T;
     // a past day marked "✕ Didn't" is not shown as worn (it was, exactly like one, audit 2026-11-14): faded, its number struck through;
@@ -148,7 +149,7 @@ function monthRelease(dx,ms){const sw=$('#mswipe');if(!sw)return false;const fas
     sw.style.transition='transform .16s ease-in,opacity .16s';sw.style.transform=`translateX(${dx<0?-w:w}px)`;sw.style.opacity='0';
     setTimeout(()=>monthStep(n,(dx<0?1:-1)*w*.6),160);return true}
   sw.style.transition='transform .2s ease-out,opacity .2s';sw.style.transform='translateX(0)';sw.style.opacity='1';return false}
-function openDay(t){setSel(new Date(t));setView({y:sel.getFullYear(),m:sel.getMonth()});setMonthOpen(false);runHooks('day-changed');scrollTo({top:0,behavior:'smooth'})}
+function openDay(t){setSel(new Date(t));setView({y:sel.getFullYear(),m:sel.getMonth()});setMonthOpen(false);renderToday();scrollTo({top:0,behavior:'smooth'})}
 /* the box on Today: the next few workdays as small stacks; tap it and the month unfolds below */
 function monthLink(){
   const days=[];for(let d=new Date(sel),g=0;days.length<5&&g<14;g++,d.setDate(d.getDate()+1))if(isWorkday(d)){const o=planOn(d);if(hasOutfit(o))days.push([new Date(d),o])}

@@ -903,7 +903,7 @@ async function asmBuildAfter(r,job){if(job.watch)r=await asmWatchPaint(r,job.wat
 /* the painter's sockets (bus.js; the restructure S6p, 2026-11-27): what assemble.js, asm-look.js and asm-today.js, draw.js (today-no-picture)
    and the mannequin ask of this optional file, which they may not import; in the worker nobody asks (asm-worker.js imports asmBuild) */
 serve('asm-build',asmBuild);serve('asm-cm-warming',()=>asmCmWarming);serve('asm-cm-kind',asmCmKind);serve('asm-nk-base-of',asmNkBaseOf);serve('asm-cm-btn-col',asmCmBtnCol);
-serve('asm-cu-v',()=>ASM_CU.v);serve('asm-wt-v',()=>ASM_WT.v);serve('asm-hb-lift',()=>[ASM_HB_COL_LIFT,ASM_HB_SHIRT_Y]);
+serve('asm-cu-v',()=>ASM_CU.v);serve('asm-wt-v',()=>ASM_WT.v);
 /* setters (an imported binding is read-only): asm-worker.js counts the setup's saves (asmCmPack, asmCmDiskPut), lab/gl-bench-run.js holds
    one setup (asmCmMem), asm-cm-page.js's warming (asmCmWarming) */
 const setAsmCmPack=f=>{asmCmPack=f},setAsmCmDiskPut=f=>{asmCmDiskPut=f},setAsmCmMem=v=>{asmCmMem=v},setAsmCmWarming=v=>{asmCmWarming=v};

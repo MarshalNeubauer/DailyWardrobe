@@ -91,7 +91,6 @@ function myLocTap(){useMyLocation()}
 function unitsPick(el){setUnits(el.value)}
 acts({cityPick,cityKey,citySearchTap,myLocTap,unitsPick});
 serve('weather-load',loadWeather);   // the restructure S6b: what required and today-no-picture files ask of this file (bus.js need)
-serve('temp',temp);   // the restructure S6f: what today-no-picture files ask of this file
 serve('wx-unit',unit);serve('wx-units-set',setUnits);serve('wx-location-set',setLocation);serve('wx-locate',useMyLocation);serve('wx-city-find',findCity);serve('wx-city-found',()=>cityFound);serve('wx-city-found-set',setCityFound);   // the restructure S6h: setup.js's Weather step (without this file the step is left out)
 /* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
-register('weather',{'settings-draw':()=>{renderWxLoc();if($('#cfg-units'))$('#cfg-units').value=unit()},'settings-summary':S=>{S.unit=unit},'today-parts':()=>({wxChip})});
+register('weather',{'settings-draw':()=>{renderWxLoc();if($('#cfg-units'))$('#cfg-units').value=unit()},'settings-summary':S=>{S.unit=unit}});

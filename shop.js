@@ -31,7 +31,7 @@ const shopHid=x=>(settings.shopSkip||[]).includes(x.key);
 const shopRecs=r=>r?r.cats.reduce((a,c)=>a+c.recs.filter(x=>!shopHid(x)).length,0):0;
 const shopFind=key=>{const r=shopPart||(shop&&shop.res);if(!r)return null;for(const c of r.cats){const x=c.recs.find(x=>x.key===key);if(x)return x}return null};
 /* What to buy closes as another page is shown, and its button on Insights (bus.js register, at the end) */
-import {serve,askFor,runHooks,register} from './bus.js';
+import {askFor,runHooks,register} from './bus.js';
 import {loadFailed} from './toast.js';
 import {layerClose,layerOpen} from './ui.js';
 import {CLASS_NAMES,TYPE_WORD,groupLabel,runAnalysis} from './analysis.js';
@@ -208,7 +208,5 @@ function shopHideTap(el){shopHide(el.dataset.rec)}
 globalThis.HOOK={__proto__:globalThis.HOOK||null,analyzeWardrobe,closeShop,openShop,renderShop,get shop(){return shop},set shop(v){shop=v},shopBought,get shopBusy(){return shopBusy},set shopBusy(v){shopBusy=v},shopBusyText,get shopDrag(){return shopDrag},get shopForm(){return shopForm},shopFresh,shopGo,get shopPart(){return shopPart},get shopShown(){return shopShown},set shopShown(v){shopShown=v},shopSig,get shopStale(){return shopStale},get shopSwipeOn(){return shopSwipeOn},get shopWorker(){return shopWorker},set shopWorker(v){shopWorker=v},get shopOpen(){return shopOpen}};
 export {shop,shopBusy,shopPart,shopWorker,shopOpen,shopShown,shopForm,shopSig,shopFresh,shopButton,openShop,closeShop,shopDrag,shopStale,shopSwipeOn,analyzeWardrobe,shopBusyText,renderShop,shopGo,shopBought};
 acts({shopBackdropTap,shopOpenTap,shopCloseTap,shopAgainTap,shopGoTap,shopRecTap,shopFormTap,shopCancelTap,shopBoughtTap,shopHideTap});
-/* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('shop-open',()=>shopOpen);
 /* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
 register('shop',{'page-shown':()=>({closeShop}),'insights-cards':()=>({shopButton})});

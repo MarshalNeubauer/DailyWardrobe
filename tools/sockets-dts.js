@@ -22,7 +22,6 @@ const WRITTEN={
   'kit-shown':'() => boolean',
   'kit-home-close':'() => void',
   'setup-conn-draw':'() => void',
-  'asm-hb-lift':'() => [number, number]',
 };
 
 /* the lifecycle moments (bus.js register/runHooks; owner decision D1: a feature that didn't load registered nothing and is absent).
@@ -47,9 +46,7 @@ const HOOKS=[
   ['connection-typed','(url: string, token: string) => void','another address or code typed in Connection'],
   ['pictures-switched','slots','Painted pictures chosen again (here or on another device): the painter\'s sync and the day on screen, the photos ahead'],
   ['page-shown','slots','a page is shown (nav.js show): Add\'s type and sheet, the setup, What to buy, the item sheet, the Wardrobe, Insights, the packing list'],
-  ['today-parts','slots','Today is drawn: the favorite\'s icon and pill, the cleaning frame and note, the weather, the setup\'s and the sample\'s banners, the calendar\'s, the open swatch'],
-  ['today-fold','slots','Today folds everything (another day, a swipe): the zoom and the open swatch close'],
-  ['day-changed','() => void','the day shown or its record changed (a day opened from the month, a swap, a pick, a mark, an occasion, Reset): Today is drawn again'],
+  ['today-parts','slots','Today is drawn: the sample\'s and the calendar\'s banners (the other parts are today.js imports since A5)'],
   ['insights-cards','slots','Insights is drawn: What to buy\'s button, the favorites\', the cost per wear\'s and the tagging\'s cards'],
   ['item-sheet-parts','slots','the item sheet is drawn: the favorite\'s row, the cleaning state and card, the cost per wear, the sample\'s note'],
   ['wardrobe-tile','slots','a Wardrobe tile is drawn: the cleaning tag and badge, the sample\'s tag; the empty Wardrobe\'s card'],

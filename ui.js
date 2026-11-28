@@ -1,4 +1,4 @@
-/* Daily Wardrobe: small pieces of interface every page shares (loaded after app.js; everything here runs when called, not at load, but the Back registrations: back.js backOn, and the folds' bus.js pin for 'folding-all').
+/* Daily Wardrobe: small pieces of interface every page shares (loaded after app.js; everything here runs when called, not at load, but the Back registrations: back.js backOn).
    Since the restructure S6a (2026-11-27) also the shared helpers of the screens, moved here with their text unchanged so every class
    may import them: the swipe that closes a sheet (sheetSwipe, all of sheet-swipe.js), how Today's cards fold and unfold (all of boxfold.js:
    boxFold, boxUnfold, foldEdge, revealNeed, pageScroll, monthBelow, keepInView, foldQuiet) and itemGoneTell (from item-view.js).
@@ -6,7 +6,7 @@
    - tell(message): a plain notice (a toast that stays long enough to read)
    - isConnected(), needConn(): what the buttons that need the server show while the app is not connected
    - advToggle(button), advClose(): the "Advanced" folds in Settings */
-import {on,ask,need,served,serve,register} from './bus.js';   // (the restructure S6f: what this file asks of later and optional files)
+import {ask,need,served,serve,register} from './bus.js';   // (the restructure S6f: what this file asks of later and optional files)
 import {ACTS,acts} from './act.js';
 import {toast} from './toast.js';
 import {backBorrow,backOn,backReturn,backSettled} from './back.js';
@@ -67,9 +67,9 @@ function pageScroll(to,ms,delay=0){const pg=$('#today'),from=scrollY;
 /* what lies after a card in its column (it slides with the card's edge) */
 const monthBelow=box=>{const k=[...box.parentNode.children];return k.slice(k.indexOf(box)+1)};
 /* while a swipe to another day folds everything at once (today.js foldAll), the folds are quiet: no animation, no scroll. foldAll says
-   so through bus.js ('folding-all': true, then false), so a day still steps when this file didn't load */
+   so (setFoldQuiet: true, then false) */
 let foldQuiet=false;
-on('folding-all',v=>{foldQuiet=v});
+/** @param {boolean} v */ function setFoldQuiet(v){foldQuiet=v}
 /* folding a box whose top is above the screen (folded from its bottom): bring the card back into view */
 function keepInView(box){if(foldQuiet)return;const r=box.getBoundingClientRect();if(r.top<8)scrollBy({top:r.top-8,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
 const BOX_LIFT=20;
@@ -340,7 +340,7 @@ function connOffTap(){goConnect()}
 function addConnTap(){need('settings-open','connection');goConnect()}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */
 globalThis.HOOK={__proto__:globalThis.HOOK||null,closeupClose,get connBusy(){return connBusy},get connMsg(){return connMsg},set connMsg(v){connMsg=v},askAnswer,get asking(){return asking},closeupPick,get cuOpen(){return cuOpen},cuTouch,renderConnUI,NEED_CONN,askConfirm,plainErr,tell};
-export {noMotion,asking,askAnswer,askConfirm,cuTouch,cuOpen,closeupBtn,cuGot,closeupPick,closeupClose,tell,layerFrom,layerInert,layerOpen,layerClose,netErr,plainErr,NEED_CONN,needConn,connSummary,connMsg,connBusy,renderConnUI,addGate,advClose,itemGoneTell,boxUnfold,foldEdge,boxFold,revealNeed,pageScroll,monthBelow,keepInView,foldQuiet,sheetSwipe,BOX_LIFT,boxStop};
+export {noMotion,asking,askAnswer,askConfirm,cuTouch,cuOpen,closeupBtn,cuGot,closeupPick,closeupClose,tell,layerFrom,layerInert,layerOpen,layerClose,netErr,plainErr,NEED_CONN,needConn,connSummary,connMsg,connBusy,renderConnUI,addGate,advClose,itemGoneTell,boxUnfold,foldEdge,boxFold,revealNeed,pageScroll,monthBelow,keepInView,foldQuiet,setFoldQuiet,sheetSwipe,BOX_LIFT,boxStop};
 acts({advTap,askNoTap,askYesTap,cuBtnTap,connOwnTap,connLinkKey,connGoTap,connOffTap,addConnTap});
 serve('tell',tell);   // the restructure S6f: app.js, which loads before this file, tells of an ended invitation
 /* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */

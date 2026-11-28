@@ -227,7 +227,7 @@ globalThis.HOOK={__proto__:globalThis.HOOK||null,careBack,careCleaned,careCounts
 export {careName,careCounts,careState,careTag,careBadge,careBackText,careLog,careCard,careSend,careBack,careCleaned,careLists,renderCare,openCare,careNote,careDayState,careFrame,careBandSoon,careReminders,renderCareUI};
 acts({laundryPick,careSendTap,careDoneTap,careBackDate,careBackTap,careTypeDone,careLimitsTap,careLimitPick,careDueTap,careBandTap,careBandKey});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
-serve('care-band-soon',careBandSoon);serve('care-reminders',careReminders);
+serve('care-reminders',careReminders);
 /* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
 register('care',{'settings-draw':()=>renderCareUI(),'settings-category':k=>{if(k==='laundry')renderCare()},   // Laundry & cleaning's lists, as it opens
-  'today-parts':()=>({careFrame,careNote}),'item-sheet-parts':()=>({careState,careCard}),'wardrobe-tile':()=>({careTag,careBadge})});
+  'item-sheet-parts':()=>({careState,careCard}),'wardrobe-tile':()=>({careTag,careBadge})});

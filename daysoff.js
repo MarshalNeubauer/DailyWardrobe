@@ -159,7 +159,6 @@ export {COUNTRY_CODES,countryName,holidayMsg,nagerKeep,builtinHolidays,holYears,
 acts({occClear,countryPick,dayOffAddTap,occAddTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('day-off-add',dayOffAdd);
-serve('formal-ui',renderFormalUI);   // the restructure S6f: history.js redraws Settings' occasions
 serve('country-codes',()=>COUNTRY_CODES);serve('holiday-country-set',setHolidayCountry);   // the restructure S6g: setup.js's holidays (without this file the setup fetches none)
 /* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
 register('daysoff',{'start-jobs':()=>({refreshHolidays}),'settings-draw':()=>{renderFormalUI();renderDaysOffUI()},'settings-summary':S=>{S.country=countryName}});

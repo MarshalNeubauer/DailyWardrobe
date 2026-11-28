@@ -1,7 +1,7 @@
 /* Daily Wardrobe: outfit photos: kept photos and item pictures (the keys, the kept pictures' store and the escapes are photo-keys.js's
    since the restructure S3b, 2026-11-26)
    (An ES module since 2026-11-23, loaded in index.html's order like the other scripts; split out of app.js on 2026-11-14.) */
-import {ask,need,serve,runHooks,register} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
+import {ask,serve,runHooks,register} from './bus.js';   // the Wardrobe's redraw: itemsheet.js, loaded after this file, pins renderWardrobe for 'wardrobe-changed'
 import {$,COLORS,colName,dayRecs,isCargo,items,key,keyDate,nm,patLabel,patName,primaryCol,settingsOpen,shoeStyle,sockPatterned,sockToe,todayDate,trouserKind,watchText} from './core.js';
 import {comboKey,comboSig,fnv64,keepRender,listPaused,picsDrawn,renders,shareRender,srcOk,workerBase,workerList} from './photo-keys.js';
 import {hasOutfit,planFor,planMonth} from './today-plan.js';
@@ -11,6 +11,8 @@ import {askConfirm,needConn,plainErr} from './ui.js';
 import {toast} from './toast.js';
 import {asmShown} from './asm-today.js';
 import {ASM_ON} from './assemble.js';
+import {acct} from './who.js';
+import {refreshToday,showCost} from './settings.js';
 const figureLabel=o=>[o.top,o.shirt,o.tie,o.clip,o.watch].filter(Boolean).map(i=>nm(i)).join(', ');
 // assembled pictures (assemble.js) are in use: ASM_ON, which a test switches off unless it tests them; nothing of assemble.js is
 // called while they are off, so a change there selects only the tests that use them
@@ -33,7 +35,7 @@ async function fetchRemoteRender(o,day){
     if(!j||!j.img)return;
     if(cur&&cur.t>(j.t||0)){shareRender(ck,cur);return}if(cur&&cur.t===(j.t||0))return;
     await keepRender(ck,{sig:comboSig(o),img:j.img,model:j.model||'',t:j.t||Date.now()},false);
-    if(planFor()[key(sel)]&&comboKey(planFor()[key(sel)])===ck&&!$('#today').hidden)need('refresh-today');
+    if(planFor()[key(sel)]&&comboKey(planFor()[key(sel)])===ck&&!$('#today').hidden)refreshToday();
   }catch(e){console.warn('remote photo unavailable',e)}
 }
 /* photos the worker keeps that this device lacks (a new install, or made on another device): download the ones the plan needs
@@ -58,7 +60,7 @@ async function prefetchRenders(){const W=workerBase();if(!W||picsDrawn())return;
         try{const r=await fetch(W.url+'?key='+ck,{headers:{'x-app-token':W.tok},cache:'no-store'});const j=r.ok?await r.json().catch(()=>null):null;
           if(!j||!j.img){remoteKeys.delete(ck);continue}
           await keepRender(ck,{sig:comboSig(o),img:j.img,model:j.model||'',t:j.t||Date.now()},false);
-          const s=planFor()[key(sel)];if(s&&comboKey(s)===ck&&!$('#today').hidden)need('refresh-today')}catch(e){remoteKeys.delete(ck)}}};
+          const s=planFor()[key(sel)];if(s&&comboKey(s)===ck&&!$('#today').hidden)refreshToday()}catch(e){remoteKeys.delete(ck)}}};
       await Promise.all([one(),one(),one()]);
     }while(prefetchAgain)
   }catch(e){console.warn('photo prefetch failed',e)}finally{prefetching=false}}
@@ -138,7 +140,7 @@ const wardPic=i=>{if(!WARD_PIC_TYPES.includes(i.type))return null;const p=itemPi
 async function fetchItemPic(i,sure){const W=workerBase(),k=itemKey(i);if(!W||renderTried.has(k)||renders[k])return;renderTried.add(k);
   try{await remoteList();if(remoteListed&&!remoteKeys.has(k)||!sure&&remoteHold())return;   // not on the worker: no 404 to ask for
     const r=await fetch(W.url+'?key='+k,{headers:{'x-app-token':W.tok},cache:'no-store'});if(!r.ok)return;const j=await r.json();if(!j||!j.img)return;
-    await keepRender(k,{sig:'item',img:await itemImg(j.img),model:j.model||'',t:j.t||Date.now(),grey:1},false);if(!$('#today').hidden)need('refresh-today');else if(!$('#wardrobe').hidden&&!ask('ph-edit')?.crop)wardRefresh()}catch(e){console.warn('item picture unavailable',e)}}
+    await keepRender(k,{sig:'item',img:await itemImg(j.img),model:j.model||'',t:j.t||Date.now(),grey:1},false);if(!$('#today').hidden)refreshToday();else if(!$('#wardrobe').hidden&&!ask('ph-edit')?.crop)wardRefresh()}catch(e){console.warn('item picture unavailable',e)}}
 /* the Wardrobe drawn again for a picture that arrived in the background: while Settings or an item's sheet is open it waits for it to close,
    as a sync's redraw does (syncRedraw: viewStale, syncLater); renderWardrobe closes Settings and redraws the sheet (the 2026-11-24 review's
    R1 N1: Settings snapped shut by itself) */
@@ -167,17 +169,17 @@ const missingItemPics=()=>{const seen=new Set();return items.filter(i=>{if(!ITEM
 /* the question names a tester's daily limit (account.js acct.me: caps.item, used.item from /me; the owner has none): "You can make 18
    more today, of your 40." and, when fewer are left than asked for, which are made (2026-11-15, the re-audit: the question didn't say) */
 const itemPicsUsed=m=>m.day&&m.day!==new Date().toISOString().slice(0,10)?0:+(m.used&&m.used.item)||0;   // (counts from another UTC day start again)
-function itemPicLimitText(n){const m=ask('acct-me');const cap=m&&m.caps&&+m.caps.item;if(!cap)return '';
+function itemPicLimitText(n){const m=acct.me;const cap=m&&m.caps&&+m.caps.item;if(!cap)return '';
   const left=Math.max(0,cap-itemPicsUsed(m));
   if(!left)return '';   // (startItemPics says so instead of asking)
   return `\n\nYou can make ${left} more today, of your daily ${cap}.${left<n?` The first ${left} are made now; the rest can be made after midnight UTC.`:''}`}
-const itemPicsUsedUp=()=>{const m=ask('acct-me');const cap=m&&m.caps&&+m.caps.item;return cap&&itemPicsUsed(m)>=cap?cap:0};
+const itemPicsUsedUp=()=>{const m=acct.me;const cap=m&&m.caps&&+m.caps.item;return cap&&itemPicsUsed(m)>=cap?cap:0};
 let itemBatch=false;
 function renderItemPicUI(){const b=$('#itempic-btn');if(!b||itemBatch)return;const n=missingItemPics().length;
   b.textContent=n?`Generate ${n} item picture${n===1?'':'s'}`:'Every shoe, belt, sock, pants, coat and watch has a picture';b.disabled=!n;needConn(b)}
 async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();if(!todo.length)return;
   {const cap=itemPicsUsedUp();if(cap){const st=$('#itempic-status');const t=`Today’s ${cap} item pictures are used up. They start again at midnight UTC.`;if(st)st.textContent=t;else toast(t);return}}
-  if(!await askConfirm(`Generate ${todo.length} product picture${todo.length===1?'':'s'}?\n\nFor your shoes, belts, socks, pants, coats and watches.${need('show-cost')?` About $${(todo.length*.05).toFixed(2)} at roughly 5¢ each.`:''}${itemPicLimitText(todo.length)}`,{ok:'Generate'}))return;
+  if(!await askConfirm(`Generate ${todo.length} product picture${todo.length===1?'':'s'}?\n\nFor your shoes, belts, socks, pants, coats and watches.${showCost()?` About $${(todo.length*.05).toFixed(2)} at roughly 5¢ each.`:''}${itemPicLimitText(todo.length)}`,{ok:'Generate'}))return;
   itemBatch=true;const st=$('#itempic-status'),b=$('#itempic-btn');let done=0,fail=0,err='',kept=false;
   await shareLocalPics();
   for(const i of todo){if(st)st.textContent=`Generating ${done+fail+1} of ${todo.length}…`;if(b)b.disabled=true;
@@ -186,7 +188,7 @@ async function startItemPics(){if(itemBatch)return;const todo=missingItemPics();
     catch(e){err=e.message;if(e.kept){done++;kept=true}else if(!e.stop)fail++;if(e.stop||/Connect in|OPENAI_API_KEY|forbidden|Today’s limit/i.test(err))break}}
   // what wasn't tried after a stop is said as such: "failed" read as if each had been tried (and paid for)
   const left=todo.length-done-fail,why=err?plainErr(err):'';
-  itemBatch=false;if(st)st.textContent=`Done: ${done} picture${done===1?'':'s'} ready${fail?`, ${fail} failed`:''}${left?`, ${left} not made`:''}${kept||fail||left?` (${why})`:''}`;renderItemPicUI();if(!$('#today').hidden)need('refresh-today')}
+  itemBatch=false;if(st)st.textContent=`Done: ${done} picture${done===1?'':'s'} ready${fail?`, ${fail} failed`:''}${left?`, ${left} not made`:''}${kept||fail||left?` (${why})`:''}`;renderItemPicUI();if(!$('#today').hidden)refreshToday()}
 /* the setters other files call to assign these lets (restructure S1a, 2026-11-25): once files import each other an imported binding is read-only */
 function setRemoteKeys(v){remoteKeys=v}
 /* the tests' access point (tests/hook.js): the names only the tests use; the app never reads HOOK */

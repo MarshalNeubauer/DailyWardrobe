@@ -7,6 +7,7 @@ import {acts} from './act.js';
 import {toast} from './toast.js';
 import {ask} from './bus.js';
 import {homeDay} from './month.js';   // (N5: an import of an earlier today-no-picture file, where it asked the socket home-day)
+import {refreshToday} from './settings.js';
 /* past workdays the app was not opened on are recorded as planned and count as worn: say so once, with a way to mark them not worn
    (2026-11-15, the audit: back after a week away, every missed workday was silently counted as worn, toward the cleaning counts too) */
 let missedDays=[],missedT=0;
@@ -27,7 +28,7 @@ function missedPut(){const h=missedCard(),old=document.querySelector('#missbox')
   if(old){if(h)old.outerHTML=h;else old.remove();return}
   const m=h&&document.querySelector('#today #mbox');if(m)m.insertAdjacentHTML('afterend',h)}
 async function missedNotWorn(ks){for(const k of ks){const r=dayRecs[k];if(r&&r.ids&&r.worn!==false)await saveDay({...r,worn:false},true)}
-  ask('sync-soon');toast(`Marked as not worn: ${ks.length===1?'that day':'those days'} no longer count${ks.length===1?'s':''} toward rest and cleaning.`,4000);ask('refresh-today')}
+  ask('sync-soon');toast(`Marked as not worn: ${ks.length===1?'that day':'those days'} no longer count${ks.length===1?'s':''} toward rest and cleaning.`,4000);refreshToday()}
 /* the missed days also stay on Today as a card (missedCard, under the month) until they are marked not worn or the card is closed
    (the re-audit, 2026-11-15: the 12-second toast was the only way to undo the batch, gone if the user looked away while the app
    started): the days the app recorded by itself (rec.auto) in the last MISSED_KEEP days, after it was first used for real, still
@@ -52,7 +53,7 @@ function missedCard(){if(isoKey(sel)!==isoKey(homeDay()))return '';const ks=miss
     (n>1&&missedPick?`<p class="misstxt mut"><small>Tap a day you didn’t wear its outfit:</small></p><div class="missbtns missdays">${ks.map(one).join('')}</div>`:'')+`</section>`}
 function missedPickToggle(){missedPick=!missedPick;missedPut()}
 async function missedOne(k){const r=dayRecs[k];if(!r||!r.ids||r.worn===false)return;await saveDay({...r,worn:false},true);ask('sync-soon');
-  toast(`Marked as not worn: ${shortDate(keyDate(k))}.`,3000);ask('refresh-today')}
+  toast(`Marked as not worn: ${shortDate(keyDate(k))}.`,3000);refreshToday()}
 function missedCardNo(){const ks=missedOpen();if(ks.length)missedNotWorn(ks)}
 function missedCardOk(){const ks=missedOpen();if(ks.length){try{localStorage.setItem('missed_ok',ks[ks.length-1])}catch{}}missedPut()}
 /* the markup's handlers (act.js): the card's "I didn't wear it / them", "Choose days", one day's ✕ (data-day) and "Keep as worn" */

@@ -97,6 +97,6 @@ export {FAV_UNDO_MS,favData,favSave,favPieces,favPillSeg,favLastIcon,favStrip,fa
 acts({favLookTap,favWearTap,favItemTap,favChipTap});
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('fav-ward',()=>!!(favWard&&favItemSet()));serve('fav-mark',favMark);serve('fav-chip',favChip);serve('fav-off',favOff);
-serve('fav-strip',favStrip);serve('fav-pieces',favPieces);serve('fav-undo-ms',()=>FAV_UNDO_MS);serve('fav-why',favWhy);   // the restructure S6f: what today-no-picture files ask of this file
+serve('fav-strip',favStrip);serve('fav-pieces',favPieces);serve('fav-undo-ms',()=>FAV_UNDO_MS);   // the restructure S6f: what today-no-picture files ask of this file
 /* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
-register('fav',{'today-parts':()=>({favLastIcon,favPillSeg}),'insights-cards':()=>({favStatsCard}),'item-sheet-parts':()=>({favItemRow})});
+register('fav',{'insights-cards':()=>({favStatsCard}),'item-sheet-parts':()=>({favItemRow})});

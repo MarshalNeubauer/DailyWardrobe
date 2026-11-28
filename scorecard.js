@@ -16,9 +16,12 @@ import {DIAL_KEYS,DIAL_NAMES,DIAL_OF_CHECK,DIAL_RULES,dCol,dialFreshness,dialHar
 import {canPick,pickItem,slotLabel} from './history.js';
 import {swatchSVG} from './draw.js';
 import {acts} from './act.js';
-import {ask,served} from './bus.js';
 import {loadFailed} from './toast.js';
 import {boxFold,boxUnfold} from './ui.js';
+import {errNote} from './safety.js';
+import {weekFirst} from './settings.js';
+import {favWhy} from './fav.js';
+import {temp} from './weather.js';
 let scoreOpen=false;
 const dialTone=v=>v>=80?'good':v>=60?'ok':'low';
 const ordinal=n=>{const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0])};
@@ -47,7 +50,7 @@ function rankWorker(){if(rankW!==null)return rankW||null;
   try{rankW=new Worker('analysis-worker.js',{type:'module'})}catch(e){rankW=false;return null}
   rankW.onmessage=e=>{const d=e.data||{},w=rankWait.get(d.rank);if(!w)return;rankWait.delete(d.rank);if(d.res)w.done(d.res);else{console.warn('rank: '+d.error);w.done(null)}};
   // a worker that fails: the asks still waiting are worked out here instead, and the next ones too
-  rankW.onerror=e=>{if(!(e instanceof ErrorEvent)){if(served('err-note'))ask('err-note',new Error('The background check (analysis-worker.js) didn\u2019t start: it or a file it imports didn\u2019t load'));loadFailed()}   // (a load failure is a plain Event the page's error listener never hears: noted here, as main's classic worker's was)
+  rankW.onerror=e=>{if(!(e instanceof ErrorEvent)){errNote(new Error('The background check (analysis-worker.js) didn\u2019t start: it or a file it imports didn\u2019t load'));loadFailed()}   // (a load failure is a plain Event the page's error listener never hears: noted here, as main's classic worker's was)
   rankW=false;const left=[...rankWait.values()];rankWait.clear();for(const w of left)setTimeout(()=>{try{w.done(rankLooks(w.P,w.o))}catch(e){w.done(null)}},30)};
   return rankW}
 function rankFor(o){if(!o||!hasOutfit(o))return null;if(window.TEST_PLAN)return TEST_PLAN.rank(o);const k=outfitKey(o);
@@ -79,7 +82,7 @@ const itemWord=(i,slot,o)=>`${shortDesc(i)||nm(i)} ${slotLabel(slot,o).toLowerCa
 function whyText(o,D,R){const w=dayWord(),hard=D.r.checks.filter(c=>c.hard);
   if(hard.length){const f=R&&R.swaps.find(s=>s.fix),it=f&&items.find(i=>i.id===f.id);
     return esc(failText(o,hard[0])+'.'+(it?` With the ${itemWord(it,f.slot,o)}, this would be the ${f.rank<=R.n?ordinal(f.rank)+' best':'one'} look ${w}.`:''))}
-  const fw=served('fav-why')?ask('fav-why',o):'';if(fw)return esc(fw);   // a favorite look says so (fav.js)
+  const fw=favWhy(o);if(fw)return esc(fw);   // a favorite look says so (fav.js)
   const ks=['h','t','o','v','f'],best=ks.reduce((m,k)=>D[k].v>D[m].v?k:m),weak=ks.reduce((m,k)=>D[k].v<D[m].v?k:m),wk=D[weak];
   const tail=wk.v<70&&weak!==best?' '+(wk.weak?`But ${lowFirst(wk.weak)}.`:wk.why):'';
   if(R&&R.rank>1&&D.f.v>=75&&D.f.most)return esc(`Picked because the ${D.f.most.piece} had rested ${D.f.most.rest>=60?'60+':D.f.most.rest} days.`+(weak!=='f'?tail:''));
@@ -97,7 +100,7 @@ function dialHtml(k,d,bad){const t=bad?'bad':dialTone(d.v),r=15,c=2*Math.PI*r,p=
   const arc=p>=.05?`<circle class="darc" cx="20" cy="20" r="${r}" stroke-dasharray="${p.toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 20 20)"/>`:'';
   return `<span class="dial d-${t}"><svg viewBox="0 0 40 40" aria-hidden="true">${bad?'<circle class="dbad" cx="20" cy="20" r="18.6"/>':''}<circle class="dtrack" cx="20" cy="20" r="${r}"/>${arc}<text x="20" y="24.4" text-anchor="middle">${bad?'!':d.v}</text></svg><small>${DIAL_NAMES[k]}</small></span>`}
 /* ---- the week's variety (the unfolded card's last part): the work week holding the day, and each week of its month ---- */
-function weekOf(d){const w0=ask('week-first')??0,s=dayOnly(d);s.setDate(s.getDate()-((s.getDay()-w0+7)%7));const days=[];
+function weekOf(d){const w0=weekFirst(),s=dayOnly(d);s.setDate(s.getDate()-((s.getDay()-w0+7)%7));const days=[];
   for(let g=0;g<7;g++){const x=new Date(s.getFullYear(),s.getMonth(),s.getDate()+g);if(!isWorkday(x))continue;const r=dayRecs[key(x)];if(r&&r.worn===false)continue;const o=planOn(x);if(o&&hasOutfit(o))days.push({d:x,o})}
   return {start:s,days}}
 /* three parts, 0-100 each, and their average: Colors spread (different tie, shirt and jacket colors over the week's days), No pairing
@@ -127,7 +130,7 @@ function weeksHtml(){const k=key(sel);if(weekMemo.c===cache&&weekMemo.k===k)retu
     if(rows.length)h+=`<p class="ssec sli">Weeks this month</p><ul class="sweeks sli">${rows.join('')}</ul>`}
   weekMemo={c:cache,k,v:h};return h}
 /* the weather in one line: the forecast (or the month's usual highs) and whether the cloth suits it (the Weather check) */
-function wxLine(o,D){const c=o.clim;if(!c)return '';const w=c.wx,chk=D.r.checks.find(x=>x.label==='Weather'),tp=v=>served('temp')?ask('temp',v):Math.round(v);
+function wxLine(o,D){const c=o.clim;if(!c)return '';const w=c.wx,chk=D.r.checks.find(x=>x.label==='Weather'),tp=v=>temp(v);
   const t=w&&typeof w.tmax==='number'?`${tp(w.tmax)}°${c.rain?' · rain likely':''}`:c.norm&&typeof c.norm.tmax==='number'?`Usually ${tp(c.norm.tmax)}° this month`:'';
   return [t,chk&&chk.why?sentence(chk.why):`Cloth for a ${c.season} day`].filter(Boolean).join('. ')+'.'}
 function scoreCard(o){

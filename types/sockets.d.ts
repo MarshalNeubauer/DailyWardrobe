@@ -89,10 +89,6 @@ export interface Sockets {
   'plan-snap-use': typeof import('../today-plan.js').planSnapUse;
   /** the locks made while a piece was away released (careUnlock) (locks.js) */
   'care-unlock': typeof import('../locks.js').careUnlock;
-  /** the coming days' locks that clash with a changed day let go (unlockClash) (locks.js) */
-  'unlock-clash': typeof import('../locks.js').unlockClash;
-  /** the coming week locked after Today records its days (lockUpcoming) (locks.js) */
-  'lock-upcoming': typeof import('../locks.js').lockUpcoming;
   /** a toast (toast.js toast), for app.js, which loads before it (the restructure S6f) (toast.js) */
   'toast': typeof import('../toast.js').toast;
   /** a file that failed once the app is running: the toast with Reload (toast.js loadFailed; all or nothing, A1), for assemble.js, a painting-worker file, which imports only the painter's (toast.js) */
@@ -105,36 +101,6 @@ export interface Sockets {
   'pattern-reread': typeof import('../pattern-read.js').rereadSett;
   /** whether the Look beta is on (lookOn), for what a tag request names (core.js tagTypesNow; the restructure S6f) (look-base.js) */
   'look-on': typeof import('../look-base.js').lookOn;
-  /** the words when the belt has to stay (BELT_STUCK) (pickscore.js) */
-  'belt-stuck': () => typeof import('../pickscore.js').BELT_STUCK;
-  /** which slots follow a swapped or picked one (FOLLOW) (pickscore.js) */
-  'pick-follow': () => typeof import('../pickscore.js').FOLLOW;
-  /** whether a belt would need shoes that don't suit the outfit (beltless) (pickscore.js) */
-  'beltless': typeof import('../pickscore.js').beltless;
-  /** combat boots taken off with pants they don't go with (bootsOff) (pickscore.js) */
-  'boots-off': typeof import('../pickscore.js').bootsOff;
-  /** how well a piece fits the outfit, for the picker (fitOf) (pickscore.js) */
-  'fit-of': typeof import('../pickscore.js').fitOf;
-  /** the picker's words for a fit (fitTag) (pickscore.js) */
-  'fit-tag': typeof import('../pickscore.js').fitTag;
-  /** the picker's "Casual · pick by hand" pieces (handPool) (pickscore.js) */
-  'hand-pool': typeof import('../pickscore.js').handPool;
-  /** why a hand-pick piece is offered (handWhy) (pickscore.js) */
-  'hand-why': typeof import('../pickscore.js').handWhy;
-  /** a hand-pick piece kept through a pick (keepHand) (pickscore.js) */
-  'keep-hand': typeof import('../pickscore.js').keepHand;
-  /** a piece taken off stays off through a swap or pick (keepOff) (pickscore.js) */
-  'keep-off': typeof import('../pickscore.js').keepOff;
-  /** a picker card's second line (pickSub) (pickscore.js) */
-  'pick-sub': typeof import('../pickscore.js').pickSub;
-  /** a pick puts a taken-off pocket square back (pocketOn) (pickscore.js) */
-  'pocket-on': typeof import('../pickscore.js').pocketOn;
-  /** the picker's scored pieces (slotPool) (pickscore.js) */
-  'slot-pool': typeof import('../pickscore.js').slotPool;
-  /** Suggest another keeps the day clean (suggestClean) (pickscore.js) */
-  'suggest-clean': typeof import('../pickscore.js').suggestClean;
-  /** a suit's own pants follow its jacket (suitPants) (pickscore.js) */
-  'suit-pants': typeof import('../pickscore.js').suitPants;
   /** where the pocket square sits, for the drawn mannequin (asmPocketQuad) (asm-pocket.js) */
   'asm-pocket-quad': typeof import('../asm-pocket.js').asmPocketQuad;
   /** one picture painted on the page, where no worker can (asmBuild; the restructure S6p, 2026-11-27: moved into asm-color.js, which assemble.js, today-no-picture, may not import) (asm-color.js) */
@@ -151,8 +117,6 @@ export interface Sockets {
   'asm-cu-v': () => typeof import('../asm-color.js').ASM_CU['v'];
   /** the worsted tile's version (ASM_WT.v), in the mannequin's cloth key (asm-color.js) */
   'asm-wt-v': () => typeof import('../asm-color.js').ASM_WT['v'];
-  /** the herringbone shirt's lift and row (ASM_HB_COL_LIFT, ASM_HB_SHIRT_Y), in the swatch's key (asm-color.js) */
-  'asm-hb-lift': () => [number, number];
   /** the page's graphics state let go with the worker (asmGlFree) (asm-gl.js) */
   'asm-gl-free': typeof import('../asm-gl.js').asmGlFree;
   /** which painter painted a picture, for Settings' line (asmGlNote) (asm-gl.js) */
@@ -187,10 +151,6 @@ export interface Sockets {
   'asm-cu-tile': typeof import('../asm-cm-job.js').asmCuTile;
   /** the worsted tile (asmWorstedTile) (asm-cm-job.js) */
   'asm-worsted-tile': typeof import('../asm-cm-job.js').asmWorstedTile;
-  /** a shirt's painted cloth tile, for its swatch (asmCmTile) (asm-cm-job.js) */
-  'asm-cm-tile': typeof import('../asm-cm-job.js').asmCmTile;
-  /** whether a shirt is painted as herringbone (asmHbShirt) (asm-cm-job.js) */
-  'asm-hb-shirt': typeof import('../asm-cm-job.js').asmHbShirt;
   /** the item sheet's "Outfit pictures: …" line (asmGapNote) (asm-cm-job.js) */
   'asm-gap-note': typeof import('../asm-cm-job.js').asmGapNote;
   /** the masters' manifest (asmCmMfGet) (asm-cm-page.js) */
@@ -215,30 +175,12 @@ export interface Sockets {
   'when-pulled': typeof import('../history.js').whenPulled;
   /** the piece picker closes (closePicker) (the restructure S6f) (history.js) */
   'picker-close': typeof import('../history.js').closePicker;
-  /** a piece's photo opened in its row (picOpenReady) (today-photofold.js) */
-  'pic-open-ready': typeof import('../today-photofold.js').picOpenReady;
-  /** a piece's photo shut (picShut) (today-photofold.js) */
-  'pic-shut': typeof import('../today-photofold.js').picShut;
-  /** another row's photo shut at once (picSnap) (today-photofold.js) */
-  'pic-snap': typeof import('../today-photofold.js').picSnap;
-  /** a photo's motion stopped for another tile (picStop) (today-photofold.js) */
-  'pic-stop': typeof import('../today-photofold.js').picStop;
-  /** the picture's zoom, or null (today-picture.js) */
-  'zoomed': () => any;
-  /** the picture's zoom put back after a redraw (applyZoom) (today-picture.js) */
-  'zoom-apply': typeof import('../today-picture.js').applyZoom;
-  /** a cloth swatch on the picture (ovlPiece) (today-picture.js) */
-  'ovl-piece': typeof import('../today-picture.js').ovlPiece;
-  /** a swatch tapped: it opens up close (swTap) (today-picture.js) */
-  'sw-tap': typeof import('../today-picture.js').swTap;
   /** Today drawn (renderToday): the router, Settings closing, a redraw; without today.js the router still throws, so start-up says "Today couldn’t be shown" (today.js) */
   'today-draw': typeof import('../today.js').renderToday;
   /** Today on the home day follows a workday taken away (keepHome) (today.js) */
   'today-home': typeof import('../today.js').keepHome;
   /** the kept weather put in place at start-up (wxPreload) (today.js) */
   'wx-preload': typeof import('../today.js').wxPreload;
-  /** the pieces list opens (setListOpen) (the restructure S6f) (today.js) */
-  'list-open-set': typeof import('../today.js').setListOpen;
   /** whether a finger is on Today (todayBusy) (today-gestures.js) */
   'today-busy': typeof import('../today-gestures.js').todayBusy;
   /** Today redrawn when its picture is ready, or a read sett was recolored at start-up (refreshToday; settings.js loads after the painter) (settings.js) */
@@ -251,26 +193,14 @@ export interface Sockets {
   'cat-toggle': typeof import('../settings.js').toggleCat;
   /** Settings' parts drawn again (renderSettingsExtras) (the restructure S6f) (settings.js) */
   'settings-extras': typeof import('../settings.js').renderSettingsExtras;
-  /** whether costs are shown (showCost) (the restructure S6f) (settings.js) */
-  'show-cost': typeof import('../settings.js').showCost;
-  /** the settings saved (saveUserSettings) (the restructure S6f) (settings.js) */
-  'settings-save-user': typeof import('../settings.js').saveUserSettings;
-  /** Today drawn again when Settings closes (todayDirty) (the restructure S6f) (settings.js) */
-  'today-dirty': typeof import('../settings.js').todayDirty;
-  /** the work week's first day (weekFirst) (the restructure S6f) (settings.js) */
-  'week-first': typeof import('../settings.js').weekFirst;
   /** a day off added (dayOffAdd) (daysoff.js) */
   'day-off-add': typeof import('../daysoff.js').dayOffAdd;
-  /** Settings' occasions drawn again (renderFormalUI) (the restructure S6f) (daysoff.js) */
-  'formal-ui': typeof import('../daysoff.js').renderFormalUI;
   /** the countries with a holiday list (COUNTRY_CODES) (the restructure S6g) (daysoff.js) */
   'country-codes': () => typeof import('../daysoff.js').COUNTRY_CODES;
   /** the time zone's holidays fetched at the setup's end (setHolidayCountry) (the restructure S6g) (daysoff.js) */
   'holiday-country-set': typeof import('../daysoff.js').setHolidayCountry;
   /** the weather loaded (loadWeather): start-up, a sync (weather.js) */
   'weather-load': typeof import('../weather.js').loadWeather;
-  /** a temperature in the person's units (temp) (the restructure S6f) (weather.js) */
-  'temp': typeof import('../weather.js').temp;
   /** the person's temperature unit (unit); served = the setup's Weather step is shown (the restructure S6h) (weather.js) */
   'wx-unit': typeof import('../weather.js').unit;
   /** the temperature unit chosen (setUnits) (the restructure S6h) (weather.js) */
@@ -329,8 +259,6 @@ export interface Sockets {
   'fav-pieces': typeof import('../fav.js').favPieces;
   /** how long a favorite's Undo stays (FAV_UNDO_MS) (the restructure S6f) (fav.js) */
   'fav-undo-ms': () => typeof import('../fav.js').FAV_UNDO_MS;
-  /** the score card's "a favorite look" line (favWhy) (the restructure S6f) (fav.js) */
-  'fav-why': typeof import('../fav.js').favWhy;
   /** a trip set (packSetTrip) (pack.js) */
   'pack-set-trip': typeof import('../pack.js').packSetTrip;
   /** the packing list opened (openPack) (pack.js) */
@@ -363,12 +291,8 @@ export interface Sockets {
   'care-log': typeof import('../care.js').careLog;
   /** the toast for pieces back from the cleaner (careBackText) (care.js) */
   'care-back-text': typeof import('../care.js').careBackText;
-  /** the cleaning banner's cut follows the swatches (careBandSoon) (care.js) */
-  'care-band-soon': typeof import('../care.js').careBandSoon;
   /** the cleaning reminders for the days ahead (careReminders) (care.js) */
   'care-reminders': typeof import('../care.js').careReminders;
-  /** whether What to buy is open (shopOpen) (shop.js) */
-  'shop-open': () => typeof import('../shop.js').shopOpen;
   /** how the backup stands, in words, for the setup's Connection step (backedUpWords) (sync.js) */
   'backed-up-words': typeof import('../sync.js').backedUpWords;
   /** a backup soon, after a change (scheduleSync; the restructure S6c: sync.js loads after its callers) (sync.js) */
@@ -499,42 +423,19 @@ export interface Needs {
   'plan-snap-use': Sockets['plan-snap-use'];
   'toast': Sockets['toast'];
   'tell': Sockets['tell'];
-  'belt-stuck': Sockets['belt-stuck'];
-  'pick-follow': Sockets['pick-follow'];
-  'beltless': Sockets['beltless'];
-  'boots-off': Sockets['boots-off'];
-  'fit-of': Sockets['fit-of'];
-  'fit-tag': Sockets['fit-tag'];
-  'hand-pool': Sockets['hand-pool'];
-  'hand-why': Sockets['hand-why'];
-  'keep-hand': Sockets['keep-hand'];
-  'keep-off': Sockets['keep-off'];
-  'pick-sub': Sockets['pick-sub'];
-  'pocket-on': Sockets['pocket-on'];
-  'slot-pool': Sockets['slot-pool'];
-  'suggest-clean': Sockets['suggest-clean'];
-  'suit-pants': Sockets['suit-pants'];
   'asm-live': Sockets['asm-live'];
   'item-backdrops-fix': Sockets['item-backdrops-fix'];
   'home-day': Sockets['home-day'];
   'when-pulled': Sockets['when-pulled'];
   'picker-close': Sockets['picker-close'];
-  'pic-open-ready': Sockets['pic-open-ready'];
-  'pic-shut': Sockets['pic-shut'];
-  'pic-snap': Sockets['pic-snap'];
-  'pic-stop': Sockets['pic-stop'];
   'today-draw': Sockets['today-draw'];
   'today-home': Sockets['today-home'];
   'wx-preload': Sockets['wx-preload'];
-  'list-open-set': Sockets['list-open-set'];
   'refresh-today': Sockets['refresh-today'];
   'settings-open': Sockets['settings-open'];
   'settings-close': Sockets['settings-close'];
   'cat-toggle': Sockets['cat-toggle'];
   'settings-extras': Sockets['settings-extras'];
-  'show-cost': Sockets['show-cost'];
-  'settings-save-user': Sockets['settings-save-user'];
-  'today-dirty': Sockets['today-dirty'];
   'tag-fail-text': Sockets['tag-fail-text'];
 }
 
@@ -572,12 +473,8 @@ export interface Hooks {
   'pictures-switched': () => Partial<Slots['pictures-switched']>;
   /** a page is shown (nav.js show): Add's type and sheet, the setup, What to buy, the item sheet, the Wardrobe, Insights, the packing list */
   'page-shown': () => Partial<Slots['page-shown']>;
-  /** Today is drawn: the favorite's icon and pill, the cleaning frame and note, the weather, the setup's and the sample's banners, the calendar's, the open swatch */
+  /** Today is drawn: the sample's and the calendar's banners (the other parts are today.js imports since A5) */
   'today-parts': () => Partial<Slots['today-parts']>;
-  /** Today folds everything (another day, a swipe): the zoom and the open swatch close */
-  'today-fold': () => Partial<Slots['today-fold']>;
-  /** the day shown or its record changed (a day opened from the month, a swap, a pick, a mark, an occasion, Reset): Today is drawn again */
-  'day-changed': () => void;
   /** Insights is drawn: What to buy's button, the favorites', the cost per wear's and the tagging's cards */
   'insights-cards': () => Partial<Slots['insights-cards']>;
   /** the item sheet is drawn: the favorite's row, the cleaning state and card, the cost per wear, the sample's note */
@@ -677,30 +574,10 @@ export interface Slots {
     setupYield: typeof import('../setup.js').setupYield;
   };
   'today-parts': {
-    /** (today-picture.js) */
-    swApply: typeof import('../today-picture.js').swApply;
-    /** (weather.js) */
-    wxChip: typeof import('../weather.js').wxChip;
-    /** (fav.js) */
-    favLastIcon: typeof import('../fav.js').favLastIcon;
-    /** (fav.js) */
-    favPillSeg: typeof import('../fav.js').favPillSeg;
-    /** (care.js) */
-    careFrame: typeof import('../care.js').careFrame;
-    /** (care.js) */
-    careNote: typeof import('../care.js').careNote;
     /** (kit.js) */
     kitSampleBanner: typeof import('../kit.js').kitSampleBanner;
-    /** (setup.js) */
-    setupToday: typeof import('../setup.js').setupToday;
     /** (calendar.js) */
     calBanner: typeof import('../calendar.js').calBanner;
-  };
-  'today-fold': {
-    /** (today-picture.js) */
-    zoomOut: typeof import('../today-picture.js').zoomOut;
-    /** (today-picture.js) */
-    swClose: typeof import('../today-picture.js').swClose;
   };
   'insights-cards': {
     /** (tag-request.js) */

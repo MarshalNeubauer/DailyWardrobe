@@ -289,4 +289,4 @@ acts({setupCancelTap,setupSkipTap,setupBackTap,setupNextTap,setupDayTap,setupSwT
 /* the sockets other groups ask (the restructure S6c, tests/bus.test.js SOCKETS) */
 serve('setup-shown',setupShown);serve('setup-finish',setupFinish);serve('setup-sample',setupSample);serve('setup-conn-draw',()=>{if(setupShown()&&/^(connect|done)$/.test(SETUP_STEPS[setup.at]))setupDraw()});serve('tz-country',tzCountry);
 /* the hooks (bus.js register; the notice board made clean, N2): what this feature does at the moments core runs, its file's last statement */
-register('setup',{'start-jobs':()=>({setupStart}),'page-shown':()=>({setupYield}),'today-parts':()=>({setupToday}),'wardrobe-tile':()=>({setupWardEmpty})});
+register('setup',{'start-jobs':()=>({setupStart}),'page-shown':()=>({setupYield}),'wardrobe-tile':()=>({setupWardEmpty})});
